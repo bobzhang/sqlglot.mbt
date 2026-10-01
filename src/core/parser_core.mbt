@@ -620,7 +620,10 @@ pub fn Parser::parse_wrapped_id_vars(
   self : Parser,
   optional? : Bool = false,
 ) -> Array[Expr] raise SqlglotError {
-  self.parse_wrapped_csv(() => self.parse_id_var(), optional~)
+  match self.fns.hooks.parse_wrapped_id_vars {
+    Some(f) => f(self, optional)
+    None => self.parse_wrapped_csv(() => self.parse_id_var(), optional~)
+  }
 }
 
 ///|
