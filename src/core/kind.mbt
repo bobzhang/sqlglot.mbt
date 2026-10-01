@@ -11,7 +11,7 @@ pub fn Kind::key(self : Kind) -> String {
 }
 
 ///|
-pub impl Show for Kind with output(self, logger) {
+pub impl Show for Kind with fn output(self, logger) {
   logger.write_string(self.name())
 }
 
@@ -152,7 +152,7 @@ pub fn TokenType::name(self : TokenType) -> String {
 }
 
 ///|
-pub impl Show for TokenType with output(self, logger) {
+pub impl Show for TokenType with fn output(self, logger) {
   logger.write_string("TokenType.")
   logger.write_string(self.name())
 }
@@ -183,7 +183,7 @@ pub fn DType::value(self : DType) -> String {
 }
 
 ///|
-pub impl Show for DType with output(self, logger) {
+pub impl Show for DType with fn output(self, logger) {
   logger.write_string("DType.")
   logger.write_string(self.name())
 }

@@ -11,14 +11,14 @@ test "base dialect round trips match python" {
     let expected = roundtrip_fixtures[i + 2]
     i += 3
     let got = @core.transpile(sql, read=d, pretty~)[0] catch {
-      err => {
-        errors += 1
-        if errors <= 20 {
-          println("ERR \{sql}\n  \{err}")
+        err => {
+          errors += 1
+          if errors <= 20 {
+            println("ERR \{sql}\n  \{err}")
+          }
+          continue
         }
-        continue
       }
-    }
     if got != expected {
       failures += 1
       if failures <= 40 {

@@ -22,7 +22,7 @@ pub fn Token::new(
   end? : Int = 0,
   comments? : Array[String] = [],
 ) -> Token {
-  { token_type, text, line, col, start, end, comments }
+  { token_type, text, line, col, start, end, comments, }
 }
 
 ///|
@@ -46,7 +46,7 @@ pub fn Token::var_(s : String) -> Token {
 }
 
 ///|
-pub impl Show for Token with output(self, logger) {
+pub impl Show for Token with fn output(self, logger) {
   logger.write_string(
     "<Token token_type: TokenType.\{self.token_type.name()}, text: \{self.text}, line: \{self.line}, col: \{self.col}, start: \{self.start}, end: \{self.end}, comments: \{self.comments}>",
   )
@@ -197,7 +197,9 @@ fn str_set(arr : Array[String]) -> Map[String, Bool] {
 
 ///|
 /// Computes the derived attributes (Python's `__init_subclass__`).
-pub fn TokenizerSettings::finalize(self : TokenizerSettings) -> TokenizerSettings {
+pub fn TokenizerSettings::finalize(
+  self : TokenizerSettings,
+) -> TokenizerSettings {
   self.quotes_map = convert_quotes(self.quotes)
   self.identifiers_map = convert_quotes(self.identifiers)
   self.identifier_chars = Map([])
@@ -221,14 +223,15 @@ pub fn TokenizerSettings::finalize(self : TokenizerSettings) -> TokenizerSetting
     fs2["N" + s] = (e, NATIONAL_STRING)
   }
   let fs = fs2
-  for pair in [
-    (self.bit_strings, BIT_STRING),
-    (self.byte_strings, BYTE_STRING),
-    (self.hex_strings, HEX_STRING),
-    (self.raw_strings, RAW_STRING),
-    (self.heredoc_strings, HEREDOC_STRING),
-    (self.unicode_strings, UNICODE_STRING),
-  ] {
+  for
+    pair in [
+      (self.bit_strings, BIT_STRING),
+      (self.byte_strings, BYTE_STRING),
+      (self.hex_strings, HEX_STRING),
+      (self.raw_strings, RAW_STRING),
+      (self.heredoc_strings, HEREDOC_STRING),
+      (self.unicode_strings, UNICODE_STRING),
+    ] {
     for k, v in convert_quotes(pair.0) {
       fs[k] = (v, pair.1)
     }
@@ -385,7 +388,7 @@ pub fn Tokenizer::tokenize(
       let end = @cmp.minimum(self.current + 50, self.size - 1)
       let context = self.slice(start, end)
       raise TokenError("Error tokenizing '\{context}'") // original: \{e}
-      |> ignore_err(e)
+        |> ignore_err(e)
     }
   }
   self.tokens
@@ -432,11 +435,7 @@ fn Tokenizer::scan(
         break
       }
     }
-    let offset = if current > self.current {
-      current - self.current
-    } else {
-      1
-    }
+    let offset = if current > self.current { current - self.current } else { 1 }
     self.start = current
     self.advance(i=offset)
     if !is_space(self.char) {
@@ -472,7 +471,11 @@ fn Tokenizer::chars(self : Tokenizer, size : Int) -> String {
 }
 
 ///|
-fn Tokenizer::advance(self : Tokenizer, i? : Int = 1, alnum? : Bool = false) -> Unit {
+fn Tokenizer::advance(
+  self : Tokenizer,
+  i? : Int = 1,
+  alnum? : Bool = false,
+) -> Unit {
   let char = self.char
   if char == '\n' || char == '\r' {
     if !(char == '\r' && self.peek == '\n') {
@@ -539,10 +542,12 @@ fn Tokenizer::add(
   self.comments = []
   if self.settings.commands_set.contains(token_type) &&
     self.peek != ';' &&
-    (self.tokens.length() == 1 ||
-    self.settings.command_prefix_tokens.contains(
-      self.tokens[self.tokens.length() - 2].token_type,
-    )) {
+    (
+      self.tokens.length() == 1 ||
+      self.settings.command_prefix_tokens.contains(
+        self.tokens[self.tokens.length() - 2].token_type,
+      )
+    ) {
     let start = self.current
     let ntokens = self.tokens.length()
     self.scan(check_semicolon=true)
@@ -571,7 +576,11 @@ fn Tokenizer::scan_keywords(self : Tokenizer) -> Unit raise SqlglotError {
   let mut has_chars = true
   while has_chars {
     if !skip {
-      let up = if char.to_int() < 128 { char.to_ascii_uppercase() } else { char }
+      let up = if char.to_int() < 128 {
+        char.to_ascii_uppercase()
+      } else {
+        char
+      }
       match trie.get(up) {
         None => break
         Some(sub) => {
@@ -733,8 +742,10 @@ fn Tokenizer::scan_number(self : Tokenizer) -> Unit raise SqlglotError {
       }
       self.advance(i=end - self.current)
     } else if self.peek == '.' && !decimal {
-      if (!self.tokens.is_empty() &&
-        self.tokens[self.tokens.length() - 1].token_type == PARAMETER) ||
+      if (
+          !self.tokens.is_empty() &&
+          self.tokens[self.tokens.length() - 1].token_type == PARAMETER
+        ) ||
         !self.settings.numbers_can_have_decimals {
         break
       }
@@ -880,7 +891,10 @@ fn Tokenizer::extract_value(self : Tokenizer) -> String {
 }
 
 ///|
-fn Tokenizer::scan_string(self : Tokenizer, start : String) -> Bool raise SqlglotError {
+fn Tokenizer::scan_string(
+  self : Tokenizer,
+  start : String,
+) -> Bool raise SqlglotError {
   let mut base = 0
   let mut token_type = STRING
   let mut end = ""
@@ -973,7 +987,8 @@ fn Tokenizer::scan_var(self : Tokenizer) -> Unit raise SqlglotError {
     self.tokens[self.tokens.length() - 1].token_type == PARAMETER {
     VAR
   } else {
-    match self.settings.keywords.get(py_upper(self.slice(self.start, self.current))) {
+    match
+      self.settings.keywords.get(py_upper(self.slice(self.start, self.current))) {
       Some(t) => t
       None => VAR
     }
@@ -1130,7 +1145,9 @@ fn Tokenizer::extract_string(
     }
   }
   while true {
-    let backslash_escape = !raw_string && self.char == '\\' && backslash_in_escapes
+    let backslash_escape = !raw_string &&
+      self.char == '\\' &&
+      backslash_in_escapes
     if backslash_escape && !numeric_escapes.is_empty() {
       let decoded = self.scan_numeric_escape()
       if !decoded.is_empty() {
@@ -1157,9 +1174,7 @@ fn Tokenizer::extract_string(
         _ => ()
       }
     }
-    if backslash_escape &&
-      drop_unknown_escapes &&
-      self.current + 1 < self.size {
+    if backslash_escape && drop_unknown_escapes && self.current + 1 < self.size {
       let peek = self.peek
       self.advance()
       self.advance()
@@ -1171,9 +1186,11 @@ fn Tokenizer::extract_string(
       self.char == '\\' &&
       !escape_follow_chars.contains(peek_s)
     let escaped_delimiter = peek_s == delimiter ||
-      (delim_size > 1 &&
-      self.peek == delimiter.get_char(0).unwrap() &&
-      quotes.contains(peek_s))
+      (
+        delim_size > 1 &&
+        self.peek == delimiter.get_char(0).unwrap() &&
+        quotes.contains(peek_s)
+      )
     if (string_escapes_allowed_in_raw_strings || !raw_string) &&
       escapes.contains(char_s) &&
       (escaped_delimiter || escapes.contains(peek_s) || is_valid_custom_escape) &&
@@ -1192,7 +1209,9 @@ fn Tokenizer::extract_string(
       if self.current + 1 < self.size {
         self.advance(i=2)
       } else {
-        raise TokenError("Missing \{delimiter} from \{self.line}:\{self.current}")
+        raise TokenError(
+          "Missing \{delimiter} from \{self.line}:\{self.current}",
+        )
       }
     } else {
       if self.chars(delim_size) == delimiter {

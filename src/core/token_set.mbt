@@ -25,12 +25,15 @@ pub fn TokenSet::contains(self : TokenSet, t : TokenType) -> Bool {
 
 ///|
 pub fn TokenSet::copy(self : TokenSet) -> TokenSet {
-  { bits: self.bits.copy() }
+  { bits: self.bits.copy(), }
 }
 
 ///|
 /// Returns a new set: `self | other`.
-pub fn TokenSet::union(self : TokenSet, other : ArrayView[TokenType]) -> TokenSet {
+pub fn TokenSet::union(
+  self : TokenSet,
+  other : ArrayView[TokenType],
+) -> TokenSet {
   let s = self.copy()
   for t in other {
     s.bits[t.id()] = true
@@ -52,7 +55,10 @@ pub fn TokenSet::union_set(self : TokenSet, other : TokenSet) -> TokenSet {
 
 ///|
 /// Returns a new set: `self - other`.
-pub fn TokenSet::minus(self : TokenSet, other : ArrayView[TokenType]) -> TokenSet {
+pub fn TokenSet::minus(
+  self : TokenSet,
+  other : ArrayView[TokenType],
+) -> TokenSet {
   let s = self.copy()
   for t in other {
     s.bits[t.id()] = false
@@ -104,7 +110,7 @@ pub struct WordTrie {
 
 ///|
 pub fn WordTrie::new() -> WordTrie {
-  { children: Map([]), terminal: false }
+  { children: Map([]), terminal: false, }
 }
 
 ///|
@@ -129,7 +135,10 @@ pub fn WordTrie::from_keys(keys : Iter[String]) -> WordTrie {
 
 ///|
 /// Checks whether a single word continues from `self`.
-pub fn WordTrie::lookup(self : WordTrie, key : ArrayView[String]) -> (TrieResult, WordTrie) {
+pub fn WordTrie::lookup(
+  self : WordTrie,
+  key : ArrayView[String],
+) -> (TrieResult, WordTrie) {
   if key.is_empty() {
     return (Failed, self)
   }

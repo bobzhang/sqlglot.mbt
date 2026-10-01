@@ -354,10 +354,8 @@ pub fn base_tokenizer_settings_raw() -> TokenizerSettings {
     "VACUUM": COMMAND,
     "USER-DEFINED": USERDEFINED,
   }
-  let numeric_escapes : Map[String, NumericEscape] = {
-  }
-  let numeric_literals : Map[String, String] = {
-  }
+  let numeric_escapes : Map[String, NumericEscape] = {}
+  let numeric_literals : Map[String, String] = {}
   {
     single_tokens,
     bit_strings: [],
@@ -381,9 +379,20 @@ pub fn base_tokenizer_settings_raw() -> TokenizerSettings {
     drop_unknown_escapes: false,
     nested_comments: true,
     hint_start: "/*+",
-    tokens_preceding_hint: [TokenType::DELETE, TokenType::INSERT, TokenType::SELECT, TokenType::UPDATE],
+    tokens_preceding_hint: [
+      TokenType::DELETE,
+      TokenType::INSERT,
+      TokenType::SELECT,
+      TokenType::UPDATE,
+    ],
     keywords,
-    commands: [TokenType::COMMAND, TokenType::EXECUTE, TokenType::FETCH, TokenType::RENAME, TokenType::SHOW],
+    commands: [
+      TokenType::COMMAND,
+      TokenType::EXECUTE,
+      TokenType::FETCH,
+      TokenType::RENAME,
+      TokenType::SHOW,
+    ],
     command_prefix_tokens: [TokenType::BEGIN, TokenType::SEMICOLON],
     numeric_literals,
     numbers_can_have_decimals: true,
@@ -419,13 +428,9 @@ pub fn base_jsonpath_tokenizer_settings_raw() -> TokenizerSettings {
     '$': DOLLAR,
     '*': STAR,
   }
-  let keywords : Map[String, TokenType] = {
-    "..": DOT,
-  }
-  let numeric_escapes : Map[String, NumericEscape] = {
-  }
-  let numeric_literals : Map[String, String] = {
-  }
+  let keywords : Map[String, TokenType] = { "..": DOT }
+  let numeric_escapes : Map[String, NumericEscape] = {}
+  let numeric_literals : Map[String, String] = {}
   {
     single_tokens,
     bit_strings: [],
@@ -449,9 +454,20 @@ pub fn base_jsonpath_tokenizer_settings_raw() -> TokenizerSettings {
     drop_unknown_escapes: false,
     nested_comments: true,
     hint_start: "/*+",
-    tokens_preceding_hint: [TokenType::DELETE, TokenType::INSERT, TokenType::SELECT, TokenType::UPDATE],
+    tokens_preceding_hint: [
+      TokenType::DELETE,
+      TokenType::INSERT,
+      TokenType::SELECT,
+      TokenType::UPDATE,
+    ],
     keywords,
-    commands: [TokenType::COMMAND, TokenType::EXECUTE, TokenType::FETCH, TokenType::RENAME, TokenType::SHOW],
+    commands: [
+      TokenType::COMMAND,
+      TokenType::EXECUTE,
+      TokenType::FETCH,
+      TokenType::RENAME,
+      TokenType::SHOW,
+    ],
     command_prefix_tokens: [TokenType::BEGIN, TokenType::SEMICOLON],
     numeric_literals,
     numbers_can_have_decimals: false,

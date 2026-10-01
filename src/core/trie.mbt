@@ -14,7 +14,7 @@ pub(all) enum TrieResult {
 
 ///|
 pub fn Trie::new() -> Trie {
-  { children: Map([]), terminal: false }
+  { children: Map([]), terminal: false, }
 }
 
 ///|

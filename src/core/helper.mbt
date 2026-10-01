@@ -46,17 +46,26 @@ pub fn char_upper(c : Char) -> Char {
   if i < 128 {
     return c.to_ascii_uppercase()
   }
-  let u = if (i >= 0xE0 && i <= 0xFE && i != 0xF7) || (i >= 0x3B1 && i <= 0x3C9 && i != 0x3C2) || (i >= 0x430 && i <= 0x44F) {
+  let u = if (i >= 0xE0 && i <= 0xFE && i != 0xF7) ||
+    (i >= 0x3B1 && i <= 0x3C9 && i != 0x3C2) ||
+    (i >= 0x430 && i <= 0x44F) {
     i - 32
   } else if i >= 0x450 && i <= 0x45F {
     i - 80
-  } else if i >= 0x100 && i <= 0x17F && i % 2 == 1 && i != 0x131 && i != 0x138 && i != 0x149 && i != 0x17F {
+  } else if i >= 0x100 &&
+    i <= 0x17F &&
+    i % 2 == 1 &&
+    i != 0x131 &&
+    i != 0x138 &&
+    i != 0x149 &&
+    i != 0x17F {
     if (i >= 0x139 && i <= 0x148) || (i >= 0x179 && i <= 0x17E) {
       i
     } else {
       i - 1
     }
-  } else if ((i >= 0x139 && i <= 0x148) || (i >= 0x179 && i <= 0x17E)) && i % 2 == 0 {
+  } else if ((i >= 0x139 && i <= 0x148) || (i >= 0x179 && i <= 0x17E)) &&
+    i % 2 == 0 {
     i - 1
   } else if i == 0xFF {
     0x178
@@ -72,7 +81,9 @@ pub fn char_lower(c : Char) -> Char {
   if i < 128 {
     return c.to_ascii_lowercase()
   }
-  let l = if (i >= 0xC0 && i <= 0xDE && i != 0xD7) || (i >= 0x391 && i <= 0x3A9 && i != 0x3A2) || (i >= 0x410 && i <= 0x42F) {
+  let l = if (i >= 0xC0 && i <= 0xDE && i != 0xD7) ||
+    (i >= 0x391 && i <= 0x3A9 && i != 0x3A2) ||
+    (i >= 0x410 && i <= 0x42F) {
     i + 32
   } else if i >= 0x400 && i <= 0x40F {
     i + 80
@@ -82,7 +93,8 @@ pub fn char_lower(c : Char) -> Char {
     } else {
       i + 1
     }
-  } else if ((i >= 0x139 && i <= 0x148) || (i >= 0x179 && i <= 0x17E)) && i % 2 == 1 {
+  } else if ((i >= 0x139 && i <= 0x148) || (i >= 0x179 && i <= 0x17E)) &&
+    i % 2 == 1 {
     i + 1
   } else if i == 0x178 {
     0xFF
@@ -96,7 +108,18 @@ pub fn char_lower(c : Char) -> Char {
 /// Python `str.isspace()` for a single character.
 pub fn is_space(c : Char) -> Bool {
   match c {
-    ' ' | '\t' | '\n' | '\r' | '\u{0b}' | '\u{0c}' | '\u{1c}' | '\u{1d}' | '\u{1e}' | '\u{1f}' | '\u{85}' | '\u{a0}' => true
+    ' '
+    | '\t'
+    | '\n'
+    | '\r'
+    | '\u{0b}'
+    | '\u{0c}'
+    | '\u{1c}'
+    | '\u{1d}'
+    | '\u{1e}'
+    | '\u{1f}'
+    | '\u{85}'
+    | '\u{a0}' => true
     _ => {
       let i = c.to_int()
       i == 0x1680 ||
@@ -466,7 +489,9 @@ pub fn is_safe_identifier(text : String) -> Bool {
   let mut first = true
   for c in text {
     if first {
-      if !(c == '_' || c.is_ascii_alphabetic() || (c.to_int() >= 128 && is_alpha(c))) {
+      if !(c == '_' ||
+        c.is_ascii_alphabetic() ||
+        (c.to_int() >= 128 && is_alpha(c))) {
         return false
       }
       first = false

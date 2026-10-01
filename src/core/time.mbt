@@ -64,7 +64,11 @@ pub fn format_time_opt(
 ///|
 /// `format_time` returning Python's `str(None)` for empty input, which is what
 /// `exp.Literal.string(format_time(...))` produces.
-pub fn format_time(string : String, mapping : Map[String, String], trie : Trie) -> String {
+pub fn format_time(
+  string : String,
+  mapping : Map[String, String],
+  trie : Trie,
+) -> String {
   match format_time_opt(string, mapping, trie~) {
     Some(s) => s
     None => "None"

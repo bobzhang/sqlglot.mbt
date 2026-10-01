@@ -34,16 +34,28 @@ pub fn Expr::select_(
     }
     return inst
   }
-  let parsed = if append { inst.expressions() + expressions } else { expressions }
+  let parsed = if append {
+    inst.expressions() + expressions
+  } else {
+    expressions
+  }
   inst.set("expressions", parsed)
   inst
 }
 
 ///|
 /// `Select.from_(expression)`
-pub fn Expr::from_(self : Expr, expression : Expr, copy? : Bool = false) -> Expr {
+pub fn Expr::from_(
+  self : Expr,
+  expression : Expr,
+  copy? : Bool = false,
+) -> Expr {
   let inst = maybe_copy(self, copy)
-  let f = if expression.kind == From { expression } else { mk1(From, expression) }
+  let f = if expression.kind == From {
+    expression
+  } else {
+    mk1(From, expression)
+  }
   inst.set("from_", f)
   inst
 }
@@ -55,7 +67,11 @@ pub fn table_of(name : String) -> Expr {
   if parts.iter().all(p => is_safe_identifier(p)) {
     match parts.length() {
       1 => mk1(Table, to_identifier(parts[0]))
-      2 => mk(Table, [("this", to_identifier(parts[1])), ("db", to_identifier(parts[0]))])
+      2 =>
+        mk(Table, [
+          ("this", to_identifier(parts[1])),
+          ("db", to_identifier(parts[0])),
+        ])
       _ =>
         mk(Table, [
           ("this", to_identifier(parts[parts.length() - 1])),
@@ -117,13 +133,15 @@ pub fn Expr::where_(
   copy? : Bool = false,
 ) -> Expr {
   let inst = maybe_copy(self, copy)
-  let exprs = expressions.map(e => if e.kind == Where {
-    match e.this() {
-      Some(t) => t
-      None => e
+  let exprs = expressions.map(e => {
+    if e.kind == Where {
+      match e.this() {
+        Some(t) => t
+        None => e
+      }
+    } else {
+      e
     }
-  } else {
-    e
   })
   apply_conjunction(inst, "where", Some(Where), exprs, append)
 }
@@ -214,7 +232,11 @@ pub fn Expr::order_by(
 
 ///|
 /// `Query.limit(expression)`
-pub fn Expr::limit_(self : Expr, expression : Expr, copy? : Bool = false) -> Expr {
+pub fn Expr::limit_(
+  self : Expr,
+  expression : Expr,
+  copy? : Bool = false,
+) -> Expr {
   let inst = maybe_copy(self, copy)
   let l = if expression.kind == Limit {
     expression
@@ -227,7 +249,11 @@ pub fn Expr::limit_(self : Expr, expression : Expr, copy? : Bool = false) -> Exp
 
 ///|
 /// `Query.offset(expression)`
-pub fn Expr::offset_(self : Expr, expression : Expr, copy? : Bool = false) -> Expr {
+pub fn Expr::offset_(
+  self : Expr,
+  expression : Expr,
+  copy? : Bool = false,
+) -> Expr {
   let inst = maybe_copy(self, copy)
   let o = if expression.kind == Offset {
     expression
@@ -252,7 +278,14 @@ pub fn Expr::distinct_(
   } else {
     Some(mk(Tuple, [("expressions", ons)]))
   }
-  inst.set("distinct", if distinct { Some(mk(Distinct, [("on", on)])) } else { None })
+  inst.set(
+    "distinct",
+    if distinct {
+      Some(mk(Distinct, [("on", on)]))
+    } else {
+      None
+    },
+  )
   inst
 }
 
@@ -277,7 +310,8 @@ pub fn Expr::join_(
     mk1(Join, expression)
   }
   match join.this() {
-    Some(t) if t.kind == Select => t.replace(Some(t.subquery(copy=false))) |> ignore
+    Some(t) if t.kind == Select =>
+      t.replace(Some(t.subquery(copy=false))) |> ignore
     _ => ()
   }
   match method {
@@ -315,7 +349,12 @@ pub fn Expr::join_(
 
 ///|
 /// Builds a set operation (`exp.union` / `exp.intersect` / `exp.except_`).
-pub fn set_operation(kind : Kind, left : Expr, right : Expr, distinct? : Bool = true) -> Expr {
+pub fn set_operation(
+  kind : Kind,
+  left : Expr,
+  right : Expr,
+  distinct? : Bool = true,
+) -> Expr {
   mk(kind, [("this", left), ("expression", right), ("distinct", distinct)])
 }
 
@@ -395,7 +434,11 @@ pub fn cast_to(expression : Expr, to : Expr, copy? : Bool = false) -> Expr {
 ///|
 /// `exp.func(name, *args)`: builds a known function via the dialect's FUNCTIONS, or an
 /// Anonymous function.
-pub fn func_(name : String, args : Array[Expr], dialect? : Dialect) -> Expr raise SqlglotError {
+pub fn func_(
+  name : String,
+  args : Array[Expr],
+  dialect? : Dialect,
+) -> Expr raise SqlglotError {
   let d = match dialect {
     Some(d) => d
     None => base_dialect()
@@ -428,7 +471,12 @@ pub fn Expr::else_(self : Expr, default : Expr) -> Expr {
 
 ///|
 /// `expr.as_(alias)`
-pub fn Expr::as_(self : Expr, alias : String, quoted? : Bool, copy? : Bool = true) -> Expr {
+pub fn Expr::as_(
+  self : Expr,
+  alias : String,
+  quoted? : Bool,
+  copy? : Bool = true,
+) -> Expr {
   alias_(self, alias, quoted?, copy~)
 }
 
@@ -498,19 +546,24 @@ pub fn to_table(name : String) -> Expr {
 
 ///|
 /// `exp.replace_placeholders(expression, **kwargs)`
-pub fn replace_placeholders(expression : Expr, kwargs : Map[String, Expr]) -> Expr {
+pub fn replace_placeholders(
+  expression : Expr,
+  kwargs : Map[String, Expr],
+) -> Expr {
   expression.transform(
-    node => if node.kind == Placeholder {
-      let name = node.text("this")
-      if !name.is_empty() {
-        match kwargs.get(name) {
-          Some(v) => return Some(v)
-          None => ()
+    node => {
+      if node.kind == Placeholder {
+        let name = node.text("this")
+        if !name.is_empty() {
+          match kwargs.get(name) {
+            Some(v) => return Some(v)
+            None => ()
+          }
         }
+        Some(node)
+      } else {
+        Some(node)
       }
-      Some(node)
-    } else {
-      Some(node)
     },
     copy=false,
   )
@@ -524,7 +577,10 @@ pub fn find_tables(expression : Expr) -> Array[Expr] {
 
 ///|
 /// `exp.column_table_names(expression, exclude)`
-pub fn column_table_names(expression : Expr, exclude? : String = "") -> Array[String] {
+pub fn column_table_names(
+  expression : Expr,
+  exclude? : String = "",
+) -> Array[String] {
   let out : @set.Set[String] = @set.Set::new()
   for c in expression.find_all([Column]) {
     let t = c.table_name()

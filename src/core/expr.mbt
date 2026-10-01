@@ -28,41 +28,41 @@ pub struct Expr {
 ///|
 /// Conversion of host values to expression argument values.
 pub trait IntoValue {
-  into_value(Self) -> Value?
+  fn into_value(Self) -> Value?
 }
 
 ///|
-pub impl IntoValue for Expr with into_value(self) {
+pub impl IntoValue for Expr with fn into_value(self) {
   Some(Node(self))
 }
 
 ///|
-pub impl IntoValue for String with into_value(self) {
+pub impl IntoValue for String with fn into_value(self) {
   Some(Str(self))
 }
 
 ///|
-pub impl IntoValue for Bool with into_value(self) {
+pub impl IntoValue for Bool with fn into_value(self) {
   Some(Bool(self))
 }
 
 ///|
-pub impl IntoValue for Int with into_value(self) {
+pub impl IntoValue for Int with fn into_value(self) {
   Some(Int(self))
 }
 
 ///|
-pub impl IntoValue for DType with into_value(self) {
+pub impl IntoValue for DType with fn into_value(self) {
   Some(DT(self))
 }
 
 ///|
-pub impl IntoValue for Value with into_value(self) {
+pub impl IntoValue for Value with fn into_value(self) {
   Some(self)
 }
 
 ///|
-pub impl[T : IntoValue] IntoValue for T? with into_value(self) {
+pub impl[T : IntoValue] IntoValue for T? with fn into_value(self) {
   match self {
     Some(x) => x.into_value()
     None => None
@@ -70,7 +70,7 @@ pub impl[T : IntoValue] IntoValue for T? with into_value(self) {
 }
 
 ///|
-pub impl[T : IntoValue] IntoValue for Array[T] with into_value(self) {
+pub impl[T : IntoValue] IntoValue for Array[T] with fn into_value(self) {
   let out = Array::new(capacity=self.length())
   for x in self {
     match x.into_value() {
@@ -377,11 +377,13 @@ pub fn Expr::is_string(self : Expr) -> Bool {
 ///|
 pub fn Expr::is_number(self : Expr) -> Bool {
   (self.kind == Literal && !self.has("is_string")) ||
-  (self.kind == Neg &&
-  (match self.this() {
-    Some(t) => t.is_number()
-    None => false
-  }))
+  (
+    self.kind == Neg &&
+    (match self.this() {
+      Some(t) => t.is_number()
+      None => false
+    })
+  )
 }
 
 ///|
@@ -412,11 +414,13 @@ pub fn Expr::is_star(self : Expr) -> Bool {
     Some(SetOperation) | Some(Subquery) => is_star_query(self)
     _ =>
       self.kind == Star ||
-      (self.kind == Column &&
-      (match self.this() {
-        Some(t) => t.kind == Star
-        None => false
-      }))
+      (
+        self.kind == Column &&
+        (match self.this() {
+          Some(t) => t.kind == Star
+          None => false
+        })
+      )
   }
 }
 
@@ -981,7 +985,10 @@ pub fn Expr::depth(self : Expr) -> Int {
 
 ///|
 /// Yields all child expressions, exploding list args.
-pub fn Expr::iter_expressions(self : Expr, reverse? : Bool = false) -> Array[Expr] {
+pub fn Expr::iter_expressions(
+  self : Expr,
+  reverse? : Bool = false,
+) -> Array[Expr] {
   let out = []
   for _, vs in self.args {
     match vs {
@@ -1080,7 +1087,11 @@ pub fn Expr::walk(
 
 ///|
 /// Returns the first node in this tree which matches at least one of the kinds.
-pub fn Expr::find(self : Expr, kinds : ArrayView[Kind], bfs? : Bool = true) -> Expr? {
+pub fn Expr::find(
+  self : Expr,
+  kinds : ArrayView[Kind],
+  bfs? : Bool = true,
+) -> Expr? {
   let it = self.walk(bfs~)
   while it.next() is Some(e) {
     if e.kind.is_any(kinds) {
@@ -1183,10 +1194,18 @@ pub fn Expr::flatten(self : Expr, unnest? : Bool = true) -> Iter[Expr] {
   let kind = self.kind
   self
   .dfs(prune=n => n.parent is Some(_) && n.kind != kind)
-  .filter_map(node => if node.kind != kind {
-    Some(if unnest && !node.kind.is_subquery() { node.unnest() } else { node })
-  } else {
-    None
+  .filter_map(node => {
+    if node.kind != kind {
+      Some(
+        if unnest && !node.kind.is_subquery() {
+          node.unnest()
+        } else {
+          node
+        },
+      )
+    } else {
+      None
+    }
   })
 }
 
@@ -1283,9 +1302,11 @@ pub fn Expr::transform(
   let mut root : Expr? = None
   let mut new_node : Expr? = None
   let start = if copy { self.copy() } else { self }
-  let it = start.dfs(prune=n => match new_node {
-    Some(nn) => !physical_equal(n, nn)
-    None => true
+  let it = start.dfs(prune=n => {
+    match new_node {
+      Some(nn) => !physical_equal(n, nn)
+      None => true
+    }
   })
   while it.next() is Some(node) {
     let parent = node.parent
@@ -1454,7 +1475,12 @@ fn value_eq(a : Value, b : Value, raw : Bool) -> Bool {
       }
       true
     }
-    (Str(x), Str(y)) => if raw { x == y } else { x == y || py_lower(x) == py_lower(y) }
+    (Str(x), Str(y)) =>
+      if raw {
+        x == y
+      } else {
+        x == y || py_lower(x) == py_lower(y)
+      }
     (Bool(x), Bool(y)) => x == y
     (Int(x), Int(y)) => x == y
     (DT(x), DT(y)) => x == y
@@ -1477,7 +1503,7 @@ fn significant(v : Value, raw : Bool) -> Bool {
 }
 
 ///|
-pub impl Eq for Expr with equal(self, other) {
+pub impl Eq for Expr with fn equal(self, other) {
   if physical_equal(self, other) {
     return true
   }
@@ -1530,7 +1556,7 @@ fn hash_value(hasher : Hasher, v : Value, raw : Bool) -> Unit {
 }
 
 ///|
-pub impl Hash for Expr with hash_combine(self, hasher) {
+pub impl Hash for Expr with fn hash_combine(self, hasher) {
   hasher.combine_int(self.kind.id())
   let raw = self.kind.hash_raw_args()
   let keys = []

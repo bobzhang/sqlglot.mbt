@@ -36,7 +36,7 @@ pub fn SqlglotError::message(self : SqlglotError) -> String {
 }
 
 ///|
-pub impl Show for SqlglotError with output(self, logger) {
+pub impl Show for SqlglotError with fn output(self, logger) {
   let name = match self {
     TokenError(_) => "TokenError"
     ParseError(_, _) => "ParseError"

@@ -90,7 +90,8 @@ pub fn unnest_generate_date_array_using_recursive_cte(
         step.arg("unit").unwrap_or(var_("DAY")),
       ])
       let cast_date_add = cast_(date_add, DType::DATE)
-      let cte_name = "_generated_dates" + (if count > 0 { "_\{count}" } else { "" })
+      let cte_name = "_generated_dates" +
+        (if count > 0 { "_\{count}" } else { "" })
       let base_query = select_([start.as_(column_name)])
       let recursive_query = select_([cast_date_add])
         .from_(table_of(cte_name))
@@ -104,7 +105,9 @@ pub fn unnest_generate_date_array_using_recursive_cte(
       let generate_dates_query = select_([column_of(column_name)]).from_(
         table_of(cte_name),
       )
-      unnest.replace(Some(generate_dates_query.subquery(alias=cte_name, copy=false)))
+      unnest.replace(
+        Some(generate_dates_query.subquery(alias=cte_name, copy=false)),
+      )
       |> ignore
       recursive_ctes.push(
         alias_table(mk1(CTE, cte_query), cte_name, columns=[column_name]),
@@ -117,7 +120,10 @@ pub fn unnest_generate_date_array_using_recursive_cte(
         None => mk0(With)
       }
       with_expression.set("recursive", true)
-      with_expression.set("expressions", recursive_ctes + with_expression.expressions())
+      with_expression.set(
+        "expressions",
+        recursive_ctes + with_expression.expressions(),
+      )
       expression.set("with_", with_expression)
     }
   }
@@ -153,8 +159,17 @@ pub fn eliminate_distinct_on(expression : Expr) -> Expr raise SqlglotError {
   }
   if expression.kind == Select && on_tuple {
     let named = expression.named_selects()
-    let row_number_window_alias = find_new_name(n => named.contains(n), "_row_number")
-    let distinct_cols = expression.arg("distinct").unwrap().pop().arg("on").unwrap().expressions()
+    let row_number_window_alias = find_new_name(
+      n => named.contains(n),
+      "_row_number",
+    )
+    let distinct_cols = expression
+      .arg("distinct")
+      .unwrap()
+      .pop()
+      .arg("on")
+      .unwrap()
+      .expressions()
     let window = mk(Window, [
       ("this", mk0(RowNumber)),
       ("partition_by", distinct_cols),
@@ -242,7 +257,12 @@ pub fn eliminate_qualify(expression : Expr) -> Expr raise SqlglotError {
     }
 
     let outer_selects = select_(expression.selects().map(select_alias_or_name))
-    let mut qualify_filters = expression.arg("qualify").unwrap().pop().this().unwrap()
+    let mut qualify_filters = expression
+      .arg("qualify")
+      .unwrap()
+      .pop()
+      .this()
+      .unwrap()
     let expression_by_alias : Map[String, Expr] = Map([])
     for select in expression.selects() {
       if select.kind.is_a(Alias) {
@@ -254,7 +274,8 @@ pub fn eliminate_qualify(expression : Expr) -> Expr raise SqlglotError {
     } else {
       [Window, Column]
     }
-    for select_candidate in qualify_filters.find_all(select_candidates).collect() {
+    for
+      select_candidate in qualify_filters.find_all(select_candidates).collect() {
       if select_candidate.kind.is_a(Window) {
         if !expression_by_alias.is_empty() {
           for column in select_candidate.find_all([Column]).collect() {
@@ -292,9 +313,14 @@ fn column_of_parsed(name : String) -> Expr {
 
 ///|
 /// Removes the precision of parameterized types in expressions.
-pub fn remove_precision_parameterized_types(expression : Expr) -> Expr raise SqlglotError {
+pub fn remove_precision_parameterized_types(
+  expression : Expr,
+) -> Expr raise SqlglotError {
   for node in expression.find_all([DataType]).collect() {
-    node.set("expressions", node.expressions().filter(e => e.kind != DataTypeParam))
+    node.set(
+      "expressions",
+      node.expressions().filter(e => e.kind != DataTypeParam),
+    )
   }
   expression
 }
@@ -306,7 +332,8 @@ pub fn unqualify_unnest(expression : Expr) -> Expr raise SqlglotError {
     let unnest_aliases = []
     for unnest in find_all_in_scope(expression, [Unnest]) {
       match unnest.parent {
-        Some(p) if p.kind.is_any([From, Join]) => unnest_aliases.push(unnest.alias())
+        Some(p) if p.kind.is_any([From, Join]) =>
+          unnest_aliases.push(unnest.alias())
         _ => ()
       }
     }
@@ -338,7 +365,9 @@ pub fn unnest_to_explode(unnest_using_arrays_zip? : Bool = true) -> Transform {
     ) -> Array[Expr] raise SqlglotError {
       if has_multi_expr {
         if !unnest_using_arrays_zip {
-          raise UnsupportedError("Cannot transpile UNNEST with multiple input arrays")
+          raise UnsupportedError(
+            "Cannot transpile UNNEST with multiple input arrays",
+          )
         }
         let zip_exprs = [
           mk(Anonymous, [("this", "ARRAYS_ZIP"), ("expressions", unnest_exprs)]),
@@ -379,7 +408,9 @@ pub fn unnest_to_explode(unnest_using_arrays_zip? : Bool = true) -> Transform {
               }
               let table_alias = match alias {
                 Some(a) =>
-                  Some(mk(TableAlias, [("this", a.this()), ("columns", columns)]))
+                  Some(
+                    mk(TableAlias, [("this", a.this()), ("columns", columns)]),
+                  )
                 None => None
               }
               unnest.replace(
@@ -429,7 +460,9 @@ pub fn unnest_to_explode(unnest_using_arrays_zip? : Bool = true) -> Transform {
           let exprs = unnest_zip_exprs(unnest, exprs, has_multi_expr)
           join.pop() |> ignore
           let alias_cols = alias.list("columns")
-          if !has_multi_expr && alias_cols.length() != 1 && alias_cols.length() != 2 {
+          if !has_multi_expr &&
+            alias_cols.length() != 1 &&
+            alias_cols.length() != 2 {
             raise UnsupportedError(
               "CROSS JOIN UNNEST to LATERAL VIEW EXPLODE transformation requires explicit column aliases",
             )
@@ -448,7 +481,10 @@ pub fn unnest_to_explode(unnest_using_arrays_zip? : Bool = true) -> Transform {
                 ("view", true),
                 (
                   "alias",
-                  mk(TableAlias, [("this", alias.this()), ("columns", alias_cols)]),
+                  mk(TableAlias, [
+                    ("this", alias.this()),
+                    ("columns", alias_cols),
+                  ]),
                 ),
               ]),
             )
@@ -462,7 +498,9 @@ pub fn unnest_to_explode(unnest_using_arrays_zip? : Bool = true) -> Transform {
 
 ///|
 /// Transforms percentiles by adding a WITHIN GROUP clause to them.
-pub fn add_within_group_for_percentiles(expression : Expr) -> Expr raise SqlglotError {
+pub fn add_within_group_for_percentiles(
+  expression : Expr,
+) -> Expr raise SqlglotError {
   if expression.kind.is_any([PercentileCont, PercentileDisc]) &&
     !(match expression.parent {
       Some(p) => p.kind == WithinGroup
@@ -479,7 +517,9 @@ pub fn add_within_group_for_percentiles(expression : Expr) -> Expr raise Sqlglot
 
 ///|
 /// Transforms percentiles by getting rid of their corresponding WITHIN GROUP clause.
-pub fn remove_within_group_for_percentiles(expression : Expr) -> Expr raise SqlglotError {
+pub fn remove_within_group_for_percentiles(
+  expression : Expr,
+) -> Expr raise SqlglotError {
   if expression.kind == WithinGroup {
     match (expression.this(), expression.expression()) {
       (Some(t), Some(e)) if t.kind.is_any([PercentileCont, PercentileDisc]) &&
@@ -502,7 +542,9 @@ pub fn remove_within_group_for_percentiles(expression : Expr) -> Expr raise Sqlg
 
 ///|
 /// Uses projection output names in recursive CTE definitions to define the CTEs' columns.
-pub fn add_recursive_cte_column_names(expression : Expr) -> Expr raise SqlglotError {
+pub fn add_recursive_cte_column_names(
+  expression : Expr,
+) -> Expr raise SqlglotError {
   if expression.kind == With && expression.has("recursive") {
     let next_name = name_sequence("_c_")
     for cte in expression.expressions() {
@@ -516,13 +558,15 @@ pub fn add_recursive_cte_column_names(expression : Expr) -> Expr raise SqlglotEr
           "columns",
           query
           .selects()
-          .map(s => to_identifier(
-            if s.alias_or_name().is_empty() {
-              next_name()
-            } else {
-              s.alias_or_name()
-            },
-          )),
+          .map(s => {
+            to_identifier(
+              if s.alias_or_name().is_empty() {
+                next_name()
+              } else {
+                s.alias_or_name()
+              },
+            )
+          }),
         )
       }
     }
@@ -533,13 +577,15 @@ pub fn add_recursive_cte_column_names(expression : Expr) -> Expr raise SqlglotEr
 ///|
 /// Replace 'epoch' in casts by the equivalent date literal.
 pub fn epoch_cast_to_ts(expression : Expr) -> Expr raise SqlglotError {
-  if expression.kind.is_any([Cast, TryCast]) && py_lower(expression.name()) == "epoch" {
+  if expression.kind.is_any([Cast, TryCast]) &&
+    py_lower(expression.name()) == "epoch" {
     match expression.arg("to") {
       Some(to) =>
         match to.args.get("this") {
           Some(DT(d)) if dtype_temporal_types.contains(d) =>
             match expression.this() {
-              Some(t) => t.replace(Some(literal_string("1970-01-01 00:00:00"))) |> ignore
+              Some(t) =>
+                t.replace(Some(literal_string("1970-01-01 00:00:00"))) |> ignore
               None => ()
             }
           _ => ()
@@ -552,7 +598,9 @@ pub fn epoch_cast_to_ts(expression : Expr) -> Expr raise SqlglotError {
 
 ///|
 /// Convert SEMI and ANTI joins into equivalent forms that use EXIST instead.
-pub fn eliminate_semi_and_anti_joins(expression : Expr) -> Expr raise SqlglotError {
+pub fn eliminate_semi_and_anti_joins(
+  expression : Expr,
+) -> Expr raise SqlglotError {
   if expression.kind == Select {
     for join in expression.list("joins") {
       let kind = py_upper(join.text("kind"))
@@ -597,9 +645,11 @@ pub fn eliminate_full_outer_join(expression : Expr) -> Expr raise SqlglotError {
           and_(
             full_outer_join
             .list("using")
-            .map(col => column_of(col.name(), table=tables.0).eq_(
-              column_of(col.name(), table=tables.1),
-            )),
+            .map(col => {
+              column_of(col.name(), table=tables.0).eq_(
+                column_of(col.name(), table=tables.1),
+              )
+            }),
           )
       }
       full_outer_join.set("side", "left")
@@ -607,8 +657,15 @@ pub fn eliminate_full_outer_join(expression : Expr) -> Expr raise SqlglotError {
         .from_(from_.copy())
         .where_([join_conditions.copy()])
       expression_copy.list("joins")[index].set("side", "right")
-      expression_copy = expression_copy.where_([not_(mk1(Exists, anti_join_clause))])
-      let union = set_operation(Union, expression, expression_copy, distinct=false)
+      expression_copy = expression_copy.where_([
+        not_(mk1(Exists, anti_join_clause)),
+      ])
+      let union = set_operation(
+        Union,
+        expression,
+        expression_copy,
+        distinct=false,
+      )
       for arg in ["with_", "order", "limit", "offset"] {
         match expression.arg(arg) {
           Some(value) => {
@@ -652,7 +709,8 @@ pub fn unqualify_pivot_fields(expression : Expr) -> Expr raise SqlglotError {
 pub fn remove_unique_constraints(expression : Expr) -> Expr raise SqlglotError {
   for constraint in expression.find_all([UniqueColumnConstraint]).collect() {
     match constraint.parent {
-      Some(p) if p.kind.is_any([ColumnConstraint, Constraint]) => p.pop() |> ignore
+      Some(p) if p.kind.is_any([ColumnConstraint, Constraint]) =>
+        p.pop() |> ignore
       _ => constraint.pop() |> ignore
     }
   }
@@ -665,7 +723,8 @@ pub fn ctas_with_tmp_tables_to_create_tmp_view(
 ) -> Transform {
   fn(expression : Expr) raise SqlglotError {
     let temporary = match expression.arg("properties") {
-      Some(p) => p.expressions().iter().any(prop => prop.kind == TemporaryProperty)
+      Some(p) =>
+        p.expressions().iter().any(prop => prop.kind == TemporaryProperty)
       None => false
     }
     if py_upper(expression.text("kind")) == "TABLE" && temporary {
@@ -684,7 +743,9 @@ pub fn ctas_with_tmp_tables_to_create_tmp_view(
 }
 
 ///|
-pub fn move_schema_columns_to_partitioned_by(expression : Expr) -> Expr raise SqlglotError {
+pub fn move_schema_columns_to_partitioned_by(
+  expression : Expr,
+) -> Expr raise SqlglotError {
   let kind = py_upper(expression.text("kind"))
   let is_partitionable = kind == "TABLE" || kind == "VIEW"
   match expression.this() {
@@ -695,14 +756,21 @@ pub fn move_schema_columns_to_partitioned_by(expression : Expr) -> Expr raise Sq
             Some(pt) if pt.kind != Schema => {
               let columns = pt.expressions().map(v => py_upper(v.name()))
               let schema_exprs = schema.expressions()
-              let partitions = schema_exprs.filter(col => columns.contains(py_upper(col.name())))
+              let partitions = schema_exprs.filter(col => {
+                columns.contains(py_upper(col.name()))
+              })
               schema.set(
                 "expressions",
-                schema_exprs.filter(e => !partitions.iter().any(p => physical_equal(p, e) || p == e)),
+                schema_exprs.filter(e => {
+                  !partitions.iter().any(p => physical_equal(p, e) || p == e)
+                }),
               )
               prop.replace(
                 Some(
-                  mk1(PartitionedByProperty, mk(Schema, [("expressions", partitions)])),
+                  mk1(
+                    PartitionedByProperty,
+                    mk(Schema, [("expressions", partitions)]),
+                  ),
                 ),
               )
               |> ignore
@@ -718,15 +786,14 @@ pub fn move_schema_columns_to_partitioned_by(expression : Expr) -> Expr raise Sq
 }
 
 ///|
-pub fn move_partitioned_by_to_schema_columns(expression : Expr) -> Expr raise SqlglotError {
+pub fn move_partitioned_by_to_schema_columns(
+  expression : Expr,
+) -> Expr raise SqlglotError {
   match expression.find([PartitionedByProperty]) {
     Some(prop) =>
       match prop.this() {
         Some(pt) if pt.kind == Schema &&
-          pt
-          .expressions()
-          .iter()
-          .all(e => e.kind == ColumnDef && e.has("kind")) => {
+          pt.expressions().iter().all(e => e.kind == ColumnDef && e.has("kind")) => {
           let prop_this = mk(Tuple, [
             ("expressions", pt.expressions().map(e => e.this().unwrap().copy())),
           ])
@@ -751,10 +818,12 @@ pub fn struct_kv_to_alias(expression : Expr) -> Expr raise SqlglotError {
       "expressions",
       expression
       .expressions()
-      .map(e => if e.kind == PropertyEQ {
-        alias_expr(e.expression().unwrap(), e.this())
-      } else {
-        e
+      .map(e => {
+        if e.kind == PropertyEQ {
+          alias_expr(e.expression().unwrap(), e.this())
+        } else {
+          e
+        }
       }),
     )
   }
@@ -783,7 +852,9 @@ pub fn any_to_exists(expression : Expr) -> Expr raise SqlglotError {
             ("expressions", [lambda_arg]),
           ])
           binop.replace(
-            Some(mk(Exists, [("this", this.unnest()), ("expression", lambda_expr)])),
+            Some(
+              mk(Exists, [("this", this.unnest()), ("expression", lambda_expr)]),
+            ),
           )
           |> ignore
         }
@@ -810,10 +881,15 @@ pub fn eliminate_window_clause(expression : Expr) -> Expr raise SqlglotError {
               match inherited_window.get(key) {
                 Some(Node(arg)) => window.set(key, arg.copy())
                 Some(List(l)) =>
-                  window.set(key, l.map(x => match x {
-                    Node(n) => Node(n.copy())
-                    other => other
-                  }))
+                  window.set(
+                    key,
+                    l.map(x => {
+                      match x {
+                        Node(n) => Node(n.copy())
+                        other => other
+                      }
+                    }),
+                  )
                 _ => ()
               }
             }

@@ -115,8 +115,7 @@ pub fn Expr::to_column(self : Expr, copy? : Bool = true) -> Expr {
     last_part
   }
   match self.arg("alias") {
-    Some(alias) =>
-      col = alias_expr(col, alias.this(), copy~)
+    Some(alias) => col = alias_expr(col, alias.this(), copy~)
     None => ()
   }
   col
@@ -139,13 +138,22 @@ pub fn alias_expr(e : Expr, alias : Expr?, copy? : Bool = true) -> Expr {
 
 ///|
 /// `exp.alias_(expression, name)` with a string alias.
-pub fn alias_(e : Expr, name : String, quoted? : Bool, copy? : Bool = true) -> Expr {
+pub fn alias_(
+  e : Expr,
+  name : String,
+  quoted? : Bool,
+  copy? : Bool = true,
+) -> Expr {
   alias_expr(e, Some(to_identifier(name, quoted?)), copy~)
 }
 
 ///|
 /// `exp.alias_(expression, name, table=True)`
-pub fn alias_table(e : Expr, name : String, columns? : Array[String] = []) -> Expr {
+pub fn alias_table(
+  e : Expr,
+  name : String,
+  columns? : Array[String] = [],
+) -> Expr {
   let table_alias = mk1(TableAlias, to_identifier(name))
   e.set("alias", table_alias)
   for c in columns {
@@ -156,7 +164,11 @@ pub fn alias_table(e : Expr, name : String, columns? : Array[String] = []) -> Ex
 
 ///|
 /// `Query.subquery(alias, copy)`
-pub fn Expr::subquery(self : Expr, alias? : String, copy? : Bool = true) -> Expr {
+pub fn Expr::subquery(
+  self : Expr,
+  alias? : String,
+  copy? : Bool = true,
+) -> Expr {
   let instance = maybe_copy(self, copy)
   let alias = match alias {
     Some(a) if !a.is_empty() => Some(mk1(TableAlias, to_identifier(a)))
@@ -208,7 +220,11 @@ pub fn from_arg_list_builder(kind : Kind) -> FuncBuilder {
 ///|
 /// Combines conditions with a connector (And / Or / Xor), wrapping operands that are
 /// themselves connectors in parentheses (Python `_combine` with `wrap=True`).
-pub fn combine_conditions(conditions : Array[Expr], connector : Kind, wrap? : Bool = true) -> Expr {
+pub fn combine_conditions(
+  conditions : Array[Expr],
+  connector : Kind,
+  wrap? : Bool = true,
+) -> Expr {
   let wrap_ = fn(e : Expr) {
     if wrap && e.kind.is_a(Connector) {
       mk1(Paren, e)
@@ -267,7 +283,7 @@ pub fn apply_index_offset(
   }
   let expression = expressions[0]
   if this.get_type() is None {
-    (try annotate(this, dialect) catch { _ => return expressions }) |> ignore
+    (annotate(this, dialect) catch { _ => return expressions }) |> ignore
   }
   match this.get_type() {
     Some(t) =>
@@ -278,13 +294,16 @@ pub fn apply_index_offset(
     None => return expressions
   }
   if expression.get_type() is None {
-    (try annotate(expression, dialect) catch { _ => return expressions }) |> ignore
+    (annotate(expression, dialect) catch { _ => return expressions }) |> ignore
   }
   match expression.get_type() {
     Some(t) =>
       match t.args.get("this") {
         Some(DT(d)) if dtype_integer_types.contains(d) => {
-          let added = mk(Add, [("this", expression), ("expression", literal_int(offset))])
+          let added = mk(Add, [
+            ("this", expression),
+            ("expression", literal_int(offset)),
+          ])
           let simplified = match simplify_hook.val {
             Some(s) => s(added, dialect) catch { _ => added }
             None => added
@@ -316,7 +335,9 @@ pub fn normalize_identifiers(
         None => false
       }) {
       if node.kind.is_a(Column) {
-        node.get_meta()["dot_parts"] = List(node.parts().map(p => Str(p.name())))
+        node.get_meta()["dot_parts"] = List(
+          node.parts().map(p => Str(p.name())),
+        )
       } else if !node.is_star() {
         let mut root = node
         let dot_parts = []

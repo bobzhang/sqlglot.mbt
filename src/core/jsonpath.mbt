@@ -42,7 +42,10 @@ fn JsonPathParser::match_(self : JsonPathParser, tt : TokenType) -> Token? {
 }
 
 ///|
-fn JsonPathParser::match_set(self : JsonPathParser, types : Array[TokenType]) -> Token? {
+fn JsonPathParser::match_set(
+  self : JsonPathParser,
+  types : Array[TokenType],
+) -> Token? {
   match self.curr() {
     Some(t) if types.contains(t) => Some(self.advance())
     _ => None
@@ -51,7 +54,9 @@ fn JsonPathParser::match_set(self : JsonPathParser, types : Array[TokenType]) ->
 
 ///|
 /// Literal results: Str(text) | Node(expr) | Int(n) | Bool(false)
-fn JsonPathParser::parse_literal(self : JsonPathParser) -> Value raise SqlglotError {
+fn JsonPathParser::parse_literal(
+  self : JsonPathParser,
+) -> Value raise SqlglotError {
   match self.match_(STRING) {
     Some(t) => return Str(t.text)
     None => ()
@@ -100,7 +105,9 @@ fn JsonPathParser::parse_literal(self : JsonPathParser) -> Value raise SqlglotEr
 }
 
 ///|
-fn JsonPathParser::parse_slice(self : JsonPathParser) -> Value raise SqlglotError {
+fn JsonPathParser::parse_slice(
+  self : JsonPathParser,
+) -> Value raise SqlglotError {
   let start = self.parse_literal()
   let end : Value? = if self.match_(COLON) is Some(_) {
     Some(self.parse_literal())
@@ -119,7 +126,9 @@ fn JsonPathParser::parse_slice(self : JsonPathParser) -> Value raise SqlglotErro
 }
 
 ///|
-fn JsonPathParser::parse_bracket(self : JsonPathParser) -> Expr raise SqlglotError {
+fn JsonPathParser::parse_bracket(
+  self : JsonPathParser,
+) -> Expr raise SqlglotError {
   let literal = self.parse_slice()
   if literal is Bool(false) {
     raise ParseError(self.error("Cannot have empty segment"), [])
@@ -153,11 +162,7 @@ fn JsonPathParser::parse_var_text(self : JsonPathParser) -> String {
   while self.match_set(self.var_tokens) is Some(_) {
     ()
   }
-  let start = if prev_index < 0 {
-    0
-  } else {
-    self.tokens[prev_index].end + 1
-  }
+  let start = if prev_index < 0 { 0 } else { self.tokens[prev_index].end + 1 }
   if self.i >= self.tokens.length() {
     substr(self.path, start, py_len(self.path))
   } else {
@@ -167,7 +172,10 @@ fn JsonPathParser::parse_var_text(self : JsonPathParser) -> String {
 
 ///|
 /// Takes in a JSON path string and parses it into a JSONPath expression.
-pub fn parse_json_path(path : String, dialect : Dialect) -> Expr raise SqlglotError {
+pub fn parse_json_path(
+  path : String,
+  dialect : Dialect,
+) -> Expr raise SqlglotError {
   let tokenizer = Tokenizer::new(
     dialect.jsonpath_tokenizer,
     numbers_can_be_underscore_separated=dialect.cfg.numbers_can_be_underscore_separated,
