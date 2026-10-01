@@ -116,7 +116,7 @@ def main():
     records = []
     seen = set()
     for rec, out in recorded:
-        key = json.dumps(rec, sort_keys=True)
+        key = json.dumps(rec)
         if key in seen:
             continue
         seen.add(key)
