@@ -1,15 +1,6 @@
 // Port of sqlglot/generators/bigquery.py
 
 ///|
-fn pfx(prefix : String, s : String) -> String {
-  if s == "" {
-    ""
-  } else {
-    prefix + s
-  }
-}
-
-///|
 fn derived_table_values_to_unnest(
   g : @core.Generator,
   e : @core.Expr,
@@ -468,7 +459,7 @@ fn configure_generator(d : @core.Dialect) -> Unit {
   }
   t[Select] = @core.preprocess([
     unnest_explode_generate_series,
-    explode_projection_to_unnest(0),
+    explode_projection_to_unnest(0), // TODO(dedupe): core has this on main
     @core.unqualify_unnest,
     @core.eliminate_distinct_on,
     alias_ordered_group,

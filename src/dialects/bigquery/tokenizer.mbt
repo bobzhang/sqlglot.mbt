@@ -14,7 +14,7 @@ fn configure_tokenizer(d : @core.Dialect) -> Unit {
 
 ///|
 fn ascii_lower(s : String) -> String {
-  let sb = StringBuilder::new()
+  let sb = StringBuilder()
   for c in s {
     sb.write_char(if c >= 'A' && c <= 'Z' { c.to_ascii_lowercase() } else { c })
   }

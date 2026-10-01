@@ -1,5 +1,7 @@
 // Port of `transforms.explode_projection_to_unnest` (sqlglot/transforms.py), which the
 // BigQuery generator uses for its Select preprocessing.
+// TODO(dedupe): core has this on main (`@core.explode_projection_to_unnest`, in
+// src/core/transforms_explode.mbt); swap this local copy for it when merging.
 
 ///|
 /// Source names of a Select's scope (`{name for name, _ in Scope(expression).references}`).
