@@ -89,6 +89,15 @@ moon test -p hongbozhang/sqlglot/dialect_tests -F "*dialect snowflake*"
 moon test                                         # everything (537 tests)
 ```
 
+Scaling benchmarks (not part of `moon test`) time adversarial shapes at doubling sizes
+(wide AND/OR, long IN lists, deep nesting, many CTEs, long literals, huge SELECT lists,
+pretty printing, ...) and print the growth ratio per doubling:
+
+```
+moon run src/bench --release [--target native] -- [case] [op] [size]
+moon run src/bench --release -- many_ctes rules 512   # per optimizer rule
+```
+
 Regenerate fixtures and configuration with the scripts in `tools/`. Each script's docstring
 describes its inputs. They need a Python environment with sqlglot's test dependencies, such as
 `pytz` for the BigQuery tests.

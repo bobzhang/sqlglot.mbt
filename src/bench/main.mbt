@@ -20,9 +20,9 @@ fn time_op(f : () -> Unit raise) -> Double raise {
   let mut runs = 0
   let mut total = 0.0
   while runs == 0 || (total < min_total_us && runs < 1000) {
-    let t = @bench.monotonic_clock_start()
+    let t = @timing.monotonic_clock_start()
     f()
-    total += @bench.monotonic_clock_end(t)
+    total += @timing.monotonic_clock_end(t)
     runs += 1
   }
   total / runs.to_double()
@@ -31,7 +31,7 @@ fn time_op(f : () -> Unit raise) -> Double raise {
 ///|
 fn run_op(op : String, sql : String, parsed : @core.Expr) -> Unit raise {
   match op {
-    "parse" => ignore(@sqlglot.parse(sql))
+    "parse" => ignore(@sqlglot.parse(if sql == "" { gen(parsed) } else { sql }))
     "generate" => ignore(@sqlglot.generate(parsed))
     "pretty" => ignore(@sqlglot.generate(parsed, pretty=true))
     "copy" => ignore(parsed.copy())
@@ -54,10 +54,10 @@ let rule_names : Array[String] = [
 fn time_rules(name : String, n : Int, parsed : @core.Expr) -> Unit raise {
   let mut prefix = 0.0
   for i in 0..<@optimizer.rules.length() {
-    let rules = @optimizer.rules[:i + 1].to_array()
-    let t = @bench.monotonic_clock_start()
+    let rules = @optimizer.rules[:i + 1].to_owned()
+    let t = @timing.monotonic_clock_start()
     ignore(@optimizer.optimize(parsed.copy(), rules~))
-    let total = @bench.monotonic_clock_end(t)
+    let total = @timing.monotonic_clock_end(t)
     println(
       "\{name}\trule:\{rule_names[i]}\t\{n}\t\{fmt_ms(total - prefix)}\t-",
     )
@@ -75,10 +75,10 @@ fn time_qualify_steps(
   let schema = @optimizer.MappingSchema::new()
   let mut e = parsed.copy()
   let step = (label : String, f : () -> @core.Expr raise) => {
-    let t = @bench.monotonic_clock_start()
+    let t = @timing.monotonic_clock_start()
     e = f()
     println(
-      "\{name}\tqualify:\{label}\t\{n}\t\{fmt_ms(@bench.monotonic_clock_end(t))}\t-",
+      "\{name}\tqualify:\{label}\t\{n}\t\{fmt_ms(@timing.monotonic_clock_end(t))}\t-",
     )
   }
   step("traverse_scope", () => {
@@ -90,6 +90,11 @@ fn time_qualify_steps(
   step("qualify_columns", () => @optimizer.qualify_columns(e, schema))
   step("quote_identifiers", () => @optimizer.quote_identifiers(e))
   step("validate", () => @optimizer.validate_qualify_columns(e))
+}
+
+///|
+fn gen(e : @core.Expr) -> String raise {
+  @sqlglot.generate(e)
 }
 
 ///|
@@ -145,7 +150,12 @@ fn main {
       let mut last_ratio = 0.0
       for n in (if only_size > 0 { [only_size] } else { c.sizes }) {
         let sql = (c.sql)(n)
-        let parsed = first_statement(sql) catch {
+        let parsed = try {
+          match c.build {
+            Some(b) => b(n)
+            None => first_statement(sql)
+          }
+        } catch {
           e => {
             println("\{c.name}\t\{op}\t\{n}\terror\t\{e}")
             break

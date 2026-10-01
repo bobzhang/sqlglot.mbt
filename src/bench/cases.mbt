@@ -8,6 +8,22 @@ struct Case {
   sizes : Array[Int]
   sql : (Int) -> String
   ops : Array[String]
+  /// Builds the tree directly instead of parsing `sql(n)` (to reach depths the
+  /// recursive-descent parser can't)
+  build : ((Int) -> @core.Expr)?
+}
+
+///|
+/// `SELECT <wrap^n(x)> FROM t`, built without parsing.
+fn built_select(n : Int, wrap : (@core.Expr) -> @core.Expr) -> @core.Expr {
+  let mut e = @core.column_of("x")
+  for _ in 0..<n {
+    e = wrap(e)
+  }
+  @core.mk(Select, [
+    ("expressions", [e]),
+    ("from_", @core.mk1(From, @core.mk1(Table, @core.to_identifier("t")))),
+  ])
 }
 
 ///|
@@ -54,16 +70,46 @@ let all_ops : Array[String] = [
 ///|
 let cases : Array[Case] = [
   {
+    name: "built_neg_chain",
+    sizes: doubling(1024, 65536),
+    sql: _ => "",
+    ops: all_ops,
+    build: Some(n => built_select(n, e => @core.mk1(Neg, e))),
+  },
+  {
+    name: "built_not_chain",
+    sizes: doubling(1024, 65536),
+    sql: _ => "",
+    ops: all_ops,
+    build: Some(n => built_select(n, e => @core.mk1(Not, e))),
+  },
+  {
+    name: "built_paren_chain",
+    sizes: doubling(1024, 65536),
+    sql: _ => "",
+    ops: ["generate", "copy", "simplify", "optimize"],
+    build: Some(n => built_select(n, e => @core.mk1(Paren, e))),
+  },
+  {
+    name: "built_function_chain",
+    sizes: doubling(1024, 65536),
+    sql: _ => "",
+    ops: ["generate", "copy", "simplify", "optimize"],
+    build: Some(n => built_select(n, e => @core.mk1(Abs, e))),
+  },
+  {
     name: "wide_and",
     sizes: doubling(256, 8192),
     sql: n => "SELECT a FROM t WHERE " + joined(n, " AND ", i => "c\{i} = \{i}"),
     ops: all_ops,
+    build: None,
   },
   {
     name: "wide_or_same_column",
     sizes: doubling(256, 8192),
     sql: n => "SELECT a FROM t WHERE " + joined(n, " OR ", i => "a = \{i}"),
     ops: all_ops,
+    build: None,
   },
   {
     name: "wide_and_duplicates",
@@ -73,6 +119,7 @@ let cases : Array[Case] = [
       joined(n, " AND ", i => "c\{i % 16} > \{i % 16}")
     },
     ops: ["parse", "simplify"],
+    build: None,
   },
   {
     name: "wide_or_of_ands",
@@ -82,6 +129,7 @@ let cases : Array[Case] = [
       joined(n, " OR ", i => "(x = \{i} AND y = \{i % 7})")
     },
     ops: ["parse", "generate", "simplify"],
+    build: None,
   },
   {
     name: "long_in_list",
@@ -90,6 +138,7 @@ let cases : Array[Case] = [
       "SELECT a FROM t WHERE a IN (" + joined(n, ", ", i => "\{i}") + ")"
     },
     ops: all_ops,
+    build: None,
   },
   {
     name: "long_in_list_strings",
@@ -98,48 +147,56 @@ let cases : Array[Case] = [
       "SELECT a FROM t WHERE a IN (" + joined(n, ", ", i => "'v\{i}'") + ")"
     },
     ops: ["parse", "generate", "simplify"],
+    build: None,
   },
   {
     name: "nested_parens",
     sizes: doubling(64, 4096),
     sql: n => "SELECT " + nested(n, "(", "1", ")"),
     ops: all_ops,
+    build: None,
   },
   {
     name: "nested_functions",
     sizes: doubling(64, 4096),
     sql: n => "SELECT " + nested(n, "ABS(", "x", ")") + " FROM t",
     ops: all_ops,
+    build: None,
   },
   {
     name: "nested_unary",
     sizes: doubling(64, 4096),
     sql: n => "SELECT " + joined(n, "", _ => "- ") + "x FROM t",
     ops: all_ops,
+    build: None,
   },
   {
     name: "nested_not",
     sizes: doubling(64, 4096),
     sql: n => "SELECT a FROM t WHERE " + joined(n, "", _ => "NOT ") + "x",
     ops: all_ops,
+    build: None,
   },
   {
     name: "nested_subqueries",
     sizes: doubling(16, 1024),
     sql: n => nested(n, "SELECT a FROM (", "SELECT 1 AS a", ") AS s"),
     ops: all_ops,
+    build: None,
   },
   {
     name: "deep_binary_left",
     sizes: doubling(256, 16384),
     sql: n => "SELECT " + joined(n, " + ", i => "c\{i}") + " FROM t",
     ops: all_ops,
+    build: None,
   },
   {
     name: "deep_binary_right_parens",
     sizes: doubling(64, 4096),
     sql: n => "SELECT " + joined(n, "", i => "c\{i} + (") + "1" + ")".repeat(n),
     ops: all_ops,
+    build: None,
   },
   {
     name: "many_ctes",
@@ -156,18 +213,21 @@ let cases : Array[Case] = [
       " SELECT x FROM c\{n - 1}"
     },
     ops: all_ops,
+    build: None,
   },
   {
     name: "long_string_literal",
     sizes: doubling(4096, 1048576),
     sql: n => "SELECT '" + "ab''c".repeat(n / 5) + "' AS s",
     ops: ["parse", "generate", "copy", "simplify"],
+    build: None,
   },
   {
     name: "long_comment",
     sizes: doubling(4096, 1048576),
     sql: n => "SELECT 1 /* " + "x".repeat(n) + " */",
     ops: ["parse", "generate"],
+    build: None,
   },
   {
     name: "repeated_hints",
@@ -176,24 +236,28 @@ let cases : Array[Case] = [
       joined(n, " UNION ALL ", i => "SELECT /*+ INDEX(t i\{i}) */ a FROM t")
     },
     ops: ["parse", "generate"],
+    build: None,
   },
   {
     name: "many_commands",
     sizes: doubling(64, 4096),
     sql: n => joined(n, "; ", i => "SHOW TABLES LIKE 'x\{i}'"),
     ops: ["parse"],
+    build: None,
   },
   {
     name: "huge_select_list",
     sizes: doubling(256, 16384),
     sql: n => "SELECT " + joined(n, ", ", i => "c\{i} AS a\{i}") + " FROM t",
     ops: all_ops,
+    build: None,
   },
   {
     name: "wide_union",
     sizes: doubling(32, 2048),
     sql: n => joined(n, " UNION ALL ", i => "SELECT \{i} AS x"),
     ops: all_ops,
+    build: None,
   },
   {
     name: "big_case",
@@ -204,6 +268,7 @@ let cases : Array[Case] = [
       " ELSE NULL END FROM t"
     },
     ops: all_ops,
+    build: None,
   },
   {
     name: "many_joins",
@@ -213,6 +278,7 @@ let cases : Array[Case] = [
       joined(n, " ", i => "JOIN t\{i + 1} ON t\{i + 1}.a = t\{i}.a")
     },
     ops: all_ops,
+    build: None,
   },
   {
     name: "pretty_large_query",
@@ -223,5 +289,6 @@ let cases : Array[Case] = [
       })
     },
     ops: ["parse", "generate", "pretty"],
+    build: None,
   },
 ]
