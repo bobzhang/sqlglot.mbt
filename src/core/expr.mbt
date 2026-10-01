@@ -1439,7 +1439,20 @@ pub fn Expr::to_py_float(self : Expr) -> Double? {
       if self.is_number() {
         let t = self.text("this")
         Some(@string.parse_double(t)) catch {
-          _ => None
+          // Python's Decimal handles huge exponents (e.g. 1e1000000); treat a
+          // well-formed but out-of-range number as +/- infinity
+          _ =>
+            if is_float_str(t) {
+              Some(
+                if t.has_prefix("-") {
+                  @double.neg_infinity
+                } else {
+                  @double.infinity
+                },
+              )
+            } else {
+              None
+            }
         }
       } else {
         None

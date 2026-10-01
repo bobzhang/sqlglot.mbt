@@ -37,6 +37,8 @@ pub(all) struct DialectHooks {
   mut tokenize : ((Dialect, String) -> Array[Token] raise SqlglotError)?
   /// `can_quote(identifier, identify)` override; base is `Dialect::can_quote_base`.
   mut can_quote : ((Dialect, Expr, String) -> Bool)?
+  /// `Dialect.to_json_path` override (e.g. DuckDB's JSON pointer passthrough).
+  mut to_json_path : ((Dialect, Expr?) -> Expr?)?
   mut extra : Map[String, (Dialect, Expr) -> Expr?]
 }
 
@@ -47,6 +49,7 @@ pub fn DialectHooks::new() -> DialectHooks {
     generate_values_aliases: None,
     tokenize: None,
     can_quote: None,
+    to_json_path: None,
     extra: Map([]),
   }
 }
@@ -58,6 +61,7 @@ pub fn DialectHooks::copy(self : DialectHooks) -> DialectHooks {
     generate_values_aliases: self.generate_values_aliases,
     tokenize: self.tokenize,
     can_quote: self.can_quote,
+    to_json_path: self.to_json_path,
     extra: Map::from_iter(self.extra.iter()),
   }
 }

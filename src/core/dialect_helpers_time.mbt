@@ -71,7 +71,11 @@ pub fn no_time_sql(g : Generator, e : Expr) -> String raise SqlglotError {
 /// Python `no_datetime_sql`.
 pub fn no_datetime_sql(g : Generator, e : Expr) -> String raise SqlglotError {
   let this = e.this_()
-  let expr = e.expression_()
+  // Python raises AttributeError here when the expression is missing; raise
+  // instead of aborting the whole process
+  guard e.expression() is Some(expr) else {
+    raise ValueError("'NoneType' object has no attribute 'name'")
+  }
   if timezones.contains(py_lower(expr.name())) {
     // Transpile BigQuery's DATETIME(timestamp, zone) to
     // CAST(CAST(<timestamp> AS TIMESTAMPTZ) AT TIME ZONE <zone> AS TIMESTAMP)

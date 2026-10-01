@@ -1,6 +1,7 @@
 import {
   "hongbozhang/sqlglot/core",
   "moonbitlang/core/set",
+  "moonbitlang/core/cmp",
 }
 
 warnings = "-79-15"
