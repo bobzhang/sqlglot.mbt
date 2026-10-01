@@ -408,7 +408,7 @@ def gen():
         L.append("///|")
         L.append(f"pub fn base_{SNAKE_NAMES[struct]}() -> {struct} {{")
         L.append("  {")
-        base = BASES[cat]
+        base = class_for(Dialect, cat)
         for a, (t, enc) in attrs[cat]:
             L.append(f"    {snake(a)}: {enc(getattr(base, a))},")
         L.append("  }")
