@@ -835,3 +835,18 @@ test "normalize_identifiers: string input" {
     "\"a%\"",
   )
 }
+
+///|
+test "qualify: correlated shadowed struct path" {
+  // The Python test runs both queries in DuckDB and compares the results; without an
+  // engine, the qualified query is compared with the Python reference's output instead.
+  let query = "SELECT (SELECT c.address.state FROM other AS c JOIN addresses AS address ON c.id = address.id) AS state FROM customer AS c"
+  assert_eq(
+    qualify_sql(
+      query,
+      schema="{\"customer\": {\"address\": \"STRUCT<state TEXT>\"}, \"other\": {\"id\": \"INT\"}, \"addresses\": {\"id\": \"INT\", \"state\": \"TEXT\"}}",
+      identify=false,
+    ),
+    "SELECT (SELECT c.address.state AS state FROM other AS c JOIN addresses AS address ON c.id = address.id) AS state FROM customer AS c",
+  )
+}
