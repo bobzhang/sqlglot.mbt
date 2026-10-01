@@ -65,6 +65,8 @@ fn build_to_char(
 
 ///|
 fn configure_parser(d : @core.Dialect) -> Unit {
+  // SUPPORTED_SETTINGS = {*Dialect.SUPPORTED_SETTINGS, "variant_extract_is_json_extract"}
+  d.supported_settings.push("variant_extract_is_json_extract")
   let fns = d.parser_fns
   let f = fns.functions
   f["ARBITRARY"] = @core.from_arg_list_builder(AnyValue)

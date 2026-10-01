@@ -22,3 +22,17 @@ test "get_or_raise settings" {
     #|ValueError: Unknown dialect 'mysqll'. Did you mean mysql?
   ))
 }
+
+///|
+test "presto supported settings" {
+  let d = @sqlglot.dialect("presto, variant_extract_is_json_extract=false")
+  inspect(d.settings.get("variant_extract_is_json_extract"), content=(
+    #|Some(false)
+  ))
+  inspect(
+    @sqlglot.transpile("SELECT x:a FROM t", read="snowflake", write="presto, variant_extract_is_json_extract=false")[0],
+    content=(
+      #|SELECT x.a FROM t
+    ),
+  )
+}
