@@ -288,7 +288,13 @@ pub fn Resolver::get_source_columns(
           Some(t) => t.kind.is_a(Query)
           None => false
         }) {
-        columns = source_expr.this_().named_selects()
+        // `Subquery.named_selects` are its inner query's (`DerivedTable.selects`)
+        let query = source_expr.this_()
+        columns = if query.kind == Subquery {
+          query.unnest().named_selects()
+        } else {
+          query.named_selects()
+        }
       }
       columns
     }
