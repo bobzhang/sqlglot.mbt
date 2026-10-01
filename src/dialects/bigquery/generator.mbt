@@ -129,7 +129,10 @@ fn pushdown_cte_column_names(
   if expression.kind == CTE && !expression.alias_column_names().is_empty() {
     let cte_query = expression.this().unwrap()
     if cte_query.is_star() {
-      // logger.warning: Can't push down CTE column names for star queries.
+      @core.log_warning(
+        "Can't push down CTE column names for star queries. Run the query through" +
+        " the optimizer or use 'qualify' to expand the star projections first.",
+      )
       return expression
     }
     let column_names = expression.alias_column_names()

@@ -91,11 +91,7 @@ fn run_fixtures(
       Ok(s) => s
       Err(s) => s
     }
-    let ok = if expected.has_prefix("ERROR:") {
-      got.has_prefix("ERROR:")
-    } else {
-      got == expected
-    }
+    let ok = outcome_matches(got, expected)
     if ok {
       passed += 1
       if dialect_name == "" {
@@ -120,3 +116,29 @@ fn run_fixtures(
   )
   assert_eq(passed, total)
 }
+
+///|
+/// Whether a run's outcome (`got`: the output, or "ERROR: <error>") matches the one
+/// recorded from Python (`expected`: the output, or "ERROR: <Class>: <message>").
+/// sqlglot errors must have the same class and message. Python-internal exceptions
+/// (AssertionError, KeyError, ...: crashes of the Python implementation) can't be
+/// reproduced; any error of the port is accepted for them.
+fn outcome_matches(got : String, expected : String) -> Bool {
+  guard expected.has_prefix("ERROR: ") else { return got == expected }
+  let rest = expected.unsafe_substring(start=7, end=expected.length())
+  let class = match rest.find(":") {
+    Some(i) => rest.unsafe_substring(start=0, end=i)
+    None => rest
+  }
+  if sqlglot_error_classes.contains(class) {
+    got == expected
+  } else {
+    got.has_prefix("ERROR: ")
+  }
+}
+
+///|
+let sqlglot_error_classes : Array[String] = [
+  "TokenError", "ParseError", "UnsupportedError", "OptimizeError", "SchemaError",
+  "ExecuteError", "ValueError",
+]

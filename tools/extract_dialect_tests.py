@@ -27,6 +27,12 @@ import sys
 import unittest
 import warnings
 
+# Some tests iterate over sets: fix the string hash seed so that the case order (and so
+# the generated fixtures) is reproducible.
+if os.environ.get("PYTHONHASHSEED") != "0":
+    os.environ["PYTHONHASHSEED"] = "0"
+    os.execv(sys.executable, [sys.executable, *sys.argv])
+
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SG = os.path.join(ROOT, ".repos", "sqlglot")
 sys.path.insert(0, SG)
@@ -215,6 +221,26 @@ def counting(meth):
 for attr in list(vars(unittest.TestCase)):
     if attr.startswith("assert") and callable(getattr(unittest.TestCase, attr)):
         setattr(unittest.TestCase, attr, counting(getattr(unittest.TestCase, attr)))
+
+TESTS_DIR = os.path.join("tests", "dialects") + os.sep
+
+
+def counting_assert_is(meth):
+    """`Expr.assert_is` called by a test method on a returned AST is a direct assertion
+    too (calls made by sqlglot itself are not counted)."""
+
+    def assert_is(self, type_):
+        caller = sys._getframe(1).f_code.co_filename
+        if TESTS_DIR in caller and VALIDATOR_DEPTH[0] == 0 and CURRENT[0] is not None:
+            STATS[CURRENT[0]]["direct_asserts"] += 1
+        return meth(self, type_)
+
+    return assert_is
+
+
+for cls in (exp.Expr, exp.Expression):
+    if "assert_is" in vars(cls):
+        cls.assert_is = counting_assert_is(vars(cls)["assert_is"])
 
 # --- Record failing API calls made directly by the tests ----------------------------
 

@@ -605,9 +605,9 @@ test "annotate_types: unpivot of a cte" {
 }
 
 ///|
-test "qualify: unnest type trace terminates" {
-  // The Python test counts calls of a private method to check memoization; here we only
-  // check that qualifying the query terminates.
+test "qualify: unnest type trace is memoized" {
+  // Python patches Resolver._get_column_type_from_scope to count its calls: ~93k
+  // without memoization at 12 levels, ~90 with it.
   let ctes = [
     "order_attrs0 AS (SELECT id, [STRUCT('color' AS key, 'red' AS value)] AS attrs FROM orders)",
   ]
@@ -620,8 +620,25 @@ test "qualify: unnest type trace terminates" {
     "non_null_attrs AS (SELECT ARRAY(SELECT x FROM UNNEST(attrs) AS x WHERE NOT x.value IS NULL) AS attrs FROM order_attrs11)",
   )
   let sql = "WITH " + ctes.join(", ") + " SELECT * FROM non_null_attrs"
+  let before = @optimizer.column_type_trace_calls.val
   qualify_expr(sql, dialect="bigquery", schema="{\"orders\": {\"id\": \"INT64\"}}")
   |> ignore
+  let calls = @optimizer.column_type_trace_calls.val - before
+  assert_true(
+    calls > 0 && calls < 1000,
+    msg="got \{calls} trace calls -- memoization may be broken",
+  )
+}
+
+///|
+test "TestOptimizer.test_annotate_types_caches_schema_lookups" {
+  let schema = @optimizer.MappingSchema::new(
+    schema=@optimizer.schema_from_json_string("{\"t\": {\"a\": \"INT\"}}"),
+  )
+  let qualified = @optimizer.qualify(parse_sql("SELECT a, a FROM t"), schema~)
+  let pre = schema.find_cache_size()
+  @optimizer.annotate_types(qualified, schema~) |> ignore
+  assert_eq(schema.find_cache_size() - pre, 1)
 }
 
 ///|

@@ -109,6 +109,30 @@ fn T::ok(
 }
 
 ///|
+/// Python `expression.assert_is(exp.Kind)` (isinstance); returns the expression so
+/// that chains like `e.assert_is(A).this.assert_is(B)` can be written.
+#callsite(autofill(loc))
+fn T::is_a(
+  self : T,
+  e : @core.Expr?,
+  kind : @core.Kind,
+  loc~ : SourceLoc,
+) -> @core.Expr {
+  match e {
+    Some(e) => {
+      if !e.kind.is_a(kind) {
+        self.fail("\{e.kind} is not a \{kind}", loc)
+      }
+      e
+    }
+    None => {
+      self.fail("None is not a \{kind}", loc)
+      @core.mk0(kind)
+    }
+  }
+}
+
+///|
 /// Python `assertIn(needle, haystack)` for strings.
 #callsite(autofill(loc))
 fn T::contains(

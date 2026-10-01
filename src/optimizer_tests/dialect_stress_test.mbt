@@ -22,11 +22,7 @@ test "optimizer dialect stress" {
     } catch {
       err => "ERROR: \{err}"
     })
-    let ok = if expected.has_prefix("ERROR:") {
-      got.has_prefix("ERROR:")
-    } else {
-      got == expected
-    }
+    let ok = outcome_matches(got, expected)
     let (t, p) = totals.get(read).unwrap_or((0, 0))
     totals[read] = (t + 1, if ok { p + 1 } else { p })
     if !ok && reported < 10 {

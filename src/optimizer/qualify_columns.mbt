@@ -209,8 +209,11 @@ fn expand_using(
     }
   }
   if !names.is_empty() && ordered.is_empty() {
+    // Python formats the set: {'a', 'b'} (its order is the string hash order there;
+    // insertion order here)
+    let names_repr = "{" + names.iter().map(@core.py_repr_str).join(", ") + "}"
     raise @core.OptimizeError(
-      "Joins missing source table \{expr_sql(scope.expression)}",
+      "Joins \{names_repr} missing source table \{expr_sql(scope.expression)}",
     )
   }
   if !joins.iter().any(j => j.has("using") || join_method(j) == "NATURAL") {

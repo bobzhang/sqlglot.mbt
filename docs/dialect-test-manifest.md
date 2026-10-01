@@ -11,117 +11,117 @@ over `tests/dialects/test_*.py`. DO NOT EDIT.
   src/dialect_unit_tests/test_<module>_test.mbt (*ported*).
 - *unrecorded errors*: failing calls whose arguments couldn't be recorded as data.
 
-Methods: 806, replayed checks: 16336, direct assertions: 5152; ported: 4, fixtures only: 589, excluded: 1, missing: 212.
+Methods: 806, replayed checks: 16336, direct assertions: 5491; ported: 249, fixtures only: 556, excluded: 1, missing: 0.
 
 | module | test method | replayed | direct | unrecorded errors | status |
 |---|---|---|---|---|---|
 | athena | TestAthena.test_athena | 7 | 0 | 0 | fixtures only |
-| athena | TestAthena.test_create_table | 0 | 8 | 0 | MISSING |
-| athena | TestAthena.test_ctas | 0 | 16 | 0 | MISSING |
+| athena | TestAthena.test_create_table | 0 | 8 | 0 | ported |
+| athena | TestAthena.test_ctas | 0 | 16 | 0 | ported |
 | athena | TestAthena.test_ddl | 15 | 0 | 0 | fixtures only |
 | athena | TestAthena.test_ddl_quoting | 20 | 0 | 0 | fixtures only |
 | athena | TestAthena.test_dml | 4 | 0 | 0 | fixtures only |
 | athena | TestAthena.test_dml_quoting | 10 | 0 | 0 | fixtures only |
-| athena | TestAthena.test_func_builder | 0 | 13 | 0 | MISSING |
-| athena | TestAthena.test_max_nodes | 2 | 2 | 0 | MISSING |
-| athena | TestAthena.test_parse_partitioned_by_returns_iceberg_transforms | 0 | 4 | 0 | MISSING |
-| athena | TestAthena.test_qualify | 0 | 4 | 0 | MISSING |
-| bigquery | TestBigQuery.test_annotate_timestamps | 0 | 20 | 0 | MISSING |
+| athena | TestAthena.test_func_builder | 0 | 13 | 0 | ported |
+| athena | TestAthena.test_max_nodes | 2 | 2 | 0 | ported |
+| athena | TestAthena.test_parse_partitioned_by_returns_iceberg_transforms | 0 | 4 | 0 | ported |
+| athena | TestAthena.test_qualify | 0 | 4 | 0 | ported |
+| bigquery | TestBigQuery.test_annotate_timestamps | 0 | 20 | 0 | ported |
 | bigquery | TestBigQuery.test_approx_quantiles | 7 | 0 | 0 | fixtures only |
-| bigquery | TestBigQuery.test_approx_quantiles_to_duckdb | 16 | 12 | 0 | MISSING |
+| bigquery | TestBigQuery.test_approx_quantiles_to_duckdb | 16 | 12 | 0 | ported |
 | bigquery | TestBigQuery.test_approx_qunatiles | 3 | 0 | 0 | fixtures only |
 | bigquery | TestBigQuery.test_array_agg | 10 | 0 | 0 | fixtures only |
 | bigquery | TestBigQuery.test_array_concat | 1 | 0 | 0 | fixtures only |
-| bigquery | TestBigQuery.test_avoid_generating_nested_comment | 0 | 4 | 0 | MISSING |
+| bigquery | TestBigQuery.test_avoid_generating_nested_comment | 0 | 4 | 0 | ported |
 | bigquery | TestBigQuery.test_bignumeric | 20 | 0 | 0 | fixtures only |
-| bigquery | TestBigQuery.test_bigquery | 905 | 183 | 0 | MISSING |
+| bigquery | TestBigQuery.test_bigquery | 905 | 205 | 0 | ported |
 | bigquery | TestBigQuery.test_bit_aggs | 44 | 0 | 0 | fixtures only |
 | bigquery | TestBigQuery.test_bitwise_and | 2 | 0 | 0 | fixtures only |
 | bigquery | TestBigQuery.test_bitwise_not | 2 | 0 | 0 | fixtures only |
 | bigquery | TestBigQuery.test_cast_format_with_parentheses | 5 | 0 | 0 | fixtures only |
 | bigquery | TestBigQuery.test_concat | 2 | 0 | 0 | fixtures only |
-| bigquery | TestBigQuery.test_convert | 0 | 16 | 0 | MISSING |
+| bigquery | TestBigQuery.test_convert | 0 | 16 | 0 | ported |
 | bigquery | TestBigQuery.test_declare | 9 | 0 | 0 | fixtures only |
-| bigquery | TestBigQuery.test_errors | 7 | 7 | 0 | MISSING |
+| bigquery | TestBigQuery.test_errors | 7 | 7 | 0 | ported |
 | bigquery | TestBigQuery.test_format_temporal | 15 | 0 | 0 | fixtures only |
 | bigquery | TestBigQuery.test_gap_fill | 6 | 0 | 0 | fixtures only |
 | bigquery | TestBigQuery.test_generate_date_array | 13 | 0 | 0 | fixtures only |
-| bigquery | TestBigQuery.test_identifier_meta | 0 | 43 | 0 | MISSING |
+| bigquery | TestBigQuery.test_identifier_meta | 0 | 43 | 0 | ported |
 | bigquery | TestBigQuery.test_inline_constructor | 16 | 0 | 0 | fixtures only |
 | bigquery | TestBigQuery.test_json_array | 5 | 0 | 0 | fixtures only |
-| bigquery | TestBigQuery.test_json_extract | 23 | 4 | 0 | MISSING |
-| bigquery | TestBigQuery.test_json_extract_array | 6 | 8 | 0 | MISSING |
+| bigquery | TestBigQuery.test_json_extract | 23 | 4 | 0 | ported |
+| bigquery | TestBigQuery.test_json_extract_array | 6 | 8 | 0 | ported |
 | bigquery | TestBigQuery.test_json_lax | 4 | 0 | 0 | fixtures only |
 | bigquery | TestBigQuery.test_json_literal | 21 | 0 | 0 | fixtures only |
-| bigquery | TestBigQuery.test_json_object | 9 | 1 | 0 | MISSING |
+| bigquery | TestBigQuery.test_json_object | 9 | 1 | 0 | ported |
 | bigquery | TestBigQuery.test_md5 | 2 | 0 | 0 | fixtures only |
 | bigquery | TestBigQuery.test_merge | 2 | 0 | 0 | fixtures only |
-| bigquery | TestBigQuery.test_ml_functions | 33 | 11 | 0 | MISSING |
+| bigquery | TestBigQuery.test_ml_functions | 33 | 13 | 0 | ported |
 | bigquery | TestBigQuery.test_mod | 6 | 0 | 0 | fixtures only |
 | bigquery | TestBigQuery.test_models | 3 | 0 | 0 | fixtures only |
 | bigquery | TestBigQuery.test_null_ordering | 8 | 0 | 0 | fixtures only |
 | bigquery | TestBigQuery.test_null_ordering_in_analytic_functions | 22 | 0 | 0 | fixtures only |
-| bigquery | TestBigQuery.test_override_normalization_strategy | 0 | 8 | 0 | MISSING |
-| bigquery | TestBigQuery.test_pseudocolumns | 2 | 8 | 0 | MISSING |
-| bigquery | TestBigQuery.test_pushdown_cte_column_names | 6 | 1 | 0 | MISSING |
-| bigquery | TestBigQuery.test_quoted_identifier_meta | 0 | 9 | 0 | MISSING |
-| bigquery | TestBigQuery.test_range_type | 8 | 4 | 0 | MISSING |
+| bigquery | TestBigQuery.test_override_normalization_strategy | 0 | 8 | 0 | ported |
+| bigquery | TestBigQuery.test_pseudocolumns | 2 | 8 | 0 | ported |
+| bigquery | TestBigQuery.test_pushdown_cte_column_names | 6 | 1 | 0 | ported |
+| bigquery | TestBigQuery.test_quoted_identifier_meta | 0 | 9 | 0 | ported |
+| bigquery | TestBigQuery.test_range_type | 8 | 4 | 0 | ported |
 | bigquery | TestBigQuery.test_regexp_extract | 34 | 0 | 0 | fixtures only |
 | bigquery | TestBigQuery.test_remove_precision_parameterized_types | 5 | 0 | 0 | fixtures only |
 | bigquery | TestBigQuery.test_rename_table | 2 | 0 | 0 | fixtures only |
 | bigquery | TestBigQuery.test_round | 8 | 0 | 0 | fixtures only |
 | bigquery | TestBigQuery.test_safe_math_funcs | 16 | 0 | 0 | fixtures only |
 | bigquery | TestBigQuery.test_select_as_struct | 8 | 0 | 0 | fixtures only |
-| bigquery | TestBigQuery.test_set_operations | 27 | 9 | 0 | MISSING |
+| bigquery | TestBigQuery.test_set_operations | 27 | 9 | 0 | ported |
 | bigquery | TestBigQuery.test_string_agg | 8 | 0 | 0 | fixtures only |
 | bigquery | TestBigQuery.test_to_hex | 2 | 0 | 0 | fixtures only |
 | bigquery | TestBigQuery.test_to_json_string | 2 | 0 | 0 | fixtures only |
 | bigquery | TestBigQuery.test_unix_micros | 4 | 0 | 0 | fixtures only |
 | bigquery | TestBigQuery.test_unix_millis | 4 | 0 | 0 | fixtures only |
-| bigquery | TestBigQuery.test_unix_seconds | 7 | 0 | 0 | fixtures only |
+| bigquery | TestBigQuery.test_unix_seconds | 7 | 3 | 0 | ported |
 | bigquery | TestBigQuery.test_unnest | 24 | 0 | 0 | fixtures only |
 | bigquery | TestBigQuery.test_unnest_with_offset | 10 | 0 | 0 | fixtures only |
-| bigquery | TestBigQuery.test_user_defined_functions | 6 | 1 | 0 | MISSING |
-| bigquery | TestBigQuery.test_warnings | 10 | 69 | 0 | MISSING |
+| bigquery | TestBigQuery.test_user_defined_functions | 6 | 1 | 0 | ported |
+| bigquery | TestBigQuery.test_warnings | 10 | 69 | 0 | ported |
 | bigquery | TestBigQuery.test_week | 88 | 0 | 0 | fixtures only |
 | bigquery | TestBigQuery.test_with_offset | 7 | 0 | 0 | fixtures only |
-| clickhouse | TestClickhouse.test_agg_functions | 4 | 4 | 0 | MISSING |
-| clickhouse | TestClickhouse.test_agg_functions_multiple_suffixes | 14 | 1 | 0 | MISSING |
+| clickhouse | TestClickhouse.test_agg_functions | 4 | 9 | 0 | ported |
+| clickhouse | TestClickhouse.test_agg_functions_multiple_suffixes | 14 | 15 | 0 | ported |
 | clickhouse | TestClickhouse.test_aggregate_function_column_with_any_keyword | 1 | 0 | 0 | fixtures only |
-| clickhouse | TestClickhouse.test_array_join | 5 | 11 | 0 | MISSING |
-| clickhouse | TestClickhouse.test_array_offset | 5 | 4 | 0 | MISSING |
-| clickhouse | TestClickhouse.test_clickhouse | 365 | 55 | 0 | MISSING |
-| clickhouse | TestClickhouse.test_clickhouse_values | 8 | 5 | 0 | MISSING |
-| clickhouse | TestClickhouse.test_convert | 0 | 20 | 0 | MISSING |
-| clickhouse | TestClickhouse.test_create_table_as_alias | 1 | 1 | 0 | MISSING |
-| clickhouse | TestClickhouse.test_cte | 6 | 17 | 0 | MISSING |
+| clickhouse | TestClickhouse.test_array_join | 5 | 11 | 0 | ported |
+| clickhouse | TestClickhouse.test_array_offset | 5 | 4 | 0 | ported |
+| clickhouse | TestClickhouse.test_clickhouse | 365 | 67 | 0 | ported |
+| clickhouse | TestClickhouse.test_clickhouse_values | 8 | 5 | 0 | ported |
+| clickhouse | TestClickhouse.test_convert | 0 | 20 | 0 | ported |
+| clickhouse | TestClickhouse.test_create_table_as_alias | 1 | 1 | 0 | ported |
+| clickhouse | TestClickhouse.test_cte | 6 | 17 | 0 | ported |
 | clickhouse | TestClickhouse.test_datetime_funcs | 16 | 0 | 0 | fixtures only |
-| clickhouse | TestClickhouse.test_ddl | 50 | 13 | 0 | MISSING |
+| clickhouse | TestClickhouse.test_ddl | 50 | 13 | 0 | ported |
 | clickhouse | TestClickhouse.test_detach | 28 | 0 | 0 | fixtures only |
 | clickhouse | TestClickhouse.test_drop_on_cluster | 10 | 0 | 0 | fixtures only |
-| clickhouse | TestClickhouse.test_functions | 7 | 0 | 0 | fixtures only |
+| clickhouse | TestClickhouse.test_functions | 7 | 4 | 0 | ported |
 | clickhouse | TestClickhouse.test_geom_types | 6 | 0 | 0 | fixtures only |
 | clickhouse | TestClickhouse.test_global_join | 21 | 0 | 0 | fixtures only |
 | clickhouse | TestClickhouse.test_grant | 2 | 0 | 0 | fixtures only |
-| clickhouse | TestClickhouse.test_groupconcat | 9 | 21 | 0 | MISSING |
+| clickhouse | TestClickhouse.test_groupconcat | 9 | 23 | 0 | ported |
 | clickhouse | TestClickhouse.test_json_type | 8 | 0 | 0 | fixtures only |
 | clickhouse | TestClickhouse.test_nothing_type | 2 | 0 | 0 | fixtures only |
 | clickhouse | TestClickhouse.test_parameterization | 3 | 0 | 0 | fixtures only |
-| clickhouse | TestClickhouse.test_refreshable_materialized_view | 8 | 0 | 0 | fixtures only |
+| clickhouse | TestClickhouse.test_refreshable_materialized_view | 8 | 8 | 0 | ported |
 | clickhouse | TestClickhouse.test_revoke | 2 | 0 | 0 | fixtures only |
 | clickhouse | TestClickhouse.test_safe_div | 3 | 0 | 0 | fixtures only |
 | clickhouse | TestClickhouse.test_signed_and_unsigned_types | 12 | 0 | 0 | fixtures only |
 | clickhouse | TestClickhouse.test_sql_security | 10 | 0 | 0 | fixtures only |
 | clickhouse | TestClickhouse.test_string_split | 12 | 0 | 0 | fixtures only |
 | clickhouse | TestClickhouse.test_table_functions | 5 | 0 | 0 | fixtures only |
-| clickhouse | TestClickhouse.test_ternary | 5 | 7 | 0 | MISSING |
-| clickhouse | TestClickhouse.test_timestr_to_time | 0 | 80 | 0 | MISSING |
+| clickhouse | TestClickhouse.test_ternary | 5 | 9 | 0 | ported |
+| clickhouse | TestClickhouse.test_timestr_to_time | 0 | 80 | 0 | ported |
 | clickhouse | TestClickhouse.test_to_start_of | 43 | 0 | 0 | fixtures only |
-| clickhouse | TestClickhouse.test_traverse_scope | 0 | 3 | 0 | MISSING |
+| clickhouse | TestClickhouse.test_traverse_scope | 0 | 3 | 0 | ported |
 | clickhouse | TestClickhouse.test_window_functions | 2 | 0 | 0 | fixtures only |
 | databricks | TestDatabricks.test_add_date | 7 | 0 | 0 | fixtures only |
 | databricks | TestDatabricks.test_analyze | 8 | 0 | 0 | fixtures only |
-| databricks | TestDatabricks.test_databricks | 133 | 10 | 0 | MISSING |
+| databricks | TestDatabricks.test_databricks | 133 | 12 | 0 | ported |
 | databricks | TestDatabricks.test_datediff | 22 | 0 | 0 | fixtures only |
 | databricks | TestDatabricks.test_declare | 6 | 0 | 0 | fixtures only |
 | databricks | TestDatabricks.test_grant | 4 | 0 | 0 | fixtures only |
@@ -133,7 +133,7 @@ Methods: 806, replayed checks: 16336, direct assertions: 5152; ported: 4, fixtur
 | databricks | TestDatabricks.test_revoke | 4 | 0 | 0 | fixtures only |
 | databricks | TestDatabricks.test_set_variable | 6 | 0 | 0 | fixtures only |
 | databricks | TestDatabricks.test_streaming_tables | 2 | 0 | 0 | fixtures only |
-| databricks | TestDatabricks.test_to_char_is_numeric_transpile_to_cast | 0 | 3 | 0 | MISSING |
+| databricks | TestDatabricks.test_to_char_is_numeric_transpile_to_cast | 0 | 3 | 0 | ported |
 | databricks | TestDatabricks.test_try_divide | 5 | 0 | 0 | fixtures only |
 | databricks | TestDatabricks.test_udf_environment_property | 1 | 0 | 0 | fixtures only |
 | databricks | TestDatabricks.test_udf_handler_property | 1 | 0 | 0 | fixtures only |
@@ -142,48 +142,48 @@ Methods: 806, replayed checks: 16336, direct assertions: 5152; ported: 4, fixtur
 | dax | TestDAX.test_evaluate | 2 | 0 | 0 | fixtures only |
 | dax | TestDAX.test_filter | 8 | 0 | 0 | fixtures only |
 | dax | TestDAX.test_order_by | 2 | 0 | 0 | fixtures only |
-| dialect | TestDialect.test_agg | 1 | 4 | 0 | MISSING |
-| dialect | TestDialect.test_alias | 43 | 7 | 0 | MISSING |
-| dialect | TestDialect.test_array | 129 | 220 | 0 | MISSING |
+| dialect | TestDialect.test_agg | 1 | 4 | 0 | ported |
+| dialect | TestDialect.test_alias | 43 | 7 | 0 | ported |
+| dialect | TestDialect.test_array | 129 | 220 | 0 | ported |
 | dialect | TestDialect.test_array_any | 22 | 0 | 0 | fixtures only |
 | dialect | TestDialect.test_ascii | 18 | 0 | 0 | fixtures only |
-| dialect | TestDialect.test_between | 44 | 9 | 0 | MISSING |
-| dialect | TestDialect.test_cast | 177 | 2 | 0 | MISSING |
-| dialect | TestDialect.test_cast_to_user_defined_type | 8 | 1 | 0 | MISSING |
-| dialect | TestDialect.test_coalesce | 0 | 8 | 0 | MISSING |
-| dialect | TestDialect.test_compare_dialect_versions | 0 | 4 | 0 | MISSING |
-| dialect | TestDialect.test_compare_dialects | 0 | 14 | 0 | MISSING |
+| dialect | TestDialect.test_between | 44 | 9 | 0 | ported |
+| dialect | TestDialect.test_cast | 177 | 2 | 0 | ported |
+| dialect | TestDialect.test_cast_to_user_defined_type | 8 | 1 | 0 | ported |
+| dialect | TestDialect.test_coalesce | 0 | 8 | 0 | ported |
+| dialect | TestDialect.test_compare_dialect_versions | 0 | 4 | 0 | ported |
+| dialect | TestDialect.test_compare_dialects | 0 | 14 | 0 | ported |
 | dialect | TestDialect.test_count_if | 18 | 0 | 0 | fixtures only |
 | dialect | TestDialect.test_create_sequence | 11 | 0 | 0 | fixtures only |
 | dialect | TestDialect.test_cross_join | 22 | 0 | 0 | fixtures only |
-| dialect | TestDialect.test_current_catalog | 0 | 48 | 0 | MISSING |
+| dialect | TestDialect.test_current_catalog | 0 | 60 | 0 | ported |
 | dialect | TestDialect.test_current_schema | 7 | 0 | 0 | fixtures only |
-| dialect | TestDialect.test_custom_dialect | 0 | 5 | 0 | MISSING |
+| dialect | TestDialect.test_custom_dialect | 0 | 5 | 0 | ported |
 | dialect | TestDialect.test_date_to_unix_date | 9 | 0 | 0 | fixtures only |
 | dialect | TestDialect.test_ddl | 18 | 0 | 0 | fixtures only |
-| dialect | TestDialect.test_decimal_literals | 0 | 504 | 0 | MISSING |
+| dialect | TestDialect.test_decimal_literals | 0 | 504 | 0 | ported |
 | dialect | TestDialect.test_decode | 31 | 0 | 0 | fixtures only |
-| dialect | TestDialect.test_enum | 0 | 165 | 0 | MISSING |
+| dialect | TestDialect.test_enum | 0 | 165 | 0 | ported |
 | dialect | TestDialect.test_escaped_identifier_delimiter | 46 | 0 | 0 | fixtures only |
 | dialect | TestDialect.test_farm_fingerprint | 7 | 0 | 0 | fixtures only |
-| dialect | TestDialect.test_fetch_first_implicit_count | 14 | 48 | 0 | MISSING |
+| dialect | TestDialect.test_fetch_first_implicit_count | 14 | 48 | 0 | ported |
 | dialect | TestDialect.test_filter_within_group | 2 | 0 | 0 | fixtures only |
 | dialect | TestDialect.test_format | 10 | 0 | 0 | fixtures only |
 | dialect | TestDialect.test_from_to_base32 | 14 | 0 | 0 | fixtures only |
 | dialect | TestDialect.test_generate_date_array | 23 | 0 | 0 | fixtures only |
-| dialect | TestDialect.test_get_or_raise | 0 | 41 | 0 | MISSING |
+| dialect | TestDialect.test_get_or_raise | 0 | 41 | 0 | ported |
 | dialect | TestDialect.test_grouping | 36 | 0 | 0 | fixtures only |
 | dialect | TestDialect.test_hash_comments | 6 | 0 | 0 | fixtures only |
-| dialect | TestDialect.test_heredoc_strings | 18 | 6 | 0 | MISSING |
+| dialect | TestDialect.test_heredoc_strings | 18 | 6 | 0 | ported |
 | dialect | TestDialect.test_if_null | 8 | 0 | 0 | fixtures only |
-| dialect | TestDialect.test_initcap | 0 | 84 | 0 | MISSING |
-| dialect | TestDialect.test_initcap_custom_delimiter_warning | 0 | 4 | 0 | MISSING |
-| dialect | TestDialect.test_integer_hex_strings | 0 | 64 | 0 | MISSING |
+| dialect | TestDialect.test_initcap | 0 | 84 | 0 | ported |
+| dialect | TestDialect.test_initcap_custom_delimiter_warning | 0 | 4 | 0 | ported |
+| dialect | TestDialect.test_integer_hex_strings | 0 | 64 | 0 | ported |
 | dialect | TestDialect.test_interval_with_units_dcolon | 2 | 0 | 0 | fixtures only |
 | dialect | TestDialect.test_is_ascii | 6 | 0 | 0 | fixtures only |
 | dialect | TestDialect.test_is_unknown | 16 | 0 | 0 | fixtures only |
 | dialect | TestDialect.test_is_with_dcolon | 8 | 0 | 0 | fixtures only |
-| dialect | TestDialect.test_json | 122 | 8 | 0 | MISSING |
+| dialect | TestDialect.test_json | 122 | 8 | 0 | ported |
 | dialect | TestDialect.test_json_array_append | 4 | 0 | 0 | fixtures only |
 | dialect | TestDialect.test_json_array_insert | 4 | 0 | 0 | fixtures only |
 | dialect | TestDialect.test_json_keys | 26 | 0 | 0 | fixtures only |
@@ -195,25 +195,25 @@ Methods: 806, replayed checks: 16336, direct assertions: 5152; ported: 4, fixtur
 | dialect | TestDialect.test_lazy_load | 0 | 1 | 0 | excluded: checks Python's lazy module import machinery |
 | dialect | TestDialect.test_like_quantifiers | 34 | 0 | 0 | fixtures only |
 | dialect | TestDialect.test_limit | 47 | 0 | 0 | fixtures only |
-| dialect | TestDialect.test_localtime_and_localtimestamp | 60 | 60 | 0 | MISSING |
+| dialect | TestDialect.test_localtime_and_localtimestamp | 60 | 79 | 0 | ported |
 | dialect | TestDialect.test_logarithm | 88 | 0 | 0 | fixtures only |
 | dialect | TestDialect.test_median | 28 | 0 | 0 | fixtures only |
 | dialect | TestDialect.test_merge | 20 | 0 | 0 | fixtures only |
 | dialect | TestDialect.test_multiple_chained_unnest | 3 | 0 | 0 | fixtures only |
 | dialect | TestDialect.test_nested_ctes | 24 | 0 | 0 | fixtures only |
-| dialect | TestDialect.test_normalize | 12 | 1 | 0 | MISSING |
+| dialect | TestDialect.test_normalize | 12 | 1 | 0 | ported |
 | dialect | TestDialect.test_nullsafe_eq | 4 | 0 | 0 | fixtures only |
 | dialect | TestDialect.test_nullsafe_neq | 3 | 0 | 0 | fixtures only |
 | dialect | TestDialect.test_nvl2 | 44 | 0 | 0 | fixtures only |
-| dialect | TestDialect.test_operator | 7 | 4 | 0 | MISSING |
+| dialect | TestDialect.test_operator | 7 | 8 | 0 | ported |
 | dialect | TestDialect.test_operators | 303 | 0 | 0 | fixtures only |
-| dialect | TestDialect.test_order_by | 7 | 0 | 0 | fixtures only |
-| dialect | TestDialect.test_parse_at_time_zone | 2 | 16 | 0 | MISSING |
-| dialect | TestDialect.test_patch_dialect_parser | 0 | 2 | 0 | MISSING |
+| dialect | TestDialect.test_order_by | 7 | 4 | 0 | ported |
+| dialect | TestDialect.test_parse_at_time_zone | 2 | 16 | 0 | ported |
+| dialect | TestDialect.test_patch_dialect_parser | 0 | 2 | 0 | ported |
 | dialect | TestDialect.test_qualify | 14 | 0 | 0 | fixtures only |
 | dialect | TestDialect.test_random | 28 | 0 | 0 | fixtures only |
 | dialect | TestDialect.test_regexp_instr | 56 | 0 | 0 | fixtures only |
-| dialect | TestDialect.test_regexp_replace | 0 | 48 | 0 | MISSING |
+| dialect | TestDialect.test_regexp_replace | 0 | 48 | 0 | ported |
 | dialect | TestDialect.test_regr_count | 24 | 0 | 0 | fixtures only |
 | dialect | TestDialect.test_regr_intercept | 22 | 0 | 0 | fixtures only |
 | dialect | TestDialect.test_regr_r2 | 22 | 0 | 0 | fixtures only |
@@ -221,14 +221,14 @@ Methods: 806, replayed checks: 16336, direct assertions: 5152; ported: 4, fixtur
 | dialect | TestDialect.test_regr_sxx | 22 | 0 | 0 | fixtures only |
 | dialect | TestDialect.test_regr_sxy | 22 | 0 | 0 | fixtures only |
 | dialect | TestDialect.test_regr_syy | 22 | 0 | 0 | fixtures only |
-| dialect | TestDialect.test_reserved_keywords | 1 | 12 | 0 | MISSING |
+| dialect | TestDialect.test_reserved_keywords | 1 | 12 | 0 | ported |
 | dialect | TestDialect.test_reverse | 29 | 0 | 0 | fixtures only |
-| dialect | TestDialect.test_safediv | 0 | 20 | 0 | MISSING |
-| dialect | TestDialect.test_session_user | 0 | 48 | 0 | MISSING |
+| dialect | TestDialect.test_safediv | 0 | 20 | 0 | ported |
+| dialect | TestDialect.test_session_user | 0 | 57 | 0 | ported |
 | dialect | TestDialect.test_set_operation_specifiers | 16 | 0 | 0 | fixtures only |
 | dialect | TestDialect.test_set_operators | 74 | 0 | 0 | fixtures only |
 | dialect | TestDialect.test_soundex | 29 | 0 | 0 | fixtures only |
-| dialect | TestDialect.test_spark2_negative_scale_decimal_literals | 0 | 28 | 0 | MISSING |
+| dialect | TestDialect.test_spark2_negative_scale_decimal_literals | 0 | 28 | 0 | ported |
 | dialect | TestDialect.test_string_functions | 68 | 0 | 0 | fixtures only |
 | dialect | TestDialect.test_subquery_unwrap | 2 | 0 | 0 | fixtures only |
 | dialect | TestDialect.test_substring | 6 | 0 | 0 | fixtures only |
@@ -238,10 +238,10 @@ Methods: 806, replayed checks: 16336, direct assertions: 5152; ported: 4, fixtur
 | dialect | TestDialect.test_translate | 28 | 0 | 0 | fixtures only |
 | dialect | TestDialect.test_trim | 80 | 0 | 0 | fixtures only |
 | dialect | TestDialect.test_truncate | 4 | 0 | 0 | fixtures only |
-| dialect | TestDialect.test_typeddiv | 0 | 64 | 0 | MISSING |
-| dialect | TestDialect.test_underscore_scientific_notation | 0 | 108 | 0 | MISSING |
+| dialect | TestDialect.test_typeddiv | 0 | 64 | 0 | ported |
+| dialect | TestDialect.test_underscore_scientific_notation | 0 | 108 | 0 | ported |
 | dialect | TestDialect.test_unix_time | 14 | 0 | 0 | fixtures only |
-| dialect | TestDialect.test_unsupported_null_ordering | 0 | 144 | 0 | MISSING |
+| dialect | TestDialect.test_unsupported_null_ordering | 0 | 144 | 0 | ported |
 | dialect | TestDialect.test_update | 32 | 0 | 0 | fixtures only |
 | dialect | TestDialect.test_uuid | 22 | 0 | 0 | fixtures only |
 | dialect | TestDialect.test_week_of_year | 6 | 0 | 0 | fixtures only |
@@ -250,7 +250,7 @@ Methods: 806, replayed checks: 16336, direct assertions: 5152; ported: 4, fixtur
 | doris | TestDoris.test_date_add_sub | 6 | 0 | 0 | fixtures only |
 | doris | TestDoris.test_distributed | 3 | 0 | 0 | fixtures only |
 | doris | TestDoris.test_doris | 25 | 0 | 0 | fixtures only |
-| doris | TestDoris.test_identity | 25 | 60 | 0 | MISSING |
+| doris | TestDoris.test_identity | 25 | 60 | 0 | ported |
 | doris | TestDoris.test_key | 3 | 0 | 0 | fixtures only |
 | doris | TestDoris.test_materialized_view_properties | 6 | 0 | 0 | fixtures only |
 | doris | TestDoris.test_partition | 7 | 0 | 0 | fixtures only |
@@ -272,24 +272,24 @@ Methods: 806, replayed checks: 16336, direct assertions: 5152; ported: 4, fixtur
 | dremio | TestDremio.test_multi_arg_distinct_unsupported | 1 | 0 | 0 | fixtures only |
 | dremio | TestDremio.test_null_ordering | 4 | 0 | 0 | fixtures only |
 | dremio | TestDremio.test_regexp_like | 6 | 0 | 0 | fixtures only |
-| dremio | TestDremio.test_regexp_split | 1 | 12 | 0 | MISSING |
+| dremio | TestDremio.test_regexp_split | 1 | 12 | 0 | ported |
 | dremio | TestDremio.test_repeatstr | 2 | 0 | 0 | fixtures only |
 | dremio | TestDremio.test_time_mapping | 16 | 0 | 0 | fixtures only |
-| dremio | TestDremio.test_time_travel | 10 | 1 | 0 | MISSING |
-| dremio | TestDremio.test_to_char_special | 7 | 7 | 0 | MISSING |
+| dremio | TestDremio.test_time_travel | 10 | 1 | 0 | ported |
+| dremio | TestDremio.test_to_char_special | 7 | 14 | 0 | ported |
 | dremio | TestDremio.test_try_cast | 3 | 0 | 0 | fixtures only |
-| dremio | TestDremio.test_type_mappings | 12 | 2 | 0 | MISSING |
-| dremio | TestDremio.test_typed_division | 0 | 2 | 0 | MISSING |
-| dremio | TestDremio.test_user_defined_types_unsupported | 1 | 1 | 0 | MISSING |
+| dremio | TestDremio.test_type_mappings | 12 | 2 | 0 | ported |
+| dremio | TestDremio.test_typed_division | 0 | 2 | 0 | ported |
+| dremio | TestDremio.test_user_defined_types_unsupported | 1 | 1 | 0 | ported |
 | drill | TestDrill.test_analyze | 2 | 0 | 0 | fixtures only |
 | drill | TestDrill.test_drill | 4 | 0 | 0 | fixtures only |
 | drill | TestDrill.test_ilike | 11 | 0 | 0 | fixtures only |
 | druid | TestDruid.test_druid | 42 | 0 | 0 | fixtures only |
 | druid | TestDruid.test_json_value | 3 | 0 | 0 | fixtures only |
 | duckdb | TestDuckDB.test_analyze | 1 | 0 | 0 | fixtures only |
-| duckdb | TestDuckDB.test_approx_percentile | 3 | 4 | 0 | MISSING |
+| duckdb | TestDuckDB.test_approx_percentile | 3 | 4 | 0 | ported |
 | duckdb | TestDuckDB.test_array | 2 | 0 | 0 | fixtures only |
-| duckdb | TestDuckDB.test_array_index | 9 | 4 | 0 | MISSING |
+| duckdb | TestDuckDB.test_array_index | 9 | 4 | 0 | ported |
 | duckdb | TestDuckDB.test_array_insert | 12 | 0 | 0 | fixtures only |
 | duckdb | TestDuckDB.test_array_remove | 3 | 0 | 0 | fixtures only |
 | duckdb | TestDuckDB.test_array_remove_at | 8 | 0 | 0 | fixtures only |
@@ -302,21 +302,21 @@ Methods: 806, replayed checks: 16336, direct assertions: 5152; ported: 4, fixtur
 | duckdb | TestDuckDB.test_current_database | 3 | 0 | 0 | fixtures only |
 | duckdb | TestDuckDB.test_current_schema | 3 | 0 | 0 | fixtures only |
 | duckdb | TestDuckDB.test_current_schemas | 3 | 0 | 0 | fixtures only |
-| duckdb | TestDuckDB.test_duckdb | 620 | 41 | 0 | MISSING |
+| duckdb | TestDuckDB.test_duckdb | 620 | 58 | 0 | ported |
 | duckdb | TestDuckDB.test_encode_decode | 11 | 0 | 0 | fixtures only |
 | duckdb | TestDuckDB.test_extract_date_parts | 8 | 0 | 0 | fixtures only |
 | duckdb | TestDuckDB.test_from_first_with_parentheses | 5 | 0 | 0 | fixtures only |
-| duckdb | TestDuckDB.test_iceberg_property_no_warning | 0 | 4 | 0 | MISSING |
-| duckdb | TestDuckDB.test_ignore_nulls | 0 | 35 | 0 | MISSING |
-| duckdb | TestDuckDB.test_install | 7 | 1 | 0 | MISSING |
+| duckdb | TestDuckDB.test_iceberg_property_no_warning | 0 | 4 | 0 | ported |
+| duckdb | TestDuckDB.test_ignore_nulls | 0 | 35 | 0 | ported |
+| duckdb | TestDuckDB.test_install | 7 | 3 | 0 | ported |
 | duckdb | TestDuckDB.test_isinf | 3 | 0 | 0 | fixtures only |
 | duckdb | TestDuckDB.test_isnan | 3 | 0 | 0 | fixtures only |
 | duckdb | TestDuckDB.test_map_delete | 4 | 0 | 0 | fixtures only |
-| duckdb | TestDuckDB.test_map_insert | 8 | 4 | 0 | MISSING |
-| duckdb | TestDuckDB.test_map_pick | 0 | 12 | 0 | MISSING |
+| duckdb | TestDuckDB.test_map_insert | 8 | 4 | 0 | ported |
+| duckdb | TestDuckDB.test_map_pick | 0 | 12 | 0 | ported |
 | duckdb | TestDuckDB.test_map_size | 4 | 0 | 0 | fixtures only |
 | duckdb | TestDuckDB.test_map_struct | 3 | 0 | 0 | fixtures only |
-| duckdb | TestDuckDB.test_non_iceberg_property_still_warns | 0 | 9 | 0 | MISSING |
+| duckdb | TestDuckDB.test_non_iceberg_property_still_warns | 0 | 9 | 0 | ported |
 | duckdb | TestDuckDB.test_parameter_token | 3 | 0 | 0 | fixtures only |
 | duckdb | TestDuckDB.test_prefix_aliases | 17 | 0 | 0 | fixtures only |
 | duckdb | TestDuckDB.test_rename_table | 6 | 0 | 0 | fixtures only |
@@ -325,26 +325,26 @@ Methods: 806, replayed checks: 16336, direct assertions: 5152; ported: 4, fixtur
 | duckdb | TestDuckDB.test_sample | 12 | 0 | 0 | fixtures only |
 | duckdb | TestDuckDB.test_set_item | 9 | 0 | 0 | fixtures only |
 | duckdb | TestDuckDB.test_sha | 4 | 0 | 0 | fixtures only |
-| duckdb | TestDuckDB.test_show_tables | 5 | 0 | 0 | fixtures only |
+| duckdb | TestDuckDB.test_show_tables | 5 | 5 | 0 | ported |
 | duckdb | TestDuckDB.test_simplified_pivot_unpivot | 13 | 0 | 0 | fixtures only |
 | duckdb | TestDuckDB.test_time | 76 | 0 | 0 | fixtures only |
-| duckdb | TestDuckDB.test_timestamp_from_parts | 8 | 8 | 0 | MISSING |
+| duckdb | TestDuckDB.test_timestamp_from_parts | 8 | 8 | 0 | ported |
 | duckdb | TestDuckDB.test_timestamps_with_time_zone_precision | 20 | 0 | 0 | fixtures only |
 | duckdb | TestDuckDB.test_timestamps_with_units | 1 | 0 | 0 | fixtures only |
 | duckdb | TestDuckDB.test_to_array | 6 | 0 | 0 | fixtures only |
-| duckdb | TestDuckDB.test_udf | 16 | 5 | 0 | MISSING |
-| dune | TestDune.test_dune | 44 | 0 | 0 | fixtures only |
+| duckdb | TestDuckDB.test_udf | 16 | 7 | 0 | ported |
+| dune | TestDune.test_dune | 44 | 7 | 0 | ported |
 | exasol | TestExasol.test_aggregateFunctions | 20 | 0 | 0 | fixtures only |
 | exasol | TestExasol.test_bits | 56 | 0 | 0 | fixtures only |
 | exasol | TestExasol.test_datetime_functions | 263 | 0 | 0 | fixtures only |
-| exasol | TestExasol.test_exasol | 15 | 0 | 0 | fixtures only |
+| exasol | TestExasol.test_exasol | 15 | 1 | 0 | ported |
 | exasol | TestExasol.test_exasol_keywords | 5 | 0 | 0 | fixtures only |
 | exasol | TestExasol.test_group_by_alias_local | 8 | 0 | 0 | fixtures only |
-| exasol | TestExasol.test_group_by_all | 17 | 1 | 0 | MISSING |
+| exasol | TestExasol.test_group_by_all | 17 | 1 | 0 | ported |
 | exasol | TestExasol.test_json | 5 | 0 | 0 | fixtures only |
 | exasol | TestExasol.test_local_prefix_for_alias | 17 | 0 | 0 | fixtures only |
 | exasol | TestExasol.test_mod | 4 | 0 | 0 | fixtures only |
-| exasol | TestExasol.test_number_functions | 26 | 0 | 0 | fixtures only |
+| exasol | TestExasol.test_number_functions | 26 | 6 | 0 | ported |
 | exasol | TestExasol.test_odbc_date_literals | 2 | 0 | 0 | fixtures only |
 | exasol | TestExasol.test_qualify_unscoped_star | 8 | 0 | 0 | fixtures only |
 | exasol | TestExasol.test_regexp_like | 6 | 0 | 0 | fixtures only |
@@ -353,7 +353,7 @@ Methods: 806, replayed checks: 16336, direct assertions: 5152; ported: 4, fixtur
 | exasol | TestExasol.test_show_tables | 4 | 0 | 0 | fixtures only |
 | exasol | TestExasol.test_stringFunctions | 59 | 0 | 0 | fixtures only |
 | exasol | TestExasol.test_type_mappings | 33 | 0 | 0 | fixtures only |
-| exasol | TestExasol.test_use_to_open_schema | 6 | 1 | 0 | MISSING |
+| exasol | TestExasol.test_use_to_open_schema | 6 | 1 | 0 | ported |
 | fabric | TestFabric.test_lossy_type_mappings_keep_precision | 1 | 0 | 0 | fixtures only |
 | fabric | TestFabric.test_precision_capping | 10 | 0 | 0 | fixtures only |
 | fabric | TestFabric.test_timestamptz_with_at_time_zone | 4 | 0 | 0 | fixtures only |
@@ -363,22 +363,22 @@ Methods: 806, replayed checks: 16336, direct assertions: 5152; ported: 4, fixtur
 | fabric | TestFabric.test_varchar_precision_inference | 8 | 0 | 0 | fixtures only |
 | hive | TestHive.test_bits | 38 | 0 | 0 | fixtures only |
 | hive | TestHive.test_cast | 25 | 0 | 0 | fixtures only |
-| hive | TestHive.test_create_function_using | 4 | 18 | 0 | MISSING |
+| hive | TestHive.test_create_function_using | 4 | 18 | 0 | ported |
 | hive | TestHive.test_data_type | 1 | 0 | 0 | fixtures only |
 | hive | TestHive.test_ddl | 49 | 0 | 0 | fixtures only |
 | hive | TestHive.test_escapes | 7 | 0 | 0 | fixtures only |
-| hive | TestHive.test_hive | 222 | 12 | 0 | MISSING |
+| hive | TestHive.test_hive | 222 | 14 | 0 | ported |
 | hive | TestHive.test_joins_without_on | 66 | 0 | 0 | fixtures only |
 | hive | TestHive.test_lateral_view | 21 | 0 | 0 | fixtures only |
 | hive | TestHive.test_order_by | 4 | 0 | 0 | fixtures only |
-| hive | TestHive.test_percentile | 17 | 0 | 0 | fixtures only |
+| hive | TestHive.test_percentile | 17 | 6 | 0 | ported |
 | hive | TestHive.test_quotes | 20 | 0 | 0 | fixtures only |
 | hive | TestHive.test_regex | 10 | 0 | 0 | fixtures only |
 | hive | TestHive.test_time | 62 | 0 | 0 | fixtures only |
 | materialize | TestMaterialize.test_materialize | 30 | 0 | 0 | fixtures only |
-| mysql | TestMySQL.test_alter_table_auto_increment | 0 | 1 | 0 | MISSING |
+| mysql | TestMySQL.test_alter_table_auto_increment | 0 | 1 | 0 | ported |
 | mysql | TestMySQL.test_analyze | 10 | 0 | 0 | fixtures only |
-| mysql | TestMySQL.test_at_time_zone | 1 | 2 | 0 | MISSING |
+| mysql | TestMySQL.test_at_time_zone | 1 | 2 | 0 | ported |
 | mysql | TestMySQL.test_bits_literal | 34 | 0 | 0 | fixtures only |
 | mysql | TestMySQL.test_canonical_functions | 23 | 0 | 0 | fixtures only |
 | mysql | TestMySQL.test_column_key_constraint | 3 | 0 | 0 | fixtures only |
@@ -387,7 +387,7 @@ Methods: 806, replayed checks: 16336, direct assertions: 5152; ported: 4, fixtur
 | mysql | TestMySQL.test_date_format | 31 | 0 | 0 | fixtures only |
 | mysql | TestMySQL.test_ddl | 153 | 0 | 0 | fixtures only |
 | mysql | TestMySQL.test_escape | 9 | 0 | 0 | fixtures only |
-| mysql | TestMySQL.test_explain | 4 | 5 | 0 | MISSING |
+| mysql | TestMySQL.test_explain | 4 | 5 | 0 | ported |
 | mysql | TestMySQL.test_grant | 7 | 0 | 0 | fixtures only |
 | mysql | TestMySQL.test_hexadecimal_literal | 97 | 0 | 0 | fixtures only |
 | mysql | TestMySQL.test_identity | 100 | 0 | 0 | fixtures only |
@@ -395,49 +395,49 @@ Methods: 806, replayed checks: 16336, direct assertions: 5152; ported: 4, fixtur
 | mysql | TestMySQL.test_ignore_respect_nulls | 17 | 0 | 0 | fixtures only |
 | mysql | TestMySQL.test_insert_value | 4 | 0 | 0 | fixtures only |
 | mysql | TestMySQL.test_introducers | 6 | 0 | 0 | fixtures only |
-| mysql | TestMySQL.test_invisible_column | 0 | 2 | 0 | MISSING |
+| mysql | TestMySQL.test_invisible_column | 0 | 2 | 0 | ported |
 | mysql | TestMySQL.test_is_null | 2 | 0 | 0 | fixtures only |
 | mysql | TestMySQL.test_json_object | 1 | 0 | 0 | fixtures only |
 | mysql | TestMySQL.test_json_value | 5 | 0 | 0 | fixtures only |
 | mysql | TestMySQL.test_match_against | 10 | 0 | 0 | fixtures only |
-| mysql | TestMySQL.test_mod | 3 | 0 | 0 | fixtures only |
+| mysql | TestMySQL.test_mod | 3 | 3 | 0 | ported |
 | mysql | TestMySQL.test_monthname | 2 | 0 | 0 | fixtures only |
 | mysql | TestMySQL.test_mysql | 109 | 0 | 0 | fixtures only |
 | mysql | TestMySQL.test_mysql_time | 39 | 0 | 0 | fixtures only |
 | mysql | TestMySQL.test_mysql_time_python311 | 4 | 0 | 0 | fixtures only |
 | mysql | TestMySQL.test_null_ordering_simulation_resolves_ordered_against_projection | 5 | 0 | 0 | fixtures only |
 | mysql | TestMySQL.test_number_format | 8 | 0 | 0 | fixtures only |
-| mysql | TestMySQL.test_numeric_trunc | 8 | 0 | 0 | fixtures only |
+| mysql | TestMySQL.test_numeric_trunc | 8 | 3 | 0 | ported |
 | mysql | TestMySQL.test_revoke | 7 | 0 | 0 | fixtures only |
 | mysql | TestMySQL.test_safe_div | 18 | 0 | 0 | fixtures only |
-| mysql | TestMySQL.test_set_variable | 0 | 41 | 0 | MISSING |
-| mysql | TestMySQL.test_show_columns | 2 | 25 | 0 | MISSING |
-| mysql | TestMySQL.test_show_create_qualified | 5 | 36 | 0 | MISSING |
-| mysql | TestMySQL.test_show_db_like_or_where_sql | 12 | 93 | 0 | MISSING |
-| mysql | TestMySQL.test_show_engine | 2 | 19 | 0 | MISSING |
-| mysql | TestMySQL.test_show_errors | 4 | 26 | 0 | MISSING |
-| mysql | TestMySQL.test_show_events | 6 | 52 | 0 | MISSING |
-| mysql | TestMySQL.test_show_grants | 1 | 9 | 0 | MISSING |
-| mysql | TestMySQL.test_show_index | 3 | 13 | 0 | MISSING |
-| mysql | TestMySQL.test_show_like_or_where | 39 | 221 | 0 | MISSING |
-| mysql | TestMySQL.test_show_name | 9 | 81 | 0 | MISSING |
-| mysql | TestMySQL.test_show_processlist | 2 | 11 | 0 | MISSING |
-| mysql | TestMySQL.test_show_profile | 3 | 29 | 0 | MISSING |
-| mysql | TestMySQL.test_show_replica_status | 3 | 14 | 0 | MISSING |
-| mysql | TestMySQL.test_show_simple | 11 | 55 | 0 | MISSING |
-| mysql | TestMySQL.test_show_tables | 4 | 28 | 0 | MISSING |
+| mysql | TestMySQL.test_set_variable | 0 | 41 | 0 | ported |
+| mysql | TestMySQL.test_show_columns | 2 | 25 | 0 | ported |
+| mysql | TestMySQL.test_show_create_qualified | 5 | 36 | 0 | ported |
+| mysql | TestMySQL.test_show_db_like_or_where_sql | 12 | 93 | 0 | ported |
+| mysql | TestMySQL.test_show_engine | 2 | 19 | 0 | ported |
+| mysql | TestMySQL.test_show_errors | 4 | 26 | 0 | ported |
+| mysql | TestMySQL.test_show_events | 6 | 52 | 0 | ported |
+| mysql | TestMySQL.test_show_grants | 1 | 9 | 0 | ported |
+| mysql | TestMySQL.test_show_index | 3 | 13 | 0 | ported |
+| mysql | TestMySQL.test_show_like_or_where | 39 | 221 | 0 | ported |
+| mysql | TestMySQL.test_show_name | 9 | 81 | 0 | ported |
+| mysql | TestMySQL.test_show_processlist | 2 | 11 | 0 | ported |
+| mysql | TestMySQL.test_show_profile | 3 | 29 | 0 | ported |
+| mysql | TestMySQL.test_show_replica_status | 3 | 14 | 0 | ported |
+| mysql | TestMySQL.test_show_simple | 11 | 55 | 0 | ported |
+| mysql | TestMySQL.test_show_tables | 4 | 28 | 0 | ported |
 | mysql | TestMySQL.test_string_literals | 1 | 0 | 0 | fixtures only |
 | mysql | TestMySQL.test_timestamp_trunc | 32 | 0 | 0 | fixtures only |
 | mysql | TestMySQL.test_types | 24 | 0 | 0 | fixtures only |
-| mysql | TestMySQL.test_unique_key_index_options | 0 | 3 | 0 | MISSING |
-| mysql | TestMySQL.test_utc_time | 4 | 0 | 0 | fixtures only |
+| mysql | TestMySQL.test_unique_key_index_options | 0 | 3 | 0 | ported |
+| mysql | TestMySQL.test_utc_time | 4 | 4 | 0 | ported |
 | mysql | TestMySQL.test_valid_interval_units | 11 | 0 | 0 | fixtures only |
 | oracle | TestOracle.test_analyze | 18 | 0 | 0 | fixtures only |
 | oracle | TestOracle.test_chr | 2 | 0 | 0 | fixtures only |
 | oracle | TestOracle.test_connect_by | 2 | 0 | 0 | fixtures only |
 | oracle | TestOracle.test_create_trigger | 3 | 0 | 0 | fixtures only |
 | oracle | TestOracle.test_datetrunc | 4 | 0 | 0 | fixtures only |
-| oracle | TestOracle.test_full_procedure | 0 | 8 | 0 | MISSING |
+| oracle | TestOracle.test_full_procedure | 0 | 8 | 0 | ported |
 | oracle | TestOracle.test_grant | 9 | 0 | 0 | fixtures only |
 | oracle | TestOracle.test_hints | 16 | 0 | 0 | fixtures only |
 | oracle | TestOracle.test_join_marker | 4 | 0 | 0 | fixtures only |
@@ -446,18 +446,18 @@ Methods: 806, replayed checks: 16336, direct assertions: 5152; ported: 4, fixtur
 | oracle | TestOracle.test_listagg | 2 | 0 | 0 | fixtures only |
 | oracle | TestOracle.test_match_recognize | 1 | 0 | 0 | fixtures only |
 | oracle | TestOracle.test_merge | 2 | 0 | 0 | fixtures only |
-| oracle | TestOracle.test_merge_builder_alias | 0 | 4 | 0 | MISSING |
+| oracle | TestOracle.test_merge_builder_alias | 0 | 4 | 0 | ported |
 | oracle | TestOracle.test_multitable_inserts | 7 | 0 | 0 | fixtures only |
-| oracle | TestOracle.test_oracle | 178 | 0 | 0 | fixtures only |
-| oracle | TestOracle.test_pivot_syntax_restrictions | 2 | 4 | 0 | MISSING |
-| oracle | TestOracle.test_prior | 2 | 1 | 0 | MISSING |
-| oracle | TestOracle.test_pseudocolumns | 1 | 6 | 0 | MISSING |
+| oracle | TestOracle.test_oracle | 178 | 4 | 0 | ported |
+| oracle | TestOracle.test_pivot_syntax_restrictions | 2 | 4 | 0 | ported |
+| oracle | TestOracle.test_prior | 2 | 1 | 0 | ported |
+| oracle | TestOracle.test_pseudocolumns | 1 | 6 | 0 | ported |
 | oracle | TestOracle.test_query_restrictions | 8 | 0 | 0 | fixtures only |
 | oracle | TestOracle.test_revoke | 9 | 0 | 0 | fixtures only |
-| oracle | TestOracle.test_trunc | 89 | 0 | 0 | fixtures only |
-| oracle | TestOracle.test_trunc_type_inference | 3 | 0 | 0 | fixtures only |
-| oracle | TestOracle.test_unrecognized_query_restriction | 4 | 4 | 0 | MISSING |
-| oracle | TestOracle.test_utc_time | 4 | 0 | 0 | fixtures only |
+| oracle | TestOracle.test_trunc | 89 | 1 | 0 | ported |
+| oracle | TestOracle.test_trunc_type_inference | 3 | 6 | 0 | ported |
+| oracle | TestOracle.test_unrecognized_query_restriction | 4 | 4 | 0 | ported |
+| oracle | TestOracle.test_utc_time | 4 | 4 | 0 | ported |
 | oracle | TestOracle.test_xml_table | 8 | 0 | 0 | fixtures only |
 | pipe_syntax | TestPipeSyntax.test_aggregate | 19 | 0 | 0 | fixtures only |
 | pipe_syntax | TestPipeSyntax.test_as | 3 | 0 | 0 | fixtures only |
@@ -472,29 +472,29 @@ Methods: 806, replayed checks: 16336, direct assertions: 5152; ported: 4, fixtur
 | pipe_syntax | TestPipeSyntax.test_tablesample | 3 | 0 | 0 | fixtures only |
 | postgres | TestPostgres.test_analyze | 6 | 0 | 0 | fixtures only |
 | postgres | TestPostgres.test_array_length | 30 | 0 | 0 | fixtures only |
-| postgres | TestPostgres.test_array_offset | 5 | 4 | 0 | MISSING |
-| postgres | TestPostgres.test_begin_transaction | 13 | 0 | 0 | fixtures only |
+| postgres | TestPostgres.test_array_offset | 5 | 4 | 0 | ported |
+| postgres | TestPostgres.test_begin_transaction | 13 | 10 | 0 | ported |
 | postgres | TestPostgres.test_bool_or | 1 | 0 | 0 | fixtures only |
-| postgres | TestPostgres.test_called_on_null_input_malformed | 3 | 3 | 0 | MISSING |
+| postgres | TestPostgres.test_called_on_null_input_malformed | 3 | 3 | 0 | ported |
 | postgres | TestPostgres.test_corr | 8 | 0 | 0 | fixtures only |
-| postgres | TestPostgres.test_datatype | 1 | 4 | 0 | MISSING |
-| postgres | TestPostgres.test_ddl | 136 | 8 | 0 | MISSING |
-| postgres | TestPostgres.test_extract_date_parts | 1 | 28 | 0 | MISSING |
+| postgres | TestPostgres.test_datatype | 1 | 4 | 0 | ported |
+| postgres | TestPostgres.test_ddl | 136 | 17 | 0 | ported |
+| postgres | TestPostgres.test_extract_date_parts | 1 | 28 | 0 | ported |
 | postgres | TestPostgres.test_grant | 17 | 0 | 0 | fixtures only |
-| postgres | TestPostgres.test_interval_span | 11 | 1 | 0 | MISSING |
+| postgres | TestPostgres.test_interval_span | 11 | 1 | 0 | ported |
 | postgres | TestPostgres.test_json_extract | 12 | 0 | 0 | fixtures only |
 | postgres | TestPostgres.test_locks | 6 | 0 | 0 | fixtures only |
 | postgres | TestPostgres.test_postgis_distance_3d | 1 | 0 | 0 | fixtures only |
-| postgres | TestPostgres.test_postgres | 445 | 15 | 0 | MISSING |
+| postgres | TestPostgres.test_postgres | 445 | 26 | 0 | ported |
 | postgres | TestPostgres.test_postgres_create_trigger | 34 | 0 | 0 | fixtures only |
-| postgres | TestPostgres.test_preserve_is_not_null | 5 | 1 | 0 | MISSING |
+| postgres | TestPostgres.test_preserve_is_not_null | 5 | 2 | 0 | ported |
 | postgres | TestPostgres.test_recursive_cte | 3 | 0 | 0 | fixtures only |
-| postgres | TestPostgres.test_regexp_binary | 0 | 2 | 0 | MISSING |
+| postgres | TestPostgres.test_regexp_binary | 0 | 2 | 0 | ported |
 | postgres | TestPostgres.test_revoke | 20 | 0 | 0 | fixtures only |
 | postgres | TestPostgres.test_round | 9 | 0 | 0 | fixtures only |
 | postgres | TestPostgres.test_rows_from | 3 | 0 | 0 | fixtures only |
 | postgres | TestPostgres.test_string_concat | 11 | 0 | 0 | fixtures only |
-| postgres | TestPostgres.test_udt | 6 | 0 | 0 | fixtures only |
+| postgres | TestPostgres.test_udt | 6 | 6 | 0 | ported |
 | postgres | TestPostgres.test_unicode_string | 18 | 0 | 0 | fixtures only |
 | postgres | TestPostgres.test_unnest | 14 | 0 | 0 | fixtures only |
 | postgres | TestPostgres.test_unnest_json_array | 1 | 0 | 0 | fixtures only |
@@ -508,35 +508,35 @@ Methods: 806, replayed checks: 16336, direct assertions: 5152; ported: 4, fixtur
 | presto | TestPresto.test_hex_unhex | 4 | 0 | 0 | fixtures only |
 | presto | TestPresto.test_initcap | 1 | 0 | 0 | fixtures only |
 | presto | TestPresto.test_interval_plural_to_singular | 30 | 0 | 0 | fixtures only |
-| presto | TestPresto.test_json | 12 | 1 | 0 | MISSING |
-| presto | TestPresto.test_json_vs_row_extract | 0 | 24 | 0 | MISSING |
+| presto | TestPresto.test_json | 12 | 1 | 0 | ported |
+| presto | TestPresto.test_json_vs_row_extract | 0 | 24 | 0 | ported |
 | presto | TestPresto.test_match_recognize | 1 | 0 | 0 | fixtures only |
-| presto | TestPresto.test_presto | 207 | 9 | 0 | MISSING |
+| presto | TestPresto.test_presto | 207 | 11 | 0 | ported |
 | presto | TestPresto.test_quotes | 20 | 0 | 0 | fixtures only |
 | presto | TestPresto.test_regex | 26 | 0 | 0 | fixtures only |
 | presto | TestPresto.test_replace | 17 | 0 | 0 | fixtures only |
 | presto | TestPresto.test_signum | 6 | 0 | 0 | fixtures only |
-| presto | TestPresto.test_time | 80 | 1 | 0 | MISSING |
+| presto | TestPresto.test_time | 80 | 1 | 0 | ported |
 | presto | TestPresto.test_to_char | 16 | 0 | 0 | fixtures only |
 | presto | TestPresto.test_unicode_string | 16 | 0 | 0 | fixtures only |
 | presto | TestPresto.test_unnest | 5 | 0 | 0 | fixtures only |
 | prql | TestPRQL.test_prql | 29 | 0 | 0 | fixtures only |
 | redshift | TestRedshift.test_alter_table | 16 | 0 | 0 | fixtures only |
 | redshift | TestRedshift.test_analyze | 4 | 0 | 0 | fixtures only |
-| redshift | TestRedshift.test_cast | 5 | 2 | 0 | MISSING |
-| redshift | TestRedshift.test_column_unnesting | 2 | 12 | 0 | MISSING |
+| redshift | TestRedshift.test_cast | 5 | 2 | 0 | ported |
+| redshift | TestRedshift.test_column_unnesting | 2 | 21 | 0 | ported |
 | redshift | TestRedshift.test_create_table_like | 9 | 0 | 0 | fixtures only |
 | redshift | TestRedshift.test_fetch_to_limit | 2 | 0 | 0 | fixtures only |
 | redshift | TestRedshift.test_grant | 18 | 0 | 0 | fixtures only |
-| redshift | TestRedshift.test_identity | 73 | 0 | 0 | fixtures only |
+| redshift | TestRedshift.test_identity | 73 | 1 | 0 | ported |
 | redshift | TestRedshift.test_join_markers | 1 | 0 | 0 | fixtures only |
 | redshift | TestRedshift.test_no_schema_binding | 1 | 0 | 0 | fixtures only |
 | redshift | TestRedshift.test_redshift | 130 | 0 | 0 | fixtures only |
 | redshift | TestRedshift.test_regexp_extract | 2 | 0 | 0 | fixtures only |
 | redshift | TestRedshift.test_revoke | 10 | 0 | 0 | fixtures only |
 | redshift | TestRedshift.test_time | 1 | 0 | 0 | fixtures only |
-| redshift | TestRedshift.test_to_timestamp | 4 | 1 | 0 | MISSING |
-| redshift | TestRedshift.test_values | 15 | 8 | 0 | MISSING |
+| redshift | TestRedshift.test_to_timestamp | 4 | 1 | 0 | ported |
+| redshift | TestRedshift.test_values | 15 | 8 | 0 | ported |
 | redshift | TestRedshift.test_varchar_max | 3 | 0 | 0 | fixtures only |
 | risingwave | TestRisingWave.test_datatypes | 4 | 0 | 0 | fixtures only |
 | risingwave | TestRisingWave.test_risingwave | 4 | 0 | 0 | fixtures only |
@@ -548,17 +548,17 @@ Methods: 806, replayed checks: 16336, direct assertions: 5152; ported: 4, fixtur
 | singlestore | TestSingleStore.test_constraints | 3 | 0 | 0 | fixtures only |
 | singlestore | TestSingleStore.test_date_parts_functions | 11 | 0 | 0 | fixtures only |
 | singlestore | TestSingleStore.test_dcolonqmark | 1 | 0 | 0 | fixtures only |
-| singlestore | TestSingleStore.test_json | 21 | 0 | 0 | fixtures only |
+| singlestore | TestSingleStore.test_json | 21 | 2 | 0 | ported |
 | singlestore | TestSingleStore.test_json_extract | 27 | 0 | 0 | fixtures only |
 | singlestore | TestSingleStore.test_logical | 2 | 0 | 0 | fixtures only |
-| singlestore | TestSingleStore.test_match_against | 3 | 0 | 0 | fixtures only |
+| singlestore | TestSingleStore.test_match_against | 3 | 3 | 0 | ported |
 | singlestore | TestSingleStore.test_math_functions | 23 | 0 | 0 | fixtures only |
 | singlestore | TestSingleStore.test_national_strings | 2 | 0 | 0 | fixtures only |
 | singlestore | TestSingleStore.test_percentile_null_ordering | 9 | 0 | 0 | fixtures only |
 | singlestore | TestSingleStore.test_reduce_functions | 2 | 0 | 0 | fixtures only |
 | singlestore | TestSingleStore.test_restricted_keywords | 4 | 0 | 0 | fixtures only |
 | singlestore | TestSingleStore.test_show | 40 | 0 | 0 | fixtures only |
-| singlestore | TestSingleStore.test_singlestore | 8 | 4 | 0 | MISSING |
+| singlestore | TestSingleStore.test_singlestore | 8 | 4 | 0 | ported |
 | singlestore | TestSingleStore.test_string_functions | 33 | 0 | 0 | fixtures only |
 | singlestore | TestSingleStore.test_time_formatting | 9 | 0 | 0 | fixtures only |
 | singlestore | TestSingleStore.test_time_functions | 54 | 0 | 0 | fixtures only |
@@ -567,8 +567,8 @@ Methods: 806, replayed checks: 16336, direct assertions: 5152; ported: 4, fixtur
 | singlestore | TestSingleStore.test_unicodestring_sql | 2 | 0 | 0 | fixtures only |
 | singlestore | TestSingleStore.test_unix_functions | 10 | 0 | 0 | fixtures only |
 | singlestore | TestSingleStore.test_vector | 6 | 0 | 0 | fixtures only |
-| snowflake | TestSnowflake.test_alter_iceberg_table | 3 | 2 | 0 | MISSING |
-| snowflake | TestSnowflake.test_alter_session | 2 | 2 | 0 | MISSING |
+| snowflake | TestSnowflake.test_alter_iceberg_table | 3 | 2 | 0 | ported |
+| snowflake | TestSnowflake.test_alter_session | 2 | 2 | 0 | ported |
 | snowflake | TestSnowflake.test_alter_set_unset | 10 | 0 | 0 | fixtures only |
 | snowflake | TestSnowflake.test_array_except | 2 | 0 | 0 | fixtures only |
 | snowflake | TestSnowflake.test_array_flatten | 9 | 0 | 0 | fixtures only |
@@ -579,119 +579,119 @@ Methods: 806, replayed checks: 16336, direct assertions: 5152; ported: 4, fixtur
 | snowflake | TestSnowflake.test_ceil | 4 | 0 | 0 | fixtures only |
 | snowflake | TestSnowflake.test_chained_pivots | 2 | 0 | 0 | fixtures only |
 | snowflake | TestSnowflake.test_charindex | 4 | 0 | 0 | fixtures only |
-| snowflake | TestSnowflake.test_copy | 12 | 4 | 0 | MISSING |
+| snowflake | TestSnowflake.test_copy | 12 | 4 | 0 | ported |
 | snowflake | TestSnowflake.test_corr | 12 | 0 | 0 | fixtures only |
 | snowflake | TestSnowflake.test_create_sequence | 3 | 0 | 0 | fixtures only |
 | snowflake | TestSnowflake.test_create_view_change_tracking | 2 | 0 | 0 | fixtures only |
 | snowflake | TestSnowflake.test_create_view_copy_grants | 5 | 0 | 0 | fixtures only |
-| snowflake | TestSnowflake.test_create_view_row_access_policy | 7 | 5 | 0 | MISSING |
-| snowflake | TestSnowflake.test_ddl | 72 | 1 | 0 | MISSING |
+| snowflake | TestSnowflake.test_create_view_row_access_policy | 7 | 5 | 0 | ported |
+| snowflake | TestSnowflake.test_ddl | 72 | 7 | 0 | ported |
 | snowflake | TestSnowflake.test_decfloat | 4 | 0 | 0 | fixtures only |
-| snowflake | TestSnowflake.test_describe | 92 | 70 | 0 | MISSING |
+| snowflake | TestSnowflake.test_describe | 92 | 70 | 0 | ported |
 | snowflake | TestSnowflake.test_directed_joins | 15 | 0 | 0 | fixtures only |
-| snowflake | TestSnowflake.test_drop_iceberg_table | 4 | 2 | 0 | MISSING |
+| snowflake | TestSnowflake.test_drop_iceberg_table | 4 | 2 | 0 | ported |
 | snowflake | TestSnowflake.test_encryption_functions | 20 | 0 | 0 | fixtures only |
-| snowflake | TestSnowflake.test_flatten | 13 | 4 | 0 | MISSING |
-| snowflake | TestSnowflake.test_float_interval | 2 | 16 | 0 | MISSING |
+| snowflake | TestSnowflake.test_flatten | 13 | 4 | 0 | ported |
+| snowflake | TestSnowflake.test_float_interval | 2 | 16 | 0 | ported |
 | snowflake | TestSnowflake.test_floor | 4 | 0 | 0 | fixtures only |
 | snowflake | TestSnowflake.test_from_changes | 3 | 0 | 0 | fixtures only |
 | snowflake | TestSnowflake.test_generator | 11 | 0 | 0 | fixtures only |
-| snowflake | TestSnowflake.test_get_bit | 4 | 8 | 0 | MISSING |
-| snowflake | TestSnowflake.test_get_extract | 7 | 0 | 0 | fixtures only |
-| snowflake | TestSnowflake.test_get_from_stage | 4 | 14 | 0 | MISSING |
+| snowflake | TestSnowflake.test_get_bit | 4 | 8 | 0 | ported |
+| snowflake | TestSnowflake.test_get_extract | 7 | 1 | 0 | ported |
+| snowflake | TestSnowflake.test_get_from_stage | 4 | 15 | 0 | ported |
 | snowflake | TestSnowflake.test_grant | 6 | 0 | 0 | fixtures only |
 | snowflake | TestSnowflake.test_historical_data | 23 | 0 | 0 | fixtures only |
 | snowflake | TestSnowflake.test_listagg | 11 | 0 | 0 | fixtures only |
 | snowflake | TestSnowflake.test_match_recognize | 75 | 0 | 0 | fixtures only |
-| snowflake | TestSnowflake.test_max_by_min_by | 8 | 6 | 0 | MISSING |
+| snowflake | TestSnowflake.test_max_by_min_by | 8 | 6 | 0 | ported |
 | snowflake | TestSnowflake.test_md5_functions | 5 | 0 | 0 | fixtures only |
 | snowflake | TestSnowflake.test_minus | 2 | 0 | 0 | fixtures only |
 | snowflake | TestSnowflake.test_model_attribute | 6 | 0 | 0 | fixtures only |
 | snowflake | TestSnowflake.test_next_day | 10 | 0 | 0 | fixtures only |
 | snowflake | TestSnowflake.test_null_treatment | 7 | 0 | 0 | fixtures only |
 | snowflake | TestSnowflake.test_offset_without_limit | 1 | 0 | 0 | fixtures only |
-| snowflake | TestSnowflake.test_parameter | 3 | 1 | 0 | MISSING |
+| snowflake | TestSnowflake.test_parameter | 3 | 1 | 0 | ported |
 | snowflake | TestSnowflake.test_parse_like_any | 2 | 0 | 0 | fixtures only |
-| snowflake | TestSnowflake.test_pivot_output_column_names | 0 | 6 | 0 | MISSING |
+| snowflake | TestSnowflake.test_pivot_output_column_names | 0 | 6 | 0 | ported |
 | snowflake | TestSnowflake.test_previous_day | 8 | 0 | 0 | fixtures only |
-| snowflake | TestSnowflake.test_put_to_stage | 4 | 16 | 0 | MISSING |
+| snowflake | TestSnowflake.test_put_to_stage | 4 | 18 | 0 | ported |
 | snowflake | TestSnowflake.test_querying_semi_structured_data | 25 | 0 | 0 | fixtures only |
-| snowflake | TestSnowflake.test_quoting | 0 | 4 | 0 | MISSING |
-| snowflake | TestSnowflake.test_regexp_functions | 73 | 14 | 0 | MISSING |
+| snowflake | TestSnowflake.test_quoting | 0 | 4 | 0 | ported |
+| snowflake | TestSnowflake.test_regexp_functions | 73 | 15 | 0 | ported |
 | snowflake | TestSnowflake.test_regexp_replace | 40 | 0 | 0 | fixtures only |
 | snowflake | TestSnowflake.test_rely_options | 4 | 0 | 0 | fixtures only |
 | snowflake | TestSnowflake.test_replace | 14 | 0 | 0 | fixtures only |
-| snowflake | TestSnowflake.test_reverse | 4 | 16 | 0 | MISSING |
+| snowflake | TestSnowflake.test_reverse | 4 | 16 | 0 | ported |
 | snowflake | TestSnowflake.test_revoke | 6 | 0 | 0 | fixtures only |
-| snowflake | TestSnowflake.test_rollback_as_identifier | 5 | 1 | 0 | MISSING |
+| snowflake | TestSnowflake.test_rollback_as_identifier | 5 | 1 | 0 | ported |
 | snowflake | TestSnowflake.test_round | 24 | 0 | 0 | fixtures only |
 | snowflake | TestSnowflake.test_sample | 25 | 0 | 0 | fixtures only |
 | snowflake | TestSnowflake.test_semantic_view | 18 | 0 | 0 | fixtures only |
 | snowflake | TestSnowflake.test_semi_structured_types | 14 | 0 | 0 | fixtures only |
 | snowflake | TestSnowflake.test_seq_functions | 24 | 0 | 0 | fixtures only |
-| snowflake | TestSnowflake.test_set_item_kind_attribute | 0 | 7 | 0 | MISSING |
+| snowflake | TestSnowflake.test_set_item_kind_attribute | 0 | 7 | 0 | ported |
 | snowflake | TestSnowflake.test_set_operation_top | 22 | 0 | 0 | fixtures only |
-| snowflake | TestSnowflake.test_sha1 | 7 | 24 | 0 | MISSING |
-| snowflake | TestSnowflake.test_show_columns | 5 | 8 | 0 | MISSING |
-| snowflake | TestSnowflake.test_show_databases | 2 | 8 | 0 | MISSING |
-| snowflake | TestSnowflake.test_show_file_formats | 3 | 8 | 0 | MISSING |
-| snowflake | TestSnowflake.test_show_functions | 2 | 8 | 0 | MISSING |
-| snowflake | TestSnowflake.test_show_imported_keys | 8 | 4 | 0 | MISSING |
-| snowflake | TestSnowflake.test_show_objects | 2 | 8 | 0 | MISSING |
-| snowflake | TestSnowflake.test_show_primary_keys | 8 | 4 | 0 | MISSING |
-| snowflake | TestSnowflake.test_show_procedures | 3 | 8 | 0 | MISSING |
-| snowflake | TestSnowflake.test_show_schemas | 1 | 8 | 0 | MISSING |
-| snowflake | TestSnowflake.test_show_sequences | 8 | 4 | 0 | MISSING |
-| snowflake | TestSnowflake.test_show_stages | 3 | 8 | 0 | MISSING |
-| snowflake | TestSnowflake.test_show_tables | 6 | 16 | 0 | MISSING |
-| snowflake | TestSnowflake.test_show_unique_keys | 8 | 4 | 0 | MISSING |
+| snowflake | TestSnowflake.test_sha1 | 7 | 24 | 0 | ported |
+| snowflake | TestSnowflake.test_show_columns | 5 | 8 | 0 | ported |
+| snowflake | TestSnowflake.test_show_databases | 2 | 8 | 0 | ported |
+| snowflake | TestSnowflake.test_show_file_formats | 3 | 8 | 0 | ported |
+| snowflake | TestSnowflake.test_show_functions | 2 | 8 | 0 | ported |
+| snowflake | TestSnowflake.test_show_imported_keys | 8 | 4 | 0 | ported |
+| snowflake | TestSnowflake.test_show_objects | 2 | 8 | 0 | ported |
+| snowflake | TestSnowflake.test_show_primary_keys | 8 | 4 | 0 | ported |
+| snowflake | TestSnowflake.test_show_procedures | 3 | 8 | 0 | ported |
+| snowflake | TestSnowflake.test_show_schemas | 1 | 8 | 0 | ported |
+| snowflake | TestSnowflake.test_show_sequences | 8 | 4 | 0 | ported |
+| snowflake | TestSnowflake.test_show_stages | 3 | 8 | 0 | ported |
+| snowflake | TestSnowflake.test_show_tables | 6 | 16 | 0 | ported |
+| snowflake | TestSnowflake.test_show_unique_keys | 8 | 4 | 0 | ported |
 | snowflake | TestSnowflake.test_show_users | 3 | 0 | 0 | fixtures only |
-| snowflake | TestSnowflake.test_show_views | 8 | 4 | 0 | MISSING |
-| snowflake | TestSnowflake.test_show_warehouses | 2 | 4 | 0 | MISSING |
-| snowflake | TestSnowflake.test_snowflake | 1334 | 162 | 0 | MISSING |
+| snowflake | TestSnowflake.test_show_views | 8 | 4 | 0 | ported |
+| snowflake | TestSnowflake.test_show_warehouses | 2 | 4 | 0 | ported |
+| snowflake | TestSnowflake.test_snowflake | 1334 | 171 | 0 | ported |
 | snowflake | TestSnowflake.test_space | 6 | 0 | 0 | fixtures only |
-| snowflake | TestSnowflake.test_staged_files | 21 | 4 | 0 | MISSING |
-| snowflake | TestSnowflake.test_storage_integration | 1 | 0 | 0 | fixtures only |
+| snowflake | TestSnowflake.test_staged_files | 21 | 4 | 0 | ported |
+| snowflake | TestSnowflake.test_storage_integration | 1 | 1 | 0 | ported |
 | snowflake | TestSnowflake.test_stored_procedures | 2 | 0 | 0 | fixtures only |
-| snowflake | TestSnowflake.test_swap | 0 | 2 | 0 | MISSING |
+| snowflake | TestSnowflake.test_swap | 0 | 2 | 0 | ported |
 | snowflake | TestSnowflake.test_table_function | 12 | 0 | 0 | fixtures only |
-| snowflake | TestSnowflake.test_timestamps | 93 | 0 | 0 | fixtures only |
-| snowflake | TestSnowflake.test_to_binary | 9 | 36 | 0 | MISSING |
-| snowflake | TestSnowflake.test_to_date | 40 | 0 | 0 | fixtures only |
-| snowflake | TestSnowflake.test_transpile_bitwise_ops | 0 | 32 | 0 | MISSING |
-| snowflake | TestSnowflake.test_trunc | 28 | 0 | 0 | fixtures only |
-| snowflake | TestSnowflake.test_try_cast | 8 | 8 | 0 | MISSING |
+| snowflake | TestSnowflake.test_timestamps | 93 | 3 | 0 | ported |
+| snowflake | TestSnowflake.test_to_binary | 9 | 36 | 0 | ported |
+| snowflake | TestSnowflake.test_to_date | 40 | 3 | 0 | ported |
+| snowflake | TestSnowflake.test_transpile_bitwise_ops | 0 | 32 | 0 | ported |
+| snowflake | TestSnowflake.test_trunc | 28 | 8 | 0 | ported |
+| snowflake | TestSnowflake.test_try_cast | 8 | 8 | 0 | ported |
 | snowflake | TestSnowflake.test_try_parse_json | 2 | 0 | 0 | fixtures only |
-| snowflake | TestSnowflake.test_type_sensitive_bitshift_transpilation | 0 | 8 | 0 | MISSING |
+| snowflake | TestSnowflake.test_type_sensitive_bitshift_transpilation | 0 | 8 | 0 | ported |
 | snowflake | TestSnowflake.test_undrop | 15 | 0 | 0 | fixtures only |
 | snowflake | TestSnowflake.test_update_statement | 4 | 0 | 0 | fixtures only |
-| snowflake | TestSnowflake.test_user_defined_functions | 6 | 0 | 0 | fixtures only |
-| snowflake | TestSnowflake.test_values | 5 | 4 | 0 | MISSING |
-| snowflake | TestSnowflake.test_window_function_arg | 0 | 9 | 0 | MISSING |
-| solr | TestSolr.test_solr | 3 | 0 | 0 | fixtures only |
+| snowflake | TestSnowflake.test_user_defined_functions | 6 | 1 | 0 | ported |
+| snowflake | TestSnowflake.test_values | 5 | 4 | 0 | ported |
+| snowflake | TestSnowflake.test_window_function_arg | 0 | 9 | 0 | ported |
+| solr | TestSolr.test_solr | 3 | 1 | 0 | ported |
 | spark | TestSpark.test_analyze | 8 | 0 | 0 | fixtures only |
-| spark | TestSpark.test_approx_percentile | 6 | 0 | 0 | fixtures only |
+| spark | TestSpark.test_approx_percentile | 6 | 7 | 0 | ported |
 | spark | TestSpark.test_array_insert | 8 | 0 | 0 | fixtures only |
-| spark | TestSpark.test_binary_string | 0 | 24 | 0 | MISSING |
+| spark | TestSpark.test_binary_string | 0 | 24 | 0 | ported |
 | spark | TestSpark.test_bool_or | 1 | 0 | 0 | fixtures only |
 | spark | TestSpark.test_current_user | 2 | 0 | 0 | fixtures only |
 | spark | TestSpark.test_ddl | 68 | 0 | 0 | fixtures only |
 | spark | TestSpark.test_declare | 9 | 0 | 0 | fixtures only |
-| spark | TestSpark.test_explode_map | 0 | 12 | 0 | MISSING |
+| spark | TestSpark.test_explode_map | 0 | 12 | 0 | ported |
 | spark | TestSpark.test_explode_projection_to_unnest | 23 | 0 | 0 | fixtures only |
-| spark | TestSpark.test_grouping_sets_as_group_by_element | 10 | 22 | 0 | MISSING |
+| spark | TestSpark.test_grouping_sets_as_group_by_element | 10 | 22 | 0 | ported |
 | spark | TestSpark.test_hint | 20 | 0 | 0 | fixtures only |
 | spark | TestSpark.test_insert_cte | 4 | 0 | 0 | fixtures only |
 | spark | TestSpark.test_minus | 2 | 0 | 0 | fixtures only |
 | spark | TestSpark.test_named_struct | 2 | 0 | 0 | fixtures only |
 | spark | TestSpark.test_schema_binding_options | 4 | 0 | 0 | fixtures only |
 | spark | TestSpark.test_set_variable | 12 | 0 | 0 | fixtures only |
-| spark | TestSpark.test_spark | 338 | 4 | 0 | MISSING |
-| spark | TestSpark.test_string | 0 | 16 | 0 | MISSING |
-| spark | TestSpark.test_strip_modifiers | 0 | 132 | 0 | MISSING |
+| spark | TestSpark.test_spark | 338 | 6 | 0 | ported |
+| spark | TestSpark.test_string | 0 | 16 | 0 | ported |
+| spark | TestSpark.test_strip_modifiers | 0 | 132 | 0 | ported |
 | spark | TestSpark.test_to_date | 12 | 0 | 0 | fixtures only |
 | spark | TestSpark.test_transform_query | 6 | 0 | 0 | fixtures only |
-| spark | TestSpark.test_transpile_annotated_exploded_column | 0 | 16 | 0 | MISSING |
+| spark | TestSpark.test_transpile_annotated_exploded_column | 0 | 16 | 0 | ported |
 | spark | TestSpark.test_try_divide | 6 | 0 | 0 | fixtures only |
 | sqlite | TestSQLite.test_analyze | 2 | 0 | 0 | fixtures only |
 | sqlite | TestSQLite.test_create_trigger | 3 | 0 | 0 | fixtures only |
@@ -700,11 +700,11 @@ Methods: 806, replayed checks: 16336, direct assertions: 5152; ported: 4, fixtur
 | sqlite | TestSQLite.test_generated_columns | 9 | 0 | 0 | fixtures only |
 | sqlite | TestSQLite.test_hexadecimal_literal | 2 | 0 | 0 | fixtures only |
 | sqlite | TestSQLite.test_identity_columns | 30 | 0 | 0 | fixtures only |
-| sqlite | TestSQLite.test_json_arrow_precedence | 14 | 0 | 0 | fixtures only |
+| sqlite | TestSQLite.test_json_arrow_precedence | 14 | 4 | 0 | ported |
 | sqlite | TestSQLite.test_longvarchar_dtype | 1 | 0 | 0 | fixtures only |
-| sqlite | TestSQLite.test_sqlite | 146 | 5 | 0 | ported |
+| sqlite | TestSQLite.test_sqlite | 146 | 7 | 0 | ported |
 | sqlite | TestSQLite.test_strftime | 7 | 0 | 0 | fixtures only |
-| sqlite | TestSQLite.test_trunc | 2 | 2 | 0 | ported |
+| sqlite | TestSQLite.test_trunc | 2 | 4 | 0 | ported |
 | sqlite | TestSQLite.test_unsupported_auto_increment | 9 | 24 | 0 | ported |
 | sqlite | TestSQLite.test_warnings | 1 | 2 | 0 | ported |
 | sqlite | TestSQLite.test_window_null_treatment | 1 | 0 | 0 | fixtures only |
@@ -712,7 +712,7 @@ Methods: 806, replayed checks: 16336, direct assertions: 5152; ported: 4, fixtur
 | starrocks | TestStarrocks.test_array_contains_all | 7 | 0 | 0 | fixtures only |
 | starrocks | TestStarrocks.test_between | 5 | 0 | 0 | fixtures only |
 | starrocks | TestStarrocks.test_date_add_sub | 6 | 0 | 0 | fixtures only |
-| starrocks | TestStarrocks.test_ddl | 75 | 8 | 0 | MISSING |
+| starrocks | TestStarrocks.test_ddl | 75 | 8 | 0 | ported |
 | starrocks | TestStarrocks.test_distinct_on | 1 | 0 | 0 | fixtures only |
 | starrocks | TestStarrocks.test_generate_date_array | 1 | 0 | 0 | fixtures only |
 | starrocks | TestStarrocks.test_identity | 5 | 0 | 0 | fixtures only |
@@ -721,8 +721,8 @@ Methods: 806, replayed checks: 16336, direct assertions: 5152; ported: 4, fixtur
 | starrocks | TestStarrocks.test_min_max_by | 7 | 0 | 0 | fixtures only |
 | starrocks | TestStarrocks.test_partition | 15 | 0 | 0 | fixtures only |
 | starrocks | TestStarrocks.test_regex | 3 | 0 | 0 | fixtures only |
-| starrocks | TestStarrocks.test_starrocks | 13 | 1 | 0 | MISSING |
-| starrocks | TestStarrocks.test_table_function | 4 | 0 | 0 | fixtures only |
+| starrocks | TestStarrocks.test_starrocks | 13 | 2 | 0 | ported |
+| starrocks | TestStarrocks.test_table_function | 4 | 2 | 0 | ported |
 | starrocks | TestStarrocks.test_time | 3 | 0 | 0 | fixtures only |
 | starrocks | TestStarrocks.test_trim | 10 | 0 | 0 | fixtures only |
 | starrocks | TestStarrocks.test_unnest | 18 | 0 | 0 | fixtures only |
@@ -738,22 +738,22 @@ Methods: 806, replayed checks: 16336, direct assertions: 5152; ported: 4, fixtur
 | teradata | TestTeradata.test_power | 2 | 0 | 0 | fixtures only |
 | teradata | TestTeradata.test_query_band | 10 | 0 | 0 | fixtures only |
 | teradata | TestTeradata.test_statistics | 5 | 0 | 0 | fixtures only |
-| teradata | TestTeradata.test_teradata | 13 | 0 | 0 | fixtures only |
+| teradata | TestTeradata.test_teradata | 13 | 1 | 0 | ported |
 | teradata | TestTeradata.test_time | 27 | 0 | 0 | fixtures only |
 | teradata | TestTeradata.test_translate | 2 | 0 | 0 | fixtures only |
 | teradata | TestTeradata.test_update | 2 | 0 | 0 | fixtures only |
 | trino | TestTrino.test_analyze | 2 | 0 | 0 | fixtures only |
 | trino | TestTrino.test_array_first | 2 | 0 | 0 | fixtures only |
 | trino | TestTrino.test_concat_ws | 11 | 0 | 0 | fixtures only |
-| trino | TestTrino.test_concat_ws_typed | 0 | 12 | 0 | MISSING |
-| trino | TestTrino.test_concat_ws_unknown_types | 4 | 12 | 0 | MISSING |
+| trino | TestTrino.test_concat_ws_typed | 0 | 12 | 0 | ported |
+| trino | TestTrino.test_concat_ws_unknown_types | 4 | 12 | 0 | ported |
 | trino | TestTrino.test_ddl | 23 | 0 | 0 | fixtures only |
 | trino | TestTrino.test_fetch | 4 | 0 | 0 | fixtures only |
-| trino | TestTrino.test_inline_udf | 19 | 1 | 0 | MISSING |
-| trino | TestTrino.test_inline_udf_begin_end | 6 | 4 | 0 | MISSING |
+| trino | TestTrino.test_inline_udf | 19 | 1 | 0 | ported |
+| trino | TestTrino.test_inline_udf_begin_end | 6 | 4 | 0 | ported |
 | trino | TestTrino.test_inline_udf_case | 7 | 0 | 0 | fixtures only |
 | trino | TestTrino.test_inline_udf_if | 7 | 0 | 0 | fixtures only |
-| trino | TestTrino.test_inline_udf_loop_repeat | 8 | 24 | 0 | MISSING |
+| trino | TestTrino.test_inline_udf_loop_repeat | 8 | 24 | 0 | ported |
 | trino | TestTrino.test_inline_udf_while | 5 | 0 | 0 | fixtures only |
 | trino | TestTrino.test_json_value | 6 | 0 | 0 | fixtures only |
 | trino | TestTrino.test_listagg | 7 | 0 | 0 | fixtures only |
@@ -761,10 +761,10 @@ Methods: 806, replayed checks: 16336, direct assertions: 5152; ported: 4, fixtur
 | trino | TestTrino.test_trino | 30 | 0 | 0 | fixtures only |
 | tsql | TestTSQL.test_add_date | 6 | 0 | 0 | fixtures only |
 | tsql | TestTSQL.test_charindex | 13 | 0 | 0 | fixtures only |
-| tsql | TestTSQL.test_collation_parse | 1 | 0 | 0 | fixtures only |
+| tsql | TestTSQL.test_collation_parse | 1 | 2 | 0 | ported |
 | tsql | TestTSQL.test_commit | 7 | 0 | 0 | fixtures only |
 | tsql | TestTSQL.test_convert | 56 | 0 | 0 | fixtures only |
-| tsql | TestTSQL.test_count | 10 | 2 | 0 | MISSING |
+| tsql | TestTSQL.test_count | 10 | 2 | 0 | ported |
 | tsql | TestTSQL.test_create_trigger | 3 | 0 | 0 | fixtures only |
 | tsql | TestTSQL.test_current_user | 4 | 0 | 0 | fixtures only |
 | tsql | TestTSQL.test_date_diff | 40 | 0 | 0 | fixtures only |
@@ -773,7 +773,7 @@ Methods: 806, replayed checks: 16336, direct assertions: 5152; ported: 4, fixtur
 | tsql | TestTSQL.test_datepart | 54 | 0 | 0 | fixtures only |
 | tsql | TestTSQL.test_datetrunc | 6 | 0 | 0 | fixtures only |
 | tsql | TestTSQL.test_day_month_year | 7 | 0 | 0 | fixtures only |
-| tsql | TestTSQL.test_ddl | 66 | 2 | 0 | MISSING |
+| tsql | TestTSQL.test_ddl | 66 | 4 | 0 | ported |
 | tsql | TestTSQL.test_declare | 9 | 0 | 0 | fixtures only |
 | tsql | TestTSQL.test_eomonth | 21 | 0 | 0 | fixtures only |
 | tsql | TestTSQL.test_for_modifiers | 21 | 0 | 0 | fixtures only |
@@ -781,7 +781,7 @@ Methods: 806, replayed checks: 16336, direct assertions: 5152; ported: 4, fixtur
 | tsql | TestTSQL.test_format | 19 | 0 | 0 | fixtures only |
 | tsql | TestTSQL.test_grant | 3 | 0 | 0 | fixtures only |
 | tsql | TestTSQL.test_hints | 12 | 0 | 0 | fixtures only |
-| tsql | TestTSQL.test_identifier_prefixes | 19 | 12 | 0 | MISSING |
+| tsql | TestTSQL.test_identifier_prefixes | 19 | 25 | 0 | ported |
 | tsql | TestTSQL.test_isnull | 2 | 0 | 0 | fixtures only |
 | tsql | TestTSQL.test_json | 15 | 0 | 0 | fixtures only |
 | tsql | TestTSQL.test_lateral_subquery | 9 | 0 | 0 | fixtures only |
@@ -790,29 +790,29 @@ Methods: 806, replayed checks: 16336, direct assertions: 5152; ported: 4, fixtur
 | tsql | TestTSQL.test_next_value_for | 4 | 0 | 0 | fixtures only |
 | tsql | TestTSQL.test_null_ordering_simulation_resolves_ordered_against_projection | 3 | 0 | 0 | fixtures only |
 | tsql | TestTSQL.test_numeric_trunc | 4 | 0 | 0 | fixtures only |
-| tsql | TestTSQL.test_odbc_date_literals | 0 | 6 | 0 | MISSING |
+| tsql | TestTSQL.test_odbc_date_literals | 0 | 6 | 0 | ported |
 | tsql | TestTSQL.test_openjson | 4 | 0 | 0 | fixtures only |
-| tsql | TestTSQL.test_option | 104 | 195 | 0 | MISSING |
+| tsql | TestTSQL.test_option | 104 | 195 | 0 | ported |
 | tsql | TestTSQL.test_parsename | 26 | 0 | 0 | fixtures only |
 | tsql | TestTSQL.test_procedure_keywords | 3 | 0 | 0 | fixtures only |
-| tsql | TestTSQL.test_procedures | 3 | 56 | 0 | MISSING |
+| tsql | TestTSQL.test_procedures | 3 | 58 | 0 | ported |
 | tsql | TestTSQL.test_qualify_derived_table_outputs | 5 | 0 | 0 | fixtures only |
 | tsql | TestTSQL.test_replicate | 2 | 0 | 0 | fixtures only |
 | tsql | TestTSQL.test_revoke | 2 | 0 | 0 | fixtures only |
 | tsql | TestTSQL.test_rollback | 5 | 0 | 0 | fixtures only |
-| tsql | TestTSQL.test_scope_resolution_op | 8 | 40 | 0 | MISSING |
+| tsql | TestTSQL.test_scope_resolution_op | 8 | 40 | 0 | ported |
 | tsql | TestTSQL.test_set | 6 | 0 | 0 | fixtures only |
 | tsql | TestTSQL.test_set_operation_branch_limits | 23 | 0 | 0 | fixtures only |
 | tsql | TestTSQL.test_set_operation_order | 27 | 0 | 0 | fixtures only |
-| tsql | TestTSQL.test_set_operation_pagination | 32 | 4 | 0 | MISSING |
-| tsql | TestTSQL.test_set_operation_trailing_clauses | 65 | 220 | 0 | MISSING |
-| tsql | TestTSQL.test_set_operation_unordered_pagination | 29 | 4 | 0 | MISSING |
+| tsql | TestTSQL.test_set_operation_pagination | 32 | 4 | 0 | ported |
+| tsql | TestTSQL.test_set_operation_trailing_clauses | 65 | 220 | 0 | ported |
+| tsql | TestTSQL.test_set_operation_unordered_pagination | 29 | 4 | 0 | ported |
 | tsql | TestTSQL.test_string | 3 | 0 | 0 | fixtures only |
 | tsql | TestTSQL.test_system_time | 6 | 0 | 0 | fixtures only |
 | tsql | TestTSQL.test_temporal_table | 6 | 0 | 0 | fixtures only |
 | tsql | TestTSQL.test_top | 8 | 0 | 0 | fixtures only |
 | tsql | TestTSQL.test_transaction | 5 | 0 | 0 | fixtures only |
-| tsql | TestTSQL.test_tsql | 210 | 5 | 0 | MISSING |
+| tsql | TestTSQL.test_tsql | 210 | 9 | 0 | ported |
 | tsql | TestTSQL.test_types | 23 | 0 | 0 | fixtures only |
 | tsql | TestTSQL.test_types_bin | 15 | 0 | 0 | fixtures only |
 | tsql | TestTSQL.test_types_date | 12 | 0 | 0 | fixtures only |
@@ -820,4 +820,4 @@ Methods: 806, replayed checks: 16336, direct assertions: 5152; ported: 4, fixtur
 | tsql | TestTSQL.test_types_ints | 18 | 0 | 0 | fixtures only |
 | tsql | TestTSQL.test_types_string | 10 | 0 | 0 | fixtures only |
 | tsql | TestTSQL.test_udf | 18 | 0 | 0 | fixtures only |
-| tsql | TestTSQL.test_unpivot_value_column_comes_first | 0 | 6 | 0 | MISSING |
+| tsql | TestTSQL.test_unpivot_value_column_comes_first | 0 | 6 | 0 | ported |

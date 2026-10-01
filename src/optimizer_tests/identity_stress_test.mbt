@@ -28,11 +28,7 @@ test "optimizer identity stress" {
     } catch {
       err => "ERROR: \{err}"
     })
-    let ok = if expected.has_prefix("ERROR:") {
-      got.has_prefix("ERROR:")
-    } else {
-      got == expected
-    }
+    let ok = outcome_matches(got, expected)
     let (t, p) = totals.get(mode).unwrap_or((0, 0))
     totals[mode] = (t + 1, if ok { p + 1 } else { p })
     if !ok && reported < 15 {

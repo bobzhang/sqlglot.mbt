@@ -164,6 +164,12 @@ fn timestrtotime_sql(
 
 ///|
 fn configure_generator(d : @core.Dialect) -> Unit {
+  // AFTER_HAVING_MODIFIER_TRANSFORMS = generator.AFTER_HAVING_MODIFIER_TRANSFORMS
+  // (the module-level table: only WINDOW and QUALIFY)
+  d.gen_fns.after_having_modifier_transforms = d.gen_fns.after_having_modifier_transforms.filter(kv => {
+      kv.0 == "windows" || kv.0 == "qualify"
+    },
+  )
   tsql_inverse_time_mapping.val = d.cfg.inverse_time_mapping
   let t = d.gen_fns.transforms
   t.remove(ReturnsProperty)

@@ -75,3 +75,17 @@ test "TestSQLite.test_unsupported_auto_increment" {
   }
   t.done()
 }
+
+///|
+test "TestSQLite.test_json_arrow_precedence" {
+  let t = t(dialect="sqlite")
+  let expr = t
+    .parse_one(
+      "SELECT a.data ->> b.key ->> a.final_key FROM source AS a JOIN keys AS b ON TRUE",
+    )
+    .selects()[0]
+  t.is_a(t.is_a(Some(expr), JSONExtractScalar).this(), JSONExtractScalar) |> ignore
+  let expr = t.parse_one("SELECT a || b COLLATE NOCASE FROM t").selects()[0]
+  t.is_a(t.is_a(Some(expr), DPipe).expression(), Collate) |> ignore
+  t.done()
+}

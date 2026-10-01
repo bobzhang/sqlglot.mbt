@@ -266,6 +266,21 @@ pub struct MappingSchema {
   priv mut depth_ : Int
   priv mut supported_table_args_ : Array[String]
   priv type_mapping_cache : Map[String, @core.Expr]
+  /// Python `_find_cache`: `find` results by (table, ensure_data_types).
+  priv find_cache : Map[(@core.Expr, Bool), FindResult]
+}
+
+///|
+/// A cached `MappingSchema.find` result: the raw column mapping, or the column types.
+priv enum FindResult {
+  Raw(Map[String, SchemaNode]?)
+  Types(Map[String, @core.Expr?]?)
+}
+
+///|
+/// The number of entries of the `find` cache (Python `len(schema._find_cache)`).
+pub fn MappingSchema::find_cache_size(self : MappingSchema) -> Int {
+  self.find_cache.length()
 }
 
 ///|
@@ -295,6 +310,7 @@ pub fn MappingSchema::new(
     depth_: 0,
     supported_table_args_: [],
     type_mapping_cache: {},
+    find_cache: {},
   }
   let mapping = if normalize { s.normalize_mapping(schema) } else { schema }
   let udfs = if normalize { s.normalize_udfs(udf_mapping) } else { udf_mapping }
@@ -449,6 +465,22 @@ pub fn MappingSchema::find(
   table : @core.Expr,
   raise_on_missing? : Bool = true,
 ) -> Map[String, SchemaNode]? raise @core.SqlglotError {
+  // like Python, a cached None is looked up again
+  if self.find_cache.get((table, false)) is Some(Raw(Some(_) as cached)) {
+    return cached
+  }
+  let schema = self.find_uncached(table, raise_on_missing~)
+  self.find_cache[(table, false)] = Raw(schema)
+  schema
+}
+
+///|
+/// `AbstractMappingSchema.find`: the column mapping of a table, without the cache.
+fn MappingSchema::find_uncached(
+  self : MappingSchema,
+  table : @core.Expr,
+  raise_on_missing? : Bool = true,
+) -> Map[String, SchemaNode]? raise @core.SqlglotError {
   let n = self.supported_table_args().length()
   let all_parts = table_parts(table)
   let parts = all_parts[0:@core.min_int(n, all_parts.length())].to_array()
@@ -469,7 +501,20 @@ pub fn MappingSchema::find_column_types(
   self : MappingSchema,
   table : @core.Expr,
 ) -> Map[String, @core.Expr?]? raise @core.SqlglotError {
-  match self.find(table, raise_on_missing=false) {
+  if self.find_cache.get((table, true)) is Some(Types(Some(_) as cached)) {
+    return cached
+  }
+  let schema = self.find_column_types_uncached(table)
+  self.find_cache[(table, true)] = Types(schema)
+  schema
+}
+
+///|
+fn MappingSchema::find_column_types_uncached(
+  self : MappingSchema,
+  table : @core.Expr,
+) -> Map[String, @core.Expr?]? raise @core.SqlglotError {
+  match self.find_uncached(table, raise_on_missing=false) {
     Some(cols) => {
       let out : Map[String, @core.Expr?] = {}
       for col, dtype in cols {
@@ -518,6 +563,8 @@ pub fn MappingSchema::add_table(
   rev.rev_in_place()
   nested_set(self.mapping, rev, Dict(normalized_column_mapping))
   self.mapping_trie.add(parts)
+  self.find_cache.remove((normalized_table, true))
+  self.find_cache.remove((normalized_table, false))
 }
 
 ///|
