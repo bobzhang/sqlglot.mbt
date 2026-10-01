@@ -3,10 +3,7 @@
 ///|
 test "TestTranspile.test_weird_chars" {
   let t = t()
-  t.eqf(
-    () => @sqlglot.transpile("0Êß")[0],
-    "0 AS Êß",
-  )
+  t.eqf(() => @sqlglot.transpile("0Êß")[0], "0 AS Êß")
   t.eqf(
     () => @sqlglot.transpile("SELECT　* FROM t WHERE c = 1")[0],
     "SELECT * FROM t WHERE c = 1",
@@ -25,10 +22,7 @@ test "TestTranspile.test_alias" {
     () => @sqlglot.transpile("SELECT 1 overwrite")[0],
     "SELECT 1 AS overwrite",
   )
-  t.eqf(
-    () => @sqlglot.transpile("SELECT 1 is")[0],
-    "SELECT 1 AS is",
-  )
+  t.eqf(() => @sqlglot.transpile("SELECT 1 is")[0], "SELECT 1 AS is")
   t.eqf(
     () => @sqlglot.transpile("SELECT 1 current_time")[0],
     "SELECT 1 AS current_time",
@@ -45,18 +39,20 @@ test "TestTranspile.test_alias" {
     () => @sqlglot.transpile("SELECT 1 current_datetime")[0],
     "SELECT 1 AS current_datetime",
   )
+  t.eqf(() => @sqlglot.transpile("SELECT 1 row")[0], "SELECT 1 AS row")
   t.eqf(
-    () => @sqlglot.transpile("SELECT 1 row")[0],
-    "SELECT 1 AS row",
-  )
-  t.eqf(
-    () => @sqlglot.transpile("SELECT 1 FROM a.b.table1 t UNPIVOT((c3) FOR c4 IN (a, b))")[0],
+    () => {
+      @sqlglot.transpile(
+        "SELECT 1 FROM a.b.table1 t UNPIVOT((c3) FOR c4 IN (a, b))",
+      )[0]
+    },
     "SELECT 1 FROM a.b.table1 AS t UNPIVOT((c3) FOR c4 IN (a, b))",
   )
   for key in ["union", "from", "join"] {
     t.validate("SELECT x AS \{key}", "SELECT x AS \{key}")
     t.validate("SELECT x \"\{key}\"", "SELECT x AS \"\{key}\"")
-    t.raises_parse(() => ignore(@sqlglot.transpile("SELECT x \{key}"))) |> ignore
+    t.raises_parse(() => ignore(@sqlglot.transpile("SELECT x \{key}")))
+    |> ignore
   }
   t.done()
 }
@@ -64,18 +60,9 @@ test "TestTranspile.test_alias" {
 ///|
 test "TestTranspile.test_unary" {
   let t = t()
-  t.validate(
-    "+++1",
-    "1",
-  )
-  t.validate(
-    "+-1",
-    "-1",
-  )
-  t.validate(
-    "+- - -1",
-    "- - -1",
-  )
+  t.validate("+++1", "1")
+  t.validate("+-1", "-1")
+  t.validate("+- - -1", "- - -1")
   t.done()
 }
 
@@ -95,8 +82,7 @@ test "TestTranspile.test_paren" {
 test "TestTranspile.test_some" {
   let t = t()
   t.validate(
-    "SELECT * FROM x WHERE a = SOME (SELECT 1)",
-    "SELECT * FROM x WHERE a = ANY(SELECT 1)",
+    "SELECT * FROM x WHERE a = SOME (SELECT 1)", "SELECT * FROM x WHERE a = ANY(SELECT 1)",
   )
   t.done()
 }
@@ -150,37 +136,18 @@ test "TestTranspile.test_leading_comma" {
     leading_comma=true,
     pretty=true,
   )
-  t.validate(
-    "SELECT FOO, BAR, BAZ",
-    "SELECT FOO, BAR, BAZ",
-    leading_comma=true,
-  )
+  t.validate("SELECT FOO, BAR, BAZ", "SELECT FOO, BAR, BAZ", leading_comma=true)
   t.done()
 }
 
 ///|
 test "TestTranspile.test_space" {
   let t = t()
-  t.validate(
-    "SELECT MIN(3)>MIN(2)",
-    "SELECT MIN(3) > MIN(2)",
-  )
-  t.validate(
-    "SELECT MIN(3)>=MIN(2)",
-    "SELECT MIN(3) >= MIN(2)",
-  )
-  t.validate(
-    "SELECT 1>0",
-    "SELECT 1 > 0",
-  )
-  t.validate(
-    "SELECT 3>=3",
-    "SELECT 3 >= 3",
-  )
-  t.validate(
-    "SELECT a\r\nFROM b",
-    "SELECT a FROM b",
-  )
+  t.validate("SELECT MIN(3)>MIN(2)", "SELECT MIN(3) > MIN(2)")
+  t.validate("SELECT MIN(3)>=MIN(2)", "SELECT MIN(3) >= MIN(2)")
+  t.validate("SELECT 1>0", "SELECT 1 > 0")
+  t.validate("SELECT 3>=3", "SELECT 3 >= 3")
+  t.validate("SELECT a\r\nFROM b", "SELECT a FROM b")
   t.done()
 }
 
@@ -188,16 +155,11 @@ test "TestTranspile.test_space" {
 test "TestTranspile.test_comments" {
   let t = t()
   t.validate(
-    "select /* asfd /* asdf */ asdf */ 1",
-    "/* asfd / * asdf * / asdf */ SELECT 1",
+    "select /* asfd /* asdf */ asdf */ 1", "/* asfd / * asdf * / asdf */ SELECT 1",
   )
+  t.validate("SELECT c /* foo */ AS alias", "SELECT c AS alias /* foo */")
   t.validate(
-    "SELECT c /* foo */ AS alias",
-    "SELECT c AS alias /* foo */",
-  )
-  t.validate(
-    "SELECT c AS /* foo */ (a, b, c) FROM t",
-    "SELECT c AS (a, b, c) /* foo */ FROM t",
+    "SELECT c AS /* foo */ (a, b, c) FROM t", "SELECT c AS (a, b, c) /* foo */ FROM t",
   )
   t.validate(
     (
@@ -208,8 +170,7 @@ test "TestTranspile.test_comments" {
     "SELECT * FROM t1 /* x */ UNION ALL SELECT * FROM t2",
   )
   t.validate(
-    "/* comment */ SELECT * FROM a UNION SELECT * FROM b",
-    "/* comment */ SELECT * FROM a UNION SELECT * FROM b",
+    "/* comment */ SELECT * FROM a UNION SELECT * FROM b", "/* comment */ SELECT * FROM a UNION SELECT * FROM b",
   )
   t.validate(
     (
@@ -229,33 +190,20 @@ test "TestTranspile.test_comments" {
     "SELECT foo /* comments */",
   )
   t.validate(
-    "SELECT * FROM a INNER /* comments */ JOIN b",
-    "SELECT * FROM a /* comments */ INNER JOIN b",
+    "SELECT * FROM a INNER /* comments */ JOIN b", "SELECT * FROM a /* comments */ INNER JOIN b",
   )
   t.validate(
-    "SELECT * FROM a LEFT /* comment 1 */ OUTER /* comment 2 */ JOIN b",
-    "SELECT * FROM a /* comment 1 */ /* comment 2 */ LEFT OUTER JOIN b",
+    "SELECT * FROM a LEFT /* comment 1 */ OUTER /* comment 2 */ JOIN b", "SELECT * FROM a /* comment 1 */ /* comment 2 */ LEFT OUTER JOIN b",
   )
   t.validate(
-    "SELECT CASE /* test */ WHEN a THEN b ELSE c END",
-    "SELECT CASE WHEN a THEN b ELSE c END /* test */",
+    "SELECT CASE /* test */ WHEN a THEN b ELSE c END", "SELECT CASE WHEN a THEN b ELSE c END /* test */",
   )
+  t.validate("SELECT 1 /*/2 */", "SELECT 1 /* /2 */")
+  t.validate("SELECT */*comment*/", "SELECT * /* comment */")
   t.validate(
-    "SELECT 1 /*/2 */",
-    "SELECT 1 /* /2 */",
+    "SELECT * FROM table /*comment 1*/ /*comment 2*/", "SELECT * FROM table /* comment 1 */ /* comment 2 */",
   )
-  t.validate(
-    "SELECT */*comment*/",
-    "SELECT * /* comment */",
-  )
-  t.validate(
-    "SELECT * FROM table /*comment 1*/ /*comment 2*/",
-    "SELECT * FROM table /* comment 1 */ /* comment 2 */",
-  )
-  t.validate(
-    "SELECT 1 FROM foo -- comment",
-    "SELECT 1 FROM foo /* comment */",
-  )
+  t.validate("SELECT 1 FROM foo -- comment", "SELECT 1 FROM foo /* comment */")
   t.validate(
     (
       #|SELECT * FROM
@@ -279,12 +227,10 @@ test "TestTranspile.test_comments" {
     "/* !5 */ SELECT x FROM foo",
   )
   t.validate(
-    "SELECT 1 /* inline */ FROM foo -- comment",
-    "SELECT 1 /* inline */ FROM foo /* comment */",
+    "SELECT 1 /* inline */ FROM foo -- comment", "SELECT 1 /* inline */ FROM foo /* comment */",
   )
   t.validate(
-    "SELECT FUN(x) /*x*/, [1,2,3] /*y*/",
-    "SELECT FUN(x) /* x */, ARRAY(1, 2, 3) /* y */",
+    "SELECT FUN(x) /*x*/, [1,2,3] /*y*/", "SELECT FUN(x) /* x */, ARRAY(1, 2, 3) /* y */",
   )
   t.validate(
     (
@@ -308,10 +254,7 @@ test "TestTranspile.test_comments" {
       #|             like this */ FROM foo /* comment */
     ),
   )
-  t.validate(
-    "select x from foo --       x",
-    "SELECT x FROM foo /*       x */",
-  )
+  t.validate("select x from foo --       x", "SELECT x FROM foo /*       x */")
   t.validate(
     (
       #|select x, --
@@ -484,21 +427,15 @@ test "TestTranspile.test_comments" {
     ),
     pretty=true,
   )
+  t.validate("(/* 1 */ 1 ) /* 2 */", "(1) /* 1 */ /* 2 */")
   t.validate(
-    "(/* 1 */ 1 ) /* 2 */",
-    "(1) /* 1 */ /* 2 */",
+    "select * from t where not a in (23) /*test*/ and b in (14)", "SELECT * FROM t WHERE NOT a IN (23) /* test */ AND b IN (14)",
   )
   t.validate(
-    "select * from t where not a in (23) /*test*/ and b in (14)",
-    "SELECT * FROM t WHERE NOT a IN (23) /* test */ AND b IN (14)",
+    "select * from t where a in (23) /*test*/ and b in (14)", "SELECT * FROM t WHERE a IN (23) /* test */ AND b IN (14)",
   )
   t.validate(
-    "select * from t where a in (23) /*test*/ and b in (14)",
-    "SELECT * FROM t WHERE a IN (23) /* test */ AND b IN (14)",
-  )
-  t.validate(
-    "select * from t where ((condition = 1)/*test*/)",
-    "SELECT * FROM t WHERE ((condition = 1) /* test */)",
+    "select * from t where ((condition = 1)/*test*/)", "SELECT * FROM t WHERE ((condition = 1) /* test */)",
   )
   t.validate(
     "SELECT 1 // hi this is a comment",
@@ -751,8 +688,7 @@ test "TestTranspile.test_comments" {
     "SELECT X FROM catalog.db.table WHERE Y AND Z",
   )
   t.validate(
-    "with a as /* comment */ ( select * from b) select * from a",
-    "WITH a /* comment */ AS (SELECT * FROM b) SELECT * FROM a",
+    "with a as /* comment */ ( select * from b) select * from a", "WITH a /* comment */ AS (SELECT * FROM b) SELECT * FROM a",
   )
   t.validate(
     (
@@ -916,13 +852,9 @@ test "TestTranspile.test_comment_single_line_with_block_close" {
     ),
     "/* comment * / DROP TABLE users -- */ SELECT 1",
   )
+  t.validate("SELECT c /* c1 /* c2 */ c3 */", "SELECT c /* c1 / * c2 * / c3 */")
   t.validate(
-    "SELECT c /* c1 /* c2 */ c3 */",
-    "SELECT c /* c1 / * c2 * / c3 */",
-  )
-  t.validate(
-    "SELECT c /* c1 /* c2 /* c3 */ */ */",
-    "SELECT c /* c1 / * c2 / * c3 * / * / */",
+    "SELECT c /* c1 /* c2 /* c3 */ */ */", "SELECT c /* c1 / * c2 / * c3 * / * / */",
   )
   t.done()
 }
@@ -930,54 +862,18 @@ test "TestTranspile.test_comment_single_line_with_block_close" {
 ///|
 test "TestTranspile.test_types" {
   let t = t()
-  t.validate(
-    "INT 1",
-    "CAST(1 AS INT)",
-  )
-  t.validate(
-    "VARCHAR 'x' y",
-    "CAST('x' AS VARCHAR) AS y",
-  )
-  t.validate(
-    "STRING 'x' y",
-    "CAST('x' AS TEXT) AS y",
-  )
-  t.validate(
-    "x::INT",
-    "CAST(x AS INT)",
-  )
-  t.validate(
-    "x::INTEGER",
-    "CAST(x AS INT)",
-  )
-  t.validate(
-    "x::INT y",
-    "CAST(x AS INT) AS y",
-  )
-  t.validate(
-    "x::INT AS y",
-    "CAST(x AS INT) AS y",
-  )
-  t.validate(
-    "x::INT::BOOLEAN",
-    "CAST(CAST(x AS INT) AS BOOLEAN)",
-  )
-  t.validate(
-    "interval::int",
-    "CAST(interval AS INT)",
-  )
-  t.validate(
-    "x::user_defined_type",
-    "CAST(x AS user_defined_type)",
-  )
-  t.validate(
-    "CAST(x::INT AS BOOLEAN)",
-    "CAST(CAST(x AS INT) AS BOOLEAN)",
-  )
-  t.validate(
-    "CAST(x AS INT)::BOOLEAN",
-    "CAST(CAST(x AS INT) AS BOOLEAN)",
-  )
+  t.validate("INT 1", "CAST(1 AS INT)")
+  t.validate("VARCHAR 'x' y", "CAST('x' AS VARCHAR) AS y")
+  t.validate("STRING 'x' y", "CAST('x' AS TEXT) AS y")
+  t.validate("x::INT", "CAST(x AS INT)")
+  t.validate("x::INTEGER", "CAST(x AS INT)")
+  t.validate("x::INT y", "CAST(x AS INT) AS y")
+  t.validate("x::INT AS y", "CAST(x AS INT) AS y")
+  t.validate("x::INT::BOOLEAN", "CAST(CAST(x AS INT) AS BOOLEAN)")
+  t.validate("interval::int", "CAST(interval AS INT)")
+  t.validate("x::user_defined_type", "CAST(x AS user_defined_type)")
+  t.validate("CAST(x::INT AS BOOLEAN)", "CAST(CAST(x AS INT) AS BOOLEAN)")
+  t.validate("CAST(x AS INT)::BOOLEAN", "CAST(CAST(x AS INT) AS BOOLEAN)")
   t.raises_parse(() => ignore(@sqlglot.transpile("x::z", read="clickhouse")))
   |> ignore
   t.done()
@@ -986,26 +882,11 @@ test "TestTranspile.test_types" {
 ///|
 test "TestTranspile.test_not_range" {
   let t = t()
-  t.validate(
-    "a NOT LIKE b",
-    "a NOT LIKE b",
-  )
-  t.validate(
-    "a NOT BETWEEN b AND c",
-    "NOT a BETWEEN b AND c",
-  )
-  t.validate(
-    "a NOT IN (1, 2)",
-    "NOT a IN (1, 2)",
-  )
-  t.validate(
-    "a IS NOT NULL",
-    "NOT a IS NULL",
-  )
-  t.validate(
-    "a LIKE TEXT 'y'",
-    "a LIKE CAST('y' AS TEXT)",
-  )
+  t.validate("a NOT LIKE b", "a NOT LIKE b")
+  t.validate("a NOT BETWEEN b AND c", "NOT a BETWEEN b AND c")
+  t.validate("a NOT IN (1, 2)", "NOT a IN (1, 2)")
+  t.validate("a IS NOT NULL", "NOT a IS NULL")
+  t.validate("a LIKE TEXT 'y'", "a LIKE CAST('y' AS TEXT)")
   t.done()
 }
 
@@ -1013,28 +894,22 @@ test "TestTranspile.test_not_range" {
 test "TestTranspile.test_extract" {
   let t = t()
   t.validate(
-    "EXTRACT(day FROM '2020-01-01'::TIMESTAMP)",
-    "EXTRACT(DAY FROM CAST('2020-01-01' AS TIMESTAMP))",
+    "EXTRACT(day FROM '2020-01-01'::TIMESTAMP)", "EXTRACT(DAY FROM CAST('2020-01-01' AS TIMESTAMP))",
   )
   t.validate(
-    "EXTRACT(timezone FROM '2020-01-01'::TIMESTAMP)",
-    "EXTRACT(TIMEZONE FROM CAST('2020-01-01' AS TIMESTAMP))",
+    "EXTRACT(timezone FROM '2020-01-01'::TIMESTAMP)", "EXTRACT(TIMEZONE FROM CAST('2020-01-01' AS TIMESTAMP))",
   )
   t.validate(
-    "EXTRACT(year FROM '2020-01-01'::TIMESTAMP WITH TIME ZONE)",
-    "EXTRACT(YEAR FROM CAST('2020-01-01' AS TIMESTAMPTZ))",
+    "EXTRACT(year FROM '2020-01-01'::TIMESTAMP WITH TIME ZONE)", "EXTRACT(YEAR FROM CAST('2020-01-01' AS TIMESTAMPTZ))",
   )
   t.validate(
-    "extract(month from '2021-01-31'::timestamp without time zone)",
-    "EXTRACT(MONTH FROM CAST('2021-01-31' AS TIMESTAMP))",
+    "extract(month from '2021-01-31'::timestamp without time zone)", "EXTRACT(MONTH FROM CAST('2021-01-31' AS TIMESTAMP))",
   )
   t.validate(
-    "extract(week from current_date + 2)",
-    "EXTRACT(WEEK FROM CURRENT_DATE + 2)",
+    "extract(week from current_date + 2)", "EXTRACT(WEEK FROM CURRENT_DATE + 2)",
   )
   t.validate(
-    "EXTRACT(minute FROM datetime1 - datetime2)",
-    "EXTRACT(MINUTE FROM datetime1 - datetime2)",
+    "EXTRACT(minute FROM datetime1 - datetime2)", "EXTRACT(MINUTE FROM datetime1 - datetime2)",
   )
   t.done()
 }
@@ -1043,20 +918,14 @@ test "TestTranspile.test_extract" {
 test "TestTranspile.test_if" {
   let t = t()
   t.validate(
-    "SELECT IF(a > 1, 1, 0) FROM foo",
-    "SELECT CASE WHEN a > 1 THEN 1 ELSE 0 END FROM foo",
+    "SELECT IF(a > 1, 1, 0) FROM foo", "SELECT CASE WHEN a > 1 THEN 1 ELSE 0 END FROM foo",
+  )
+  t.validate("SELECT IF a > 1 THEN b END", "SELECT CASE WHEN a > 1 THEN b END")
+  t.validate(
+    "SELECT IF a > 1 THEN b ELSE c END", "SELECT CASE WHEN a > 1 THEN b ELSE c END",
   )
   t.validate(
-    "SELECT IF a > 1 THEN b END",
-    "SELECT CASE WHEN a > 1 THEN b END",
-  )
-  t.validate(
-    "SELECT IF a > 1 THEN b ELSE c END",
-    "SELECT CASE WHEN a > 1 THEN b ELSE c END",
-  )
-  t.validate(
-    "SELECT IF(a > 1, 1) FROM foo",
-    "SELECT CASE WHEN a > 1 THEN 1 END FROM foo",
+    "SELECT IF(a > 1, 1) FROM foo", "SELECT CASE WHEN a > 1 THEN 1 END FROM foo",
   )
   t.done()
 }
@@ -1065,12 +934,10 @@ test "TestTranspile.test_if" {
 test "TestTranspile.test_with" {
   let t = t()
   t.validate(
-    "WITH a AS (SELECT 1) WITH b AS (SELECT 2) SELECT *",
-    "WITH a AS (SELECT 1), b AS (SELECT 2) SELECT *",
+    "WITH a AS (SELECT 1) WITH b AS (SELECT 2) SELECT *", "WITH a AS (SELECT 1), b AS (SELECT 2) SELECT *",
   )
   t.validate(
-    "WITH a AS (SELECT 1), WITH b AS (SELECT 2) SELECT *",
-    "WITH a AS (SELECT 1), b AS (SELECT 2) SELECT *",
+    "WITH a AS (SELECT 1), WITH b AS (SELECT 2) SELECT *", "WITH a AS (SELECT 1), b AS (SELECT 2) SELECT *",
   )
   t.validate(
     "WITH A(filter) AS (VALUES 1, 2, 3) SELECT * FROM A WHERE filter >= 2",
@@ -1078,16 +945,13 @@ test "TestTranspile.test_with" {
     read="presto",
   )
   t.validate(
-    "SELECT 1 UNION ALL VALUES (2)",
-    "SELECT 1 UNION ALL SELECT * FROM (VALUES (2)) AS _values",
+    "SELECT 1 UNION ALL VALUES (2)", "SELECT 1 UNION ALL SELECT * FROM (VALUES (2)) AS _values",
   )
   t.validate(
-    "VALUES (1) AS v(a) UNION ALL SELECT 2",
-    "SELECT * FROM (VALUES (1)) AS v(a) UNION ALL SELECT 2",
+    "VALUES (1) AS v(a) UNION ALL SELECT 2", "SELECT * FROM (VALUES (1)) AS v(a) UNION ALL SELECT 2",
   )
   t.validate(
-    "VALUES (1) UNION SELECT * FROM x",
-    "SELECT * FROM (VALUES (1)) AS _values UNION SELECT * FROM x",
+    "VALUES (1) UNION SELECT * FROM x", "SELECT * FROM (VALUES (1)) AS _values UNION SELECT * FROM x",
   )
   t.validate(
     "WITH RECURSIVE T(n) AS (VALUES (1) UNION ALL SELECT n + 1 FROM t WHERE n < 100) SELECT SUM(n) FROM t",
@@ -1105,16 +969,13 @@ test "TestTranspile.test_with" {
 test "TestTranspile.test_alter" {
   let t = t()
   t.validate(
-    "ALTER TABLE integers ADD k INTEGER",
-    "ALTER TABLE integers ADD COLUMN k INT",
+    "ALTER TABLE integers ADD k INTEGER", "ALTER TABLE integers ADD COLUMN k INT",
   )
   t.validate(
-    "ALTER TABLE integers ALTER i TYPE VARCHAR",
-    "ALTER TABLE integers ALTER COLUMN i SET DATA TYPE VARCHAR",
+    "ALTER TABLE integers ALTER i TYPE VARCHAR", "ALTER TABLE integers ALTER COLUMN i SET DATA TYPE VARCHAR",
   )
   t.validate(
-    "ALTER TABLE integers ALTER i TYPE VARCHAR COLLATE foo USING bar",
-    "ALTER TABLE integers ALTER COLUMN i SET DATA TYPE VARCHAR COLLATE foo USING bar",
+    "ALTER TABLE integers ALTER i TYPE VARCHAR COLLATE foo USING bar", "ALTER TABLE integers ALTER COLUMN i SET DATA TYPE VARCHAR COLLATE foo USING bar",
   )
   t.done()
 }
@@ -1122,96 +983,48 @@ test "TestTranspile.test_alter" {
 ///|
 test "TestTranspile.test_time" {
   let t = t()
+  t.validate("INTERVAL '1 day'", "INTERVAL '1' DAY")
+  t.validate("INTERVAL '1 days' * 5", "INTERVAL '1' DAYS * 5")
+  t.validate("5 * INTERVAL '1 day'", "5 * INTERVAL '1' DAY")
+  t.validate("INTERVAL 1 day", "INTERVAL '1' DAY")
+  t.validate("INTERVAL 2 months", "INTERVAL '2' MONTHS")
+  t.validate("TIMESTAMP '2020-01-01'", "CAST('2020-01-01' AS TIMESTAMP)")
   t.validate(
-    "INTERVAL '1 day'",
-    "INTERVAL '1' DAY",
+    "TIMESTAMP WITH TIME ZONE '2020-01-01'", "CAST('2020-01-01' AS TIMESTAMPTZ)",
   )
   t.validate(
-    "INTERVAL '1 days' * 5",
-    "INTERVAL '1' DAYS * 5",
+    "TIMESTAMP(9) WITH TIME ZONE '2020-01-01'", "CAST('2020-01-01' AS TIMESTAMPTZ(9))",
   )
   t.validate(
-    "5 * INTERVAL '1 day'",
-    "5 * INTERVAL '1' DAY",
+    "TIMESTAMP WITHOUT TIME ZONE '2020-01-01'", "CAST('2020-01-01' AS TIMESTAMP)",
+  )
+  t.validate("'2020-01-01'::TIMESTAMP", "CAST('2020-01-01' AS TIMESTAMP)")
+  t.validate(
+    "'2020-01-01'::TIMESTAMP WITHOUT TIME ZONE", "CAST('2020-01-01' AS TIMESTAMP)",
   )
   t.validate(
-    "INTERVAL 1 day",
-    "INTERVAL '1' DAY",
-  )
-  t.validate(
-    "INTERVAL 2 months",
-    "INTERVAL '2' MONTHS",
-  )
-  t.validate(
-    "TIMESTAMP '2020-01-01'",
-    "CAST('2020-01-01' AS TIMESTAMP)",
-  )
-  t.validate(
-    "TIMESTAMP WITH TIME ZONE '2020-01-01'",
-    "CAST('2020-01-01' AS TIMESTAMPTZ)",
-  )
-  t.validate(
-    "TIMESTAMP(9) WITH TIME ZONE '2020-01-01'",
-    "CAST('2020-01-01' AS TIMESTAMPTZ(9))",
-  )
-  t.validate(
-    "TIMESTAMP WITHOUT TIME ZONE '2020-01-01'",
-    "CAST('2020-01-01' AS TIMESTAMP)",
-  )
-  t.validate(
-    "'2020-01-01'::TIMESTAMP",
-    "CAST('2020-01-01' AS TIMESTAMP)",
-  )
-  t.validate(
-    "'2020-01-01'::TIMESTAMP WITHOUT TIME ZONE",
-    "CAST('2020-01-01' AS TIMESTAMP)",
-  )
-  t.validate(
-    "'2020-01-01'::TIMESTAMP WITH TIME ZONE",
-    "CAST('2020-01-01' AS TIMESTAMPTZ)",
+    "'2020-01-01'::TIMESTAMP WITH TIME ZONE", "CAST('2020-01-01' AS TIMESTAMPTZ)",
   )
   t.validate(
     "timestamp with time zone '2025-11-20 00:00:00+00' AT TIME ZONE 'Africa/Cairo'",
     "CAST('2025-11-20 00:00:00+00' AS TIMESTAMPTZ) AT TIME ZONE 'Africa/Cairo'",
   )
-  t.validate(
-    "DATE '2020-01-01'",
-    "CAST('2020-01-01' AS DATE)",
-  )
-  t.validate(
-    "'2020-01-01'::DATE",
-    "CAST('2020-01-01' AS DATE)",
-  )
-  t.validate(
-    "STR_TO_TIME('x', 'y')",
-    "STRPTIME('x', 'y')",
-    write="duckdb",
-  )
+  t.validate("DATE '2020-01-01'", "CAST('2020-01-01' AS DATE)")
+  t.validate("'2020-01-01'::DATE", "CAST('2020-01-01' AS DATE)")
+  t.validate("STR_TO_TIME('x', 'y')", "STRPTIME('x', 'y')", write="duckdb")
   t.validate(
     "STR_TO_UNIX('x', 'y')",
     "EPOCH(STRPTIME('x', 'y'))",
     write="duckdb",
   )
-  t.validate(
-    "TIME_TO_STR(x, 'y')",
-    "STRFTIME(x, 'y')",
-    write="duckdb",
-  )
-  t.validate(
-    "TIME_TO_UNIX(x)",
-    "EPOCH(x)",
-    write="duckdb",
-  )
+  t.validate("TIME_TO_STR(x, 'y')", "STRFTIME(x, 'y')", write="duckdb")
+  t.validate("TIME_TO_UNIX(x)", "EPOCH(x)", write="duckdb")
   t.validate(
     "UNIX_TO_STR(123, 'y')",
     "STRFTIME(TO_TIMESTAMP(123), 'y')",
     write="duckdb",
   )
-  t.validate(
-    "UNIX_TO_TIME(123)",
-    "TO_TIMESTAMP(123)",
-    write="duckdb",
-  )
+  t.validate("UNIX_TO_TIME(123)", "TO_TIMESTAMP(123)", write="duckdb")
   t.validate(
     "STR_TO_TIME(x, 'y')",
     "CAST(FROM_UNIXTIME(UNIX_TIMESTAMP(x, 'y')) AS TIMESTAMP)",
@@ -1227,61 +1040,21 @@ test "TestTranspile.test_time" {
     "CAST(x AS TIMESTAMP)",
     write="hive",
   )
+  t.validate("STR_TO_UNIX('x', 'y')", "UNIX_TIMESTAMP('x', 'y')", write="hive")
+  t.validate("TIME_TO_STR(x, 'y')", "DATE_FORMAT(x, 'y')", write="hive")
+  t.validate("TIME_STR_TO_TIME(x)", "TIME_STR_TO_TIME(x)")
   t.validate(
-    "STR_TO_UNIX('x', 'y')",
-    "UNIX_TIMESTAMP('x', 'y')",
-    write="hive",
+    "TIME_STR_TO_TIME(x, 'America/Los_Angeles')", "TIME_STR_TO_TIME(x, 'America/Los_Angeles')",
   )
-  t.validate(
-    "TIME_TO_STR(x, 'y')",
-    "DATE_FORMAT(x, 'y')",
-    write="hive",
-  )
-  t.validate(
-    "TIME_STR_TO_TIME(x)",
-    "TIME_STR_TO_TIME(x)",
-  )
-  t.validate(
-    "TIME_STR_TO_TIME(x, 'America/Los_Angeles')",
-    "TIME_STR_TO_TIME(x, 'America/Los_Angeles')",
-  )
-  t.validate(
-    "TIME_STR_TO_UNIX(x)",
-    "TIME_STR_TO_UNIX(x)",
-  )
-  t.validate(
-    "TIME_TO_TIME_STR(x)",
-    "CAST(x AS TEXT)",
-  )
-  t.validate(
-    "TIME_TO_STR(x, 'y')",
-    "TIME_TO_STR(x, 'y')",
-  )
-  t.validate(
-    "TIME_TO_UNIX(x)",
-    "TIME_TO_UNIX(x)",
-  )
-  t.validate(
-    "UNIX_TO_STR(x, 'y')",
-    "UNIX_TO_STR(x, 'y')",
-  )
-  t.validate(
-    "UNIX_TO_TIME(x)",
-    "UNIX_TO_TIME(x)",
-  )
-  t.validate(
-    "UNIX_TO_TIME_STR(x)",
-    "UNIX_TO_TIME_STR(x)",
-  )
-  t.validate(
-    "TIME_STR_TO_DATE(x)",
-    "TIME_STR_TO_DATE(x)",
-  )
-  t.validate(
-    "TIME_STR_TO_DATE(x)",
-    "TO_DATE(x)",
-    write="hive",
-  )
+  t.validate("TIME_STR_TO_UNIX(x)", "TIME_STR_TO_UNIX(x)")
+  t.validate("TIME_TO_TIME_STR(x)", "CAST(x AS TEXT)")
+  t.validate("TIME_TO_STR(x, 'y')", "TIME_TO_STR(x, 'y')")
+  t.validate("TIME_TO_UNIX(x)", "TIME_TO_UNIX(x)")
+  t.validate("UNIX_TO_STR(x, 'y')", "UNIX_TO_STR(x, 'y')")
+  t.validate("UNIX_TO_TIME(x)", "UNIX_TO_TIME(x)")
+  t.validate("UNIX_TO_TIME_STR(x)", "UNIX_TO_TIME_STR(x)")
+  t.validate("TIME_STR_TO_DATE(x)", "TIME_STR_TO_DATE(x)")
+  t.validate("TIME_STR_TO_DATE(x)", "TO_DATE(x)", write="hive")
   t.validate(
     "UNIX_TO_STR(x, 'yyyy-MM-dd HH:mm:ss')",
     "FROM_UNIXTIME(x)",
@@ -1292,91 +1065,31 @@ test "TestTranspile.test_time" {
     "UNIX_TIMESTAMP(x)",
     write="hive",
   )
-  t.validate(
-    "IF(x > 1, x + 1)",
-    "IF(x > 1, x + 1)",
-    write="presto",
-  )
-  t.validate(
-    "IF(x > 1, 1 + 1)",
-    "IF(x > 1, 1 + 1)",
-    write="hive",
-  )
-  t.validate(
-    "IF(x > 1, 1, 0)",
-    "IF(x > 1, 1, 0)",
-    write="hive",
-  )
-  t.validate(
-    "TIME_TO_UNIX(x)",
-    "UNIX_TIMESTAMP(x)",
-    write="hive",
-  )
-  t.validate(
-    "UNIX_TO_STR(123, 'y')",
-    "FROM_UNIXTIME(123, 'y')",
-    write="hive",
-  )
-  t.validate(
-    "UNIX_TO_TIME(123)",
-    "FROM_UNIXTIME(123)",
-    write="hive",
-  )
-  t.validate(
-    "STR_TO_TIME('x', 'y')",
-    "DATE_PARSE('x', 'y')",
-    write="presto",
-  )
+  t.validate("IF(x > 1, x + 1)", "IF(x > 1, x + 1)", write="presto")
+  t.validate("IF(x > 1, 1 + 1)", "IF(x > 1, 1 + 1)", write="hive")
+  t.validate("IF(x > 1, 1, 0)", "IF(x > 1, 1, 0)", write="hive")
+  t.validate("TIME_TO_UNIX(x)", "UNIX_TIMESTAMP(x)", write="hive")
+  t.validate("UNIX_TO_STR(123, 'y')", "FROM_UNIXTIME(123, 'y')", write="hive")
+  t.validate("UNIX_TO_TIME(123)", "FROM_UNIXTIME(123)", write="hive")
+  t.validate("STR_TO_TIME('x', 'y')", "DATE_PARSE('x', 'y')", write="presto")
   t.validate(
     "STR_TO_UNIX('x', 'y')",
     "TO_UNIXTIME(COALESCE(TRY(DATE_PARSE(CAST('x' AS VARCHAR), 'y')), PARSE_DATETIME(DATE_FORMAT(CAST('x' AS TIMESTAMP), 'y'), 'y')))",
     write="presto",
   )
-  t.validate(
-    "TIME_TO_STR(x, 'y')",
-    "DATE_FORMAT(x, 'y')",
-    write="presto",
-  )
-  t.validate(
-    "TIME_TO_UNIX(x)",
-    "TO_UNIXTIME(x)",
-    write="presto",
-  )
+  t.validate("TIME_TO_STR(x, 'y')", "DATE_FORMAT(x, 'y')", write="presto")
+  t.validate("TIME_TO_UNIX(x)", "TO_UNIXTIME(x)", write="presto")
   t.validate(
     "UNIX_TO_STR(123, 'y')",
     "DATE_FORMAT(FROM_UNIXTIME(123), 'y')",
     write="presto",
   )
-  t.validate(
-    "UNIX_TO_TIME(123)",
-    "FROM_UNIXTIME(123)",
-    write="presto",
-  )
-  t.validate(
-    "STR_TO_TIME('x', 'y')",
-    "TO_TIMESTAMP('x', 'y')",
-    write="spark",
-  )
-  t.validate(
-    "STR_TO_UNIX('x', 'y')",
-    "UNIX_TIMESTAMP('x', 'y')",
-    write="spark",
-  )
-  t.validate(
-    "TIME_TO_STR(x, 'y')",
-    "DATE_FORMAT(x, 'y')",
-    write="spark",
-  )
-  t.validate(
-    "TIME_TO_UNIX(x)",
-    "UNIX_TIMESTAMP(x)",
-    write="spark",
-  )
-  t.validate(
-    "UNIX_TO_STR(123, 'y')",
-    "FROM_UNIXTIME(123, 'y')",
-    write="spark",
-  )
+  t.validate("UNIX_TO_TIME(123)", "FROM_UNIXTIME(123)", write="presto")
+  t.validate("STR_TO_TIME('x', 'y')", "TO_TIMESTAMP('x', 'y')", write="spark")
+  t.validate("STR_TO_UNIX('x', 'y')", "UNIX_TIMESTAMP('x', 'y')", write="spark")
+  t.validate("TIME_TO_STR(x, 'y')", "DATE_FORMAT(x, 'y')", write="spark")
+  t.validate("TIME_TO_UNIX(x)", "UNIX_TIMESTAMP(x)", write="spark")
+  t.validate("UNIX_TO_STR(123, 'y')", "FROM_UNIXTIME(123, 'y')", write="spark")
   t.validate(
     "UNIX_TO_TIME(123)",
     "CAST(FROM_UNIXTIME(123) AS TIMESTAMP)",
@@ -1404,8 +1117,7 @@ test "TestTranspile.test_index_offset" {
   // SKIP: the expected log lists 4 "Applying array index offset" entries, 2 of which
   // come from the skipped (optimizer-dependent) cases above; check the first two.
   t.eq(logged("INFO").map(m => "INFO:sqlglot:" + m), [
-    "INFO:sqlglot:Applying array index offset (1)",
-    "INFO:sqlglot:Applying array index offset (-1)",
+    "INFO:sqlglot:Applying array index offset (1)", "INFO:sqlglot:Applying array index offset (-1)",
   ])
   t.done()
 }
@@ -1413,11 +1125,7 @@ test "TestTranspile.test_index_offset" {
 ///|
 test "TestTranspile.test_identify_lambda" {
   let t = t()
-  t.validate(
-    "x(y -> y)",
-    "X(\"y\" -> \"y\")",
-    identify=true,
-  )
+  t.validate("x(y -> y)", "X(\"y\" -> \"y\")", identify=true)
   t.done()
 }
 
@@ -1434,17 +1142,18 @@ test "TestTranspile.test_identity" {
 ///|
 test "TestTranspile.test_command_identity" {
   let t = t()
-  for sql in [
-    "ALTER AGGREGATE bla(foo) OWNER TO CURRENT_USER", "ALTER DOMAIN foo VALIDATE CONSTRAINT bla",
-    "ALTER ROLE CURRENT_USER WITH REPLICATION", "ALTER RULE foo ON bla RENAME TO baz",
-    "ALTER SEQUENCE IF EXISTS baz RESTART WITH boo", "ALTER TABLE integers DROP PRIMARY KEY",
-    "ALTER TABLE table1 MODIFY COLUMN name1 SET TAG foo='bar'", "ALTER TABLE table1 RENAME COLUMN c1 AS c2",
-    "ALTER TABLE table1 RENAME COLUMN c1 TO c2, c2 TO c3", "ALTER TABLE table1 RENAME COLUMN c1 c2",
-    "ALTER TYPE electronic_mail RENAME TO email", "ALTER schema doo", "CALL catalog.system.iceberg_procedure_name(named_arg_1 => 'arg_1', named_arg_2 => 'arg_2')",
-    "COMMENT ON ACCESS METHOD gin IS 'GIN index access method'", "CREATE OR REPLACE STAGE",
-    "EXECUTE statement", "EXPLAIN SELECT * FROM x", "LOAD foo", "OPTIMIZE TABLE y",
-    "PREPARE statement", "SET -v", "SET @user OFF", "SHOW TABLES", "VACUUM FREEZE my_table",
-  ] {
+  for
+    sql in [
+      "ALTER AGGREGATE bla(foo) OWNER TO CURRENT_USER", "ALTER DOMAIN foo VALIDATE CONSTRAINT bla",
+      "ALTER ROLE CURRENT_USER WITH REPLICATION", "ALTER RULE foo ON bla RENAME TO baz",
+      "ALTER SEQUENCE IF EXISTS baz RESTART WITH boo", "ALTER TABLE integers DROP PRIMARY KEY",
+      "ALTER TABLE table1 MODIFY COLUMN name1 SET TAG foo='bar'", "ALTER TABLE table1 RENAME COLUMN c1 AS c2",
+      "ALTER TABLE table1 RENAME COLUMN c1 TO c2, c2 TO c3", "ALTER TABLE table1 RENAME COLUMN c1 c2",
+      "ALTER TYPE electronic_mail RENAME TO email", "ALTER schema doo", "CALL catalog.system.iceberg_procedure_name(named_arg_1 => 'arg_1', named_arg_2 => 'arg_2')",
+      "COMMENT ON ACCESS METHOD gin IS 'GIN index access method'", "CREATE OR REPLACE STAGE",
+      "EXECUTE statement", "EXPLAIN SELECT * FROM x", "LOAD foo", "OPTIMIZE TABLE y",
+      "PREPARE statement", "SET -v", "SET @user OFF", "SHOW TABLES", "VACUUM FREEZE my_table",
+    ] {
     @core.take_log_messages() |> ignore
     t.eqf(() => @sqlglot.transpile(sql)[0], sql)
     let output = logged("WARNING")
@@ -1466,7 +1175,14 @@ test "TestTranspile.test_command_identity" {
 test "TestTranspile.test_normalize_name" {
   let t = t()
   t.eqf(
-    () => @sqlglot.transpile("cardinality(x)", read="presto", write="presto", normalize_functions="lower")[0],
+    () => {
+      @sqlglot.transpile(
+        "cardinality(x)",
+        read="presto",
+        write="presto",
+        normalize_functions="lower",
+      )[0]
+    },
     "cardinality(x)",
   )
   t.done()
@@ -1491,8 +1207,7 @@ test "TestTranspile.test_pretty" {
     let sql = pretty_fixtures[i]
     let pretty = pretty_fixtures[i + 1]
     t.eqf(() => @sqlglot.transpile(sql, pretty=true)[0], pretty)
-    match
-      t.run(() => (@sqlglot.parse_one(sql), @sqlglot.parse_one(pretty))) {
+    match t.run(() => (@sqlglot.parse_one(sql), @sqlglot.parse_one(pretty))) {
       Some((a, b)) => t.eq_expr(a, b)
       None => ()
     }
@@ -1504,10 +1219,15 @@ test "TestTranspile.test_pretty" {
 test "TestTranspile.test_pretty_line_breaks" {
   let t = t()
   t.eqf(
-    () => @sqlglot.transpile((
-        #|SELECT '1
-        #|2'
-      ), pretty=true)[0],
+    () => {
+      @sqlglot.transpile(
+        (
+          #|SELECT '1
+          #|2'
+        ),
+        pretty=true,
+      )[0]
+    },
     (
       #|SELECT
       #|  '1
@@ -1515,10 +1235,16 @@ test "TestTranspile.test_pretty_line_breaks" {
     ),
   )
   t.eqf(
-    () => @sqlglot.transpile((
-        #|SELECT '1
-        #|2'
-      ), pretty=true, unsupported_level=@core.Ignore)[0],
+    () => {
+      @sqlglot.transpile(
+        (
+          #|SELECT '1
+          #|2'
+        ),
+        pretty=true,
+        unsupported_level=@core.Ignore,
+      )[0]
+    },
     (
       #|SELECT
       #|  '1
@@ -1526,10 +1252,15 @@ test "TestTranspile.test_pretty_line_breaks" {
     ),
   )
   t.eqf(
-    () => @sqlglot.transpile((
-        #|SELECT "1
-        #|2"
-      ), pretty=true)[0],
+    () => {
+      @sqlglot.transpile(
+        (
+          #|SELECT "1
+          #|2"
+        ),
+        pretty=true,
+      )[0]
+    },
     (
       #|SELECT
       #|  "1
@@ -1537,10 +1268,15 @@ test "TestTranspile.test_pretty_line_breaks" {
     ),
   )
   t.eqf(
-    () => @sqlglot.transpile((
-        #|SELECT "Product
-        #|(Foo, Bar)" AS x FROM t
-      ), pretty=true)[0],
+    () => {
+      @sqlglot.transpile(
+        (
+          #|SELECT "Product
+          #|(Foo, Bar)" AS x FROM t
+        ),
+        pretty=true,
+      )[0]
+    },
     (
       #|SELECT
       #|  "Product
@@ -1555,13 +1291,14 @@ test "TestTranspile.test_pretty_line_breaks" {
 test "TestTranspile.test_sql_security" {
   let t = t()
   let sqlglot_sql = "CREATE VIEW v SQL SECURITY INVOKER AS SELECT 1"
-  for case in [
-    ("clickhouse", "CREATE VIEW v SQL SECURITY INVOKER AS SELECT 1"),
-    ("trino", "CREATE VIEW v SECURITY INVOKER AS SELECT 1"),
-    ("presto", "CREATE VIEW v SECURITY INVOKER AS SELECT 1"),
-    ("starrocks", "CREATE VIEW v SECURITY INVOKER AS SELECT 1"),
-    ("mysql", "CREATE SQL SECURITY INVOKER VIEW v AS SELECT 1"),
-  ] {
+  for
+    case in [
+      ("clickhouse", "CREATE VIEW v SQL SECURITY INVOKER AS SELECT 1"),
+      ("trino", "CREATE VIEW v SECURITY INVOKER AS SELECT 1"),
+      ("presto", "CREATE VIEW v SECURITY INVOKER AS SELECT 1"),
+      ("starrocks", "CREATE VIEW v SECURITY INVOKER AS SELECT 1"),
+      ("mysql", "CREATE SQL SECURITY INVOKER VIEW v AS SELECT 1"),
+    ] {
     let (dialect, sql) = case
     t.validate(sql, sqlglot_sql, read=dialect, identity=false)
     t.validate(sql, sql, write=dialect, identity=false)
@@ -1580,11 +1317,7 @@ test "TestTranspile.test_error_level" {
   let expected_errors = [
     info(
       "Required keyword: 'expressions' missing for <class 'sqlglot.expressions.core.Aliases'>",
-      1,
-      8,
-      "x + 1. ",
-      "(",
-      "",
+      1, 8, "x + 1. ", "(", "",
     ),
     info("Expecting )", 1, 8, "x + 1. ", "(", ""),
   ].map(info_repr)
@@ -1595,14 +1328,14 @@ test "TestTranspile.test_error_level" {
   for error in expected_messages {
     t.ok(output.contains(error), msg="Expected '\{error}' not in \{output}")
   }
-  let e = t.raises_parse(() => ignore(
-    @sqlglot.transpile(invalid, error_level=@core.Immediate),
-  ))
+  let e = t.raises_parse(() => {
+    ignore(@sqlglot.transpile(invalid, error_level=@core.Immediate))
+  })
   t.eq(msg_of(e), expected_messages[0])
   t.eq(errors_of(e).get(0).unwrap_or(""), expected_errors[0])
-  let e = t.raises_parse(() => ignore(
-    @sqlglot.transpile(invalid, error_level=@core.Raise),
-  ))
+  let e = t.raises_parse(() => {
+    ignore(@sqlglot.transpile(invalid, error_level=@core.Raise))
+  })
   t.eq(msg_of(e), expected_messages.join("\n\n"))
   t.eq(errors_of(e), expected_errors)
   let more_than_max_errors = "(((("
@@ -1613,20 +1346,16 @@ test "TestTranspile.test_error_level" {
   let expected_errors = [
     info(
       "Required keyword: 'this' missing for <class 'sqlglot.expressions.core.Paren'>",
-      1,
-      4,
-      "(((",
-      "(",
-      "",
+      1, 4, "(((", "(", "",
     ),
     info("Expecting )", 1, 4, "(((", "(", ""),
   ].map(info_repr)
   // Also expect three trailing structured errors that match the first
   let expected_errors = expected_errors +
     [expected_errors[1], expected_errors[1], expected_errors[1]]
-  let e = t.raises_parse(() => ignore(
-    @sqlglot.transpile(more_than_max_errors, error_level=@core.Raise),
-  ))
+  let e = t.raises_parse(() => {
+    ignore(@sqlglot.transpile(more_than_max_errors, error_level=@core.Raise))
+  })
   t.eq(msg_of(e), expected_messages)
   t.eq(errors_of(e), expected_errors)
   t.done()

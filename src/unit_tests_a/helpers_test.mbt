@@ -12,7 +12,7 @@ priv struct T {
 
 ///|
 fn t() -> T {
-  { fails: [] }
+  { fails: [], }
 }
 
 ///|
@@ -61,7 +61,12 @@ fn[X : Show] repr_of(x : X) -> String {
 
 ///|
 #callsite(autofill(loc))
-fn T::ok(self : T, cond : Bool, msg? : String = "condition is false", loc~ : SourceLoc) -> Unit {
+fn T::ok(
+  self : T,
+  cond : Bool,
+  msg? : String = "condition is false",
+  loc~ : SourceLoc,
+) -> Unit {
   if !cond {
     self.fail(msg, loc)
   }
@@ -179,17 +184,19 @@ fn T::validate(
   loc~ : SourceLoc,
 ) -> Unit {
   self.eqf(
-    () => @sqlglot.transpile(
-      sql,
-      read~,
-      write?,
-      identity~,
-      pretty~,
-      identify~,
-      leading_comma~,
-      pad~,
-      indent~,
-    )[0],
+    () => {
+      @sqlglot.transpile(
+        sql,
+        read~,
+        write?,
+        identity~,
+        pretty~,
+        identify~,
+        leading_comma~,
+        pad~,
+        indent~,
+      )[0]
+    },
     target,
     loc~,
   )
@@ -197,11 +204,7 @@ fn T::validate(
 
 ///|
 /// `parse_one(sql, read).sql(write)`.
-fn sql_of(
-  sql : String,
-  read? : String = "",
-  write? : String,
-) -> String raise {
+fn sql_of(sql : String, read? : String = "", write? : String) -> String raise {
   let w = match write {
     Some(w) => w
     None => read
@@ -220,9 +223,11 @@ fn gen(e : @core.Expr) -> String raise {
 /// ("WARNING: ", "ERROR: ", "INFO: ") removed; messages of other levels are dropped.
 fn logged(level : String) -> Array[String] {
   let prefix = level + ": "
-  @core.take_log_messages().filter_map(m => if m.has_prefix(prefix) {
-    Some(m.unsafe_substring(start=prefix.length(), end=m.length()))
-  } else {
-    None
+  @core.take_log_messages().filter_map(m => {
+    if m.has_prefix(prefix) {
+      Some(m.unsafe_substring(start=prefix.length(), end=m.length()))
+    } else {
+      None
+    }
   })
 }

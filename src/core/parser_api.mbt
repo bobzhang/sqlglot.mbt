@@ -185,7 +185,7 @@ pub fn transpile(
   sql : String,
   read? : Dialect,
   write? : Dialect,
-  pretty? : Bool = false,
+  pretty? : Bool,
   identify? : String = "",
   error_level? : ErrorLevel = Immediate,
   unsupported_level? : ErrorLevel = Warn,
@@ -203,7 +203,7 @@ pub fn transpile(
     match e {
       Some(expr) =>
         out.push(
-          Generator::new(w, pretty~, identify~, unsupported_level~).generate(
+          Generator::new(w, pretty?, identify~, unsupported_level~).generate(
             expr,
             copy=false,
           ),

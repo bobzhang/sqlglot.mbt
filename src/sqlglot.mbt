@@ -12,7 +12,7 @@ pub fn transpile(
   write? : String,
   identity? : Bool = true,
   error_level? : @core.ErrorLevel = Immediate,
-  pretty? : Bool = false,
+  pretty? : Bool,
   identify? : Bool = false,
   identify_mode? : String,
   normalize? : Bool = false,
@@ -37,7 +37,7 @@ pub fn transpile(
         out.push(
           @core.Generator::new(
             w,
-            pretty~,
+            pretty?,
             identify=identify_value(identify, identify_mode),
             normalize~,
             pad~,
@@ -123,7 +123,7 @@ pub fn generate(
   expression : @core.Expr,
   dialect? : String = "",
   copy? : Bool = true,
-  pretty? : Bool = false,
+  pretty? : Bool,
   identify? : Bool = false,
   identify_mode? : String,
   normalize? : Bool = false,
@@ -138,7 +138,7 @@ pub fn generate(
 ) -> String raise @core.SqlglotError {
   @core.Generator::new(
     @core.Dialect::get_or_raise(dialect),
-    pretty~,
+    pretty?,
     identify=identify_value(identify, identify_mode),
     normalize~,
     pad~,

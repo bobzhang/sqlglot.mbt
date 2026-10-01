@@ -19,14 +19,15 @@ fn types_and_texts(tokens : Array[@core.Token]) -> Array[(String, String)] {
 
 ///|
 test "TestTokens.test_space_keywords" {
-  for case in [
-    ("group bys", 2),
-    (" group bys", 2),
-    (" group bys ", 2),
-    ("group by)", 2),
-    ("group bys)", 3),
-    ("group \r", 1),
-  ] {
+  for
+    case in [
+      ("group bys", 2),
+      (" group bys", 2),
+      (" group bys ", 2),
+      ("group by)", 2),
+      ("group bys)", 3),
+      ("group \r", 1),
+    ] {
     let (string, length) = case
     let tokens = tokenize(string)
     assert_true(tokens[0].text.to_upper().contains("GROUP"))
@@ -57,13 +58,14 @@ test "TestTokens.test_comment_attachment" {
 ///|
 test "TestTokens.test_token_line_col" {
   let tokens = tokenize(
-    #|SELECT /*
-    #|line break
-    #|*/
-    #|'x
-    #| y',
-    #|x
-    ,
+    (
+      #|SELECT /*
+      #|line break
+      #|*/
+      #|'x
+      #| y',
+      #|x
+    ),
   )
   assert_eq(tokens[0].line, 1)
   assert_eq(tokens[0].col, 6)
@@ -145,16 +147,17 @@ test "TestTokens.test_jinja" {
   // Check that {#, #} are treated as token delimiters, even though BigQuery overrides COMMENTS
   let bigquery = @sqlglot.dialect("bigquery")
   let tokens = bigquery.tokenize(
-    #|
-    #|            SELECT
-    #|               {{ x }},
-    #|               {{- x -}},
-    #|               {# it's a comment #}
-    #|               {% for x in y -%}
-    #|               a {{+ b }}
-    #|               {% endfor %};
-    #|
-    ,
+    (
+      #|
+      #|            SELECT
+      #|               {{ x }},
+      #|               {{- x -}},
+      #|               {# it's a comment #}
+      #|               {% for x in y -%}
+      #|               a {{+ b }}
+      #|               {% endfor %};
+      #|
+    ),
   )
   assert_eq(types_and_texts(tokens), [
     ("SELECT", "SELECT"),

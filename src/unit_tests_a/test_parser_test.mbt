@@ -59,10 +59,9 @@ test "TestParser.test_parse_empty" {
 ///|
 test "TestParser.test_parse_into" {
   let t = t()
-  let into = (sql : String, kind : @core.Kind) => isa(
-    Some(@sqlglot.parse_one(sql, into=kind)),
-    kind,
-  )
+  let into = (sql : String, kind : @core.Kind) => {
+    isa(Some(@sqlglot.parse_one(sql, into=kind)), kind)
+  }
   t.eqf(() => into("(1)", Tuple), true)
   t.eqf(() => into("(1,)", Tuple), true)
   t.eqf(() => into("(x=1)", Tuple), true)
@@ -74,15 +73,17 @@ test "TestParser.test_parse_into" {
   t.eqf(() => into("array<int>", DataType), true)
   t.eqf(() => into("foo", Table), true)
   t.eqf(
-    () => into(
-      "WHEN MATCHED THEN UPDATE SET target.salary = COALESCE(source.salary, target.salary)",
-      Whens,
-    ),
+    () => {
+      into(
+        "WHEN MATCHED THEN UPDATE SET target.salary = COALESCE(source.salary, target.salary)",
+        Whens,
+      )
+    },
     true,
   )
-  let e = t.raises_parse(() => ignore(
-    @sqlglot.parse_one("SELECT * FROM tbl", into=Table),
-  ))
+  let e = t.raises_parse(() => {
+    ignore(@sqlglot.parse_one("SELECT * FROM tbl", into=Table))
+  })
   t.eq(
     msg_of(e),
     "Failed to parse 'SELECT * FROM tbl' into <class 'sqlglot.expressions.query.Table'>",
@@ -106,9 +107,9 @@ test "TestParser.test_parse_into_error" {
       into_expression="From",
     ),
   ].map(info_repr)
-  let e = t.raises_parse(() => ignore(
-    @sqlglot.parse_one("SELECT 1;", read="sqlite", into_any=[From]),
-  ))
+  let e = t.raises_parse(() => {
+    ignore(@sqlglot.parse_one("SELECT 1;", read="sqlite", into_any=[From]))
+  })
   t.eq(msg_of(e), expected_message)
   t.eq(errors_of(e), expected_errors)
   t.done()
@@ -138,9 +139,11 @@ test "TestParser.test_parse_into_errors" {
       into_expression="Join",
     ),
   ].map(info_repr)
-  let e = t.raises_parse(() => ignore(
-    @sqlglot.parse_one("SELECT 1;", read="sqlite", into_any=[From, Join]),
-  ))
+  let e = t.raises_parse(() => {
+    ignore(
+      @sqlglot.parse_one("SELECT 1;", read="sqlite", into_any=[From, Join]),
+    )
+  })
   t.eq(msg_of(e), expected_message)
   t.eq(errors_of(e), expected_errors)
   t.done()
@@ -177,74 +180,83 @@ test "TestParser.test_text_match_excludes_delimited_tokens" {
   // Base-dialect roundtrip cases live in identity.sql; these are the dialect-specific
   // and non-roundtripping ones
   let t = t()
-  for case in [
-    ("postgres", "SELECT TRIM($$leading$$)", "SELECT TRIM('leading')"),
-    ("tsql", "SELECT TRIM(N'both')", "SELECT TRIM(N'both')"),
-    (
-      "postgres", "SELECT TRIM(\"leading\" FROM x)", "SELECT TRIM(\"leading\" FROM x)",
-    ),
-    ("mysql", "INSERT `local` (a) VALUES (1)", "INSERT INTO `local` (a) VALUES (1)"),
-    (
-      "mysql", "INSERT `directory` (a) VALUES (1)", "INSERT INTO `directory` (a) VALUES (1)",
-    ),
-    ("mysql", "SELECT `high_priority` FROM t", "SELECT `high_priority` FROM t"),
-    (
-      "postgres", "SELECT * INTO \"unlogged\" FROM t", "SELECT * INTO \"unlogged\" FROM t",
-    ),
-    (
-      "oracle", "SELECT XMLELEMENT(\"name\", x) FROM t", "SELECT XMLELEMENT(NAME \"name\", x) FROM t",
-    ),
-    (
-      "postgres", "SELECT c::INT \"unsigned\" FROM t", "SELECT CAST(c AS INT) AS \"unsigned\" FROM t",
-    ),
-    (
-      "oracle", "SELECT INTERVAL '1' DAY \"to\" FROM t", "SELECT INTERVAL '1' DAY AS \"to\" FROM t",
-    ),
-    (
-      "clickhouse", "CREATE TABLE t (j JSON(`skip` String))", "CREATE TABLE t (j JSON(\"skip\" String))",
-    ),
-    (
-      "clickhouse", "ALTER TABLE t DROP PARTITION \"id\"", "ALTER TABLE t DROP PARTITION \"id\"",
-    ),
-    ("databricks", "DECLARE `var` INT", "DECLARE `var` INT"),
-    (
-      "redshift", "ALTER TABLE t ALTER \"sortkey\" TYPE INT", "ALTER TABLE t ALTER COLUMN \"sortkey\" TYPE INTEGER",
-    ),
-    (
-      "duckdb", "ALTER TABLE t ADD \"columns\" INT", "ALTER TABLE t ADD COLUMN \"columns\" INT",
-    ),
-    (
-      "postgres", "ALTER TABLE \"only\" ADD COLUMN x INT", "ALTER TABLE \"only\" ADD COLUMN x INT",
-    ),
-    ("duckdb", "SELECT MAX(\"lambda\") FROM t", "SELECT MAX(\"lambda\") FROM t"),
-    ("duckdb", "CREATE MACRO m() AS \"return\"", "CREATE MACRO m() AS \"return\""),
-    ("mysql", "ALTER TABLE t RENAME `index`", "ALTER TABLE t RENAME `index`"),
-    (
-      "mysql", "CREATE TABLE t (x TEXT, FULLTEXT `index` (x))", "CREATE TABLE t (x TEXT, FULLTEXT INDEX `index` (x))",
-    ),
-    ("mysql", "SHOW CREATE TABLE `json`", "SHOW CREATE TABLE `json`"),
-    (
-      "snowflake", "WITH \"identifier\" (c) AS (SELECT 1) SELECT c FROM \"identifier\"",
-      "WITH \"identifier\"(c) AS (SELECT 1) SELECT c FROM \"identifier\"",
-    ),
-    (
-      "snowflake", "SELECT * FROM t AS \"identifier\"(a, b)", "SELECT * FROM t AS \"identifier\"(a, b)",
-    ),
-    (
-      "bigquery", "SELECT ML.PREDICT(MODEL m, `table`)", "SELECT ML.PREDICT(MODEL m, TABLE `table`)",
-    ),
-    (
-      "spark", "ALTER TABLE t CHANGE COLUMN a `type` INT", "ALTER TABLE t RENAME COLUMN a TO `type`",
-    ),
-    (
-      "exasol", "SELECT JSON_EXTRACT(x, '$.a') \"emits\" FROM t", "SELECT JSON_EXTRACT(x, '$.a') AS \"emits\" FROM t",
-    ),
-    ("trino", "SELECT U&'abc' \"uescape\"", "SELECT U&'abc' AS \"uescape\""),
-    (
-      "snowflake", "SELECT * FROM t MATCH_RECOGNIZE(MEASURES \"final\" AS f PATTERN (a) DEFINE a AS TRUE)",
-      "SELECT * FROM t MATCH_RECOGNIZE ( MEASURES \"final\" AS f PATTERN (a) DEFINE a AS TRUE)",
-    ),
-  ] {
+  for
+    case in [
+      ("postgres", "SELECT TRIM($$leading$$)", "SELECT TRIM('leading')"),
+      ("tsql", "SELECT TRIM(N'both')", "SELECT TRIM(N'both')"),
+      (
+        "postgres", "SELECT TRIM(\"leading\" FROM x)", "SELECT TRIM(\"leading\" FROM x)",
+      ),
+      (
+        "mysql", "INSERT `local` (a) VALUES (1)", "INSERT INTO `local` (a) VALUES (1)",
+      ),
+      (
+        "mysql", "INSERT `directory` (a) VALUES (1)", "INSERT INTO `directory` (a) VALUES (1)",
+      ),
+      (
+        "mysql", "SELECT `high_priority` FROM t", "SELECT `high_priority` FROM t",
+      ),
+      (
+        "postgres", "SELECT * INTO \"unlogged\" FROM t", "SELECT * INTO \"unlogged\" FROM t",
+      ),
+      (
+        "oracle", "SELECT XMLELEMENT(\"name\", x) FROM t", "SELECT XMLELEMENT(NAME \"name\", x) FROM t",
+      ),
+      (
+        "postgres", "SELECT c::INT \"unsigned\" FROM t", "SELECT CAST(c AS INT) AS \"unsigned\" FROM t",
+      ),
+      (
+        "oracle", "SELECT INTERVAL '1' DAY \"to\" FROM t", "SELECT INTERVAL '1' DAY AS \"to\" FROM t",
+      ),
+      (
+        "clickhouse", "CREATE TABLE t (j JSON(`skip` String))", "CREATE TABLE t (j JSON(\"skip\" String))",
+      ),
+      (
+        "clickhouse", "ALTER TABLE t DROP PARTITION \"id\"", "ALTER TABLE t DROP PARTITION \"id\"",
+      ),
+      ("databricks", "DECLARE `var` INT", "DECLARE `var` INT"),
+      (
+        "redshift", "ALTER TABLE t ALTER \"sortkey\" TYPE INT", "ALTER TABLE t ALTER COLUMN \"sortkey\" TYPE INTEGER",
+      ),
+      (
+        "duckdb", "ALTER TABLE t ADD \"columns\" INT", "ALTER TABLE t ADD COLUMN \"columns\" INT",
+      ),
+      (
+        "postgres", "ALTER TABLE \"only\" ADD COLUMN x INT", "ALTER TABLE \"only\" ADD COLUMN x INT",
+      ),
+      (
+        "duckdb", "SELECT MAX(\"lambda\") FROM t", "SELECT MAX(\"lambda\") FROM t",
+      ),
+      (
+        "duckdb", "CREATE MACRO m() AS \"return\"", "CREATE MACRO m() AS \"return\"",
+      ),
+      ("mysql", "ALTER TABLE t RENAME `index`", "ALTER TABLE t RENAME `index`"),
+      (
+        "mysql", "CREATE TABLE t (x TEXT, FULLTEXT `index` (x))", "CREATE TABLE t (x TEXT, FULLTEXT INDEX `index` (x))",
+      ),
+      ("mysql", "SHOW CREATE TABLE `json`", "SHOW CREATE TABLE `json`"),
+      (
+        "snowflake", "WITH \"identifier\" (c) AS (SELECT 1) SELECT c FROM \"identifier\"",
+        "WITH \"identifier\"(c) AS (SELECT 1) SELECT c FROM \"identifier\"",
+      ),
+      (
+        "snowflake", "SELECT * FROM t AS \"identifier\"(a, b)", "SELECT * FROM t AS \"identifier\"(a, b)",
+      ),
+      (
+        "bigquery", "SELECT ML.PREDICT(MODEL m, `table`)", "SELECT ML.PREDICT(MODEL m, TABLE `table`)",
+      ),
+      (
+        "spark", "ALTER TABLE t CHANGE COLUMN a `type` INT", "ALTER TABLE t RENAME COLUMN a TO `type`",
+      ),
+      (
+        "exasol", "SELECT JSON_EXTRACT(x, '$.a') \"emits\" FROM t", "SELECT JSON_EXTRACT(x, '$.a') AS \"emits\" FROM t",
+      ),
+      ("trino", "SELECT U&'abc' \"uescape\"", "SELECT U&'abc' AS \"uescape\""),
+      (
+        "snowflake", "SELECT * FROM t MATCH_RECOGNIZE(MEASURES \"final\" AS f PATTERN (a) DEFINE a AS TRUE)",
+        "SELECT * FROM t MATCH_RECOGNIZE ( MEASURES \"final\" AS f PATTERN (a) DEFINE a AS TRUE)",
+      ),
+    ] {
     let (dialect, sql, expected) = case
     t.eqf(() => sql_of(sql, read=dialect), expected)
   }
@@ -378,8 +390,10 @@ test "TestParser.test_select" {
     true,
   )
   t.eqf(
-    () => po("select * from x where a = (select 1) order by x.y").arg("order")
-      is Some(_),
+    () => {
+      po("select * from x where a = (select 1) order by x.y").arg("order")
+      is Some(_)
+    },
     true,
   )
   t.eqf(
@@ -391,8 +405,9 @@ test "TestParser.test_select" {
     "SELECT * FROM x CROSS JOIN y, z LATERAL VIEW EXPLODE(y)",
   )
   t.eqf(
-    () => po("create table a as (select b from c) index").find([TableAlias])
-      is None,
+    () => {
+      po("create table a as (select b from c) index").find([TableAlias]) is None
+    },
     true,
   )
   t.done()
@@ -403,7 +418,9 @@ test "TestParser.test_command" {
   let t = t()
   @core.take_log_messages() |> ignore
   match
-    t.run(() => @sqlglot.parse("SET x = 1; ADD JAR s3://a; SELECT 1", read="hive")) {
+    t.run(() => {
+      @sqlglot.parse("SET x = 1; ADD JAR s3://a; SELECT 1", read="hive")
+    }) {
     Some(expressions) => {
       t.eq(expressions.length(), 3)
       t.eqf(() => gen_opt(expressions[0]), "SET x = 1")
@@ -423,10 +440,11 @@ test "TestParser.test_command" {
 ///|
 test "TestParser.test_grant_revoke_without_privileges" {
   let t = t()
-  for sql in [
-    "GRANT ON TABLE tbl TO bob", "REVOKE ON TABLE tbl FROM bob", "GRANT , SELECT ON TABLE tbl TO bob",
-    "GRANT SELECT, ON TABLE tbl TO bob", "GRANT SELECT,,UPDATE ON TABLE tbl TO bob",
-  ] {
+  for
+    sql in [
+      "GRANT ON TABLE tbl TO bob", "REVOKE ON TABLE tbl FROM bob", "GRANT , SELECT ON TABLE tbl TO bob",
+      "GRANT SELECT, ON TABLE tbl TO bob", "GRANT SELECT,,UPDATE ON TABLE tbl TO bob",
+    ] {
     let e = t.raises_parse(() => ignore(po(sql)))
     t.ok(msg_of(e).contains("Expected privilege"), msg="\{sql}: \{msg_of(e)}")
   }
@@ -445,9 +463,11 @@ test "TestParser.test_lambda_struct" {
 ///|
 test "TestParser.test_transactions" {
   let t = t()
-  let modes_of = (e : @core.Expr) => match e.get("modes") {
-    Some(@core.List(l)) => Some(l.map(v => v.as_str().unwrap_or("?")))
-    _ => None
+  let modes_of = (e : @core.Expr) => {
+    match e.get("modes") {
+      Some(@core.List(l)) => Some(l.map(v => v.as_str().unwrap_or("?")))
+      _ => None
+    }
   }
   let expression = po("BEGIN TRANSACTION")
   t.ok(expression.get("this") is None)
@@ -481,11 +501,12 @@ test "TestParser.test_transactions" {
 ///|
 test "TestParser.test_identify" {
   let expression = po(
-    #|
-    #|            SELECT a, "b", c AS c, d AS "D", e AS "y|z'"
-    #|            FROM y."z"
-    #|
-    ,
+    (
+      #|
+      #|            SELECT a, "b", c AS c, d AS "D", e AS "y|z'"
+      #|            FROM y."z"
+      #|
+    ),
   )
   let exprs = expression.expressions()
   assert_eq(exprs[0].name(), "a")
@@ -501,10 +522,11 @@ test "TestParser.test_identify" {
 ///|
 test "TestParser.test_multi" {
   let expressions = @sqlglot.parse(
-    #|
-    #|            SELECT * FROM a; SELECT * FROM b;
-    #|
-    ,
+    (
+      #|
+      #|            SELECT * FROM a; SELECT * FROM b;
+      #|
+    ),
   )
   assert_eq(expressions.length(), 2)
   assert_eq(expressions[0].unwrap().arg("from_").unwrap().name(), "a")
@@ -520,14 +542,16 @@ test "TestParser.test_expression" {
   let base = @core.base_dialect()
   let ignore_ = @core.Parser::new(base, error_level=Ignore)
   t.eqf(
-    () => isa(
-      Some(
-        ignore_.expression(
-          @core.mk(Hint, [("expressions", ([] : Array[@core.Expr]))]),
+    () => {
+      isa(
+        Some(
+          ignore_.expression(
+            @core.mk(Hint, [("expressions", ([] : Array[@core.Expr]))]),
+          ),
         ),
-      ),
-      Hint,
-    ),
+        Hint,
+      )
+    },
     true,
   )
   t.eqf(
@@ -539,14 +563,16 @@ test "TestParser.test_expression" {
   // SKIP: `with self.assertRaises(TypeError): default.expression(exp.Hint(y=""))` --
   // unknown-keyword TypeErrors are a Python UNITTEST-mode-only check.
   t.eqf(
-    () => isa(
-      Some(
-        default.expression(
-          @core.mk(Hint, [("expressions", ([] : Array[@core.Expr]))]),
+    () => {
+      isa(
+        Some(
+          default.expression(
+            @core.mk(Hint, [("expressions", ([] : Array[@core.Expr]))]),
+          ),
         ),
-      ),
-      Hint,
-    ),
+        Hint,
+      )
+    },
     true,
   )
   t.run(() => ignore(default.expression(@core.mk0(Hint)))) |> ignore
@@ -566,37 +592,40 @@ test "TestParser.test_parse_errors" {
   t.raises_parse(() => ignore(po("WITH cte AS (SELECT * FROM x)"))) |> ignore
   t.raises_parse(() => ignore(po("SELECT foo( FROM bar"))) |> ignore
   t.eqf(
-    () => @sqlglot.generate(
-      @sqlglot.parse_one(
-        "CREATE TABLE t (i UInt8) ENGINE = AggregatingMergeTree() ORDER BY tuple()",
-        read="clickhouse",
-        error_level=Raise,
-      ),
-      dialect="clickhouse",
-    ),
+    () => {
+      @sqlglot.generate(
+        @sqlglot.parse_one(
+          "CREATE TABLE t (i UInt8) ENGINE = AggregatingMergeTree() ORDER BY tuple()",
+          read="clickhouse",
+          error_level=Raise,
+        ),
+        dialect="clickhouse",
+      )
+    },
     "CREATE TABLE t (i UInt8) ENGINE=AggregatingMergeTree() ORDER BY tuple()",
   )
   t.raises_parse(() => ignore(po("SELECT A[:"))) |> ignore
 
   // Truncated input must produce a ParseError, not an AttributeError
-  t.raises_parse(() => ignore(
-    po(
-      "SELECT * FROM t MATCH_RECOGNIZE(AFTER MATCH SKIP TO FIRST",
-      read="snowflake",
-    ),
-  ))
+  t.raises_parse(() => {
+    ignore(
+      po(
+        "SELECT * FROM t MATCH_RECOGNIZE(AFTER MATCH SKIP TO FIRST",
+        read="snowflake",
+      ),
+    )
+  })
   |> ignore
-  t.raises_parse(() => ignore(
-    po(
-      "SELECT * FROM t MATCH_RECOGNIZE(AFTER MATCH SKIP TO LAST",
-      read="snowflake",
-    ),
-  ))
+  t.raises_parse(() => {
+    ignore(
+      po(
+        "SELECT * FROM t MATCH_RECOGNIZE(AFTER MATCH SKIP TO LAST",
+        read="snowflake",
+      ),
+    )
+  })
   |> ignore
-  t.eqf(
-    () => gen(@sqlglot.parse_one("as as", error_level=Ignore)),
-    "AS as",
-  )
+  t.eqf(() => gen(@sqlglot.parse_one("as as", error_level=Ignore)), "AS as")
   t.done()
 }
 
@@ -608,13 +637,16 @@ test "TestParser.test_space" {
     "SELECT ROW() OVER (PARTITION BY x) FROM x GROUP BY y",
   )
   t.eqf(
-    () => gen(
-      po(
-        #|SELECT   * FROM x GROUP
-        #|                BY y
-        ,
-      ),
-    ),
+    () => {
+      gen(
+        po(
+          (
+            #|SELECT   * FROM x GROUP
+            #|                BY y
+          ),
+        ),
+      )
+    },
     "SELECT * FROM x GROUP BY y",
   )
   t.done()
@@ -642,19 +674,20 @@ test "TestParser.test_var" {
 test "TestParser.test_comments_select" {
   let t = t()
   let expression = po(
-    #|
-    #|            --comment1.1
-    #|            --comment1.2
-    #|            SELECT /*comment1.3*/
-    #|                a, --comment2
-    #|                b as B, --comment3:testing
-    #|                "test--annotation",
-    #|                c, --comment4 --foo
-    #|                e, --
-    #|                f -- space
-    #|            FROM foo
-    #|
-    ,
+    (
+      #|
+      #|            --comment1.1
+      #|            --comment1.2
+      #|            SELECT /*comment1.3*/
+      #|                a, --comment2
+      #|                b as B, --comment3:testing
+      #|                "test--annotation",
+      #|                c, --comment4 --foo
+      #|                e, --
+      #|                f -- space
+      #|            FROM foo
+      #|
+    ),
   )
   t.eq(expression.comments, Some(["comment1.1", "comment1.2", "comment1.3"]))
   let exprs = expression.expressions()
@@ -665,14 +698,15 @@ test "TestParser.test_comments_select" {
   t.eq(exprs[4].comments, Some([""]))
   t.eq(exprs[5].comments, Some([" space"]))
   let expression = po(
-    #|
-    #|            SELECT a.column_name --# Comment 1
-    #|                   ,b.column_name2, --# Comment 2
-    #|                   b.column_name3 AS NAME3 --# Comment 3
-    #|            FROM table_name a
-    #|            JOIN table_name2 b ON a.column_name = b.column_name
-    #|
-    ,
+    (
+      #|
+      #|            SELECT a.column_name --# Comment 1
+      #|                   ,b.column_name2, --# Comment 2
+      #|                   b.column_name3 AS NAME3 --# Comment 3
+      #|            FROM table_name a
+      #|            JOIN table_name2 b ON a.column_name = b.column_name
+      #|
+    ),
   )
   let exprs = expression.expressions()
   t.eq(exprs[0].comments, Some(["# Comment 1"]))
@@ -685,16 +719,17 @@ test "TestParser.test_comments_select" {
 test "TestParser.test_comments_select_cte" {
   let t = t()
   let expression = po(
-    #|
-    #|            /*comment1.1*/
-    #|            /*comment1.2*/
-    #|            WITH a AS (SELECT 1)
-    #|            SELECT /*comment2*/
-    #|                a.*
-    #|            FROM /*comment3*/
-    #|                a
-    #|
-    ,
+    (
+      #|
+      #|            /*comment1.1*/
+      #|            /*comment1.2*/
+      #|            WITH a AS (SELECT 1)
+      #|            SELECT /*comment2*/
+      #|                a.*
+      #|            FROM /*comment3*/
+      #|                a
+      #|
+    ),
   )
   t.eq(expression.comments, Some(["comment2"]))
   t.eq(expression.arg("from_").unwrap().comments, Some(["comment3"]))
@@ -709,15 +744,16 @@ test "TestParser.test_comments_select_cte" {
 test "TestParser.test_comments_insert" {
   let t = t()
   let expression = po(
-    #|
-    #|            --comment1.1
-    #|            --comment1.2
-    #|            INSERT INTO /*comment1.3*/
-    #|                x       /*comment2*/
-    #|            VALUES      /*comment3*/
-    #|                (1, 'a', 2.0)
-    #|
-    ,
+    (
+      #|
+      #|            --comment1.1
+      #|            --comment1.2
+      #|            INSERT INTO /*comment1.3*/
+      #|                x       /*comment2*/
+      #|            VALUES      /*comment3*/
+      #|                (1, 'a', 2.0)
+      #|
+    ),
   )
   t.eq(expression.comments, Some(["comment1.1", "comment1.2", "comment1.3"]))
   t.eq(expression.this().unwrap().comments, Some(["comment2"]))
@@ -728,15 +764,16 @@ test "TestParser.test_comments_insert" {
 test "TestParser.test_comments_insert_cte" {
   let t = t()
   let expression = po(
-    #|
-    #|            /*comment1.1*/
-    #|            /*comment1.2*/
-    #|            WITH a AS (SELECT 1)
-    #|            INSERT INTO /*comment2*/
-    #|                b /*comment3*/
-    #|            SELECT * FROM a
-    #|
-    ,
+    (
+      #|
+      #|            /*comment1.1*/
+      #|            /*comment1.2*/
+      #|            WITH a AS (SELECT 1)
+      #|            INSERT INTO /*comment2*/
+      #|                b /*comment3*/
+      #|            SELECT * FROM a
+      #|
+    ),
   )
   t.eq(expression.comments, Some(["comment2"]))
   t.eq(expression.this().unwrap().comments, Some(["comment3"]))
@@ -750,11 +787,12 @@ test "TestParser.test_comments_insert_cte" {
 ///|
 test "TestParser.test_update_assignment" {
   let t = t()
-  for sql in [
-    "UPDATE t SET a = t.b = t.c OR t.d AND t.e", "MERGE INTO t USING s ON t.id = s.id WHEN MATCHED THEN UPDATE SET a = t.b = t.c OR t.d AND t.e",
-    "INSERT INTO t (id) VALUES (1) ON CONFLICT(id) DO UPDATE SET a = t.b = t.c OR t.d AND t.e",
-    "INSERT INTO t (id) VALUES (1) ON DUPLICATE KEY UPDATE a = t.b = t.c OR t.d AND t.e",
-  ] {
+  for
+    sql in [
+      "UPDATE t SET a = t.b = t.c OR t.d AND t.e", "MERGE INTO t USING s ON t.id = s.id WHEN MATCHED THEN UPDATE SET a = t.b = t.c OR t.d AND t.e",
+      "INSERT INTO t (id) VALUES (1) ON CONFLICT(id) DO UPDATE SET a = t.b = t.c OR t.d AND t.e",
+      "INSERT INTO t (id) VALUES (1) ON DUPLICATE KEY UPDATE a = t.b = t.c OR t.d AND t.e",
+    ] {
     match t.run(() => po(sql).find([Update, OnConflict])) {
       Some(Some(update)) => {
         let assignment = update.expressions()[0]
@@ -776,17 +814,18 @@ test "TestParser.test_update_assignment" {
 test "TestParser.test_comments_update" {
   let t = t()
   let expression = po(
-    #|
-    #|            --comment1.1
-    #|            --comment1.2
-    #|            UPDATE  /*comment1.3*/
-    #|                tbl /*comment2*/
-    #|            SET     /*comment3*/
-    #|                x = 2
-    #|            WHERE /*comment4*/
-    #|                x <> 2
-    #|
-    ,
+    (
+      #|
+      #|            --comment1.1
+      #|            --comment1.2
+      #|            UPDATE  /*comment1.3*/
+      #|                tbl /*comment2*/
+      #|            SET     /*comment3*/
+      #|                x = 2
+      #|            WHERE /*comment4*/
+      #|                x <> 2
+      #|
+    ),
   )
   t.eq(expression.comments, Some(["comment1.1", "comment1.2", "comment1.3"]))
   t.eq(expression.this().unwrap().comments, Some(["comment2"]))
@@ -798,15 +837,16 @@ test "TestParser.test_comments_update" {
 test "TestParser.test_comments_update_cte" {
   let t = t()
   let expression = po(
-    #|
-    #|            /*comment1.1*/
-    #|            /*comment1.2*/
-    #|            WITH a AS (SELECT * FROM b)
-    #|            UPDATE /*comment2*/
-    #|                a  /*comment3*/
-    #|            SET col = 1
-    #|
-    ,
+    (
+      #|
+      #|            /*comment1.1*/
+      #|            /*comment1.2*/
+      #|            WITH a AS (SELECT * FROM b)
+      #|            UPDATE /*comment2*/
+      #|                a  /*comment3*/
+      #|            SET col = 1
+      #|
+    ),
   )
   t.eq(expression.comments, Some(["comment2"]))
   t.eq(expression.this().unwrap().comments, Some(["comment3"]))
@@ -821,16 +861,17 @@ test "TestParser.test_comments_update_cte" {
 test "TestParser.test_comments_delete" {
   let t = t()
   let expression = po(
-    #|
-    #|            --comment1.1
-    #|            --comment1.2
-    #|            DELETE /*comment1.3*/
-    #|            FROM   /*comment2*/
-    #|                x  /*comment3*/
-    #|            WHERE  /*comment4*/
-    #|                y > 1
-    #|
-    ,
+    (
+      #|
+      #|            --comment1.1
+      #|            --comment1.2
+      #|            DELETE /*comment1.3*/
+      #|            FROM   /*comment2*/
+      #|                x  /*comment3*/
+      #|            WHERE  /*comment4*/
+      #|                y > 1
+      #|
+    ),
   )
   t.eq(expression.comments, Some(["comment1.1", "comment1.2", "comment1.3"]))
   t.eq(expression.this().unwrap().comments, Some(["comment3"]))
@@ -842,14 +883,15 @@ test "TestParser.test_comments_delete" {
 test "TestParser.test_comments_delete_cte" {
   let t = t()
   let expression = po(
-    #|
-    #|            /*comment1.1*/
-    #|            /*comment1.2*/
-    #|            WITH a AS (SELECT * FROM b)
-    #|            --comment2
-    #|            DELETE FROM a /*comment3*/
-    #|
-    ,
+    (
+      #|
+      #|            /*comment1.1*/
+      #|            /*comment1.2*/
+      #|            WITH a AS (SELECT * FROM b)
+      #|            --comment2
+      #|            DELETE FROM a /*comment3*/
+      #|
+    ),
   )
   t.eq(expression.comments, Some(["comment2"]))
   t.eq(expression.this().unwrap().comments, Some(["comment3"]))
@@ -906,10 +948,12 @@ test "TestParser.test_type_literals" {
   t.eqf(() => isa(Some(po("TIMESTAMP()")), Func), true)
   t.eqf(() => isa(Some(po("map.x")), Column), true)
   t.eqf(
-    () => isa(
-      Some(po("CAST(x AS CHAR(5))").arg("to").unwrap().expressions()[0]),
-      DataTypeParam,
-    ),
+    () => {
+      isa(
+        Some(po("CAST(x AS CHAR(5))").arg("to").unwrap().expressions()[0]),
+        DataTypeParam,
+      )
+    },
     true,
   )
   t.eq_expr(po("1::int64", read="bigquery"), po("CAST(1 AS BIGINT)"))
@@ -938,8 +982,7 @@ test "TestParser.test_set_expression" {
   let set_as_command = po("SET DEFAULT ROLE ALL TO USER")
   let output = logged("WARNING")
   t.ok(
-    output.length() > 0 &&
-    output[0].contains("'SET DEFAULT ROLE ALL TO USER'"),
+    output.length() > 0 && output[0].contains("'SET DEFAULT ROLE ALL TO USER'"),
     msg="\{output}",
   )
   t.eqf(() => gen(set_as_command), "SET DEFAULT ROLE ALL TO USER")
@@ -953,8 +996,10 @@ test "TestParser.test_set_expression" {
 test "TestParser.test_pretty_config_override" {
   let t = t()
   t.eqf(() => gen(po("SELECT col FROM x")), "SELECT col FROM x")
-  // SKIP: `with patch("sqlglot.pretty", True)` -- patching the module-level default
-  // `sqlglot.pretty` (the port has no global pretty flag).
+  // with patch("sqlglot.pretty", True)
+  @core.default_pretty.val = true
+  t.eqf(() => gen(po("SELECT col FROM x")), "SELECT\n  col\nFROM x")
+  @core.default_pretty.val = false
   t.eqf(
     () => @sqlglot.generate(po("SELECT col FROM x"), pretty=true),
     "SELECT\n  col\nFROM x",
@@ -966,17 +1011,19 @@ test "TestParser.test_pretty_config_override" {
 test "TestParser.test_comment_error_n" {
   let t = t()
   @core.take_log_messages() |> ignore
-  t.run(() => ignore(
-    @sqlglot.parse_one(
-      (
-        #|SUM
-        #|(
-        #|-- test
-        #|)
+  t.run(() => {
+    ignore(
+      @sqlglot.parse_one(
+        (
+          #|SUM
+          #|(
+          #|-- test
+          #|)
+        ),
+        error_level=Warn,
       ),
-      error_level=Warn,
-    ),
-  ))
+    )
+  })
   |> ignore
   let output = logged("ERROR").join("\n")
   let message = "Required keyword: 'this' missing for <class 'sqlglot.expressions.aggregate.Sum'>. Line 4, Col: 1."
@@ -1000,7 +1047,9 @@ test "TestParser.test_comment_error_r" {
 test "TestParser.test_create_table_error" {
   let t = t()
   @core.take_log_messages() |> ignore
-  t.run(() => ignore(@sqlglot.parse_one("CREATE TABLE SELECT", error_level=Warn)))
+  t.run(() => {
+    ignore(@sqlglot.parse_one("CREATE TABLE SELECT", error_level=Warn))
+  })
   |> ignore
   let output = logged("ERROR").join("\n")
   t.ok(
@@ -1140,7 +1189,8 @@ test "TestParser.test_pivot_columns" {
         (
           "spark",
           [
-            "`prop1_avg(price)`", "`prop1_max(quality)`", "`rudder_avg(price)`", "`rudder_max(quality)`",
+            "`prop1_avg(price)`", "`prop1_max(quality)`", "`rudder_avg(price)`",
+            "`rudder_max(quality)`",
           ],
         ),
       ],
@@ -1151,7 +1201,8 @@ test "TestParser.test_pivot_columns" {
         (
           "spark",
           [
-            "`prop1_avg(PrIcE)`", "`prop1_max(quality)`", "`rudder_avg(PrIcE)`", "`rudder_max(quality)`",
+            "`prop1_avg(PrIcE)`", "`prop1_max(quality)`", "`rudder_avg(PrIcE)`",
+            "`rudder_max(quality)`",
           ],
         ),
       ],
@@ -1206,12 +1257,11 @@ test "TestParser.test_pivot_columns" {
         () => {
           let expr = po(query, read=dialect)
           let columns = expr
-            .arg("from_")
-            .unwrap()
-            .this()
-            .unwrap()
-            .list("pivots")[0]
-            .list("columns")
+          .arg("from_")
+          .unwrap()
+          .this()
+          .unwrap()
+          .list("pivots")[0].list("columns")
           columns.map(col => @sqlglot.generate(col, dialect~))
         },
         expected_columns,
@@ -1226,13 +1276,21 @@ test "TestParser.test_parse_nested" {
   // Python logs a warning when a query takes longer than 0.2s to parse; here we
   // only check that the deeply nested queries parse.
   let t = t()
-  let warn_over_threshold = (query : String) => t.ok(
-    t.run(() => po(query)) is Some(_),
+  let warn_over_threshold = (query : String) => {
+    t.ok(t.run(() => po(query)) is Some(_))
+  }
+  warn_over_threshold(
+    "SELECT * FROM a " + "LEFT JOIN b ON a.id = b.id ".repeat(38),
   )
-  warn_over_threshold("SELECT * FROM a " + "LEFT JOIN b ON a.id = b.id ".repeat(38))
-  warn_over_threshold("SELECT * FROM a " + "LEFT JOIN UNNEST(ARRAY[]) ".repeat(15))
-  warn_over_threshold("SELECT * FROM a " + "OUTER APPLY (SELECT * FROM b) ".repeat(30))
-  warn_over_threshold("SELECT * FROM a " + "NATURAL FULL OUTER JOIN x ".repeat(30))
+  warn_over_threshold(
+    "SELECT * FROM a " + "LEFT JOIN UNNEST(ARRAY[]) ".repeat(15),
+  )
+  warn_over_threshold(
+    "SELECT * FROM a " + "OUTER APPLY (SELECT * FROM b) ".repeat(30),
+  )
+  warn_over_threshold(
+    "SELECT * FROM a " + "NATURAL FULL OUTER JOIN x ".repeat(30),
+  )
   t.done()
 }
 
@@ -1324,7 +1382,8 @@ test "TestParser.test_parse_drop_schema" {
 
   // when there is IF EXISTS it must not displace catalog mapping
   for dialect in ["", "bigquery", "snowflake", "duckdb"] {
-    match t.run(() => po("DROP SCHEMA IF EXISTS catalog.schema", read=dialect)) {
+    match
+      t.run(() => po("DROP SCHEMA IF EXISTS catalog.schema", read=dialect)) {
       Some(ast) => {
         t.eq_expr(
           ast,
@@ -1415,9 +1474,10 @@ test "TestParser.test_parse_create_schema" {
 test "TestParser.test_values_as_identifier" {
   let t = t()
   let sql = "SELECT values FROM t WHERE values + 1 > x"
-  for dialect in [
-    "bigquery", "clickhouse", "duckdb", "postgres", "redshift", "snowflake",
-  ] {
+  for
+    dialect in [
+      "bigquery", "clickhouse", "duckdb", "postgres", "redshift", "snowflake",
+    ] {
     t.eqf(() => sql_of(sql, read=dialect), sql)
   }
   t.done()
@@ -1447,11 +1507,12 @@ test "TestParser.test_distinct_from" {
 ///|
 test "TestParser.test_trailing_comments" {
   let expressions = @sqlglot.parse(
-    #|
-    #|        select * from x;
-    #|        -- my comment
-    #|
-    ,
+    (
+      #|
+      #|        select * from x;
+      #|        -- my comment
+      #|
+    ),
   )
   assert_eq(
     expressions.map(e => gen_opt(e) catch { _ => "<error>" }).join(";\n"),
@@ -1509,7 +1570,9 @@ test "TestParser.test_token_position_meta" {
     "SELECT a, b FROM test_schema.test_table_a UNION ALL SELECT c, d FROM test_catalog.test_schema.test_table_b",
   )
   for identifier in ast.find_all([Identifier]) {
-    t.eq(meta_of(Some(identifier)).map(kv => kv.0), ["col", "end", "line", "start"])
+    t.eq(meta_of(Some(identifier)).map(kv => kv.0), [
+      "col", "end", "line", "start",
+    ])
   }
   let left_table = ast.this().unwrap().arg("from_").unwrap().this().unwrap()
   t.eq(
@@ -1520,7 +1583,13 @@ test "TestParser.test_token_position_meta" {
     meta_of(left_table.arg("db")),
     sorted_meta([("line", 1), ("col", 28), ("start", 17), ("end", 27)]),
   )
-  let right_table = ast.expression().unwrap().arg("from_").unwrap().this().unwrap()
+  let right_table = ast
+    .expression()
+    .unwrap()
+    .arg("from_")
+    .unwrap()
+    .this()
+    .unwrap()
   t.eq(
     meta_of(right_table.arg("this")),
     sorted_meta([("line", 1), ("col", 106), ("start", 94), ("end", 105)]),
@@ -1566,10 +1635,12 @@ test "TestParser.test_quoted_identifier_meta" {
   let ast = po(sql)
   let table = ast.arg("from_").unwrap().this().unwrap()
   let db_meta = table.arg("db").unwrap().get_meta()
-  let slice = (m : Map[String, @core.Value]) => match (m.get("start"), m.get("end")) {
-    (Some(@core.Int(s)), Some(@core.Int(e))) =>
-      sql.unsafe_substring(start=s, end=e + 1)
-    _ => "<missing meta>"
+  let slice = (m : Map[String, @core.Value]) => {
+    match (m.get("start"), m.get("end")) {
+      (Some(@core.Int(s)), Some(@core.Int(e))) =>
+        sql.unsafe_substring(start=s, end=e + 1)
+      _ => "<missing meta>"
+    }
   }
   assert_eq(slice(db_meta), "\"test_schema\"")
   let table_meta = table.this().unwrap().get_meta()
@@ -1587,9 +1658,9 @@ test "TestParser.test_qualified_function" {
 ///|
 test "TestParser.test_pivot_missing_agg_func" {
   let t = t()
-  let e = t.raises_parse(() => ignore(
-    po("select * from tbl pivot(col1 for col2 in (val1, val1))"),
-  ))
+  let e = t.raises_parse(() => {
+    ignore(po("select * from tbl pivot(col1 for col2 in (val1, val1))"))
+  })
   t.ok(
     msg_of(e).contains("Expecting an aggregation function in PIVOT"),
     msg=msg_of(e),
@@ -1610,11 +1681,13 @@ test "TestParser.test_multiple_query_modifiers" {
     () => gen(@sqlglot.parse_one(sql, error_level=Ignore)),
     "SELECT * FROM a WHERE c = 'false'",
   )
-  let e = t.raises_parse(() => ignore(
-    po(
-      "SELECT id FROM t START WITH a = 1 CONNECT BY PRIOR id = pid START WITH b = 2 CONNECT BY PRIOR id = pid",
-    ),
-  ))
+  let e = t.raises_parse(() => {
+    ignore(
+      po(
+        "SELECT id FROM t START WITH a = 1 CONNECT BY PRIOR id = pid START WITH b = 2 CONNECT BY PRIOR id = pid",
+      ),
+    )
+  })
   t.ok(
     msg_of(e).contains("Found multiple 'START WITH' clauses. Line 1, Col: 65."),
     msg=msg_of(e),
@@ -1651,26 +1724,37 @@ test "TestParser.test_window_clause_without_from" {
   t.eqf(() => gen(po("SELECT 1 AS WINDOW")), "SELECT 1 AS WINDOW")
 
   // WINDOW remains usable as an implicit alias when not followed by `<id> AS (`
-  t.eqf(() => gen(po("SELECT col window FROM t")), "SELECT col AS window FROM t")
+  t.eqf(
+    () => gen(po("SELECT col window FROM t")),
+    "SELECT col AS window FROM t",
+  )
   t.done()
 }
 
 ///|
 test "TestParser.test_parse_into_grant_principal" {
   let t = t()
-  let into = (sql : String, read : String) => isa(
-    Some(@sqlglot.parse_one(sql, into=GrantPrincipal, read~)),
-    GrantPrincipal,
-  )
+  let into = (sql : String, read : String) => {
+    isa(
+      Some(@sqlglot.parse_one(sql, into=GrantPrincipal, read~)),
+      GrantPrincipal,
+    )
+  }
   t.eqf(() => into("ROLE blah", ""), true)
   t.eqf(() => into("GROUP blah", ""), true)
   t.eqf(() => into("blah", ""), true)
   t.eqf(() => into("ROLE `blah`", "databricks"), true)
   t.eqf(
-    () => @sqlglot.generate(
-      @sqlglot.parse_one("ROLE `blah`", into=GrantPrincipal, read="databricks"),
-      dialect="databricks",
-    ),
+    () => {
+      @sqlglot.generate(
+        @sqlglot.parse_one(
+          "ROLE `blah`",
+          into=GrantPrincipal,
+          read="databricks",
+        ),
+        dialect="databricks",
+      )
+    },
     "ROLE `blah`",
   )
   t.done()
@@ -1679,10 +1763,9 @@ test "TestParser.test_parse_into_grant_principal" {
 ///|
 test "TestParser.test_parse_into_grant_privilege" {
   let t = t()
-  let into = (sql : String) => isa(
-    Some(@sqlglot.parse_one(sql, into=GrantPrivilege)),
-    GrantPrivilege,
-  )
+  let into = (sql : String) => {
+    isa(Some(@sqlglot.parse_one(sql, into=GrantPrivilege)), GrantPrivilege)
+  }
   t.eqf(() => into("SELECT"), true)
   t.eqf(() => into("ALL PRIVILEGES"), true)
   t.done()
@@ -1706,9 +1789,9 @@ test "TestParser.test_max_nodes" {
   let expr = "x" + "=x".repeat(depth)
   let cols = Array::make(width, expr)
   let sql = "SELECT \{cols.join(",")}"
-  let e = t.raises_parse(() => ignore(
-    @sqlglot.parse_one(sql, max_nodes=1_000_000),
-  ))
+  let e = t.raises_parse(() => {
+    ignore(@sqlglot.parse_one(sql, max_nodes=1_000_000))
+  })
   t.ok(msg_of(e).contains("Maximum number of AST nodes"), msg=msg_of(e))
   let e = t.raises_parse(() => ignore(@sqlglot.parse_one(sql, max_nodes=50_000)))
   t.ok(msg_of(e).contains("(50000)"), msg=msg_of(e))

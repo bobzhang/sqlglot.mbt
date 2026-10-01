@@ -12,12 +12,14 @@ test "TestGenerator.test_fallback_function_var_args_sql" {
   // SKIP: the SpecialUdf part (runtime Func subclass, see above).
   let t = t()
   t.eqf(
-    () => gen(
-      @core.mk(DateTrunc, [
-        ("this", @core.column_of("event_date")),
-        ("unit", @core.var_("MONTH")),
-      ]),
-    ),
+    () => {
+      gen(
+        @core.mk(DateTrunc, [
+          ("this", @core.column_of("event_date")),
+          ("unit", @core.var_("MONTH")),
+        ]),
+      )
+    },
     "DATE_TRUNC('MONTH', event_date)",
   )
   t.done()
@@ -26,9 +28,15 @@ test "TestGenerator.test_fallback_function_var_args_sql" {
 ///|
 test "TestGenerator.test_identify" {
   let t = t()
-  t.eqf(() => @sqlglot.generate(@sqlglot.parse_one("x"), identify=true), "\"x\"")
+  t.eqf(
+    () => @sqlglot.generate(@sqlglot.parse_one("x"), identify=true),
+    "\"x\"",
+  )
   t.eqf(() => @sqlglot.generate(@sqlglot.parse_one("x"), identify=false), "x")
-  t.eqf(() => @sqlglot.generate(@sqlglot.parse_one("X"), identify=true), "\"X\"")
+  t.eqf(
+    () => @sqlglot.generate(@sqlglot.parse_one("X"), identify=true),
+    "\"X\"",
+  )
   t.eqf(
     () => @sqlglot.generate(@sqlglot.parse_one("\"x\""), identify=false),
     "\"x\"",
@@ -90,12 +98,14 @@ fn T::assert_pretty_nested(
     Some(datatype) => {
       self.eqf(() => gen(datatype), single_line, loc~)
       self.eqf(
-        () => @sqlglot.generate(
-          datatype,
-          pretty=true,
-          max_text_width~,
-          leading_comma~,
-        ),
+        () => {
+          @sqlglot.generate(
+            datatype,
+            pretty=true,
+            max_text_width~,
+            leading_comma~,
+          )
+        },
         pretty,
         loc~,
       )
@@ -134,9 +144,7 @@ test "TestGenerator.test_pretty_nested_types" {
   // ARRAY nested STRUCT
   let type_str = "ARRAY<STRUCT<a INT, b TEXT>>"
   t.assert_pretty_nested(
-    type_str,
-    type_str,
-    "ARRAY<\n  STRUCT<\n    a INT,\n    b TEXT\n  >\n>",
+    type_str, type_str, "ARRAY<\n  STRUCT<\n    a INT,\n    b TEXT\n  >\n>",
   )
 
   // RANGE
@@ -149,6 +157,8 @@ test "TestGenerator.test_pretty_nested_types" {
 
   // MAP
   let type_str = "MAP<INT, DECIMAL(38, 9)>"
-  t.assert_pretty_nested(type_str, type_str, "MAP<\n  INT,\n  DECIMAL(38, 9)\n>")
+  t.assert_pretty_nested(
+    type_str, type_str, "MAP<\n  INT,\n  DECIMAL(38, 9)\n>",
+  )
   t.done()
 }

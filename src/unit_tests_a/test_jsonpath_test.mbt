@@ -21,13 +21,14 @@ test "TestJsonpath.test_jsonpath" {
       ),
     ]),
     @core.mk1(JSONPathKey, "z"),
-    @core.mk1(
-      JSONPathSelector,
-      @core.mk1(JSONPathFilter, "(@.a == 'b'), 1:"),
-    ),
+    @core.mk1(JSONPathSelector, @core.mk1(JSONPathFilter, "(@.a == 'b'), 1:")),
     @core.mk1(
       JSONPathSubscript,
-      @core.mk(JSONPathSlice, [("start", 1), ("end", 5), ("step", (None : Int?))]),
+      @core.mk(JSONPathSlice, [
+        ("start", 1),
+        ("end", 5),
+        ("step", (None : Int?)),
+      ]),
     ),
     @core.mk(JSONPathUnion, [
       (
@@ -63,11 +64,12 @@ test "TestJsonpath.test_unclosed_filter_raises_parse_error" {
 
 ///|
 test "TestJsonpath.test_identity" {
-  for case in [
-    ("$.select", "$.select"),
-    ("$[(@.length-1)]", "$[(@.length-1)]"),
-    ("$[((@.length-1))]", "$[((@.length-1))]"),
-  ] {
+  for
+    case in [
+      ("$.select", "$.select"),
+      ("$[(@.length-1)]", "$[(@.length-1)]"),
+      ("$[((@.length-1))]", "$[((@.length-1))]"),
+    ] {
     let (selector, expected) = case
     assert_eq(gen(jsonpath(selector)), "'\{expected}'")
   }
@@ -124,10 +126,10 @@ test "TestJsonpath.test_cts_file" {
       // (Python ints are unbounded), so 113667776004 overflows.
       continue
     } else {
-      let expected = overrides.get(selector).unwrap_or(selector).replace_all(
-        old="'",
-        new="''",
-      )
+      let expected = overrides
+        .get(selector)
+        .unwrap_or(selector)
+        .replace_all(old="'", new="''")
       t.eqf(() => gen(jsonpath(selector)), "'\{expected}'")
     }
   }
