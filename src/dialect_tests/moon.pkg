@@ -1,6 +1,7 @@
 import {
   "hongbozhang/sqlglot",
   "hongbozhang/sqlglot/core",
+  "moonbitlang/core/json",
 }
 
 warnings = "-79"

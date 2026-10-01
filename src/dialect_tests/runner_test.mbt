@@ -27,7 +27,20 @@ fn run_case(
   } else {
     Warn
   }
+  if flags.contains("c") {
+    @core.take_log_messages() |> ignore
+  }
   let e = @core.parse_one(sql, dialect=r)
+  if flags.contains("c") {
+    let prefix = sql.to_array()
+    let prefix = String::from_array(
+      prefix[:if prefix.length() > 100 { 100 } else { prefix.length() }],
+    )
+    let warning = "WARNING: '\{prefix}' contains unsupported syntax"
+    guard @core.take_log_messages().iter().any(m => m.has_prefix(warning)) else {
+      raise @core.ValueError("expected the Command fallback warning")
+    }
+  }
   @core.Generator::new(
     w,
     pretty=flags.contains("p"),
@@ -50,8 +63,21 @@ fn run_dialect_cases(module : String, cases : Array[String]) -> Unit raise {
     let expected = cases[i + 4]
     let label = "[\{read} -> \{write}\{if flags.is_empty() { "" } else { " " + flags }}]"
     let expect_unsupported = flags.contains("u")
+    let expect_error = flags.contains("E")
     let got = run_case(read, write, flags, sql) catch {
       @core.UnsupportedError(_) if expect_unsupported => continue
+      err if expect_error => {
+        if err.to_string() != expected {
+          failures += 1
+          if printed < max_printed {
+            printed += 1
+            println(
+              "WRONG-ERROR \{label} \{sql}\n  got: \{err}\n  exp: \{expected}",
+            )
+          }
+        }
+        continue
+      }
       err => {
         errors += 1
         if printed < max_printed {
@@ -61,11 +87,12 @@ fn run_dialect_cases(module : String, cases : Array[String]) -> Unit raise {
         continue
       }
     }
-    if expect_unsupported {
+    if expect_unsupported || expect_error {
       failures += 1
       if printed < max_printed {
         printed += 1
-        println("NOT-UNSUPPORTED \{label} \{sql}\n  got: \{got}")
+        let what = if expect_error { "NO-ERROR" } else { "NOT-UNSUPPORTED" }
+        println("\{what} \{label} \{sql}\n  got: \{got}")
       }
     } else if got != expected {
       failures += 1

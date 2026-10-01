@@ -3485,11 +3485,13 @@ fn approxquantiles_sql(
       g.unsupported("APPROX_QUANTILES requires a bucket count argument")
       return g.function_fallback_sql(e)
     }
-    exprs[1].pop()
+    Some(exprs[1].pop())
   } else {
-    expr_of(e)
+    e.expression()
   }
-  if num_quantiles_expr.kind != Literal || !num_quantiles_expr.is_int() {
+  guard num_quantiles_expr is Some(num_quantiles_expr) &&
+    num_quantiles_expr.kind == Literal &&
+    num_quantiles_expr.is_int() else {
     g.unsupported("APPROX_QUANTILES bucket count must be a positive integer")
     return g.function_fallback_sql(e)
   }
