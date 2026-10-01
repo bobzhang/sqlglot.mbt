@@ -23,6 +23,16 @@ test "optimizer eliminate_joins" {
 }
 
 ///|
+test "optimizer eliminate_subqueries" {
+  run_fixtures(
+    "eliminate_subqueries",
+    eliminate_subqueries_fixtures,
+    pretty=false,
+    (e, _) => @optimizer.eliminate_subqueries(e),
+  )
+}
+
+///|
 test "optimizer eliminate_ctes" {
   run_fixtures("eliminate_ctes", eliminate_ctes_fixtures, pretty=true, (e, _) => @optimizer.eliminate_ctes(
     e,
