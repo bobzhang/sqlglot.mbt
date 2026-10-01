@@ -38,10 +38,12 @@ fn register_methods(d : @core.Dialect) -> Unit {
     g.cast_sql(e, safe_prefix?)
   })
   m[TryCast] = trycast_sql
-  m[Log] = (g, e) => if !e.has("expression") {
-    g.func("LN", [e.this()])
-  } else {
-    g.log_sql(e)
+  m[Log] = (g, e) => {
+    if !e.has("expression") {
+      g.func("LN", [e.this()])
+    } else {
+      g.log_sql(e)
+    }
   }
   m[Greatest] = (g, e) => {
     let name = if e.has("ignore_nulls") {
@@ -49,7 +51,10 @@ fn register_methods(d : @core.Dialect) -> Unit {
     } else {
       "GREATEST"
     }
-    g.func(name, [e.this(), ..e.expressions().map(x => (Some(x) : &@core.SqlArg))])
+    g.func(
+      name,
+      [e.this(), ..e.expressions().map(x => (Some(x) : &@core.SqlArg))],
+    )
   }
   m[Least] = (g, e) => {
     let name = if e.has("ignore_nulls") {
@@ -57,7 +62,10 @@ fn register_methods(d : @core.Dialect) -> Unit {
     } else {
       "LEAST"
     }
-    g.func(name, [e.this(), ..e.expressions().map(x => (Some(x) : &@core.SqlArg))])
+    g.func(
+      name,
+      [e.this(), ..e.expressions().map(x => (Some(x) : &@core.SqlArg))],
+    )
   }
   m[Generator] = generator_sql
   m[Unnest] = unnest_sql
@@ -74,9 +82,9 @@ fn register_methods(d : @core.Dialect) -> Unit {
   m[AlterSet] = alterset_sql
   m[StrToTime] = strtotime_sql
   m[TimestampSub] = (g, e) => {
-    let expression = e.expression().map(x => {
-      @core.exp_binop(Mul, x, @core.literal_number("-1"))
-    })
+    let expression = e
+      .expression()
+      .map(x => @core.exp_binop(Mul, x, @core.literal_number("-1")))
     g.sql(
       Some(
         @core.mk(TimestampAdd, [
@@ -117,26 +125,28 @@ fn register_methods(d : @core.Dialect) -> Unit {
   }
   h.createable_sql = Some(createable_sql)
   m[ArrayAgg] = arrayagg_sql
-  m[ArrayDistinct] = (g, e) => if e.has("check_null") {
-    g.func("ARRAY_DISTINCT", [e.this()])
-  } else {
-    g.func("ARRAY_DISTINCT", [@core.mk1(ArrayCompact, e.this())])
+  m[ArrayDistinct] = (g, e) => {
+    if e.has("check_null") {
+      g.func("ARRAY_DISTINCT", [e.this()])
+    } else {
+      g.func("ARRAY_DISTINCT", [@core.mk1(ArrayCompact, e.this())])
+    }
   }
-  m[ArrayToString] = (g, e) => g.func("ARRAY_TO_STRING", [
-    e.this(),
-    e.expression(),
-  ])
+  m[ArrayToString] = (g, e) => {
+    g.func("ARRAY_TO_STRING", [e.this(), e.expression()])
+  }
   m[Array] = array_sql
   m[CurrentDate] = currentdate_sql
   m[Dot] = dot_sql
   m[ModelAttribute] = (g, e) => {
     "\{g.sql_key(e, "this")}!\{g.sql_key(e, "expression")}"
   }
-  m[Format] = (g, e) => if @core.py_lower(e.name()) == "%s" &&
-    e.expressions().length() == 1 {
-    g.func("TO_CHAR", [e.expressions()[0]])
-  } else {
-    g.function_fallback_sql(e)
+  m[Format] = (g, e) => {
+    if @core.py_lower(e.name()) == "%s" && e.expressions().length() == 1 {
+      g.func("TO_CHAR", [e.expressions()[0]])
+    } else {
+      g.function_fallback_sql(e)
+    }
   }
   m[SplitPart] = (g, e) => {
     // Set part_index to 1 if missing
@@ -190,9 +200,11 @@ fn sortarray_sql(
 ) -> String raise @core.SqlglotError {
   let asc = e.arg("asc")
   let mut nulls_first = e.arg("nulls_first")
-  let is_bool = (x : @core.Expr?, b : Bool) => match x {
-    Some(v) => v.kind == Boolean && v.bool_arg("this") == b
-    None => false
+  let is_bool = (x : @core.Expr?, b : Bool) => {
+    match x {
+      Some(v) => v.kind == Boolean && v.bool_arg("this") == b
+      None => false
+    }
   }
   if is_bool(asc, false) && is_bool(nulls_first, true) {
     nulls_first = None
@@ -715,7 +727,10 @@ fn currentdate_sql(
 }
 
 ///|
-fn dot_sql(g : @core.Generator, e : @core.Expr) -> String raise @core.SqlglotError {
+fn dot_sql(
+  g : @core.Generator,
+  e : @core.Expr,
+) -> String raise @core.SqlglotError {
   let mut this = e.this_()
   if this.get_type() is None {
     this = @core.gen_annotate_types(this, g.dialect)

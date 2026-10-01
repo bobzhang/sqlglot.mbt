@@ -70,24 +70,3 @@ fn eliminate_dot_variant_lookup(
   }
   expression
 }
-
-///|
-fn explode_projection_to_unnest(
-  expression : @core.Expr,
-) -> @core.Expr raise @core.SqlglotError {
-  expression
-}
-
-///|
-fn transform_generate_date_array(
-  expression : @core.Expr,
-) -> @core.Expr raise @core.SqlglotError {
-  expression
-}
-
-///|
-fn qualify_unnested_columns(
-  expression : @core.Expr,
-) -> @core.Expr raise @core.SqlglotError {
-  expression
-}

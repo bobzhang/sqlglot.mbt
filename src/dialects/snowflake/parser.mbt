@@ -3,7 +3,9 @@
 ///|
 /// `RANKING_WINDOW_FUNCTIONS_WITH_FRAME`
 let ranking_window_functions_with_frame : Array[@core.Kind] = [
-  FirstValue, LastValue, NthValue,
+  FirstValue,
+  LastValue,
+  NthValue,
 ]
 
 ///|
@@ -32,10 +34,11 @@ let non_table_creatables : Array[String] = [
 ///|
 fn undrop_objects() -> Map[String, Array[Array[String]]] {
   let m : Map[String, Array[Array[String]]] = Map([])
-  for k in [
-    "ACCOUNT", "DATABASE", "NOTEBOOK", "SCHEMA", "SNAPSHOT", "STREAMLIT", "TABLE",
-    "TAG", "TYPE",
-  ] {
+  for
+    k in [
+      "ACCOUNT", "DATABASE", "NOTEBOOK", "SCHEMA", "SNAPSHOT", "STREAMLIT", "TABLE",
+      "TAG", "TYPE",
+    ] {
     m[k] = []
   }
   m["DYNAMIC"] = [["TABLE"]]
@@ -106,17 +109,21 @@ fn configure_parser(d : @core.Dialect) -> Unit {
   pp["CREDENTIALS"] = (p, _) => node(parse_credentials_property(p))
   pp["FILE_FORMAT"] = (p, _) => node(parse_file_format_property(p))
   pp["LOCATION"] = (p, _) => node(parse_location_property(p))
-  pp["ROW"] = (p, _) => if p.match_text_seq(["ACCESS", "POLICY"]) {
-    node(parse_row_access_policy(p))
-  } else {
-    node(p.parse_row())
+  pp["ROW"] = (p, _) => {
+    if p.match_text_seq(["ACCESS", "POLICY"]) {
+      node(parse_row_access_policy(p))
+    } else {
+      node(p.parse_row())
+    }
   }
   pp["TAG"] = (p, _) => node(parse_tag(p))
-  pp["USING"] = (p, _) => if p.match_text_seq(["TEMPLATE"]) {
-    let this = p.parse_statement()
-    Some(Node(p.expression(@core.mk1(UsingTemplateProperty, this))))
-  } else {
-    Some(Bool(false))
+  pp["USING"] = (p, _) => {
+    if p.match_text_seq(["TEMPLATE"]) {
+      let this = p.parse_statement()
+      Some(Node(p.expression(@core.mk1(UsingTemplateProperty, this))))
+    } else {
+      Some(Bool(false))
+    }
   }
   // TYPE_CONVERTERS
   fns.type_converters.clear()
@@ -127,18 +134,20 @@ fn configure_parser(d : @core.Dialect) -> Unit {
   // SHOW_PARSERS
   fns.show_parsers.clear()
   let sp = fns.show_parsers
-  for name in [
-    "DATABASES", "SCHEMAS", "OBJECTS", "TABLES", "VIEWS", "PRIMARY KEYS", "IMPORTED KEYS",
-    "UNIQUE KEYS", "SEQUENCES", "STAGES", "COLUMNS", "USERS", "FILE FORMATS", "FUNCTIONS",
-    "PROCEDURES", "WAREHOUSES",
-  ] {
+  for
+    name in [
+      "DATABASES", "SCHEMAS", "OBJECTS", "TABLES", "VIEWS", "PRIMARY KEYS", "IMPORTED KEYS",
+      "UNIQUE KEYS", "SEQUENCES", "STAGES", "COLUMNS", "USERS", "FILE FORMATS", "FUNCTIONS",
+      "PROCEDURES", "WAREHOUSES",
+    ] {
     sp[name] = show_parser(name)
   }
   sp["ICEBERG TABLES"] = show_parser("TABLES", iceberg=true)
   sp["TERSE ICEBERG TABLES"] = show_parser("TABLES", terse=true, iceberg=true)
-  for name in [
-    "DATABASES", "SCHEMAS", "OBJECTS", "TABLES", "VIEWS", "SEQUENCES", "USERS",
-  ] {
+  for
+    name in [
+      "DATABASES", "SCHEMAS", "OBJECTS", "TABLES", "VIEWS", "SEQUENCES", "USERS",
+    ] {
     sp["TERSE " + name] = show_parser(name, terse=true)
   }
   // TERSE has no semantic effect for KEYS, so we do not set the terse AST arg
@@ -152,15 +161,15 @@ fn configure_parser(d : @core.Dialect) -> Unit {
   // LAMBDAS
   fns.lambdas[ARROW] = (p, expressions) => {
     let body = p.replace_lambda(p.parse_assignment(), expressions)
-    let args = expressions.map(e => if e.kind == Cast {
-      e.this().unwrap()
-    } else {
-      e
+    let args = expressions.map(e => {
+      if e.kind == Cast {
+        e.this().unwrap()
+      } else {
+        e
+      }
     })
     Some(
-      p.expression(
-        @core.mk(Lambda, [("this", body), ("expressions", args)]),
-      ),
+      p.expression(@core.mk(Lambda, [("this", body), ("expressions", args)])),
     )
   }
   // COLUMN_OPERATORS
@@ -247,8 +256,8 @@ fn describe_qualifier(
 
 ///|
 let describe_qualifiers : Array[String] = [
-  "API", "APPLICATION", "CATALOG", "COMPUTE", "DATABASE", "DYNAMIC", "EXTERNAL", "HYBRID",
-  "ICEBERG", "MASKING", "MATERIALIZED", "NETWORK", "ROW", "SECURITY",
+  "API", "APPLICATION", "CATALOG", "COMPUTE", "DATABASE", "DYNAMIC", "EXTERNAL",
+  "HYBRID", "ICEBERG", "MASKING", "MATERIALIZED", "NETWORK", "ROW", "SECURITY",
 ]
 
 ///|
@@ -301,7 +310,13 @@ fn parse_use(p : @core.Parser) -> @core.Expr? raise @core.SqlglotError {
       p.expression(
         @core.mk(Use, [
           ("kind", "SECONDARY ROLES"),
-          ("this", this),
+          (
+            "this",
+            match this {
+              Some(t) => @core.Value::Node(t)
+              None => @core.Value::Bool(false)
+            },
+          ),
           ("expressions", roles),
         ]),
       ),
@@ -362,7 +377,9 @@ fn parse_property_before(
   match p.parse_sequence_properties() {
     Some(e) => Some(Node(e))
     None =>
-      node(p.parse_key_value_property(parse_value=() => p.parse_primary_or_var()))
+      node(
+        p.parse_key_value_property(parse_value=() => p.parse_primary_or_var()),
+      )
   }
 }
 
@@ -803,7 +820,10 @@ fn parse_location_path(p : @core.Parser) -> @core.Expr {
   // can be joined in a query with a comma separator, as well as closing paren
   // in case of subqueries
   while p.is_connected() &&
-        !p.match_set(@core.TokenSet::new([COMMA, L_PAREN, R_PAREN]), advance=false) {
+        !p.match_set(
+          @core.TokenSet::new([COMMA, L_PAREN, R_PAREN]),
+          advance=false,
+        ) {
     p.advance_any(ignore_reserved=true) |> ignore
   }
   @core.var_(p.find_sql(start, p.prev))
@@ -975,9 +995,7 @@ fn parse_window(
   let result = p.parse_window_base(this, alias=alias_)
   // Set default window frame for ranking functions if not present
   match result {
-    Some(r) if r.kind == Window &&
-      is_ranking_with_frame(this) &&
-      !r.has("spec") => {
+    Some(r) if r.kind == Window && is_ranking_with_frame(this) && !r.has("spec") => {
       let frame = @core.mk(WindowSpec, [
         ("kind", "ROWS"),
         ("start", "UNBOUNDED"),

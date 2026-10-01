@@ -3,8 +3,9 @@
 ///|
 fn configure_generator(d : @core.Dialect) -> Unit {
   // AFTER_HAVING_MODIFIER_TRANSFORMS = generator.AFTER_HAVING_MODIFIER_TRANSFORMS
-  d.gen_fns.after_having_modifier_transforms = d.gen_fns.after_having_modifier_transforms.filter(
-    x => x.0 == "windows" || x.0 == "qualify",
+  d.gen_fns.after_having_modifier_transforms = d.gen_fns.after_having_modifier_transforms.filter(x => {
+      x.0 == "windows" || x.0 == "qualify"
+    },
   )
   let t = d.gen_fns.transforms
   t[Coalesce] = @core.rename_func("IFNULL")
@@ -16,10 +17,12 @@ fn configure_generator(d : @core.Dialect) -> Unit {
     let false_ = g.sql_key(e, "false")
     "IF \{this} THEN \{true_} ELSE \{false_} END"
   }
-  m[Count] = (g, e) => match e.this() {
-    Some(this) if this.kind == Distinct =>
-      g.func("COUNTD", this.expressions().map(x => (x : &@core.SqlArg)))
-    this => g.func("COUNT", [this])
+  m[Count] = (g, e) => {
+    match e.this() {
+      Some(this) if this.kind == Distinct =>
+        g.func("COUNTD", this.expressions().map(x => (x : &@core.SqlArg)))
+      this => g.func("COUNT", [this])
+    }
   }
   m[StrPosition] = (g, e) => {
     let has_occurrence = e.args.contains("occurrence")

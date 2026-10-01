@@ -198,9 +198,7 @@ fn build_if_from_div0(args : Array[@core.Expr]) -> @core.Expr {
   let rhs = wrap_binary_opt(seq_get(args, 1))
   let cond = @core.exp_and([
     @core.mk(EQ, [("this", rhs), ("expression", @core.literal_number("0"))]),
-    @core.exp_not(
-      @core.mk(Is, [("this", lhs), ("expression", @core.null_())]),
-    ),
+    @core.exp_not(@core.mk(Is, [("this", lhs), ("expression", @core.null_())])),
   ])
   let true_ = @core.literal_number("0")
   let false_ = @core.mk(Div, [("this", lhs), ("expression", rhs)])
@@ -473,65 +471,81 @@ fn fb(f : (Array[@core.Expr]) -> @core.Expr) -> @core.FuncBuilder {
 fn register_functions(fns : @core.ParserFns) -> Unit {
   let f = fns.functions
   let a = @core.from_arg_list_builder
-  f["CHARINDEX"] = fb(args => @core.mk(StrPosition, [
-    ("this", seq_get(args, 1)),
-    ("substr", seq_get(args, 0)),
-    ("position", seq_get(args, 2)),
-    ("clamp_position", true),
-  ]))
-  f["ADD_MONTHS"] = fb(args => @core.mk(AddMonths, [
-    ("this", seq_get(args, 0)),
-    ("expression", seq_get(args, 1)),
-    ("preserve_end_of_month", true),
-  ]))
+  f["CHARINDEX"] = fb(args => {
+    @core.mk(StrPosition, [
+      ("this", seq_get(args, 1)),
+      ("substr", seq_get(args, 0)),
+      ("position", seq_get(args, 2)),
+      ("clamp_position", true),
+    ])
+  })
+  f["ADD_MONTHS"] = fb(args => {
+    @core.mk(AddMonths, [
+      ("this", seq_get(args, 0)),
+      ("expression", seq_get(args, 1)),
+      ("preserve_end_of_month", true),
+    ])
+  })
   f["APPROX_PERCENTILE"] = a(ApproxQuantile)
-  f["CURRENT_TIME"] = fb(args => @core.mk(Localtime, [("this", seq_get(args, 0))]))
+  f["CURRENT_TIME"] = fb(args => {
+    @core.mk(Localtime, [("this", seq_get(args, 0))])
+  })
   f["APPROX_TOP_K"] = fb(build_approx_top_k)
   f["ARRAY_CONSTRUCT"] = fb(args => @core.mk(Array, [("expressions", args)]))
-  f["ARRAY_CONTAINS"] = fb(args => @core.mk(ArrayContains, [
-    ("this", seq_get(args, 1)),
-    ("expression", seq_get(args, 0)),
-    ("ensure_variant", false),
-    ("check_null", true),
-  ]))
-  f["ARRAY_DISTINCT"] = fb(args => @core.mk(ArrayDistinct, [
-    ("this", seq_get(args, 0)),
-    ("check_null", true),
-  ]))
+  f["ARRAY_CONTAINS"] = fb(args => {
+    @core.mk(ArrayContains, [
+      ("this", seq_get(args, 1)),
+      ("expression", seq_get(args, 0)),
+      ("ensure_variant", false),
+      ("check_null", true),
+    ])
+  })
+  f["ARRAY_DISTINCT"] = fb(args => {
+    @core.mk(ArrayDistinct, [("this", seq_get(args, 0)), ("check_null", true)])
+  })
   f["ARRAY_GENERATE_RANGE"] = fb(build_array_generate_range)
-  f["ARRAY_EXCEPT"] = fb(args => @core.mk(ArrayExcept, [
-    ("this", seq_get(args, 0)),
-    ("expression", seq_get(args, 1)),
-    ("is_multiset", true),
-  ]))
-  f["ARRAY_INTERSECTION"] = fb(args => @core.mk(ArrayIntersect, [
-    ("expressions", args),
-    ("is_multiset", true),
-  ]))
-  f["ARRAY_POSITION"] = fb(args => @core.mk(ArrayPosition, [
-    ("this", seq_get(args, 1)),
-    ("expression", seq_get(args, 0)),
-    ("zero_based", true),
-  ]))
-  f["ARRAY_SLICE"] = fb(args => @core.mk(ArraySlice, [
-    ("this", seq_get(args, 0)),
-    ("start", seq_get(args, 1)),
-    ("end", seq_get(args, 2)),
-    ("zero_based", true),
-  ]))
+  f["ARRAY_EXCEPT"] = fb(args => {
+    @core.mk(ArrayExcept, [
+      ("this", seq_get(args, 0)),
+      ("expression", seq_get(args, 1)),
+      ("is_multiset", true),
+    ])
+  })
+  f["ARRAY_INTERSECTION"] = fb(args => {
+    @core.mk(ArrayIntersect, [("expressions", args), ("is_multiset", true)])
+  })
+  f["ARRAY_POSITION"] = fb(args => {
+    @core.mk(ArrayPosition, [
+      ("this", seq_get(args, 1)),
+      ("expression", seq_get(args, 0)),
+      ("zero_based", true),
+    ])
+  })
+  f["ARRAY_SLICE"] = fb(args => {
+    @core.mk(ArraySlice, [
+      ("this", seq_get(args, 0)),
+      ("start", seq_get(args, 1)),
+      ("end", seq_get(args, 2)),
+      ("zero_based", true),
+    ])
+  })
   f["ARRAY_SORT"] = fb(build_array_sort)
   f["ARRAY_FLATTEN"] = a(Flatten)
-  f["ARRAY_TO_STRING"] = fb(args => @core.mk(ArrayToString, [
-    ("this", seq_get(args, 0)),
-    ("expression", seq_get(args, 1)),
-    ("null_is_empty", true),
-    ("null_delim_is_null", true),
-  ]))
-  f["ARRAYS_OVERLAP"] = fb(args => @core.mk(ArrayOverlaps, [
-    ("this", seq_get(args, 0)),
-    ("expression", seq_get(args, 1)),
-    ("null_safe", true),
-  ]))
+  f["ARRAY_TO_STRING"] = fb(args => {
+    @core.mk(ArrayToString, [
+      ("this", seq_get(args, 0)),
+      ("expression", seq_get(args, 1)),
+      ("null_is_empty", true),
+      ("null_delim_is_null", true),
+    ])
+  })
+  f["ARRAYS_OVERLAP"] = fb(args => {
+    @core.mk(ArrayOverlaps, [
+      ("this", seq_get(args, 0)),
+      ("expression", seq_get(args, 1)),
+      ("null_safe", true),
+    ])
+  })
   f["BITAND"] = build_bitwise(BitwiseAnd, "BITAND")
   f["BIT_AND"] = build_bitwise(BitwiseAnd, "BITAND")
   f["BITNOT"] = fb(args => @core.mk(BitwiseNot, [("this", seq_get(args, 0))]))
@@ -554,223 +568,263 @@ fn register_functions(fns : @core.ParserFns) -> Unit {
     f[name] = a(BitwiseXorAgg)
   }
   f["BITMAP_OR_AGG"] = a(BitmapOrAgg)
-  f["BOOLAND"] = fb(args => @core.mk(Booland, [
-    ("this", seq_get(args, 0)),
-    ("expression", seq_get(args, 1)),
-    ("round_input", true),
-  ]))
-  f["BOOLOR"] = fb(args => @core.mk(Boolor, [
-    ("this", seq_get(args, 0)),
-    ("expression", seq_get(args, 1)),
-    ("round_input", true),
-  ]))
-  f["BOOLNOT"] = fb(args => @core.mk(Boolnot, [
-    ("this", seq_get(args, 0)),
-    ("round_input", true),
-  ]))
-  f["BOOLXOR"] = fb(args => @core.mk(Xor, [
-    ("this", seq_get(args, 0)),
-    ("expression", seq_get(args, 1)),
-    ("round_input", true),
-  ]))
-  f["CORR"] = fb(args => @core.mk(Corr, [
-    ("this", seq_get(args, 0)),
-    ("expression", seq_get(args, 1)),
-    ("null_on_zero_variance", true),
-  ]))
-  f["COUNT_IF"] = fb(args => @core.mk(CountIf, [
-    ("this", seq_get(args, 0)),
-    ("zero_on_all_null", true),
-  ]))
+  f["BOOLAND"] = fb(args => {
+    @core.mk(Booland, [
+      ("this", seq_get(args, 0)),
+      ("expression", seq_get(args, 1)),
+      ("round_input", true),
+    ])
+  })
+  f["BOOLOR"] = fb(args => {
+    @core.mk(Boolor, [
+      ("this", seq_get(args, 0)),
+      ("expression", seq_get(args, 1)),
+      ("round_input", true),
+    ])
+  })
+  f["BOOLNOT"] = fb(args => {
+    @core.mk(Boolnot, [("this", seq_get(args, 0)), ("round_input", true)])
+  })
+  f["BOOLXOR"] = fb(args => {
+    @core.mk(Xor, [
+      ("this", seq_get(args, 0)),
+      ("expression", seq_get(args, 1)),
+      ("round_input", true),
+    ])
+  })
+  f["CORR"] = fb(args => {
+    @core.mk(Corr, [
+      ("this", seq_get(args, 0)),
+      ("expression", seq_get(args, 1)),
+      ("null_on_zero_variance", true),
+    ])
+  })
+  f["COUNT_IF"] = fb(args => {
+    @core.mk(CountIf, [("this", seq_get(args, 0)), ("zero_on_all_null", true)])
+  })
   f["DATE"] = build_datetime("DATE", DATE)
   f["DATEFROMPARTS"] = fb(build_date_from_parts)
   f["DATE_FROM_PARTS"] = fb(build_date_from_parts)
   f["DATE_TRUNC"] = fb(date_trunc_to_time_sf)
   f["DATEADD"] = fb(build_date_time_add(DateAdd))
   f["DATEDIFF"] = fb(build_date_diff)
-  f["DAYNAME"] = fb(args => @core.mk(Dayname, [
-    ("this", seq_get(args, 0)),
-    ("abbreviated", true),
-  ]))
+  f["DAYNAME"] = fb(args => {
+    @core.mk(Dayname, [("this", seq_get(args, 0)), ("abbreviated", true)])
+  })
   f["DAYOFWEEKISO"] = a(DayOfWeekIso)
   f["DIV0"] = fb(build_if_from_div0)
   f["DIV0NULL"] = fb(build_if_from_div0null)
-  f["EDITDISTANCE"] = fb(args => @core.mk(Levenshtein, [
-    ("this", seq_get(args, 0)),
-    ("expression", seq_get(args, 1)),
-    ("max_dist", seq_get(args, 2)),
-  ]))
+  f["EDITDISTANCE"] = fb(args => {
+    @core.mk(Levenshtein, [
+      ("this", seq_get(args, 0)),
+      ("expression", seq_get(args, 1)),
+      ("max_dist", seq_get(args, 2)),
+    ])
+  })
   f["FLATTEN"] = a(Explode)
   f["GENERATOR"] = fb(build_generator)
   f["GET"] = a(GetExtract)
   f["GETDATE"] = a(CurrentTimestamp)
-  f["GET_PATH"] = (args, p) => @core.mk(JSONExtract, [
-    ("this", seq_get(args, 0)),
-    ("expression", p.dialect.to_json_path(seq_get(args, 1))),
-    ("requires_json", true),
-  ])
-  f["GREATEST_IGNORE_NULLS"] = fb(args => @core.mk(Greatest, [
-    ("this", seq_get(args, 0)),
-    ("expressions", args[1:].to_owned()),
-    ("ignore_nulls", true),
-  ]))
-  f["LEAST_IGNORE_NULLS"] = fb(args => @core.mk(Least, [
-    ("this", seq_get(args, 0)),
-    ("expressions", args[1:].to_owned()),
-    ("ignore_nulls", true),
-  ]))
-  f["LEFT"] = fb(args => @core.mk(Left, [
-    ("this", seq_get(args, 0)),
-    ("expression", seq_get(args, 1)),
-    ("negative_length_returns_empty", true),
-  ]))
+  f["GET_PATH"] = (args, p) => {
+    @core.mk(JSONExtract, [
+      ("this", seq_get(args, 0)),
+      ("expression", p.dialect.to_json_path(seq_get(args, 1))),
+      ("requires_json", true),
+    ])
+  }
+  f["GREATEST_IGNORE_NULLS"] = fb(args => {
+    @core.mk(Greatest, [
+      ("this", seq_get(args, 0)),
+      ("expressions", args[1:].to_owned()),
+      ("ignore_nulls", true),
+    ])
+  })
+  f["LEAST_IGNORE_NULLS"] = fb(args => {
+    @core.mk(Least, [
+      ("this", seq_get(args, 0)),
+      ("expressions", args[1:].to_owned()),
+      ("ignore_nulls", true),
+    ])
+  })
+  f["LEFT"] = fb(args => {
+    @core.mk(Left, [
+      ("this", seq_get(args, 0)),
+      ("expression", seq_get(args, 1)),
+      ("negative_length_returns_empty", true),
+    ])
+  })
   f["HEX_DECODE_BINARY"] = a(Unhex)
   f["HEX_ENCODE"] = a(Hex)
   f["IFF"] = a(If)
-  f["JAROWINKLER_SIMILARITY"] = fb(args => @core.mk(JarowinklerSimilarity, [
-    ("this", seq_get(args, 0)),
-    ("expression", seq_get(args, 1)),
-    ("case_insensitive", true),
-    ("integer_scale", true),
-  ]))
+  f["JAROWINKLER_SIMILARITY"] = fb(args => {
+    @core.mk(JarowinklerSimilarity, [
+      ("this", seq_get(args, 0)),
+      ("expression", seq_get(args, 1)),
+      ("case_insensitive", true),
+      ("integer_scale", true),
+    ])
+  })
   f["MD5_HEX"] = a(MD5)
   f["MD5_BINARY"] = a(MD5Digest)
   f["MD5_NUMBER_LOWER64"] = a(MD5NumberLower64)
   f["MD5_NUMBER_UPPER64"] = a(MD5NumberUpper64)
-  f["MONTHNAME"] = fb(args => @core.mk(Monthname, [
-    ("this", seq_get(args, 0)),
-    ("abbreviated", true),
-  ]))
-  f["LAST_DAY"] = fb(args => @core.mk(LastDay, [
-    ("this", seq_get(args, 0)),
-    ("unit", map_date_part_arg(args, 1)),
-  ]))
-  f["LEN"] = fb(args => @core.mk(Length, [
-    ("this", seq_get(args, 0)),
-    ("binary", true),
-  ]))
-  f["LENGTH"] = fb(args => @core.mk(Length, [
-    ("this", seq_get(args, 0)),
-    ("binary", true),
-  ]))
+  f["MONTHNAME"] = fb(args => {
+    @core.mk(Monthname, [("this", seq_get(args, 0)), ("abbreviated", true)])
+  })
+  f["LAST_DAY"] = fb(args => {
+    @core.mk(LastDay, [
+      ("this", seq_get(args, 0)),
+      ("unit", map_date_part_arg(args, 1)),
+    ])
+  })
+  f["LEN"] = fb(args => {
+    @core.mk(Length, [("this", seq_get(args, 0)), ("binary", true)])
+  })
+  f["LENGTH"] = fb(args => {
+    @core.mk(Length, [("this", seq_get(args, 0)), ("binary", true)])
+  })
   f["LOCALTIMESTAMP"] = a(CurrentTimestamp)
   f["NULLIFZERO"] = fb(build_if_from_nullifzero)
   f["OBJECT_CONSTRUCT"] = fb(build_object_construct)
   f["OBJECT_KEYS"] = a(JSONKeys)
   f["OCTET_LENGTH"] = a(ByteLength)
-  f["PARSE_URL"] = fb(args => @core.mk(ParseUrl, [
-    ("this", seq_get(args, 0)),
-    ("permissive", seq_get(args, 1)),
-  ]))
+  f["PARSE_URL"] = fb(args => {
+    @core.mk(ParseUrl, [
+      ("this", seq_get(args, 0)),
+      ("permissive", seq_get(args, 1)),
+    ])
+  })
   f["REGEXP_EXTRACT_ALL"] = build_regexp_extract_sf(RegexpExtractAll)
   f["REGEXP_LIKE"] = fb(build_regexp_like)
   f["REGEXP_REPLACE"] = fb(build_regexp_replace)
   f["REGEXP_SUBSTR"] = build_regexp_extract_sf(RegexpExtract)
   f["REGEXP_SUBSTR_ALL"] = build_regexp_extract_sf(RegexpExtractAll)
-  f["RANDOM"] = fb(args => @core.mk(Rand, [
-    ("this", seq_get(args, 0)),
-    ("lower", @core.literal_number("-9.223372036854776e+18")),
-    ("upper", @core.literal_number("9.223372036854776e+18")),
-  ]))
+  f["RANDOM"] = fb(args => {
+    @core.mk(Rand, [
+      ("this", seq_get(args, 0)),
+      ("lower", @core.literal_number("-9.223372036854776E+18")),
+      ("upper", @core.literal_number("9.223372036854776e+18")),
+    ])
+  })
   f["REPLACE"] = fb(@core.build_replace_with_optional_replacement)
-  f["RIGHT"] = fb(args => @core.mk(Right, [
-    ("this", seq_get(args, 0)),
-    ("expression", seq_get(args, 1)),
-    ("negative_length_returns_empty", true),
-  ]))
+  f["RIGHT"] = fb(args => {
+    @core.mk(Right, [
+      ("this", seq_get(args, 0)),
+      ("expression", seq_get(args, 1)),
+      ("negative_length_returns_empty", true),
+    ])
+  })
   f["RLIKE"] = fb(build_regexp_like)
   f["ROUND"] = fb(build_round)
   f["SHA1_BINARY"] = a(SHA1Digest)
   f["SHA1_HEX"] = a(SHA)
   f["SHA2_BINARY"] = a(SHA2Digest)
   f["SHA2_HEX"] = a(SHA2)
-  f["SPLIT"] = fb(args => @core.mk(Split, [
-    ("this", seq_get(args, 0)),
-    ("expression", seq_get(args, 1)),
-    ("null_returns_null", true),
-    ("empty_delimiter_returns_whole", true),
-  ]))
-  f["SQUARE"] = fb(args => @core.mk(Pow, [
-    ("this", seq_get(args, 0)),
-    ("expression", @core.literal_number("2")),
-  ]))
+  f["SPLIT"] = fb(args => {
+    @core.mk(Split, [
+      ("this", seq_get(args, 0)),
+      ("expression", seq_get(args, 1)),
+      ("null_returns_null", true),
+      ("empty_delimiter_returns_whole", true),
+    ])
+  })
+  f["SQUARE"] = fb(args => {
+    @core.mk(Pow, [
+      ("this", seq_get(args, 0)),
+      ("expression", @core.literal_number("2")),
+    ])
+  })
   f["STDDEV_SAMP"] = a(Stddev)
-  f["SYSDATE"] = fb(args => @core.mk(CurrentTimestamp, [
-    ("this", seq_get(args, 0)),
-    ("sysdate", true),
-  ]))
+  f["SYSDATE"] = fb(args => {
+    @core.mk(CurrentTimestamp, [("this", seq_get(args, 0)), ("sysdate", true)])
+  })
   f["TABLE"] = fb(args => @core.mk(TableFromRows, [("this", seq_get(args, 0))]))
   f["TIMEADD"] = fb(build_date_time_add(TimeAdd))
   f["TIMEDIFF"] = fb(build_date_diff)
-  f["TIME_FROM_PARTS"] = fb(args => @core.mk(TimeFromParts, [
-    ("hour", seq_get(args, 0)),
-    ("min", seq_get(args, 1)),
-    ("sec", seq_get(args, 2)),
-    ("nano", seq_get(args, 3)),
-    ("overflow", true),
-  ]))
+  f["TIME_FROM_PARTS"] = fb(args => {
+    @core.mk(TimeFromParts, [
+      ("hour", seq_get(args, 0)),
+      ("min", seq_get(args, 1)),
+      ("sec", seq_get(args, 2)),
+      ("nano", seq_get(args, 3)),
+      ("overflow", true),
+    ])
+  })
   f["TIMESTAMPADD"] = fb(build_date_time_add(DateAdd))
   f["TIMESTAMPDIFF"] = fb(build_date_diff)
-  for name in [
-    "TIMESTAMPFROMPARTS", "TIMESTAMP_FROM_PARTS", "TIMESTAMPNTZFROMPARTS", "TIMESTAMP_NTZ_FROM_PARTS",
-  ] {
+  for
+    name in [
+      "TIMESTAMPFROMPARTS", "TIMESTAMP_FROM_PARTS", "TIMESTAMPNTZFROMPARTS", "TIMESTAMP_NTZ_FROM_PARTS",
+    ] {
     f[name] = fb(build_timestamp_from_parts_sf)
   }
-  f["TRUNC"] = (args, p) => @core.build_trunc(
-    args,
-    p.dialect,
-    date_trunc_requires_part=false,
-    fractions_supported=true,
-  )
-  f["TRUNCATE"] = (args, p) => @core.build_trunc(
-    args,
-    p.dialect,
-    date_trunc_requires_part=false,
-    fractions_supported=true,
-  )
-  f["TRY_DECRYPT"] = fb(args => @core.mk(Decrypt, [
-    ("this", seq_get(args, 0)),
-    ("passphrase", seq_get(args, 1)),
-    ("aad", seq_get(args, 2)),
-    ("encryption_method", seq_get(args, 3)),
-    ("safe", true),
-  ]))
-  f["TRY_DECRYPT_RAW"] = fb(args => @core.mk(DecryptRaw, [
-    ("this", seq_get(args, 0)),
-    ("key", seq_get(args, 1)),
-    ("iv", seq_get(args, 2)),
-    ("aad", seq_get(args, 3)),
-    ("encryption_method", seq_get(args, 4)),
-    ("aead", seq_get(args, 5)),
-    ("safe", true),
-  ]))
-  f["TRY_PARSE_JSON"] = fb(args => @core.mk(ParseJSON, [
-    ("this", seq_get(args, 0)),
-    ("safe", true),
-  ]))
-  f["TRY_TO_BINARY"] = fb(args => @core.mk(ToBinary, [
-    ("this", seq_get(args, 0)),
-    ("format", seq_get(args, 1)),
-    ("safe", true),
-  ]))
-  f["TRY_TO_BOOLEAN"] = fb(args => @core.mk(ToBoolean, [
-    ("this", seq_get(args, 0)),
-    ("safe", true),
-  ]))
+  f["TRUNC"] = (args, p) => {
+    @core.build_trunc(
+      args,
+      p.dialect,
+      date_trunc_requires_part=false,
+      fractions_supported=true,
+    )
+  }
+  f["TRUNCATE"] = (args, p) => {
+    @core.build_trunc(
+      args,
+      p.dialect,
+      date_trunc_requires_part=false,
+      fractions_supported=true,
+    )
+  }
+  f["TRY_DECRYPT"] = fb(args => {
+    @core.mk(Decrypt, [
+      ("this", seq_get(args, 0)),
+      ("passphrase", seq_get(args, 1)),
+      ("aad", seq_get(args, 2)),
+      ("encryption_method", seq_get(args, 3)),
+      ("safe", true),
+    ])
+  })
+  f["TRY_DECRYPT_RAW"] = fb(args => {
+    @core.mk(DecryptRaw, [
+      ("this", seq_get(args, 0)),
+      ("key", seq_get(args, 1)),
+      ("iv", seq_get(args, 2)),
+      ("aad", seq_get(args, 3)),
+      ("encryption_method", seq_get(args, 4)),
+      ("aead", seq_get(args, 5)),
+      ("safe", true),
+    ])
+  })
+  f["TRY_PARSE_JSON"] = fb(args => {
+    @core.mk(ParseJSON, [("this", seq_get(args, 0)), ("safe", true)])
+  })
+  f["TRY_TO_BINARY"] = fb(args => {
+    @core.mk(ToBinary, [
+      ("this", seq_get(args, 0)),
+      ("format", seq_get(args, 1)),
+      ("safe", true),
+    ])
+  })
+  f["TRY_TO_BOOLEAN"] = fb(args => {
+    @core.mk(ToBoolean, [("this", seq_get(args, 0)), ("safe", true)])
+  })
   f["TRY_TO_DATE"] = build_datetime("TRY_TO_DATE", DATE, safe=true)
   for name in ["TRY_TO_DECIMAL", "TRY_TO_NUMBER", "TRY_TO_NUMERIC"] {
     f[name] = fb(args => build_to_number(args, true))
   }
-  f["TRY_TO_DOUBLE"] = fb(args => @core.mk(ToDouble, [
-    ("this", seq_get(args, 0)),
-    ("format", seq_get(args, 1)),
-    ("safe", true),
-  ]))
-  f["TRY_TO_FILE"] = fb(args => @core.mk(ToFile, [
-    ("this", seq_get(args, 0)),
-    ("path", seq_get(args, 1)),
-    ("safe", true),
-  ]))
+  f["TRY_TO_DOUBLE"] = fb(args => {
+    @core.mk(ToDouble, [
+      ("this", seq_get(args, 0)),
+      ("format", seq_get(args, 1)),
+      ("safe", true),
+    ])
+  })
+  f["TRY_TO_FILE"] = fb(args => {
+    @core.mk(ToFile, [
+      ("this", seq_get(args, 0)),
+      ("path", seq_get(args, 1)),
+      ("safe", true),
+    ])
+  })
   f["TRY_TO_TIME"] = build_datetime("TRY_TO_TIME", TIME, safe=true)
   f["TRY_TO_TIMESTAMP"] = build_datetime(
     "TRY_TO_TIMESTAMP",
@@ -802,17 +856,23 @@ fn register_functions(fns : @core.ParserFns) -> Unit {
   f["TO_TIMESTAMP_LTZ"] = build_datetime("TO_TIMESTAMP_LTZ", TIMESTAMPLTZ)
   f["TO_TIMESTAMP_NTZ"] = build_datetime("TO_TIMESTAMP_NTZ", TIMESTAMPNTZ)
   f["TO_TIMESTAMP_TZ"] = build_datetime("TO_TIMESTAMP_TZ", TIMESTAMPTZ)
-  f["TO_GEOGRAPHY"] = fb(args => if args.length() == 1 {
-    @core.exp_cast(args[0], GEOGRAPHY)
-  } else {
-    @core.mk(Anonymous, [("this", "TO_GEOGRAPHY"), ("expressions", args)])
+  f["TO_GEOGRAPHY"] = fb(args => {
+    if args.length() == 1 {
+      @core.exp_cast(args[0], GEOGRAPHY)
+    } else {
+      @core.mk(Anonymous, [("this", "TO_GEOGRAPHY"), ("expressions", args)])
+    }
   })
-  f["TO_GEOMETRY"] = fb(args => if args.length() == 1 {
-    @core.exp_cast(args[0], GEOMETRY)
-  } else {
-    @core.mk(Anonymous, [("this", "TO_GEOMETRY"), ("expressions", args)])
+  f["TO_GEOMETRY"] = fb(args => {
+    if args.length() == 1 {
+      @core.exp_cast(args[0], GEOMETRY)
+    } else {
+      @core.mk(Anonymous, [("this", "TO_GEOMETRY"), ("expressions", args)])
+    }
   })
-  f["TO_VARCHAR"] = (args, p) => @core.build_timetostr_or_tochar(args, p.dialect)
+  f["TO_VARCHAR"] = (args, p) => {
+    @core.build_timetostr_or_tochar(args, p.dialect)
+  }
   f["TO_JSON"] = a(JSONFormat)
   f["VECTOR_COSINE_SIMILARITY"] = a(CosineDistance)
   f["VECTOR_INNER_PRODUCT"] = a(DotProduct)
@@ -823,37 +883,42 @@ fn register_functions(fns : @core.ParserFns) -> Unit {
   f["ILIKE"] = @core.build_like_fn(ILike)
   f["SEARCH"] = fb(build_search)
   f["SKEW"] = a(Skewness)
-  f["SPLIT_PART"] = fb(args => @core.mk(SplitPart, [
-    ("this", seq_get(args, 0)),
-    ("delimiter", seq_get(args, 1)),
-    ("part_index", seq_get(args, 2)),
-    ("part_index_zero_as_one", true),
-    ("empty_delimiter_returns_whole", true),
-  ]))
-  f["STRTOK"] = fb(args => @core.mk(Strtok, [
-    ("this", seq_get(args, 0)),
-    (
-      "delimiter",
-      expr_or(seq_get(args, 1), () => Some(@core.literal_string(" "))),
-    ),
-    (
-      "part_index",
-      expr_or(seq_get(args, 2), () => Some(@core.literal_number("1"))),
-    ),
-  ]))
-  f["STRTOK_TO_ARRAY"] = fb(args => @core.mk(StrtokToArray, [
-    ("this", seq_get(args, 0)),
-    (
-      "expression",
-      expr_or(seq_get(args, 1), () => Some(@core.literal_string(" "))),
-    ),
-  ]))
+  f["SPLIT_PART"] = fb(args => {
+    @core.mk(SplitPart, [
+      ("this", seq_get(args, 0)),
+      ("delimiter", seq_get(args, 1)),
+      ("part_index", seq_get(args, 2)),
+      ("part_index_zero_as_one", true),
+      ("empty_delimiter_returns_whole", true),
+    ])
+  })
+  f["STRTOK"] = fb(args => {
+    @core.mk(Strtok, [
+      ("this", seq_get(args, 0)),
+      (
+        "delimiter",
+        expr_or(seq_get(args, 1), () => Some(@core.literal_string(" "))),
+      ),
+      (
+        "part_index",
+        expr_or(seq_get(args, 2), () => Some(@core.literal_number("1"))),
+      ),
+    ])
+  })
+  f["STRTOK_TO_ARRAY"] = fb(args => {
+    @core.mk(StrtokToArray, [
+      ("this", seq_get(args, 0)),
+      (
+        "expression",
+        expr_or(seq_get(args, 1), () => Some(@core.literal_string(" "))),
+      ),
+    ])
+  })
   f["SYSTIMESTAMP"] = a(CurrentTimestamp)
   f["IDENTIFIER"] = a(DynamicIdentifier)
-  f["UNICODE"] = fb(args => @core.mk(Unicode, [
-    ("this", seq_get(args, 0)),
-    ("empty_is_zero", true),
-  ]))
+  f["UNICODE"] = fb(args => {
+    @core.mk(Unicode, [("this", seq_get(args, 0)), ("empty_is_zero", true)])
+  })
   f["WEEKISO"] = a(WeekOfYear)
   f["WEEKOFYEAR"] = a(Week)
   f.remove("PREDICT")
