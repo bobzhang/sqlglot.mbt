@@ -540,7 +540,7 @@ fn merge_expressions(
           None => false
         }) &&
         must_wrap_expression {
-        replacement = @core.paren(replacement)
+        replacement = @core.paren(replacement, copy=false)
       }
       if (match parent {
           Some(p) => p.kind.is_a(Select)
@@ -588,7 +588,7 @@ fn merge_where(
       return
     }
   }
-  expression.where_([cond]) |> ignore
+  expression.where_([cond], copy=false) |> ignore
 }
 
 ///|

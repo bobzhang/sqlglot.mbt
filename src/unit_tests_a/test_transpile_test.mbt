@@ -1183,7 +1183,7 @@ test "TestTranspile.test_normalize_name" {
         "cardinality(x)",
         read="presto",
         write="presto",
-        normalize_functions="lower",
+        normalize_functions=Lower,
       )[0]
     },
     "cardinality(x)",

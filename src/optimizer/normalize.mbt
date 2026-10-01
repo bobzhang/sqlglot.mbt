@@ -208,7 +208,7 @@ fn distributive_law(
 fn combine2(kind : @core.Kind, a : @core.Expr, b : @core.Expr, copy : Bool) -> @core.Expr {
   let a = if copy { a.copy() } else { a }
   let b = if copy { b.copy() } else { b }
-  @core.combine_conditions([a, b], kind)
+  @core.combine_conditions([a, b], kind, copy=false)
 }
 
 ///|

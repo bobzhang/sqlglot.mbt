@@ -153,7 +153,9 @@ pub fn alias_table(
   e : Expr,
   name : String,
   columns? : Array[String] = [],
+  copy? : Bool = true,
 ) -> Expr {
+  let e = maybe_copy(e, copy)
   let table_alias = mk1(TableAlias, to_identifier(name))
   e.set("alias", table_alias)
   for c in columns {
@@ -219,10 +221,12 @@ pub fn from_arg_list_builder(kind : Kind) -> FuncBuilder {
 
 ///|
 /// Combines conditions with a connector (And / Or / Xor), wrapping operands that are
-/// themselves connectors in parentheses (Python `_combine` with `wrap=True`).
+/// themselves connectors in parentheses (Python `_combine`). As in Python, the
+/// conditions are copied unless `copy` is false.
 pub fn combine_conditions(
   conditions : Array[Expr],
   connector : Kind,
+  copy? : Bool = true,
   wrap? : Bool = true,
 ) -> Expr {
   let wrap_ = fn(e : Expr) {
@@ -232,6 +236,7 @@ pub fn combine_conditions(
       e
     }
   }
+  let conditions = if copy { conditions.map(c => c.copy()) } else { conditions }
   let mut this = conditions[0]
   if conditions.length() > 1 {
     this = wrap_(this)
@@ -243,27 +248,36 @@ pub fn combine_conditions(
 }
 
 ///|
-/// `exp.and_(...)` for expressions.
-pub fn and_(conditions : Array[Expr], wrap? : Bool = true) -> Expr {
-  combine_conditions(conditions, And, wrap~)
+/// `exp.and_(...)` for expressions (copied unless `copy` is false).
+pub fn and_(
+  conditions : Array[Expr],
+  copy? : Bool = true,
+  wrap? : Bool = true,
+) -> Expr {
+  combine_conditions(conditions, And, copy~, wrap~)
 }
 
 ///|
-/// `exp.or_(...)` for expressions.
-pub fn or_(conditions : Array[Expr], wrap? : Bool = true) -> Expr {
-  combine_conditions(conditions, Or, wrap~)
+/// `exp.or_(...)` for expressions (copied unless `copy` is false).
+pub fn or_(
+  conditions : Array[Expr],
+  copy? : Bool = true,
+  wrap? : Bool = true,
+) -> Expr {
+  combine_conditions(conditions, Or, copy~, wrap~)
 }
 
 ///|
-/// `exp.not_(expression)`.
-pub fn not_(e : Expr) -> Expr {
+/// `exp.not_(expression)` (copied unless `copy` is false).
+pub fn not_(e : Expr, copy? : Bool = true) -> Expr {
+  let e = maybe_copy(e, copy)
   mk1(Not, if e.kind.is_a(Connector) { mk1(Paren, e) } else { e })
 }
 
 ///|
-/// `exp.paren(expression)`.
-pub fn paren(e : Expr) -> Expr {
-  mk1(Paren, e)
+/// `exp.paren(expression)` (copied unless `copy` is false).
+pub fn paren(e : Expr, copy? : Bool = true) -> Expr {
+  mk1(Paren, maybe_copy(e, copy))
 }
 
 ///|

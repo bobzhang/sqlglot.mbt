@@ -594,6 +594,7 @@ fn select_sql(
         Some(
           @core.select_([@core.mk0(Star)]).from_(
             e.subquery(alias="_l_0", copy=false),
+            copy=false,
           ),
         ),
       )
@@ -678,7 +679,8 @@ fn prepare_limit_offset(e : @core.Expr) -> Unit raise @core.SqlglotError {
       // ORDER BY is required in order to use OFFSET in a query, so we use
       // a noop order by, since we don't really care about the order.
       // See: https://www.microsoftpressstore.com/articles/article.aspx?p=2314819
-      e.order_by([@core.select_([@core.null_()]).subquery()]) |> ignore
+      e.order_by([@core.select_([@core.null_()]).subquery()], copy=false)
+      |> ignore
     }
     match limit {
       Some(l) if l.kind == Limit =>
@@ -835,14 +837,14 @@ fn create_sql(
       }
       let is_temp = properties.iter().any(p => p.kind == TemporaryProperty)
       let select_into = @core.select_([@core.mk0(Star)]).from_(
-        @core.alias_table(ctas.copy(), "temp"),
+        @core.alias_table(ctas, "temp"),
       )
       select_into.set(
         "into",
         @core.mk(Into, [("this", table), ("temporary", is_temp)]),
       )
       if like_property is Some(_) {
-        select_into.limit_(@core.literal_number("0")) |> ignore
+        select_into.limit_(@core.literal_number("0"), copy=false) |> ignore
       }
       sql = g.sql(Some(select_into))
     }

@@ -100,7 +100,7 @@ fn offset_to_limit(
   if expression.kind == Select &&
     expression.has("offset") &&
     !expression.has("limit") {
-    expression.limit_(@core.literal_number("-1")) |> ignore
+    expression.limit_(@core.literal_number("-1"), copy=false) |> ignore
   }
   expression
 }

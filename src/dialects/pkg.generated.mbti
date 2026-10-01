@@ -1,0 +1,21 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "hongbozhang/sqlglot/dialects"
+
+import {
+  "hongbozhang/sqlglot/core",
+}
+
+// Values
+pub fn dialect(String) -> @core.Dialect raise @core.SqlglotError
+
+pub let dialect_names : Array[String]
+
+pub fn register_dialects() -> Unit
+
+// Errors
+
+// Types and methods
+
+// Type aliases
+
+// Traits

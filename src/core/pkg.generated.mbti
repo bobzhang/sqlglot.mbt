@@ -18,7 +18,7 @@ pub fn alias_(Expr, String, quoted? : Bool, copy? : Bool) -> Expr
 
 pub fn alias_expr(Expr, Expr?, copy? : Bool) -> Expr
 
-pub fn alias_table(Expr, String, columns? : Array[String]) -> Expr
+pub fn alias_table(Expr, String, columns? : Array[String], copy? : Bool) -> Expr
 
 pub let all_dtypes : FixedArray[DType]
 
@@ -28,7 +28,7 @@ pub let all_kinds : FixedArray[Kind]
 
 pub let all_token_types : FixedArray[TokenType]
 
-pub fn and_(Array[Expr], wrap? : Bool) -> Expr
+pub fn and_(Array[Expr], copy? : Bool, wrap? : Bool) -> Expr
 
 pub let annotate_types_hook : @ref.Ref[((Expr, Dialect) -> Expr raise SqlglotError)?]
 
@@ -44,7 +44,7 @@ pub fn approx_count_distinct_sql(Generator, Expr) -> String raise SqlglotError
 
 pub fn arg_max_or_min_no_count(String) -> (Generator, Expr) -> String raise SqlglotError
 
-pub fn array_(Array[Expr]) -> Expr
+pub fn array_(Array[Expr], copy? : Bool) -> Expr
 
 pub fn array_append_sql(String, swap_params? : Bool) -> (Generator, Expr) -> String raise SqlglotError
 
@@ -180,7 +180,7 @@ pub fn column_of(String, table? : String, quoted? : Bool) -> Expr
 
 pub fn column_table_names(Expr, exclude? : String) -> Array[String]
 
-pub fn combine_conditions(Array[Expr], Kind, wrap? : Bool) -> Expr
+pub fn combine_conditions(Array[Expr], Kind, copy? : Bool, wrap? : Bool) -> Expr
 
 pub fn combine_py(Array[PyObj], Kind, dialect? : Dialect, copy? : Bool, wrap? : Bool) -> Expr raise SqlglotError
 
@@ -520,7 +520,7 @@ pub fn no_trycast_sql(Generator, Expr) -> String raise SqlglotError
 
 pub fn normalize_identifiers(Expr, Dialect, store_original_column_identifiers? : Bool) -> Expr
 
-pub fn not_(Expr) -> Expr
+pub fn not_(Expr, copy? : Bool) -> Expr
 
 pub fn nth_value_from_sql(Generator, Expr) -> String raise SqlglotError
 
@@ -532,9 +532,9 @@ pub fn number_value(Expr) -> Value
 
 pub fn opt_list(Expr?) -> Array[Expr]
 
-pub fn or_(Array[Expr], wrap? : Bool) -> Expr
+pub fn or_(Array[Expr], copy? : Bool, wrap? : Bool) -> Expr
 
-pub fn paren(Expr) -> Expr
+pub fn paren(Expr, copy? : Bool) -> Expr
 
 pub fn parse(String, dialect? : Dialect, error_level? : ErrorLevel, error_message_context? : Int, max_errors? : Int, max_nodes? : Int) -> Array[Expr?] raise SqlglotError
 
@@ -608,7 +608,7 @@ pub fn replace_placeholders(Expr, Map[String, Expr]) -> Expr
 
 pub fn right_to_substring_sql(Generator, Expr) -> String raise SqlglotError
 
-pub fn[T : IntoPy] select_(Array[T], dialect? : Dialect) -> Expr raise SqlglotError
+pub fn[T : IntoPy] select_(Array[T], dialect? : Dialect, copy? : Bool) -> Expr raise SqlglotError
 
 pub fn select_star_from(Expr?) -> Expr
 
@@ -694,7 +694,7 @@ pub fn[T : Hash + Eq + Compare] tsort(Map[T, Array[T]]) -> Array[T] raise Sqlglo
 
 pub let tsql_convert_format_mapping : Map[String, String]
 
-pub fn tuple_(Array[Expr]) -> Expr
+pub fn tuple_(Array[Expr], copy? : Bool) -> Expr
 
 pub fn unabbreviate_unit(String) -> String?
 

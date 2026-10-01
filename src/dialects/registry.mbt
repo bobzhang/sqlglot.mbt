@@ -53,3 +53,10 @@ pub let dialect_names : Array[String] = [
   "snowflake", "solr", "spark", "spark2", "sqlite", "starrocks", "tableau", "teradata",
   "trino", "tsql",
 ]
+
+///|
+/// Looks up a dialect by name (`""` is the base sqlglot dialect); all built-in dialects
+/// are registered.
+pub fn dialect(name : String) -> @core.Dialect raise @core.SqlglotError {
+  @core.Dialect::get_or_raise(name)
+}

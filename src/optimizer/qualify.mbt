@@ -91,9 +91,9 @@ pub fn isolate_table_selects(
         )
       }
       let alias = source.alias()
-      let aliased = @core.alias_table(source.copy(), source.alias_or_name())
+      let aliased = @core.alias_table(source, source.alias_or_name())
       let wrapped = @core.select_([@core.mk0(Star)])
-        .from_(aliased)
+        .from_(aliased, copy=false)
         .subquery(alias~, copy=false)
       source.replace(Some(wrapped)) |> ignore
     }

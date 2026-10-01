@@ -152,7 +152,7 @@ pub fn unnest_generate_series(expression : Expr) -> Expr raise SqlglotError {
       let unnest = mk(Unnest, [("expressions", [this])])
       let alias = expression.alias()
       if !alias.is_empty() {
-        return alias_table(unnest, "_u", columns=[alias])
+        return alias_table(unnest, "_u", columns=[alias], copy=false)
       }
       unnest
     }
@@ -196,7 +196,8 @@ pub fn eliminate_distinct_on(expression : Expr) -> Expr raise SqlglotError {
           mk(Order, [("expressions", distinct_cols.map(c => c.copy()))]),
         )
     }
-    expression.select_([alias_(window, row_number_window_alias)]) |> ignore
+    expression.select_([alias_(window, row_number_window_alias)], copy=false)
+    |> ignore
     let mut new_selects = []
     let taken_names = [row_number_window_alias]
     let selects = expression.selects()
@@ -230,9 +231,12 @@ pub fn eliminate_distinct_on(expression : Expr) -> Expr raise SqlglotError {
       taken_names.push(select.output_name())
       new_selects.push(select.arg("alias").unwrap())
     }
-    return select_(new_selects)
-      .from_(expression.subquery(alias="_t", copy=false))
-      .where_([column_of(row_number_window_alias).eq_(literal_int(1))])
+    return select_(new_selects, copy=false)
+      .from_(expression.subquery(alias="_t", copy=false), copy=false)
+      .where_(
+        [column_of(row_number_window_alias).eq_(literal_int(1))],
+        copy=false,
+      )
   }
   expression
 }
@@ -301,7 +305,8 @@ pub fn eliminate_qualify(expression : Expr) -> Expr raise SqlglotError {
         }
         let named = expression.named_selects()
         let alias = find_new_name(n => named.contains(n), "_w")
-        expression.select_([alias_(select_candidate, alias)]) |> ignore
+        expression.select_([alias_(select_candidate, alias)], copy=false)
+        |> ignore
         let column = column_of(alias)
         match select_candidate.parent {
           Some(p) if p.kind == Qualify => qualify_filters = column
@@ -309,12 +314,12 @@ pub fn eliminate_qualify(expression : Expr) -> Expr raise SqlglotError {
         }
       } else if !expression.named_selects().contains(select_candidate.name()) &&
         select_candidate.find_ancestor([Window]) is None {
-        expression.select_([select_candidate.copy()]) |> ignore
+        expression.select_([select_candidate.copy()], copy=false) |> ignore
       }
     }
     return outer_selects
-      .from_(expression.subquery(alias="_t", copy=false))
-      .where_([qualify_filters])
+      .from_(expression.subquery(alias="_t", copy=false), copy=false)
+      .where_([qualify_filters], copy=false)
   }
   expression
 }
@@ -626,10 +631,10 @@ pub fn eliminate_semi_and_anti_joins(
             .where_([on])
           let mut exists = mk1(Exists, subquery)
           if kind == "ANTI" {
-            exists = not_(exists)
+            exists = not_(exists, copy=false)
           }
           join.pop() |> ignore
-          expression.where_([exists]) |> ignore
+          expression.where_([exists], copy=false) |> ignore
         }
         _ => ()
       }
@@ -670,7 +675,7 @@ pub fn eliminate_full_outer_join(expression : Expr) -> Expr raise SqlglotError {
       full_outer_join.set("side", "left")
       let anti_join_clause = select_([literal_int(1)])
         .from_(from_.copy())
-        .where_([join_conditions.copy()])
+        .where_([join_conditions])
       expression_copy.list("joins")[index].set("side", "right")
       expression_copy = expression_copy.where_([
         not_(mk1(Exists, anti_join_clause)),

@@ -191,7 +191,7 @@ fn T::validate(
         write?,
         identity~,
         pretty~,
-        identify~,
+        identify=if identify { Always } else { Never },
         leading_comma~,
         pad~,
         indent~,

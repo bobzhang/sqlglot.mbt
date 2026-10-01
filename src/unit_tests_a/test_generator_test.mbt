@@ -29,32 +29,29 @@ test "TestGenerator.test_fallback_function_var_args_sql" {
 test "TestGenerator.test_identify" {
   let t = t()
   t.eqf(
-    () => @sqlglot.generate(@sqlglot.parse_one("x"), identify=true),
+    () => @sqlglot.generate(@sqlglot.parse_one("x"), identify=Always),
     "\"x\"",
   )
-  t.eqf(() => @sqlglot.generate(@sqlglot.parse_one("x"), identify=false), "x")
+  t.eqf(() => @sqlglot.generate(@sqlglot.parse_one("x"), identify=Never), "x")
   t.eqf(
-    () => @sqlglot.generate(@sqlglot.parse_one("X"), identify=true),
+    () => @sqlglot.generate(@sqlglot.parse_one("X"), identify=Always),
     "\"X\"",
   )
   t.eqf(
-    () => @sqlglot.generate(@sqlglot.parse_one("\"x\""), identify=false),
+    () => @sqlglot.generate(@sqlglot.parse_one("\"x\""), identify=Never),
     "\"x\"",
   )
   t.eqf(
-    () => @sqlglot.generate(@sqlglot.parse_one("x"), identify_mode="safe"),
+    () => @sqlglot.generate(@sqlglot.parse_one("x"), identify=Safe),
     "\"x\"",
   )
+  t.eqf(() => @sqlglot.generate(@sqlglot.parse_one("X"), identify=Safe), "X")
   t.eqf(
-    () => @sqlglot.generate(@sqlglot.parse_one("X"), identify_mode="safe"),
-    "X",
-  )
-  t.eqf(
-    () => @sqlglot.generate(@sqlglot.parse_one("x as 1"), identify_mode="safe"),
+    () => @sqlglot.generate(@sqlglot.parse_one("x as 1"), identify=Safe),
     "\"x\" AS \"1\"",
   )
   t.eqf(
-    () => @sqlglot.generate(@sqlglot.parse_one("X as 1"), identify_mode="safe"),
+    () => @sqlglot.generate(@sqlglot.parse_one("X as 1"), identify=Safe),
     "X AS \"1\"",
   )
   t.done()

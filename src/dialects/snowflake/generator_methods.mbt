@@ -119,7 +119,7 @@ fn register_methods(d : @core.Dialect) -> Unit {
   }
   m[Select] = (g, e) => {
     if e.has("offset") && !e.has("limit") {
-      e.limit_(@core.null_()) |> ignore
+      e.limit_(@core.null_(), copy=false) |> ignore
     }
     g.select_sql(e)
   }

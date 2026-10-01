@@ -95,7 +95,7 @@ fn unalias_pivot(
       if pivot.alias() != "" {
         let alias_ = pivot.arg("alias").unwrap().pop()
         let sub = @core.exp_subquery_with_alias_expr(
-          @core.select_([@core.mk0(Star)]).from_(this.copy()),
+          @core.select_([@core.mk0(Star)]).from_(this.copy(), copy=false),
           Some(alias_),
           copy=false,
         )

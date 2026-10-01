@@ -18,7 +18,7 @@ pub fn Parser::parse_connector_function(
   if args.is_empty() {
     self.raise_error("Expected at least one argument")
   }
-  Some(mk1(Paren, combine_conditions(args, connector)))
+  Some(mk1(Paren, combine_conditions(args, connector, copy=false)))
 }
 
 ///|

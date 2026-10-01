@@ -2600,7 +2600,7 @@ fn split_sql(
   }
   if e.has("empty_delimiter_returns_whole") {
     // When delimiter is empty string, return input string as single array element
-    let array_with_input = @core.array_([this_of(e).copy()])
+    let array_with_input = @core.array_([this_of(e)])
     case_expr = when(case_expr, eq(expr_of(e), str_lit("")), array_with_input)
     needs_case = true
   }

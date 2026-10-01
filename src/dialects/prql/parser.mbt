@@ -3,7 +3,7 @@
 ///|
 fn select_all(table : @core.Expr?) -> @core.Expr? raise @core.SqlglotError {
   match table {
-    Some(t) => Some(@core.select_([@core.mk0(Star)]).from_(t))
+    Some(t) => Some(@core.select_([@core.mk0(Star)]).from_(t, copy=false))
     None => None
   }
 }
@@ -173,7 +173,7 @@ fn parse_query(p : @core.Parser) -> @core.Expr? raise @core.SqlglotError {
     Some(f) => f
     None => return None
   }
-  let mut query = @core.select_([@core.mk0(Star)]).from_(from_)
+  let mut query = @core.select_([@core.mk0(Star)]).from_(from_, copy=false)
   while p.match_texts(transform_parser_names) {
     let name = @core.py_upper(p.prev.text)
     guard transform_parser(name) is Some(f) else { break }
@@ -219,7 +219,7 @@ fn parse_selection(
   let resolved = selects.map(select => {
     select.transform(s => Some(resolve_projection(s, projections)), copy=false)
   })
-  query.select_(resolved, append~)
+  query.select_(resolved, append~, copy=false)
 }
 
 ///|
@@ -244,9 +244,10 @@ fn parse_order_by(
     p.raise_error("Expecting }")
   }
   Some(
-    query.order_by([
-      p.expression(@core.mk(Order, [("expressions", expressions)])),
-    ]),
+    query.order_by(
+      [p.expression(@core.mk(Order, [("expressions", expressions)]))],
+      copy=false,
+    ),
   )
 }
 

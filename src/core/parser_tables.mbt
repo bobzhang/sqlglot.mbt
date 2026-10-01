@@ -1262,7 +1262,13 @@ pub fn base_parser_fns() -> ParserFns {
             Some(existing) =>
               q.set(
                 "where",
-                mk1(Where, and_([existing.this().unwrap(), w.this().unwrap()])),
+                mk1(
+                  Where,
+                  and_(
+                    [existing.this().unwrap(), w.this().unwrap()],
+                    copy=false,
+                  ),
+                ),
               )
             None => q.set("where", w)
           }

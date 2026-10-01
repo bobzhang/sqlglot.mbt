@@ -40,7 +40,7 @@ fn derived_table_values_to_unnest(
   g.call_method(
     Unnest,
     @core.mk(Unnest, [
-      ("expressions", [@core.array_(structs)]),
+      ("expressions", [@core.array_(structs, copy=false)]),
       ("alias", alias_name_only),
     ]),
   )
@@ -174,7 +174,7 @@ fn unnest_explode_generate_series(
           ("alias", @core.mk1(TableAlias, @core.to_identifier(column_name))),
         ])
         if expression.has("from_") {
-          expression.join_(table, kind="CROSS") |> ignore
+          expression.join_(table, kind="CROSS", copy=false) |> ignore
         } else {
           expression.set("from_", @core.mk1(From, table))
         }

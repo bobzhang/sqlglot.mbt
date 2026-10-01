@@ -23,7 +23,7 @@ fn sorted_strings(xs : Array[String]) -> Array[String] {
 /// `Join.on(predicate, copy=False)`
 fn join_on(join : @core.Expr, predicate : @core.Expr) -> Unit {
   let node = match join.arg("on") {
-    Some(existing) => @core.and_([existing, predicate])
+    Some(existing) => @core.and_([existing, predicate], copy=false)
     None => predicate
   }
   join.set("on", node)
@@ -173,9 +173,9 @@ fn pushdown_cnf(
         predicate.replace(Some(@core.true_())) |> ignore
         let inner_predicate = replace_aliases(node, predicate)
         if find_in_scope(inner_predicate, [AggFunc]) is Some(_) {
-          node.having_([inner_predicate]) |> ignore
+          node.having_([inner_predicate], copy=false) |> ignore
         } else {
-          node.where_([inner_predicate]) |> ignore
+          node.where_([inner_predicate], copy=false) |> ignore
         }
       }
     }
@@ -211,7 +211,7 @@ fn pushdown_dnf(
         continue
       }
       conditions[table] = match conditions.get(table) {
-        Some(c) => @core.or_([c.copy(), predicate.copy()])
+        Some(c) => @core.or_([c, predicate])
         None => predicate
       }
     }
@@ -238,9 +238,9 @@ fn pushdown_dnf(
       } else if node.kind.is_a(Select) {
         let inner_predicate = replace_aliases(node, predicate)
         if find_in_scope(inner_predicate, [AggFunc]) is Some(_) {
-          node.having_([inner_predicate]) |> ignore
+          node.having_([inner_predicate], copy=false) |> ignore
         } else {
-          node.where_([inner_predicate]) |> ignore
+          node.where_([inner_predicate], copy=false) |> ignore
         }
       }
     }

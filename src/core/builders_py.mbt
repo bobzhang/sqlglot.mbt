@@ -306,7 +306,7 @@ pub fn[T : IntoPy] Expr::or_(
 ///|
 /// `Expr.not_()`
 pub fn Expr::not_(self : Expr, copy? : Bool = true) -> Expr raise SqlglotError {
-  not_(condition(self, copy~))
+  not_(condition(self, copy~), copy=false)
 }
 
 ///|
@@ -527,7 +527,7 @@ pub fn Expr::neg(self : Expr) -> Expr {
 ///|
 /// Python `~expr` (`Expr.__invert__`).
 pub fn Expr::invert(self : Expr) -> Expr raise SqlglotError {
-  not_(condition(self.copy()))
+  not_(condition(self.copy()), copy=false)
 }
 
 ///|
@@ -609,7 +609,7 @@ pub fn[T : IntoPy] Expr::sort_by(
   expressions : Array[T],
   append? : Bool = true,
   dialect? : Dialect,
-  copy? : Bool = false,
+  copy? : Bool = true,
 ) -> Expr raise SqlglotError {
   apply_child_list_builder(
     py_list(expressions),
@@ -630,7 +630,7 @@ pub fn[T : IntoPy] Expr::cluster_by(
   expressions : Array[T],
   append? : Bool = true,
   dialect? : Dialect,
-  copy? : Bool = false,
+  copy? : Bool = true,
 ) -> Expr raise SqlglotError {
   apply_child_list_builder(
     py_list(expressions),
@@ -651,7 +651,7 @@ pub fn[T : IntoPy] Expr::lateral(
   expressions : Array[T],
   append? : Bool = true,
   dialect? : Dialect,
-  copy? : Bool = false,
+  copy? : Bool = true,
 ) -> Expr raise SqlglotError {
   apply_list_builder(
     py_list(expressions),
@@ -672,7 +672,7 @@ pub fn[T : IntoPy] Expr::window(
   expressions : Array[T],
   append? : Bool = true,
   dialect? : Dialect,
-  copy? : Bool = false,
+  copy? : Bool = true,
 ) -> Expr raise SqlglotError {
   apply_list_builder(
     py_list(expressions),
@@ -692,7 +692,7 @@ pub fn[T : IntoPy] Expr::qualify(
   expressions : Array[T],
   append? : Bool = true,
   dialect? : Dialect,
-  copy? : Bool = false,
+  copy? : Bool = true,
 ) -> Expr raise SqlglotError {
   apply_conjunction_builder(
     py_list(expressions),
@@ -712,7 +712,7 @@ pub fn[T : IntoPy] Expr::ctas(
   table : T,
   properties? : Map[String, PyObj],
   dialect? : Dialect,
-  copy? : Bool = false,
+  copy? : Bool = true,
 ) -> Expr raise SqlglotError {
   let instance = maybe_copy(self, copy)
   let table_expression = maybe_parse(table, into=[Table], dialect?)
@@ -733,7 +733,7 @@ pub fn[T : IntoPy] Expr::ctas(
 pub fn Expr::lock(
   self : Expr,
   update? : Bool = true,
-  copy? : Bool = false,
+  copy? : Bool = true,
 ) -> Expr {
   let inst = maybe_copy(self, copy)
   inst.set("locks", [mk(Lock, [("update", update)])])
@@ -746,7 +746,7 @@ pub fn[T : IntoPy] Expr::hint(
   self : Expr,
   hints : Array[T],
   dialect? : Dialect,
-  copy? : Bool = false,
+  copy? : Bool = true,
 ) -> Expr raise SqlglotError {
   let inst = maybe_copy(self, copy)
   let exprs = []
@@ -764,7 +764,7 @@ pub fn[T : IntoPy] Expr::on(
   expressions : Array[T],
   append? : Bool = true,
   dialect? : Dialect,
-  copy? : Bool = false,
+  copy? : Bool = true,
 ) -> Expr raise SqlglotError {
   let join = apply_conjunction_builder(
     py_list(expressions),
@@ -787,7 +787,7 @@ pub fn[T : IntoPy] Expr::using_(
   expressions : Array[T],
   append? : Bool = true,
   dialect? : Dialect,
-  copy? : Bool = false,
+  copy? : Bool = true,
 ) -> Expr raise SqlglotError {
   let join = apply_list_builder(
     py_list(expressions),
@@ -809,7 +809,7 @@ pub fn[T : IntoPy] Expr::returning(
   self : Expr,
   expression : T,
   dialect? : Dialect,
-  copy? : Bool = false,
+  copy? : Bool = true,
 ) -> Expr raise SqlglotError {
   apply_builder(
     expression.into_py(),
@@ -828,7 +828,7 @@ pub fn[T : IntoPy] Expr::delete(
   self : Expr,
   table : T,
   dialect? : Dialect,
-  copy? : Bool = false,
+  copy? : Bool = true,
 ) -> Expr raise SqlglotError {
   apply_builder(table.into_py(), self, "this", copy~, into=Table, dialect?)
 }
@@ -839,7 +839,7 @@ pub fn[T : IntoPy] Expr::table(
   self : Expr,
   expression : T,
   dialect? : Dialect,
-  copy? : Bool = false,
+  copy? : Bool = true,
 ) -> Expr raise SqlglotError {
   apply_builder(expression.into_py(), self, "this", copy~, into=Table, dialect?)
 }
@@ -851,7 +851,7 @@ pub fn[T : IntoPy] Expr::set_(
   expressions : Array[T],
   append? : Bool = true,
   dialect? : Dialect,
-  copy? : Bool = false,
+  copy? : Bool = true,
 ) -> Expr raise SqlglotError {
   apply_list_builder(
     py_list(expressions),

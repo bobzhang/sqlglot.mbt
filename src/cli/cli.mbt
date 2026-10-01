@@ -231,14 +231,16 @@ pub fn token_repr(token : @core.Token) -> String {
 
 ///|
 /// Python `to_bool` applied to `--identify` ("safe" is passed through).
-fn identify_options(identify : String) -> (Bool, String?) {
+/// Python `"safe" if identify == "safe" else to_bool(identify)`. Other strings behave
+/// like "unsafe", as in the generator.
+fn identify_option(identify : String) -> @sqlglot.Identify {
   if identify == "safe" {
-    return (false, Some("safe"))
+    return Safe
   }
   match @core.py_lower(identify) {
-    "true" | "1" => (true, None)
-    "false" | "0" => (false, None)
-    _ => (false, Some(identify))
+    "true" | "1" => Always
+    "false" | "0" => Never
+    _ => if identify == "always" { Always } else { Unsafe }
   }
 }
 
@@ -313,13 +315,12 @@ fn execute(
   } else if args.tokenize {
     @core.Dialect::get_or_raise(read).tokenize(sql).map(token_repr)
   } else {
-    let (identify, identify_mode) = identify_options(args.identify)
+    let identify = identify_option(args.identify)
     @sqlglot.transpile(
       sql,
       read~,
       write?=args.write,
       identify~,
-      identify_mode?,
       pretty=args.pretty,
       error_level~,
     )

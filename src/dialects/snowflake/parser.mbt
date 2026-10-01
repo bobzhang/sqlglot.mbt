@@ -549,7 +549,8 @@ fn parse_lateral(p : @core.Parser) -> @core.Expr? raise @core.SqlglotError {
           ta.set("columns", flatten_columns.map(c => @core.to_identifier(c)))
         }
       None =>
-        @core.alias_table(l, "_flattened", columns=flatten_columns) |> ignore
+        @core.alias_table(l, "_flattened", columns=flatten_columns, copy=false)
+        |> ignore
     }
   }
   lateral
