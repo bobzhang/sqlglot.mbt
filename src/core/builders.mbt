@@ -279,7 +279,11 @@ pub fn apply_index_offset(
   }
   let annotate = match annotate_types_hook.val {
     Some(f) => f
-    None => return expressions
+    // Until the optimizer is wired in, use the generator's approximate version
+    None =>
+      return gen_apply_index_offset(this, expressions, offset, dialect) catch {
+        _ => expressions
+      }
   }
   let expression = expressions[0]
   if this.get_type() is None {
