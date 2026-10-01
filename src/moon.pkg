@@ -1,5 +1,6 @@
 import {
   "hongbozhang/sqlglot/core",
+  "hongbozhang/sqlglot/optimizer",
   "hongbozhang/sqlglot/dialects/athena",
   "hongbozhang/sqlglot/dialects/bigquery",
   "hongbozhang/sqlglot/dialects/clickhouse",

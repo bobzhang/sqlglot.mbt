@@ -23,6 +23,17 @@ pub struct Expr {
   mut comments : Array[String]?
   mut type_ : Expr?
   mut meta : Map[String, Value]?
+  /// Unique identity of this node (Python `id(node)`).
+  uid : Int
+}
+
+///|
+let expr_uid_counter : Ref[Int] = Ref(0)
+
+///|
+fn next_expr_uid() -> Int {
+  expr_uid_counter.val += 1
+  expr_uid_counter.val
 }
 
 ///|
@@ -126,6 +137,7 @@ pub fn Expr::new(kind : Kind, args : Map[String, Value]) -> Expr {
     comments: None,
     type_: None,
     meta: None,
+    uid: next_expr_uid(),
   }
   if kind == DateTrunc {
     normalize_date_trunc_args(args)
@@ -750,6 +762,7 @@ pub fn Expr::copy(self : Expr) -> Expr {
       }
       None => None
     },
+    uid: next_expr_uid(),
   }
   for k, v in args {
     e.set_parent(k, v, None)
@@ -972,6 +985,13 @@ pub fn Expr::set_kwargs(
     self.set(kv.0, kv.1)
   }
   self
+}
+
+///|
+/// Sets the parent pointer without attaching the node to `parent`'s args
+/// (Python `node.parent = parent`).
+pub fn Expr::set_parent_ref(self : Expr, parent : Expr?) -> Unit {
+  self.parent = parent
 }
 
 ///|
@@ -1649,6 +1669,23 @@ pub fn Expr::selects(self : Expr) -> Array[Expr] {
         _ => []
       }
     Some(k) if k == Values || k == Query => []
+    // Classes whose MRO puts `Expression` before the trait defining `selects`
+    // (e.g. `Values(Expression, UDTF)`, `Subquery`, `CTE`) resolve to that trait in Python.
+    None if self.kind.is_a(UDTF) =>
+      match self.arg("alias") {
+        Some(a) => a.list("columns")
+        None => []
+      }
+    None if self.kind.is_a(DerivedTable) =>
+      match self.this() {
+        Some(t) if t.kind.is_a(Query) => t.selects()
+        _ => []
+      }
+    None if self.kind.is_a(DDL) =>
+      match self.expression() {
+        Some(e) if e.kind.is_a(Query) => e.selects()
+        _ => []
+      }
     _ => []
   }
 }

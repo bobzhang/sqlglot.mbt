@@ -1,0 +1,9 @@
+import {
+  "hongbozhang/sqlglot/core",
+  "moonbitlang/core/set",
+  "moonbitlang/core/deque",
+  "moonbitlang/core/json",
+  "moonbitlang/core/bigint",
+}
+
+warnings = "-79-15-20-82-29"

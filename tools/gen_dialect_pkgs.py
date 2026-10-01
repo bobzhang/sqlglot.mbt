@@ -100,7 +100,7 @@ fn configure_{fn.split('_')[1]}(d : @core.Dialect) -> Unit {{
 
     # facade
     src = os.path.join(ROOT, "src")
-    imports = ['  "hongbozhang/sqlglot/core",'] + [
+    imports = ['  "hongbozhang/sqlglot/core",', '  "hongbozhang/sqlglot/optimizer",'] + [
         f'  "hongbozhang/sqlglot/dialects/{n}",' for n in names
     ]
     write(os.path.join(src, "moon.pkg"), "import {\n" + "\n".join(imports) + "\n}\n")
