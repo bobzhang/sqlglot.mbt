@@ -29,7 +29,7 @@ test "optimizer dialect stress" {
     }
     let (t, p) = totals.get(read).unwrap_or((0, 0))
     totals[read] = (t + 1, if ok { p + 1 } else { p })
-    if !ok && reported < 10 && read == "" {
+    if !ok && reported < 10 {
       reported += 1
       println("MISMATCH [\{read}] \{sql}\n  got: \{got}\n  exp: \{expected}")
     }
