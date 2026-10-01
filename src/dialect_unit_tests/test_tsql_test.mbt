@@ -20,9 +20,10 @@ test "TestTSQL.test_set_operation_pagination" {
   )
   t.ok(c_arg_is(expression, "limit", Fetch))
   t.ok(c_arg_is(expression.expression_(), "limit", Limit))
-  for sql in [
-    "SELECT TOP 2 x FROM t ORDER BY x OFFSET 0 ROWS FETCH FIRST 1 ROWS ONLY", "SELECT x FROM t ORDER BY x OFFSET 0 ROWS FETCH FIRST 1 ROWS ONLY FETCH FIRST 2 ROWS ONLY",
-  ] {
+  for
+    sql in [
+      "SELECT TOP 2 x FROM t ORDER BY x OFFSET 0 ROWS FETCH FIRST 1 ROWS ONLY", "SELECT x FROM t ORDER BY x OFFSET 0 ROWS FETCH FIRST 1 ROWS ONLY FETCH FIRST 2 ROWS ONLY",
+    ] {
     t.raises(() => ignore(parse_one(sql, read="tsql")), "ParseError") |> ignore
   }
   t.done()
@@ -32,13 +33,15 @@ test "TestTSQL.test_set_operation_pagination" {
 test "TestTSQL.test_set_operation_trailing_clauses" {
   let t = t(dialect="tsql")
   for op in ["UNION", "UNION ALL", "INTERSECT", "EXCEPT"] {
-    for pagination in [
-      "", " OFFSET 0 ROWS", " OFFSET 0 ROWS FETCH NEXT 1 ROWS ONLY",
-    ] {
-      for clause in [
-        "OPTION(RECOMPILE)", "FOR JSON PATH", "FOR XML PATH", "FOR JSON PATH OPTION(RECOMPILE)",
-        "FOR XML PATH OPTION(RECOMPILE)",
+    for
+      pagination in [
+        "", " OFFSET 0 ROWS", " OFFSET 0 ROWS FETCH NEXT 1 ROWS ONLY",
       ] {
+      for
+        clause in [
+          "OPTION(RECOMPILE)", "FOR JSON PATH", "FOR XML PATH", "FOR JSON PATH OPTION(RECOMPILE)",
+          "FOR XML PATH OPTION(RECOMPILE)",
+        ] {
         let expression = t.validate_identity(
           "SELECT 1 AS x \{op} SELECT 2 AS x ORDER BY x\{pagination} \{clause}",
         )
@@ -62,16 +65,17 @@ test "TestTSQL.test_set_operation_trailing_clauses" {
       "SELECT 1 AS x UNION ALL SELECT 2 AS x \{clause}",
     )
     // Python's builders default to copy=True (the port's to copy=false)
-    for case in [
-      (
-        expression.limit_(1, copy=true),
-        "SELECT TOP 1 * FROM (SELECT 1 AS x UNION ALL SELECT 2 AS x) AS _l_0 \{clause}",
-      ),
-      (
-        expression.offset_(1, copy=true),
-        "SELECT * FROM (SELECT 1 AS x UNION ALL SELECT 2 AS x) AS _l_0 ORDER BY (SELECT NULL) OFFSET 1 ROWS \{clause}",
-      ),
-    ] {
+    for
+      case in [
+        (
+          expression.limit_(1, copy=true),
+          "SELECT TOP 1 * FROM (SELECT 1 AS x UNION ALL SELECT 2 AS x) AS _l_0 \{clause}",
+        ),
+        (
+          expression.offset_(1, copy=true),
+          "SELECT * FROM (SELECT 1 AS x UNION ALL SELECT 2 AS x) AS _l_0 ORDER BY (SELECT NULL) OFFSET 1 ROWS \{clause}",
+        ),
+      ] {
       let (paginated, expected) = case
       t.eq(sql(paginated, dialect="tsql"), expected)
     }
@@ -94,13 +98,13 @@ test "TestTSQL.test_tsql" {
     ),
     "SELECT 1 WHERE EXISTS(SELECT 1)",
   )
-  t.run(() => t
-    .validate_identity("SELECT a = 1", write_sql="SELECT 1 AS a")
-    .selects()[0]
+  t.run(() => {
+    t.validate_identity("SELECT a = 1", write_sql="SELECT 1 AS a").selects()[0]
     .assert_is(Alias)
     .arg("alias")
     .unwrap()
-    .assert_is(Identifier))
+    .assert_is(Identifier)
+  })
   |> ignore
   t.raises(() => ignore(parse_one("SELECT begin", read="tsql")), "ParseError")
   |> ignore
@@ -111,7 +115,11 @@ test "TestTSQL.test_tsql" {
 test "TestTSQL.test_unpivot_value_column_comes_first" {
   let t = t(dialect="tsql")
   let schema_json = "{\"t\": {\"id\": \"int\", \"jan\": \"int\", \"feb\": \"int\"}}"
-  for case in [("tsql", ["id", "revenue", "month"]), ("duckdb", ["id", "month", "revenue"])] {
+  for
+    case in [
+      ("tsql", ["id", "revenue", "month"]),
+      ("duckdb", ["id", "month", "revenue"]),
+    ] {
     let (dialect, expected) = case
     let d = @core.Dialect::get_or_raise(dialect)
     let expression = @optimizer.qualify(
@@ -135,13 +143,13 @@ test "TestTSQL.test_option" {
   let t = t(dialect="tsql")
   let possible_options = [
     "HASH GROUP", "ORDER GROUP", "CONCAT UNION", "HASH UNION", "MERGE UNION", "LOOP JOIN",
-    "MERGE JOIN", "HASH JOIN", "DISABLE_OPTIMIZED_PLAN_FORCING", "EXPAND VIEWS", "FAST 15",
-    "FORCE ORDER", "FORCE EXTERNALPUSHDOWN", "DISABLE EXTERNALPUSHDOWN", "FORCE SCALEOUTEXECUTION",
-    "DISABLE SCALEOUTEXECUTION", "IGNORE_NONCLUSTERED_COLUMNSTORE_INDEX", "KEEP PLAN",
-    "KEEPFIXED PLAN", "MAX_GRANT_PERCENT = 5", "MIN_GRANT_PERCENT = 10", "MAXDOP 13",
-    "MAXRECURSION 8", "NO_PERFORMANCE_SPOOL", "OPTIMIZE FOR UNKNOWN", "PARAMETERIZATION SIMPLE",
-    "PARAMETERIZATION FORCED", "QUERYTRACEON 99", "RECOMPILE", "ROBUST PLAN", "USE PLAN N'<xml_plan>'",
-    "LABEL = 'MyLabel'",
+    "MERGE JOIN", "HASH JOIN", "DISABLE_OPTIMIZED_PLAN_FORCING", "EXPAND VIEWS",
+    "FAST 15", "FORCE ORDER", "FORCE EXTERNALPUSHDOWN", "DISABLE EXTERNALPUSHDOWN",
+    "FORCE SCALEOUTEXECUTION", "DISABLE SCALEOUTEXECUTION", "IGNORE_NONCLUSTERED_COLUMNSTORE_INDEX",
+    "KEEP PLAN", "KEEPFIXED PLAN", "MAX_GRANT_PERCENT = 5", "MIN_GRANT_PERCENT = 10",
+    "MAXDOP 13", "MAXRECURSION 8", "NO_PERFORMANCE_SPOOL", "OPTIMIZE FOR UNKNOWN",
+    "PARAMETERIZATION SIMPLE", "PARAMETERIZATION FORCED", "QUERYTRACEON 99", "RECOMPILE",
+    "ROBUST PLAN", "USE PLAN N'<xml_plan>'", "LABEL = 'MyLabel'",
   ]
   let possible_statements = [
     "SELECT * FROM Table1", "SELECT * FROM Table1 WHERE id = 2", "UPDATE t1 SET k = t2.k FROM t2",
@@ -153,7 +161,9 @@ test "TestTSQL.test_option" {
       match result.get("options") {
         Some(List(options)) =>
           t.ok(
-            options.iter().all(o => o.as_node() is Some(n) && n.kind.is_a(QueryOption)),
+            options
+            .iter()
+            .all(o => o.as_node() is Some(n) && n.kind.is_a(QueryOption)),
             msg="When parsing query \{query}",
           )
         _ => t.ok(false, msg="When parsing query \{query}")
@@ -164,9 +174,9 @@ test "TestTSQL.test_option" {
     // Missing parentheses
     "SELECT * FROM Table1 OPTION HASH GROUP",
     // Must be followed by 'PLAN"
-    "SELECT * FROM Table1 OPTION(KEEPFIXED)",
+     "SELECT * FROM Table1 OPTION(KEEPFIXED)",
     // Missing commas
-    "SELECT * FROM Table1 OPTION(HASH GROUP HASH GROUP)",
+     "SELECT * FROM Table1 OPTION(HASH GROUP HASH GROUP)",
   ]
   for query in raising_queries {
     t.raises(() => ignore(t.parse_one(query)), "ParseError") |> ignore
@@ -177,11 +187,12 @@ test "TestTSQL.test_option" {
 ///|
 test "TestTSQL.test_ddl" {
   let t = t(dialect="tsql")
-  t.run(() => t
+  t.run(() => {
+    t
     .validate_identity("ALTER TABLE dbo.DocExe DROP CONSTRAINT FK_Column_B")
     .assert_is(Alter)
-    .list("actions")[0]
-    .assert_is(Drop))
+    .list("actions")[0].assert_is(Drop)
+  })
   |> ignore
   let constraint = t
     .validate_identity(
@@ -201,34 +212,32 @@ test "TestTSQL.test_identifier_prefixes" {
   let t = t(dialect="tsql")
   t.ok(
     t
-    .run(() => t
-      .validate_identity("#x")
-      .assert_is(Column)
-      .this_()
-      .assert_is(Identifier))
+    .run(() => {
+      t.validate_identity("#x").assert_is(Column).this_().assert_is(Identifier)
+    })
     .map(e => c_truthy(e, "temporary"))
     .unwrap_or(false),
   )
   t.ok(
     t
-    .run(() => t
-      .validate_identity("##x")
-      .assert_is(Column)
-      .this_()
-      .assert_is(Identifier))
+    .run(() => {
+      t.validate_identity("##x").assert_is(Column).this_().assert_is(Identifier)
+    })
     .map(e => c_truthy(e, "global_"))
     .unwrap_or(false),
   )
   // Quoted bracket form: the # must live inside the brackets in T-SQL
   match
-    t.run(() => t
+    t.run(() => {
+      t
       .validate_identity("SELECT * FROM [#temp_table]")
       .arg("from_")
       .unwrap()
       .this_()
       .assert_is(Table)
       .this_()
-      .assert_is(Identifier)) {
+      .assert_is(Identifier)
+    }) {
     Some(temp_ident) => {
       t.ok(c_truthy(temp_ident, "temporary"))
       t.eq(temp_ident.name(), "temp_table")
@@ -236,27 +245,28 @@ test "TestTSQL.test_identifier_prefixes" {
     None => ()
   }
   match
-    t.run(() => t
+    t.run(() => {
+      t
       .validate_identity("SELECT * FROM [##temp_table]")
       .arg("from_")
       .unwrap()
       .this_()
       .assert_is(Table)
       .this_()
-      .assert_is(Identifier)) {
+      .assert_is(Identifier)
+    }) {
     Some(global_ident) => {
       t.ok(c_truthy(global_ident, "global_"))
       t.eq(global_ident.name(), "temp_table")
     }
     None => ()
   }
-  t.run(() => t
-    .validate_identity("@x")
-    .assert_is(Parameter)
-    .this_()
-    .assert_is(Var))
+  t.run(() => {
+    t.validate_identity("@x").assert_is(Parameter).this_().assert_is(Var)
+  })
   |> ignore
-  t.run(() => t
+  t.run(() => {
+    t
     .validate_identity("SELECT * FROM @x")
     .arg("from_")
     .unwrap()
@@ -265,7 +275,8 @@ test "TestTSQL.test_identifier_prefixes" {
     .this_()
     .assert_is(Parameter)
     .this_()
-    .assert_is(Var))
+    .assert_is(Var)
+  })
   |> ignore
   t.done()
 }
@@ -273,16 +284,16 @@ test "TestTSQL.test_identifier_prefixes" {
 ///|
 test "TestTSQL.test_scope_resolution_op" {
   let t = t(dialect="tsql")
-  for case in [
-    ("", "FOO(a, b)"),
-    ("bar", "baZ(1, 2)"),
-    ("LOGIN", "EricKurjan"),
-    ("GEOGRAPHY", "Point(latitude, longitude, 4326)"),
-    (
-      "GEOGRAPHY",
-      "STGeomFromText('POLYGON((-122.358 47.653 , -122.348 47.649, -122.348 47.658, -122.358 47.658, -122.358 47.653))', 4326)",
-    ),
-  ] {
+  for
+    case in [
+      ("", "FOO(a, b)"),
+      ("bar", "baZ(1, 2)"),
+      ("LOGIN", "EricKurjan"),
+      ("GEOGRAPHY", "Point(latitude, longitude, 4326)"),
+      (
+        "GEOGRAPHY", "STGeomFromText('POLYGON((-122.358 47.653 , -122.348 47.649, -122.348 47.658, -122.358 47.658, -122.358 47.653))', 4326)",
+      ),
+    ] {
     let (lhs, rhs) = case
     let expr = t.validate_identity("\{lhs}::\{rhs}")
     let base_sql = sql(expr)
@@ -296,9 +307,11 @@ test "TestTSQL.test_scope_resolution_op" {
 ///|
 test "TestTSQL.test_count" {
   let t = t(dialect="tsql")
-  let type_this = (e : @core.Expr) => match e.get_type() {
-    Some(ty) => ty.datatype_this()
-    None => None
+  let type_this = (e : @core.Expr) => {
+    match e.get_type() {
+      Some(ty) => ty.datatype_this()
+      None => None
+    }
   }
   let count = @optimizer.annotate_types(
     t.validate_identity("SELECT COUNT(1) FROM x"),
@@ -314,11 +327,12 @@ test "TestTSQL.test_count" {
 ///|
 test "TestTSQL.test_odbc_date_literals" {
   let t = t(dialect="tsql")
-  for case in [
-    ("{d'2024-01-01'}", @core.Kind::Date),
-    ("{t'12:00:00'}", Time),
-    ("{ts'2024-01-01 12:00:00'}", Timestamp),
-  ] {
+  for
+    case in [
+      ("{d'2024-01-01'}", @core.Kind::Date),
+      ("{t'12:00:00'}", Time),
+      ("{ts'2024-01-01 12:00:00'}", Timestamp),
+    ] {
     let (value, cls) = case
     let sql = "INSERT INTO tab(ds) VALUES (\{value})"
     let expr = t.parse_one(sql)
@@ -545,18 +559,22 @@ test "TestTSQL.test_procedures" {
     ),
   ]
   for sql_ in sqls {
-    let roundtripped_sql = t.run(() => sql(parse_one(sql_, read="tsql"), dialect="tsql"))
+    let roundtripped_sql = t.run(() => {
+      sql(parse_one(sql_, read="tsql"), dialect="tsql")
+    })
     match roundtripped_sql {
       Some(r) => t.eq(c_join_stripped_lines(sql_), r)
       None => ()
     }
   }
-  t.run(() => t
+  t.run(() => {
+    t
     .validate_identity(
       "EXEC sp_executesql @payload",
       write_sql="EXECUTE sp_executesql @payload",
     )
-    .assert_is(ExecuteSql))
+    .assert_is(ExecuteSql)
+  })
   |> ignore
   let cases = [
     (
@@ -584,10 +602,8 @@ test "TestTSQL.test_procedures" {
         "CREATE PROCEDURE [TRANSF].[SP_Merge_Sales_Real] @Loadid INTEGER, @NumberOfRows INTEGER WITH EXECUTE AS OWNER, SCHEMABINDING, NATIVE_COMPILATION AS BEGIN SET XACT_ABORT ON",
         "DECLARE @DWH_DateCreated DATETIME = CONVERT(DATETIME, GETDATE(), 104)",
         "DECLARE @DWH_DateModified DATETIME2 = CONVERT(DATETIME2, GETDATE(), 104)",
-        "DECLARE @DWH_IdUserCreated INTEGER = SUSER_ID(CURRENT_USER())",
-        "DECLARE @DWH_IdUserModified INTEGER = SUSER_ID(CURRENT_USER())",
-        "DECLARE @SalesAmountBefore FLOAT",
-        "SELECT @SalesAmountBefore = SUM(SalesAmount) FROM TRANSF.[Pre_Merge_Sales_Real] AS S",
+        "DECLARE @DWH_IdUserCreated INTEGER = SUSER_ID(CURRENT_USER())", "DECLARE @DWH_IdUserModified INTEGER = SUSER_ID(CURRENT_USER())",
+        "DECLARE @SalesAmountBefore FLOAT", "SELECT @SalesAmountBefore = SUM(SalesAmount) FROM TRANSF.[Pre_Merge_Sales_Real] AS S",
         "END",
       ],
     ),
@@ -606,8 +622,7 @@ test "TestTSQL.test_procedures" {
       ),
       [
         "CREATE PROC [dbo].[transform_proc] AS DECLARE @CurrentDate VARCHAR(20)",
-        "SET @CurrentDate = CONVERT(VARCHAR(20), GETDATE(), 120)",
-        "CREATE TABLE [target_schema].[target_table] (a INTEGER) WITH (DISTRIBUTION=REPLICATE, HEAP)",
+        "SET @CurrentDate = CONVERT(VARCHAR(20), GETDATE(), 120)", "CREATE TABLE [target_schema].[target_table] (a INTEGER) WITH (DISTRIBUTION=REPLICATE, HEAP)",
       ],
     ),
   ]

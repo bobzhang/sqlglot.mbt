@@ -35,8 +35,12 @@ test "TestAthena.test_func_builder" {
 ///|
 test "TestAthena.test_max_nodes" {
   let t = t(dialect="athena")
-  for sql in ["SELECT a + b + c FROM t", "ALTER TABLE t ADD COLUMNS (a INT, b INT)"] {
-    t.raises(() => ignore(t.parse_one(sql, max_nodes=3)), "ParseError") |> ignore
+  for
+    sql in [
+      "SELECT a + b + c FROM t", "ALTER TABLE t ADD COLUMNS (a INT, b INT)",
+    ] {
+    t.raises(() => ignore(t.parse_one(sql, max_nodes=3)), "ParseError")
+    |> ignore
   }
   t.done()
 }
@@ -46,7 +50,9 @@ test "TestAthena.test_qualify" {
   let t = t(dialect="athena")
   let d = @core.Dialect::get_or_raise("athena")
   let schema = @optimizer.MappingSchema::new(
-    schema=@optimizer.schema_from_json_string("{\"MyTable\": {\"MyCol\": \"INT\"}}"),
+    schema=@optimizer.schema_from_json_string(
+      "{\"MyTable\": {\"MyCol\": \"INT\"}}",
+    ),
     dialect=d,
   )
   let expression = @optimizer.qualify(
@@ -268,10 +274,18 @@ test "TestAthena.test_parse_partitioned_by_returns_iceberg_transforms" {
   t.ok(parsed.kind.is_a(PartitionedByProperty))
   t.ok(parsed.this_().kind.is_a(Schema))
   t.ok(
-    parsed.this_().expressions().iter().any(n => n.kind.is_a(PartitionedByBucket)),
+    parsed
+    .this_()
+    .expressions()
+    .iter()
+    .any(n => n.kind.is_a(PartitionedByBucket)),
   )
   t.ok(
-    parsed.this_().expressions().iter().any(n => n.kind.is_a(PartitionByTruncate)),
+    parsed
+    .this_()
+    .expressions()
+    .iter()
+    .any(n => n.kind.is_a(PartitionByTruncate)),
   )
   t.done()
 }

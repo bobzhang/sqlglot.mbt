@@ -42,7 +42,9 @@ test "TestSnowflake.test_snowflake" {
     sql(annotated, dialect="duckdb"),
     "CASE WHEN 2 < 0 THEN '' ELSE RIGHT('GAJGSKD', 2) END",
   )
-  let expr = t.validate_identity("RIGHT(TO_BINARY('SNOWIKOPN', 'utf-8'), ABS(-3))")
+  let expr = t.validate_identity(
+    "RIGHT(TO_BINARY('SNOWIKOPN', 'utf-8'), ABS(-3))",
+  )
   let annotated = sf_annotate(expr)
   t.eq(
     sql(annotated, dialect="duckdb"),
@@ -54,18 +56,25 @@ test "TestSnowflake.test_snowflake" {
   )
   |> ignore
   // TO_NUMBER / TRY_TO_NUMBER: (sql, format, precision, scale, safe)
-  for case in [
-    ("TO_NUMBER('12.3456')", None, "38", "0", false),
-    ("TO_NUMBER('12.3456', 10, 1)", None, "10", "1", false),
-    ("TO_NUMBER('12.3456', '99.99')", Some("99.99"), "38", "0", false),
-    ("TO_NUMBER('12.3456', '99.99', 10, 1)", Some("99.99"), "10", "1", false),
-    ("TO_NUMBER('12.3456', 3)", None, "3", "0", false),
-    ("TRY_TO_NUMBER('12.3456')", None, "38", "0", true),
-    ("TRY_TO_NUMBER('12.3456', 10, 1)", None, "10", "1", true),
-    ("TRY_TO_NUMBER('12.3456', '99.99')", Some("99.99"), "38", "0", true),
-    ("TRY_TO_NUMBER('12.3456', '99.99', 10, 1)", Some("99.99"), "10", "1", true),
-    ("TRY_TO_NUMBER('12.3456', 3)", None, "3", "0", true),
-  ] {
+  for
+    case in [
+      ("TO_NUMBER('12.3456')", None, "38", "0", false),
+      ("TO_NUMBER('12.3456', 10, 1)", None, "10", "1", false),
+      ("TO_NUMBER('12.3456', '99.99')", Some("99.99"), "38", "0", false),
+      ("TO_NUMBER('12.3456', '99.99', 10, 1)", Some("99.99"), "10", "1", false),
+      ("TO_NUMBER('12.3456', 3)", None, "3", "0", false),
+      ("TRY_TO_NUMBER('12.3456')", None, "38", "0", true),
+      ("TRY_TO_NUMBER('12.3456', 10, 1)", None, "10", "1", true),
+      ("TRY_TO_NUMBER('12.3456', '99.99')", Some("99.99"), "38", "0", true),
+      (
+        "TRY_TO_NUMBER('12.3456', '99.99', 10, 1)",
+        Some("99.99"),
+        "10",
+        "1",
+        true,
+      ),
+      ("TRY_TO_NUMBER('12.3456', 3)", None, "3", "0", true),
+    ] {
     let (q, format, precision, scale, safe) = case
     let ast = t.validate_identity(q)
     t.ok(ast.kind.is_a(ToNumber), msg="\{q}: not a ToNumber")
@@ -79,20 +88,23 @@ test "TestSnowflake.test_snowflake" {
       t.ok(ast.bool_arg("safe"), msg="\{q}: safe is not set")
     }
   }
-  for case in [
-    ("SELECT * FROM IDENTIFIER(:tbl)", "tbl"),
-    ("SELECT * FROM IDENTIFIER($tbl)", "tbl"),
-    ("SELECT * FROM IDENTIFIER('mytable')", "mytable"),
-  ] {
+  for
+    case in [
+      ("SELECT * FROM IDENTIFIER(:tbl)", "tbl"),
+      ("SELECT * FROM IDENTIFIER($tbl)", "tbl"),
+      ("SELECT * FROM IDENTIFIER('mytable')", "mytable"),
+    ] {
     let (q, name) = case
     let table = t.validate_identity(q).find([Table]).unwrap()
     t.ok(table.this_().kind.is_a(DynamicIdentifier), msg="\{q}: not dynamic")
     t.eq(table.name(), name)
   }
   t.raises(
-    () => ignore(
-      parse_one("OBJECT_CONSTRUCT_KEEP_NULL(t.*, 'a', 1)", read="snowflake"),
-    ),
+    () => {
+      ignore(
+        parse_one("OBJECT_CONSTRUCT_KEEP_NULL(t.*, 'a', 1)", read="snowflake"),
+      )
+    },
     "ParseError",
   )
   |> ignore
@@ -122,12 +134,14 @@ test "TestSnowflake.test_snowflake" {
   t.validate_identity("TRY_TO_TIMESTAMP('12345')").assert_is(Anonymous)
   |> ignore
   t.raises(
-    () => ignore(
-      parse_one(
-        "SELECT id, PRIOR name AS parent_name, name FROM tree CONNECT BY NOCYCLE PRIOR id = parent_id",
-        read="snowflake",
-      ),
-    ),
+    () => {
+      ignore(
+        parse_one(
+          "SELECT id, PRIOR name AS parent_name, name FROM tree CONNECT BY NOCYCLE PRIOR id = parent_id",
+          read="snowflake",
+        ),
+      )
+    },
     "ParseError",
   )
   |> ignore
@@ -143,10 +157,11 @@ test "TestSnowflake.test_snowflake" {
 ///|
 test "TestSnowflake.test_pivot_output_column_names" {
   let t = t(dialect="snowflake")
-  for case in [
-    ("IN ('a', 'b')", ["ID", "'a'", "'b'"]),
-    ("IN ('a' AS a, 'b' AS b)", ["ID", "A", "B"]),
-  ] {
+  for
+    case in [
+      ("IN ('a', 'b')", ["ID", "'a'", "'b'"]),
+      ("IN ('a' AS a, 'b' AS b)", ["ID", "A", "B"]),
+    ] {
     let (pivot, expected) = case
     let expression = @optimizer.qualify(
       t.parse_one("SELECT * FROM t PIVOT(SUM(val) FOR cat \{pivot})"),
@@ -188,9 +203,7 @@ test "TestSnowflake.test_ddl" {
   t.validate_identity("CREATE STREAMLIT x").this_().assert_is(Identifier)
   |> ignore
   t
-  .validate_identity(
-    "CREATE TEMPORARY STAGE stage1 FILE_FORMAT=(TYPE=PARQUET)",
-  )
+  .validate_identity("CREATE TEMPORARY STAGE stage1 FILE_FORMAT=(TYPE=PARQUET)")
   .this_()
   .assert_is(Table)
   |> ignore
@@ -235,7 +248,10 @@ test "TestSnowflake.test_flatten" {
   t.eq(
     sql(
       @sqlglot.select([
-        @core.mk(Explode, [("this", @sqlglot.column("x"))]).as_("y", quoted=true),
+        @core.mk(Explode, [("this", @sqlglot.column("x"))]).as_(
+          "y",
+          quoted=true,
+        ),
       ]),
       dialect="snowflake",
       pretty=true,
@@ -259,22 +275,23 @@ test "TestSnowflake.test_values" {
 ///|
 test "TestSnowflake.test_describe" {
   let t = t(dialect="snowflake")
-  for case in [
-    ("DYNAMIC TABLE", "db.schema.t1", @core.Kind::DynamicProperty),
-    ("MATERIALIZED VIEW", "my_view", MaterializedProperty),
-    ("EXTERNAL VOLUME", "vol1", ExternalProperty),
-    ("COMPUTE POOL", "pool1", ComputeProperty),
-    ("MASKING POLICY", "db.schema.pol1", MaskingProperty),
-    ("ROW ACCESS POLICY", "pol1", RowAccessProperty),
-    ("API INTEGRATION", "int1", ApiProperty),
-    ("APPLICATION PACKAGE", "pkg1", ApplicationProperty),
-    ("SECURITY INTEGRATION", "int1", SecurityIntegrationProperty),
-    ("NETWORK RULE", "rule1", NetworkProperty),
-    ("ICEBERG TABLE", "db.schema.t1", IcebergProperty),
-    ("HYBRID TABLE", "t1", HybridProperty),
-    ("CATALOG INTEGRATION", "int1", CatalogProperty),
-    ("DATABASE ROLE", "role1", DatabaseProperty),
-  ] {
+  for
+    case in [
+      ("DYNAMIC TABLE", "db.schema.t1", @core.Kind::DynamicProperty),
+      ("MATERIALIZED VIEW", "my_view", MaterializedProperty),
+      ("EXTERNAL VOLUME", "vol1", ExternalProperty),
+      ("COMPUTE POOL", "pool1", ComputeProperty),
+      ("MASKING POLICY", "db.schema.pol1", MaskingProperty),
+      ("ROW ACCESS POLICY", "pol1", RowAccessProperty),
+      ("API INTEGRATION", "int1", ApiProperty),
+      ("APPLICATION PACKAGE", "pkg1", ApplicationProperty),
+      ("SECURITY INTEGRATION", "int1", SecurityIntegrationProperty),
+      ("NETWORK RULE", "rule1", NetworkProperty),
+      ("ICEBERG TABLE", "db.schema.t1", IcebergProperty),
+      ("HYBRID TABLE", "t1", HybridProperty),
+      ("CATALOG INTEGRATION", "int1", CatalogProperty),
+      ("DATABASE ROLE", "role1", DatabaseProperty),
+    ] {
     let (kind, object_name, prop_type) = case
     let ast = t.validate_identity("DESCRIBE \{kind} \{object_name}")
     let words = kind.split(" ").to_array()
@@ -289,10 +306,7 @@ test "TestSnowflake.test_regexp_functions" {
   let t = t(dialect="snowflake")
   let ast = t.validate_identity("SELECT SEARCH(line, 'king')")
   let search_ast = ast.find([Search]).unwrap()
-  t.eq(
-    b_list(search_ast.args.keys().collect()),
-    b_list(["this", "expression"]),
-  )
+  t.eq(b_list(search_ast.args.keys().collect()), b_list(["this", "expression"]))
   t.ok(search_ast.get("analyzer") is None)
   t.ok(search_ast.get("search_mode") is None)
   let ast = t.validate_identity(
@@ -401,7 +415,10 @@ test "TestSnowflake.test_show_objects" {
 ///|
 test "TestSnowflake.test_show_columns" {
   let t = t(dialect="snowflake")
-  let ast = parse_one("SHOW COLUMNS LIKE '_testing%' IN dt_test", read="snowflake")
+  let ast = parse_one(
+    "SHOW COLUMNS LIKE '_testing%' IN dt_test",
+    read="snowflake",
+  )
   t.eq(sql(ast.find([Table]).unwrap(), dialect="snowflake"), "dt_test")
   t.eq(sql(ast.find([Literal]).unwrap(), dialect="snowflake"), "'_testing%'")
   t.done()
@@ -416,7 +433,10 @@ test "TestSnowflake.test_show_tables" {
   let ast = parse_one("SHOW ICEBERG TABLES IN db1.schema1", read="snowflake")
   t.eq(sql(ast.find([Table]).unwrap(), dialect="snowflake"), "db1.schema1")
   t.ok(ast.bool_arg("iceberg"))
-  let ast = parse_one("SHOW TERSE ICEBERG TABLES IN db1.schema1", read="snowflake")
+  let ast = parse_one(
+    "SHOW TERSE ICEBERG TABLES IN db1.schema1",
+    read="snowflake",
+  )
   t.eq(sql(ast.find([Table]).unwrap(), dialect="snowflake"), "db1.schema1")
   t.ok(ast.bool_arg("terse"))
   t.ok(ast.bool_arg("iceberg"))
@@ -448,7 +468,10 @@ test "TestSnowflake.test_drop_iceberg_table" {
 ///|
 test "TestSnowflake.test_show_primary_keys" {
   let t = t(dialect="snowflake")
-  let ast = parse_one("SHOW PRIMARY KEYS IN \"TEST\".\"PUBLIC\".\"foo\"", read="snowflake")
+  let ast = parse_one(
+    "SHOW PRIMARY KEYS IN \"TEST\".\"PUBLIC\".\"foo\"",
+    read="snowflake",
+  )
   t.eq(
     sql(ast.find([Table]).unwrap(), dialect="snowflake"),
     "\"TEST\".\"PUBLIC\".\"foo\"",
@@ -467,7 +490,10 @@ test "TestSnowflake.test_show_views" {
 ///|
 test "TestSnowflake.test_show_unique_keys" {
   let t = t(dialect="snowflake")
-  let ast = parse_one("SHOW UNIQUE KEYS IN \"TEST\".\"PUBLIC\".\"foo\"", read="snowflake")
+  let ast = parse_one(
+    "SHOW UNIQUE KEYS IN \"TEST\".\"PUBLIC\".\"foo\"",
+    read="snowflake",
+  )
   t.eq(
     sql(ast.find([Table]).unwrap(), dialect="snowflake"),
     "\"TEST\".\"PUBLIC\".\"foo\"",
@@ -509,7 +535,10 @@ test "TestSnowflake.test_swap" {
 ///|
 test "TestSnowflake.test_try_cast" {
   let t = t(dialect="snowflake")
-  let mut expression = parse_one("SELECT CAST(t.x AS STRING) FROM t", read="hive")
+  let mut expression = parse_one(
+    "SELECT CAST(t.x AS STRING) FROM t",
+    read="hive",
+  )
   for value_type in ["string", "int"] {
     let func = if value_type == "string" { "TRY_CAST" } else { "CAST" }
     expression = @optimizer.annotate_types(
@@ -536,7 +565,10 @@ test "TestSnowflake.test_copy" {
     read="snowflake",
   )
   t.eq(
-    sql(@optimizer.quote_identifiers(copy_ast, dialect=sf()), dialect="snowflake"),
+    sql(
+      @optimizer.quote_identifiers(copy_ast, dialect=sf()),
+      dialect="snowflake",
+    ),
     "COPY INTO 's3://example/contacts.csv' FROM \"db\".\"tbl\" STORAGE_INTEGRATION = \"PROD_S3_SIDETRADE_INTEGRATION\" FILE_FORMAT = (FORMAT_NAME=\"my_csv_format\" TYPE=CSV COMPRESSION=NONE NULL_IF=('') FIELD_OPTIONALLY_ENCLOSED_BY='\"') MATCH_BY_COLUMN_NAME = CASE_SENSITIVE OVERWRITE = TRUE SINGLE = TRUE INCLUDE_METADATA = (\"col1\" = \"METADATA$START_SCAN_TIME\")",
   )
   t.done()
@@ -583,11 +615,17 @@ fn sf_var(s : String) -> @core.Expr {
 ///|
 test "TestSnowflake.test_put_to_stage" {
   let t = t(dialect="snowflake")
-  let ast = parse_one("PUT 'file://my file.txt' '@s1/my folder'", read="snowflake")
+  let ast = parse_one(
+    "PUT 'file://my file.txt' '@s1/my folder'",
+    read="snowflake",
+  )
   t.ok(ast.kind.is_a(Put))
   t.eq_expr(ast.this(), Some(sf_literal("file://my file.txt", true)))
   t.eq_expr(ast.arg("target"), Some(sf_var("'@s1/my folder'")))
-  t.eq(sql(ast, dialect="snowflake"), "PUT 'file://my file.txt' '@s1/my folder'")
+  t.eq(
+    sql(ast, dialect="snowflake"),
+    "PUT 'file://my file.txt' '@s1/my folder'",
+  )
   let ast = parse_one(
     "PUT 'file:///tmp/my.txt' @stage1/folder PARALLEL = 1 AUTO_COMPRESS=false source_compression=gzip OVERWRITE=TRUE",
     read="snowflake",
@@ -627,11 +665,17 @@ test "TestSnowflake.test_get_from_stage" {
   let t = t(dialect="snowflake")
   t.validate_identity("GET @s1/test 'file:///dir/tmp.csv'").assert_is(Get)
   |> ignore
-  let ast = parse_one("GET '@s1/my folder' 'file://my file.txt'", read="snowflake")
+  let ast = parse_one(
+    "GET '@s1/my folder' 'file://my file.txt'",
+    read="snowflake",
+  )
   t.ok(ast.kind.is_a(Get))
   t.eq_expr(ast.arg("target"), Some(sf_var("'@s1/my folder'")))
   t.eq_expr(ast.this(), Some(sf_literal("file://my file.txt", true)))
-  t.eq(sql(ast, dialect="snowflake"), "GET '@s1/my folder' 'file://my file.txt'")
+  t.eq(
+    sql(ast, dialect="snowflake"),
+    "GET '@s1/my folder' 'file://my file.txt'",
+  )
   let ast = parse_one(
     "GET @stage1/folder 'file:///tmp/my.txt' PARALLEL = 1",
     read="snowflake",
@@ -654,15 +698,17 @@ test "TestSnowflake.test_alter_session" {
   let expr = t.validate_identity(
     "ALTER SESSION SET autocommit = FALSE, QUERY_TAG = 'qtag', JSON_INDENT = 1",
   )
-  let set_item = (name : String, value : @core.Expr) => @core.mk(SetItem, [
-    (
-      "this",
-      @core.mk(EQ, [
-        ("this", @core.mk(Column, [("this", sf_ident(name))])),
-        ("expression", value),
-      ]),
-    ),
-  ])
+  let set_item = (name : String, value : @core.Expr) => {
+    @core.mk(SetItem, [
+      (
+        "this",
+        @core.mk(EQ, [
+          ("this", @core.mk(Column, [("this", sf_ident(name))])),
+          ("expression", value),
+        ]),
+      ),
+    ])
+  }
   t.eq_expr(
     expr.find([AlterSession]),
     Some(
@@ -714,15 +760,22 @@ test "TestSnowflake.test_window_function_arg" {
 test "TestSnowflake.test_parameter" {
   let t = t(dialect="snowflake")
   let expr = t.validate_identity("SELECT :1")
-  t.eq_expr(expr.find([Placeholder]), Some(@core.mk(Placeholder, [("this", "1")])))
+  t.eq_expr(
+    expr.find([Placeholder]),
+    Some(@core.mk(Placeholder, [("this", "1")])),
+  )
   t.done()
 }
 
 ///|
 test "TestSnowflake.test_max_by_min_by" {
   let t = t(dialect="snowflake")
-  let max_by = t.validate_identity("MAX_BY(DISTINCT selected_col, filtered_col)")
-  let min_by = t.validate_identity("MIN_BY(DISTINCT selected_col, filtered_col)")
+  let max_by = t.validate_identity(
+    "MAX_BY(DISTINCT selected_col, filtered_col)",
+  )
+  let min_by = t.validate_identity(
+    "MIN_BY(DISTINCT selected_col, filtered_col)",
+  )
   for node in [max_by, min_by] {
     t.eq(node.this_().expressions().length(), 1)
     t.ok(node.expression() is Some(e) && e.kind.is_a(Column))
@@ -739,12 +792,14 @@ test "TestSnowflake.test_max_by_min_by" {
 test "TestSnowflake.test_create_view_row_access_policy" {
   let t = t(dialect="snowflake")
   t.raises(
-    () => ignore(
-      parse_one(
-        "CREATE VIEW v WITH ROW ACCESS POLICY p AS SELECT 1",
-        read="snowflake",
-      ),
-    ),
+    () => {
+      ignore(
+        parse_one(
+          "CREATE VIEW v WITH ROW ACCESS POLICY p AS SELECT 1",
+          read="snowflake",
+        ),
+      )
+    },
     "ParseError",
   )
   |> ignore
@@ -813,17 +868,18 @@ test "TestSnowflake.test_get_bit" {
 ///|
 test "TestSnowflake.test_to_binary" {
   let t = t(dialect="snowflake")
-  for case in [
-    ("TO_BINARY('48454C50', 'HEX')", "UNHEX('48454C50')"),
-    ("TO_BINARY('48454C50')", "UNHEX('48454C50')"),
-    ("TO_BINARY('TEST', 'UTF-8')", "ENCODE('TEST')"),
-    ("TO_BINARY('SEVMUA==', 'BASE64')", "FROM_BASE64('SEVMUA==')"),
-    ("TRY_TO_BINARY('48454C50', 'HEX')", "TRY(UNHEX('48454C50'))"),
-    ("TRY_TO_BINARY('48454C50')", "TRY(UNHEX('48454C50'))"),
-    ("TRY_TO_BINARY('Hello', 'UTF-8')", "TRY(ENCODE('Hello'))"),
-    ("TRY_TO_BINARY('SGVsbG8=', 'BASE64')", "TRY(FROM_BASE64('SGVsbG8='))"),
-    ("TRY_TO_BINARY('Hello', 'UTF-16')", "NULL"),
-  ] {
+  for
+    case in [
+      ("TO_BINARY('48454C50', 'HEX')", "UNHEX('48454C50')"),
+      ("TO_BINARY('48454C50')", "UNHEX('48454C50')"),
+      ("TO_BINARY('TEST', 'UTF-8')", "ENCODE('TEST')"),
+      ("TO_BINARY('SEVMUA==', 'BASE64')", "FROM_BASE64('SEVMUA==')"),
+      ("TRY_TO_BINARY('48454C50', 'HEX')", "TRY(UNHEX('48454C50'))"),
+      ("TRY_TO_BINARY('48454C50')", "TRY(UNHEX('48454C50'))"),
+      ("TRY_TO_BINARY('Hello', 'UTF-8')", "TRY(ENCODE('Hello'))"),
+      ("TRY_TO_BINARY('SGVsbG8=', 'BASE64')", "TRY(FROM_BASE64('SGVsbG8='))"),
+      ("TRY_TO_BINARY('Hello', 'UTF-16')", "NULL"),
+    ] {
     let (q, duckdb) = case
     let expr = t.validate_identity(q)
     let annotated = sf_annotate(expr)
@@ -835,18 +891,19 @@ test "TestSnowflake.test_to_binary" {
 ///|
 test "TestSnowflake.test_reverse" {
   let t = t(dialect="snowflake")
-  for case in [
-    (
-      "REVERSE(TO_BINARY('ABC', 'UTF-8'))", "CAST(REVERSE(CAST(ENCODE('ABC') AS TEXT)) AS BLOB)",
-    ),
-    (
-      "REVERSE(TO_BINARY('414243', 'HEX'))", "CAST(REVERSE(CAST(UNHEX('414243') AS TEXT)) AS BLOB)",
-    ),
-    (
-      "REVERSE(HEX_DECODE_BINARY('414243'))", "CAST(REVERSE(CAST(UNHEX('414243') AS TEXT)) AS BLOB)",
-    ),
-    ("REVERSE('ABC')", "REVERSE('ABC')"),
-  ] {
+  for
+    case in [
+      (
+        "REVERSE(TO_BINARY('ABC', 'UTF-8'))", "CAST(REVERSE(CAST(ENCODE('ABC') AS TEXT)) AS BLOB)",
+      ),
+      (
+        "REVERSE(TO_BINARY('414243', 'HEX'))", "CAST(REVERSE(CAST(UNHEX('414243') AS TEXT)) AS BLOB)",
+      ),
+      (
+        "REVERSE(HEX_DECODE_BINARY('414243'))", "CAST(REVERSE(CAST(UNHEX('414243') AS TEXT)) AS BLOB)",
+      ),
+      ("REVERSE('ABC')", "REVERSE('ABC')"),
+    ] {
     let (q, duckdb) = case
     let expr = t.validate_identity(q)
     let annotated = sf_annotate(expr)
@@ -890,18 +947,19 @@ test "TestSnowflake.test_float_interval" {
 ///|
 test "TestSnowflake.test_transpile_bitwise_ops" {
   let t = t(dialect="snowflake")
-  for case in [
-    (
-      "SELECT BITOR(x'FF', x'0F')", "SELECT CAST(CAST(UNHEX('FF') AS BIT) | CAST(UNHEX('0F') AS BIT) AS BLOB)",
-    ),
-    (
-      "SELECT BITAND(x'FF', x'0F')", "SELECT CAST(CAST(UNHEX('FF') AS BIT) & CAST(UNHEX('0F') AS BIT) AS BLOB)",
-    ),
-    (
-      "SELECT BITXOR(x'FF', x'0F')", "SELECT CAST(XOR(CAST(UNHEX('FF') AS BIT), CAST(UNHEX('0F') AS BIT)) AS BLOB)",
-    ),
-    ("SELECT BITNOT(x'FF')", "SELECT CAST(~CAST(UNHEX('FF') AS BIT) AS BLOB)"),
-  ] {
+  for
+    case in [
+      (
+        "SELECT BITOR(x'FF', x'0F')", "SELECT CAST(CAST(UNHEX('FF') AS BIT) | CAST(UNHEX('0F') AS BIT) AS BLOB)",
+      ),
+      (
+        "SELECT BITAND(x'FF', x'0F')", "SELECT CAST(CAST(UNHEX('FF') AS BIT) & CAST(UNHEX('0F') AS BIT) AS BLOB)",
+      ),
+      (
+        "SELECT BITXOR(x'FF', x'0F')", "SELECT CAST(XOR(CAST(UNHEX('FF') AS BIT), CAST(UNHEX('0F') AS BIT)) AS BLOB)",
+      ),
+      ("SELECT BITNOT(x'FF')", "SELECT CAST(~CAST(UNHEX('FF') AS BIT) AS BLOB)"),
+    ] {
     let (q, duckdb) = case
     let expr = t.parse_one(q)
     let annotated = sf_annotate(expr)
@@ -965,17 +1023,16 @@ test "TestSnowflake.test_storage_integration" {
 ///|
 test "TestSnowflake.test_timestamps" {
   let t = t(dialect="snowflake")
-  for case in [
-    (
-      "SELECT DATE_PART(year FROM CAST('2024-04-08' AS DATE))",
-      "SELECT DATE_PART(year, CAST('2024-04-08' AS DATE))",
-    ),
-    (
-      "SELECT DATE_PART('month' FROM CAST('2024-04-08' AS DATE))",
-      "SELECT DATE_PART('month', CAST('2024-04-08' AS DATE))",
-    ),
-    ("SELECT DATE_PART(day FROM a)", "SELECT DATE_PART(day, a)"),
-  ] {
+  for
+    case in [
+      (
+        "SELECT DATE_PART(year FROM CAST('2024-04-08' AS DATE))", "SELECT DATE_PART(year, CAST('2024-04-08' AS DATE))",
+      ),
+      (
+        "SELECT DATE_PART('month' FROM CAST('2024-04-08' AS DATE))", "SELECT DATE_PART('month', CAST('2024-04-08' AS DATE))",
+      ),
+      ("SELECT DATE_PART(day FROM a)", "SELECT DATE_PART(day, a)"),
+    ] {
     let (sql, write_sql) = case
     t.is_a(Some(t.validate_identity(sql, write_sql~).expressions()[0]), Extract)
     |> ignore
@@ -999,7 +1056,8 @@ test "TestSnowflake.test_trunc" {
   t.is_a(Some(t.validate_identity("TRUNC(price, 0)")), Trunc) |> ignore
   t.is_a(Some(t.validate_identity("TRUNC(3.14159)")), Trunc) |> ignore
   t.is_a(Some(t.validate_identity("TRUNC(col)")), Trunc) |> ignore
-  t.is_a(Some(t.parse_one("TRUNC(CAST(x AS DATE), 'MONTH')")), DateTrunc) |> ignore
+  t.is_a(Some(t.parse_one("TRUNC(CAST(x AS DATE), 'MONTH')")), DateTrunc)
+  |> ignore
   t.is_a(Some(t.parse_one("TRUNC(CAST(x AS TIMESTAMP), 'MONTH')")), DateTrunc)
   |> ignore
   t.is_a(Some(t.parse_one("TRUNC(CAST(x AS DATETIME), 'MONTH')")), DateTrunc)

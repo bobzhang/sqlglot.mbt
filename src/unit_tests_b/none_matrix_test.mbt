@@ -42,12 +42,14 @@ fn none_matrix_value(tag : String) -> Value? {
     "NULL" => Some(Node(@core.null_()))
     // what `Array[Expr?]` arguments become: None elements are dropped
     "[None]" => IntoValue::into_value([(None : @core.Expr?)])
-    "[1, None]" => IntoValue::into_value([Some(@core.literal_number("1")), None])
+    "[1, None]" =>
+      IntoValue::into_value([Some(@core.literal_number("1")), None])
     "[False]" => Some(List([Bool(false)]))
     "[1]" => Some(List([Node(@core.literal_number("1"))]))
     "[1, '']" => Some(List([Node(@core.literal_number("1")), Str("")]))
     "['', 1]" => Some(List([Str(""), Node(@core.literal_number("1"))]))
-    "[1, NULL]" => Some(List([Node(@core.literal_number("1")), Node(@core.null_())]))
+    "[1, NULL]" =>
+      Some(List([Node(@core.literal_number("1")), Node(@core.null_())]))
     _ => abort("unknown value \{tag}")
   }
 }
@@ -56,7 +58,10 @@ fn none_matrix_value(tag : String) -> Value? {
 using @core {type Value, trait IntoValue}
 
 ///|
-fn none_matrix_build(case_ : String, kv : Array[(String, Value?)]) -> @core.Expr {
+fn none_matrix_build(
+  case_ : String,
+  kv : Array[(String, Value?)],
+) -> @core.Expr {
   let args : Array[(String, &IntoValue)] = kv.map(p => (p.0, p.1 as &IntoValue))
   match case_ {
     "column.db" =>
@@ -91,7 +96,8 @@ fn none_matrix_show(v : Value?) -> String {
   match v {
     None => "missing"
     Some(Node(e)) => "node:\{e.kind}"
-    Some(List(l)) => "[" + l.map(x => none_matrix_show(Some(x))).join(", ") + "]"
+    Some(List(l)) =>
+      "[" + l.map(x => none_matrix_show(Some(x))).join(", ") + "]"
     Some(Str(s)) => py_repr(s)
     Some(Bool(b)) => if b { "True" } else { "False" }
     Some(Int(i)) => i.to_string()
@@ -279,7 +285,10 @@ test "explicit None keys: StrPosition to tableau" {
   let fails = []
   for c in cases {
     let (read, sql, expected) = c
-    let got = @sqlglot.generate(@sqlglot.parse_one(sql, read~), dialect="tableau")
+    let got = @sqlglot.generate(
+      @sqlglot.parse_one(sql, read~),
+      dialect="tableau",
+    )
     if got != expected {
       fails.push("[\{read}] \{sql}\n  got: \{got}\n  exp: \{expected}")
     }

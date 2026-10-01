@@ -59,15 +59,22 @@ test "TestDuckDB.test_duckdb" {
   t.validate_identity("SUMMARIZE tbl").assert_is(Summarize) |> ignore
   t.validate_identity("SUMMARIZE SELECT * FROM tbl").assert_is(Summarize)
   |> ignore
-  t.validate_identity("UNION_VALUE(k1 := 1)").find([PropertyEQ]).unwrap().this_().assert_is(
-    Identifier,
-  )
+  t
+  .validate_identity("UNION_VALUE(k1 := 1)")
+  .find([PropertyEQ])
+  .unwrap()
+  .this_()
+  .assert_is(Identifier)
   |> ignore
-  t.validate_identity(
+  t
+  .validate_identity(
     "SUMMARIZE TABLE 'https://blobs.duckdb.org/data/Star_Trek-Season_1.csv'",
-  ).assert_is(Summarize)
+  )
+  .assert_is(Summarize)
   |> ignore
-  t.validate_identity("DATE_SUB('YEAR', col, '2020-01-01')").assert_is(Anonymous)
+  t
+  .validate_identity("DATE_SUB('YEAR', col, '2020-01-01')")
+  .assert_is(Anonymous)
   |> ignore
   t.validate_identity("DATESUB('YEAR', col, '2020-01-01')").assert_is(Anonymous)
   |> ignore
@@ -75,11 +82,17 @@ test "TestDuckDB.test_duckdb" {
   t.validate_identity("a <@ b").assert_is(ArrayContainedBy) |> ignore
   t.validate_identity("a && b").assert_is(ArrayOverlaps) |> ignore
   t.eq(
-    sql(@optimizer.annotate_types(t.parse_one("LOWER('HELLO')")), dialect="duckdb"),
+    sql(
+      @optimizer.annotate_types(t.parse_one("LOWER('HELLO')")),
+      dialect="duckdb",
+    ),
     "LOWER('HELLO')",
   )
   t.eq(
-    sql(@optimizer.annotate_types(t.parse_one("UPPER('hello')")), dialect="duckdb"),
+    sql(
+      @optimizer.annotate_types(t.parse_one("UPPER('hello')")),
+      dialect="duckdb",
+    ),
     "UPPER('hello')",
   )
   t.eq(
@@ -100,17 +113,17 @@ test "TestDuckDB.test_duckdb" {
     ),
     "SELECT TRIM('***apple***', '*') AS result",
   )
-  t.validate_identity("CURRENT_LOCALTIMESTAMP()", write_sql="LOCALTIMESTAMP").assert_is(
-    Localtimestamp,
-  )
+  t
+  .validate_identity("CURRENT_LOCALTIMESTAMP()", write_sql="LOCALTIMESTAMP")
+  .assert_is(Localtimestamp)
   |> ignore
-  t.validate_identity("SELECT file[:256] FROM GLOB('*')").selects()[0].this_().assert_is(
-    Column,
-  )
+  t.validate_identity("SELECT file[:256] FROM GLOB('*')").selects()[0]
+  .this_()
+  .assert_is(Column)
   |> ignore
-  t.validate_identity("SELECT file[256] FROM GLOB('*')").selects()[0].this_().assert_is(
-    Column,
-  )
+  t.validate_identity("SELECT file[256] FROM GLOB('*')").selects()[0]
+  .this_()
+  .assert_is(Column)
   |> ignore
   t.done()
 }
@@ -156,28 +169,29 @@ test "TestDuckDB.test_array_index" {
 ///|
 test "TestDuckDB.test_timestamp_from_parts" {
   let t = t(dialect="duckdb")
-  for case in [
-    (
-      "SELECT TIMESTAMP_FROM_PARTS(2019, 1, 10, 2, 3, 4, 0, 'America/Los_Angeles')",
-      "SELECT MAKE_TIMESTAMP(2019, 1, 10, 2, 3, 4 + (0 / 1000000000.0)) AT TIME ZONE 'America/Los_Angeles'",
-      @core.DType::TIMESTAMPTZ,
-    ),
-    (
-      "SELECT TIMESTAMP_FROM_PARTS(2019, 7, 10, 2, 3, 4, 123456000, 'America/Los_Angeles')",
-      "SELECT MAKE_TIMESTAMP(2019, 7, 10, 2, 3, 4 + (123456000 / 1000000000.0)) AT TIME ZONE 'America/Los_Angeles'",
-      TIMESTAMPTZ,
-    ),
-    (
-      "SELECT TIMESTAMP_FROM_PARTS(2019, 1, 10, 2, 3, 4, ns, tz) FROM (VALUES (123456000, 'America/Los_Angeles'), (NULL, 'UTC'), (0, NULL)) AS t(ns, tz)",
-      "SELECT MAKE_TIMESTAMP(2019, 1, 10, 2, 3, 4 + (ns / 1000000000.0)) AT TIME ZONE tz FROM (VALUES (123456000, 'America/Los_Angeles'), (NULL, 'UTC'), (0, NULL)) AS t(ns, tz)",
-      TIMESTAMPTZ,
-    ),
-    (
-      "SELECT TIMESTAMP_FROM_PARTS(2019, 1, 10, 2, 3, 4, 123456000)",
-      "SELECT MAKE_TIMESTAMP(2019, 1, 10, 2, 3, 4 + (123456000 / 1000000000.0))",
-      TIMESTAMP,
-    ),
-  ] {
+  for
+    case in [
+      (
+        "SELECT TIMESTAMP_FROM_PARTS(2019, 1, 10, 2, 3, 4, 0, 'America/Los_Angeles')",
+        "SELECT MAKE_TIMESTAMP(2019, 1, 10, 2, 3, 4 + (0 / 1000000000.0)) AT TIME ZONE 'America/Los_Angeles'",
+        @core.DType::TIMESTAMPTZ,
+      ),
+      (
+        "SELECT TIMESTAMP_FROM_PARTS(2019, 7, 10, 2, 3, 4, 123456000, 'America/Los_Angeles')",
+        "SELECT MAKE_TIMESTAMP(2019, 7, 10, 2, 3, 4 + (123456000 / 1000000000.0)) AT TIME ZONE 'America/Los_Angeles'",
+        TIMESTAMPTZ,
+      ),
+      (
+        "SELECT TIMESTAMP_FROM_PARTS(2019, 1, 10, 2, 3, 4, ns, tz) FROM (VALUES (123456000, 'America/Los_Angeles'), (NULL, 'UTC'), (0, NULL)) AS t(ns, tz)",
+        "SELECT MAKE_TIMESTAMP(2019, 1, 10, 2, 3, 4 + (ns / 1000000000.0)) AT TIME ZONE tz FROM (VALUES (123456000, 'America/Los_Angeles'), (NULL, 'UTC'), (0, NULL)) AS t(ns, tz)",
+        TIMESTAMPTZ,
+      ),
+      (
+        "SELECT TIMESTAMP_FROM_PARTS(2019, 1, 10, 2, 3, 4, 123456000)",
+        "SELECT MAKE_TIMESTAMP(2019, 1, 10, 2, 3, 4 + (123456000 / 1000000000.0))",
+        TIMESTAMP,
+      ),
+    ] {
     let (source, target, dtype) = case
     for pair in [("snowflake", source), ("duckdb", target)] {
       let (dialect, sql) = pair
@@ -185,7 +199,10 @@ test "TestDuckDB.test_timestamp_from_parts" {
         parse_one(sql, read=dialect),
         dialect=@sqlglot.dialect(dialect),
       )
-      t.eq_expr(expression.selects()[0].get_type(), Some(@core.datatype_of(dtype)))
+      t.eq_expr(
+        expression.selects()[0].get_type(),
+        Some(@core.datatype_of(dtype)),
+      )
     }
   }
   t.done()
@@ -205,7 +222,10 @@ test "TestDuckDB.test_iceberg_property_no_warning" {
 ///|
 test "TestDuckDB.test_non_iceberg_property_still_warns" {
   let t = t(dialect="duckdb")
-  let expression = parse_one("CREATE TRANSIENT TABLE t (a INT)", read="snowflake")
+  let expression = parse_one(
+    "CREATE TRANSIENT TABLE t (a INT)",
+    read="snowflake",
+  )
   let output = t.assert_logs(() => {
     t.eq(sql(expression, dialect="duckdb"), "CREATE TABLE t (a INT)")
   })
@@ -218,7 +238,11 @@ test "TestDuckDB.test_ignore_nulls" {
   let t = t(dialect="duckdb")
   // DuckDB.Generator.IGNORE_RESPECT_NULLS_WINDOW_FUNCTIONS
   let window_funcs : Array[@core.Kind] = [
-    FirstValue, Lag, LastValue, Lead, NthValue,
+    FirstValue,
+    Lag,
+    LastValue,
+    Lead,
+    NthValue,
   ]
   let agg_funcs : Array[@core.Kind] = [Sum, Max, Min]
   for func_type in window_funcs + agg_funcs {
@@ -230,7 +254,10 @@ test "TestDuckDB.test_ignore_nulls" {
     } else {
       let output = t.assert_logs(() => {
         t.eq(sql(ignore_null, dialect="duckdb"), sql(func, dialect="duckdb"))
-        t.not_contains(sql(windowed_ignore_null, dialect="duckdb"), "IGNORE NULLS")
+        t.not_contains(
+          sql(windowed_ignore_null, dialect="duckdb"),
+          "IGNORE NULLS",
+        )
       })
       t.eq(
         output[0],
@@ -255,9 +282,11 @@ test "TestDuckDB.test_install" {
 test "TestDuckDB.test_udf" {
   let t = t(dialect="duckdb")
   for keyword in ["FUNCTION", "MACRO"] {
-    t.validate_identity(
+    t
+    .validate_identity(
       "CREATE \{keyword} my_table_function(a, b) AS TABLE SELECT x, y FROM (VALUES (a, b)) AS tbl(x, y)",
-    ).assert_is(Create)
+    )
+    .assert_is(Create)
     |> ignore
   }
   let overloaded = t.validate_identity(
@@ -353,10 +382,11 @@ test "TestDuckDB.test_map_insert" {
 ///|
 test "TestDuckDB.test_show_tables" {
   let t = t(dialect="duckdb")
-  for sql in [
-    "SHOW TABLES", "SHOW TABLES FROM my_schema", "SHOW TABLES FROM my_database",
-    "SHOW TABLES FROM my_database.my_schema", "SHOW ALL TABLES",
-  ] {
+  for
+    sql in [
+      "SHOW TABLES", "SHOW TABLES FROM my_schema", "SHOW TABLES FROM my_database",
+      "SHOW TABLES FROM my_database.my_schema", "SHOW ALL TABLES",
+    ] {
     t.is_a(Some(t.validate_identity(sql)), Show) |> ignore
   }
   t.done()

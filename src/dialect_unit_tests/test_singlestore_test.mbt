@@ -23,7 +23,8 @@ test "TestSingleStore.test_singlestore" {
 ///|
 test "TestSingleStore.test_json" {
   let t = t(dialect="singlestore")
-  t.validate_identity("JSON_BUILD_ARRAY(id, name)").assert_is(JSONArray) |> ignore
+  t.validate_identity("JSON_BUILD_ARRAY(id, name)").assert_is(JSONArray)
+  |> ignore
   t.validate_identity("JSON_BUILD_OBJECT('name', name)").assert_is(JSONObject)
   |> ignore
   t.done()
@@ -32,11 +33,14 @@ test "TestSingleStore.test_json" {
 ///|
 test "TestSingleStore.test_match_against" {
   let t = t(dialect="singlestore")
-  for sql_ in [
-    "SELECT MATCH(name) AGAINST('search term') FROM products", "SELECT MATCH(name, name) AGAINST('book') FROM products",
-    "SELECT MATCH(TABLE products2) AGAINST('search term') FROM products2",
-  ] {
-    t.run(() => t.validate_identity(sql_).expressions()[0].assert_is(MatchAgainst))
+  for
+    sql_ in [
+      "SELECT MATCH(name) AGAINST('search term') FROM products", "SELECT MATCH(name, name) AGAINST('book') FROM products",
+      "SELECT MATCH(TABLE products2) AGAINST('search term') FROM products2",
+    ] {
+    t.run(() => {
+      t.validate_identity(sql_).expressions()[0].assert_is(MatchAgainst)
+    })
     |> ignore
   }
   t.done()

@@ -17,10 +17,9 @@ fn d_schema(json : String, dialect? : String) -> @optimizer.MappingSchema raise 
 /// The values of Python's `Dialects` enum, in definition order.
 let d_python_dialects : Array[String] = [
   "", "athena", "bigquery", "clickhouse", "databricks", "dax", "doris", "dremio",
-  "drill", "druid", "duckdb", "dune", "fabric", "hive", "materialize", "mysql",
-  "oracle", "postgres", "presto", "prql", "redshift", "risingwave", "snowflake",
-  "solr", "spark", "spark2", "sqlite", "starrocks", "tableau", "teradata", "trino",
-  "tsql", "exasol",
+  "drill", "druid", "duckdb", "dune", "fabric", "hive", "materialize", "mysql", "oracle",
+  "postgres", "presto", "prql", "redshift", "risingwave", "snowflake", "solr", "spark",
+  "spark2", "sqlite", "starrocks", "tableau", "teradata", "trino", "tsql", "exasol",
 ]
 
 ///|

@@ -67,9 +67,10 @@ test "TestPostgres.test_postgres" {
 test "TestPostgres.test_ddl" {
   let t = t(dialect="postgres")
   // user-defined types are parsed into DataType instead of Identifier
-  t.parse_one("CREATE TABLE t (a udt)").this_().expressions()[0].arg("kind").unwrap().assert_is(
-    DataType,
-  )
+  t.parse_one("CREATE TABLE t (a udt)").this_().expressions()[0]
+  .arg("kind")
+  .unwrap()
+  .assert_is(DataType)
   |> ignore
   let create_type = t
     .validate_identity("CREATE TYPE mood AS ENUM ('sad', 'ok', 'happy')")
@@ -82,9 +83,9 @@ test "TestPostgres.test_ddl" {
     )
     .assert_is(Create)
   create_type.expression_().assert_is(Schema) |> ignore
-  t.validate_identity("CREATE TYPE public.mood AS ENUM ('sad', 'ok')").assert_is(
-    Create,
-  )
+  t
+  .validate_identity("CREATE TYPE public.mood AS ENUM ('sad', 'ok')")
+  .assert_is(Create)
   |> ignore
   // OID is parsed into a DataType (ObjectIdentifier)
   t.ok(
@@ -104,22 +105,26 @@ test "TestPostgres.test_ddl" {
   .assert_is(Create)
   |> ignore
   t.raises(
-    () => ignore(
-      @sqlglot.transpile(
-        "CREATE TABLE products (price DECIMAL CHECK price > 0)",
-        read="postgres",
-      ),
-    ),
+    () => {
+      ignore(
+        @sqlglot.transpile(
+          "CREATE TABLE products (price DECIMAL CHECK price > 0)",
+          read="postgres",
+        ),
+      )
+    },
     "ParseError",
   )
   |> ignore
   t.raises(
-    () => ignore(
-      @sqlglot.transpile(
-        "CREATE TABLE products (price DECIMAL, CHECK price > 1)",
-        read="postgres",
-      ),
-    ),
+    () => {
+      ignore(
+        @sqlglot.transpile(
+          "CREATE TABLE products (price DECIMAL, CHECK price > 1)",
+          read="postgres",
+        ),
+      )
+    },
     "ParseError",
   )
   |> ignore
@@ -130,11 +135,11 @@ test "TestPostgres.test_ddl" {
 test "TestPostgres.test_called_on_null_input_malformed" {
   let t = t(dialect="postgres")
   // a malformed property suffix must raise a ParseError (no zero-progress loop)
-  for sql in [
-    "CREATE FUNCTION f() RETURNS INT LANGUAGE SQL CALLED XYZ AS 'SELECT 1'",
-    "CREATE FUNCTION f() RETURNS INT LANGUAGE SQL PARTITION XYZ AS 'SELECT 1'",
-    "CREATE FUNCTION f() RETURNS INT LANGUAGE SQL COPY XYZ AS 'SELECT 1'",
-  ] {
+  for
+    sql in [
+      "CREATE FUNCTION f() RETURNS INT LANGUAGE SQL CALLED XYZ AS 'SELECT 1'", "CREATE FUNCTION f() RETURNS INT LANGUAGE SQL PARTITION XYZ AS 'SELECT 1'",
+      "CREATE FUNCTION f() RETURNS INT LANGUAGE SQL COPY XYZ AS 'SELECT 1'",
+    ] {
     t.raises(() => ignore(t.parse_one(sql)), "ParseError") |> ignore
   }
   t.done()
@@ -153,10 +158,8 @@ test "TestPostgres.test_array_offset" {
     })
   })
   t.eq(output, [
-    "INFO:sqlglot:Applying array index offset (-1)",
-    "INFO:sqlglot:Applying array index offset (1)",
-    "INFO:sqlglot:Applying array index offset (1)",
-    "INFO:sqlglot:Applying array index offset (1)",
+    "INFO:sqlglot:Applying array index offset (-1)", "INFO:sqlglot:Applying array index offset (1)",
+    "INFO:sqlglot:Applying array index offset (1)", "INFO:sqlglot:Applying array index offset (1)",
   ])
   t.done()
 }
@@ -175,21 +178,25 @@ test "TestPostgres.test_extract_date_parts" {
   for part in ["DAY", "MONTH", "YEAR"] {
     // date input
     t.eqf(
-      () => sql(
-        a_annotate(parse_one("SELECT \{part}(CAST(x AS DATE))", read="tsql")),
-        dialect="postgres",
-      ),
+      () => {
+        sql(
+          a_annotate(parse_one("SELECT \{part}(CAST(x AS DATE))", read="tsql")),
+          dialect="postgres",
+        )
+      },
       "SELECT EXTRACT(\{part} FROM CAST(x AS DATE))",
     )
     // integer input
     t.eqf(
-      () => sql(
-        a_annotate(
-          parse_one("SELECT \{part}(t.col) FROM t", read="tsql"),
-          schema="{\"t\": {\"col\": \"int\"}}",
-        ),
-        dialect="postgres",
-      ),
+      () => {
+        sql(
+          a_annotate(
+            parse_one("SELECT \{part}(t.col) FROM t", read="tsql"),
+            schema="{\"t\": {\"col\": \"int\"}}",
+          ),
+          dialect="postgres",
+        )
+      },
       "SELECT EXTRACT(\{part} FROM CAST('1900-01-01' AS DATE) + t.col) FROM t",
     )
   }
@@ -239,10 +246,11 @@ test "TestPostgres.test_preserve_is_not_null" {
 ///|
 test "TestPostgres.test_udt" {
   let t = t(dialect="postgres")
-  for sql_ in [
-    "CAST(5 AS MyType)", "CAST(5 AS \"MyType\")", "CAST(5 AS MySchema.MyType)", "CAST(5 AS \"MySchema\".\"MyType\")",
-    "CAST(5 AS MySchema.\"MyType\")", "CAST(5 AS \"MyCatalog\".\"MySchema\".\"MyType\")",
-  ] {
+  for
+    sql_ in [
+      "CAST(5 AS MyType)", "CAST(5 AS \"MyType\")", "CAST(5 AS MySchema.MyType)",
+      "CAST(5 AS \"MySchema\".\"MyType\")", "CAST(5 AS MySchema.\"MyType\")", "CAST(5 AS \"MyCatalog\".\"MySchema\".\"MyType\")",
+    ] {
     t.run(() => t.validate_identity(sql_).arg("to").unwrap().assert_is(DataType))
     |> ignore
   }
@@ -253,10 +261,11 @@ test "TestPostgres.test_udt" {
 test "TestPostgres.test_begin_transaction" {
   let t = t(dialect="postgres")
   for keyword in ["TRANSACTION", "WORK"] {
-    for level in [
-      "ISOLATION LEVEL SERIALIZABLE", "ISOLATION LEVEL READ COMMITTED", "NOT DEFFERABLE", "READ WRITE",
-      "DEFERRABLE",
-    ] {
+    for
+      level in [
+        "ISOLATION LEVEL SERIALIZABLE", "ISOLATION LEVEL READ COMMITTED", "NOT DEFFERABLE",
+        "READ WRITE", "DEFERRABLE",
+      ] {
       t.run(() => {
         t
         .validate_identity(

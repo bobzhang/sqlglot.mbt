@@ -5,7 +5,10 @@
 test "TestSpark.test_spark" {
   let t = t(dialect="spark")
   t.eq(
-    sql(parse_one("REFRESH TABLE t", read="spark").assert_is(Refresh), dialect="spark"),
+    sql(
+      parse_one("REFRESH TABLE t", read="spark").assert_is(Refresh),
+      dialect="spark",
+    ),
     "REFRESH TABLE t",
   )
   // Spark TRUNC is date-only, should parse to DateTrunc (not numeric Trunc)
@@ -18,26 +21,36 @@ test "TestSpark.test_grouping_sets_as_group_by_element" {
   let t = t(dialect="spark")
   let suffix_sql = "SELECT COUNT(1), d, h FROM t GROUP BY d, h GROUPING SETS ((d, h), (d))"
   let element_sql = "SELECT COUNT(1), d, h FROM t GROUP BY d, h, GROUPING SETS ((d, h), (d))"
-  for case in [
-    (suffix_sql, true),
-    (element_sql, false),
-    ("SELECT a FROM t GROUP BY a, GROUPING SETS ((a)), GROUPING SETS ((a))", false),
-    ("SELECT COUNT(1), d, h FROM t GROUP BY GROUPING SETS ((d, h), (d))", false),
-  ] {
+  for
+    case in [
+      (suffix_sql, true),
+      (element_sql, false),
+      (
+        "SELECT a FROM t GROUP BY a, GROUPING SETS ((a)), GROUPING SETS ((a))", false,
+      ),
+      (
+        "SELECT COUNT(1), d, h FROM t GROUP BY GROUPING SETS ((d, h), (d))", false,
+      ),
+    ] {
     let (sql, is_suffix) = case
     let group = t.validate_identity(sql).arg("group").unwrap()
     t.eq(
       group.get("grouping_sets").map(v => v.truthy()).unwrap_or(false),
       is_suffix,
     )
-    t.eq(group.expressions().iter().any(e => e.kind == GroupingSets), !is_suffix)
+    t.eq(
+      group.expressions().iter().any(e => e.kind == GroupingSets),
+      !is_suffix,
+    )
   }
   t.raises(
-    () => ignore(
-      t.parse_one(
-        "SELECT a FROM t GROUP BY a GROUPING SETS ((a)), GROUPING SETS ((a))",
-      ),
-    ),
+    () => {
+      ignore(
+        t.parse_one(
+          "SELECT a FROM t GROUP BY a GROUPING SETS ((a)), GROUPING SETS ((a))",
+        ),
+      )
+    },
     "ParseError",
   )
   |> ignore
@@ -53,7 +66,9 @@ test "TestSpark.test_grouping_sets_as_group_by_element" {
     element_sql,
   )
   t.raises(
-    () => ignore(sql(suffix_expression, dialect="trino", unsupported_level=Raise)),
+    () => {
+      ignore(sql(suffix_expression, dialect="trino", unsupported_level=Raise))
+    },
     "UnsupportedError",
   )
   |> ignore

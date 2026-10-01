@@ -2,7 +2,10 @@
 
 ///|
 /// A `MappingSchema` from a JSON mapping (Python dict) in `dialect`.
-fn a_schema(json : String, dialect? : String = "") -> @optimizer.MappingSchema raise {
+fn a_schema(
+  json : String,
+  dialect? : String = "",
+) -> @optimizer.MappingSchema raise {
   @optimizer.MappingSchema::new(
     schema=@optimizer.schema_from_json_string(json),
     dialect=@sqlglot.dialect(dialect),

@@ -85,7 +85,10 @@ test "TestPresto.test_json_vs_row_extract" {
     // Snowflake VARIANT generates JSON_EXTRACT() in Presto/Trino by default
     let json_extract_result = "SELECT JSON_EXTRACT(col, '$.x.y[\"special string\"]')"
     t.eqf(() => sql(s, dialect~), json_extract_result)
-    t.eqf(() => sql(s, dialect=dialect_json_extract_setting), json_extract_result)
+    t.eqf(
+      () => sql(s, dialect=dialect_json_extract_setting),
+      json_extract_result,
+    )
     // overridden to False: ROW access (dot notation)
     t.eqf(
       () => sql(s, dialect=dialect_row_access_setting),

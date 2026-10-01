@@ -4,19 +4,20 @@
 ///|
 test "TestMySQL.test_show_simple" {
   let t = t(dialect="mysql")
-  for case in [
-    ("BINARY LOGS", "BINARY LOGS"),
-    ("MASTER LOGS", "BINARY LOGS"),
-    ("STORAGE ENGINES", "ENGINES"),
-    ("ENGINES", "ENGINES"),
-    ("EVENTS", "EVENTS"),
-    ("MASTER STATUS", "MASTER STATUS"),
-    ("PLUGINS", "PLUGINS"),
-    ("PRIVILEGES", "PRIVILEGES"),
-    ("PROFILES", "PROFILES"),
-    ("REPLICAS", "REPLICAS"),
-    ("SLAVE HOSTS", "REPLICAS"),
-  ] {
+  for
+    case in [
+      ("BINARY LOGS", "BINARY LOGS"),
+      ("MASTER LOGS", "BINARY LOGS"),
+      ("STORAGE ENGINES", "ENGINES"),
+      ("ENGINES", "ENGINES"),
+      ("EVENTS", "EVENTS"),
+      ("MASTER STATUS", "MASTER STATUS"),
+      ("PLUGINS", "PLUGINS"),
+      ("PRIVILEGES", "PRIVILEGES"),
+      ("PROFILES", "PROFILES"),
+      ("REPLICAS", "REPLICAS"),
+      ("SLAVE HOSTS", "REPLICAS"),
+    ] {
     let (key, write_key) = case
     let show = t.validate_identity("SHOW \{key}", write_sql="SHOW \{write_key}")
     t.ok(show.kind.is_a(Show))
@@ -49,21 +50,22 @@ test "TestMySQL.test_show_events" {
 ///|
 test "TestMySQL.test_show_like_or_where" {
   let t = t(dialect="mysql")
-  for case in [
-    ("CHARSET", "CHARACTER SET"),
-    ("CHARACTER SET", "CHARACTER SET"),
-    ("COLLATION", "COLLATION"),
-    ("DATABASES", "DATABASES"),
-    ("SCHEMAS", "DATABASES"),
-    ("FUNCTION STATUS", "FUNCTION STATUS"),
-    ("PROCEDURE STATUS", "PROCEDURE STATUS"),
-    ("GLOBAL STATUS", "GLOBAL STATUS"),
-    ("SESSION STATUS", "STATUS"),
-    ("STATUS", "STATUS"),
-    ("GLOBAL VARIABLES", "GLOBAL VARIABLES"),
-    ("SESSION VARIABLES", "VARIABLES"),
-    ("VARIABLES", "VARIABLES"),
-  ] {
+  for
+    case in [
+      ("CHARSET", "CHARACTER SET"),
+      ("CHARACTER SET", "CHARACTER SET"),
+      ("COLLATION", "COLLATION"),
+      ("DATABASES", "DATABASES"),
+      ("SCHEMAS", "DATABASES"),
+      ("FUNCTION STATUS", "FUNCTION STATUS"),
+      ("PROCEDURE STATUS", "PROCEDURE STATUS"),
+      ("GLOBAL STATUS", "GLOBAL STATUS"),
+      ("SESSION STATUS", "STATUS"),
+      ("STATUS", "STATUS"),
+      ("GLOBAL VARIABLES", "GLOBAL VARIABLES"),
+      ("SESSION VARIABLES", "VARIABLES"),
+      ("VARIABLES", "VARIABLES"),
+    ] {
     let (key, write_key) = case
     // write_key.strip("GLOBAL").strip()
     let expected_name = @core.py_strip(@core.strip_chars(write_key, "GLOBAL"))
@@ -111,10 +113,11 @@ test "TestMySQL.test_show_columns" {
 ///|
 test "TestMySQL.test_show_name" {
   let t = t(dialect="mysql")
-  for key in [
-    "CREATE DATABASE", "CREATE EVENT", "CREATE FUNCTION", "CREATE PROCEDURE", "CREATE TABLE",
-    "CREATE TRIGGER", "CREATE VIEW", "FUNCTION CODE", "PROCEDURE CODE",
-  ] {
+  for
+    key in [
+      "CREATE DATABASE", "CREATE EVENT", "CREATE FUNCTION", "CREATE PROCEDURE", "CREATE TABLE",
+      "CREATE TRIGGER", "CREATE VIEW", "FUNCTION CODE", "PROCEDURE CODE",
+    ] {
     let show = t.validate_identity("SHOW \{key} foo")
     t.ok(show.kind.is_a(Show))
     t.eq(show.name(), key)
@@ -126,9 +129,10 @@ test "TestMySQL.test_show_name" {
 ///|
 test "TestMySQL.test_show_create_qualified" {
   let t = t(dialect="mysql")
-  for key in [
-    "CREATE TABLE", "CREATE VIEW", "CREATE FUNCTION", "CREATE PROCEDURE",
-  ] {
+  for
+    key in [
+      "CREATE TABLE", "CREATE VIEW", "CREATE FUNCTION", "CREATE PROCEDURE",
+    ] {
     let show = t.validate_identity("SHOW \{key} db_name.foo")
     t.ok(show.kind.is_a(Show))
     t.eq(show.text("db"), "db_name")
@@ -387,7 +391,8 @@ test "TestMySQL.test_mod" {
   let t = t(dialect="mysql")
   t.is_a(Some(t.validate_identity("x % y")), Mod) |> ignore
   t.is_a(Some(t.validate_identity("x MOD y", write_sql="x % y")), Mod) |> ignore
-  t.is_a(Some(t.validate_identity("MOD(x, y)", write_sql="x % y")), Mod) |> ignore
+  t.is_a(Some(t.validate_identity("MOD(x, y)", write_sql="x % y")), Mod)
+  |> ignore
   t.done()
 }
 
@@ -397,7 +402,9 @@ test "TestMySQL.test_numeric_trunc" {
   t.is_a(Some(t.validate_identity("TRUNCATE(3.14159, 2)")), Trunc) |> ignore
   t.is_a(Some(t.validate_identity("TRUNCATE(price, 0)")), Trunc) |> ignore
   t.is_a(
-    Some(t.validate_identity("TRUNC(3.14159, 2)", write_sql="TRUNCATE(3.14159, 2)")),
+    Some(
+      t.validate_identity("TRUNC(3.14159, 2)", write_sql="TRUNCATE(3.14159, 2)"),
+    ),
     Trunc,
   )
   |> ignore

@@ -6,14 +6,19 @@
 test "TestDialect.test_enum" {
   let t = t()
   // the values of Python's `Dialects` enum
-  for dialect in [
-    "", "athena", "bigquery", "clickhouse", "databricks", "dax", "doris", "dremio", "drill",
-    "druid", "duckdb", "dune", "fabric", "hive", "materialize", "mysql", "oracle", "postgres",
-    "presto", "prql", "redshift", "risingwave", "snowflake", "solr", "spark", "spark2", "sqlite",
-    "starrocks", "tableau", "teradata", "trino", "tsql", "exasol",
-  ] {
+  for
+    dialect in [
+      "", "athena", "bigquery", "clickhouse", "databricks", "dax", "doris", "dremio",
+      "drill", "druid", "duckdb", "dune", "fabric", "hive", "materialize", "mysql",
+      "oracle", "postgres", "presto", "prql", "redshift", "risingwave", "snowflake",
+      "solr", "spark", "spark2", "sqlite", "starrocks", "tableau", "teradata", "trino",
+      "tsql", "exasol",
+    ] {
     // Dialect[dialect], Dialect.get(dialect)
-    t.ok(@core.get_dialect(dialect) is Some(_), msg="Dialect[\{dialect}] is None")
+    t.ok(
+      @core.get_dialect(dialect) is Some(_),
+      msg="Dialect[\{dialect}] is None",
+    )
     t.ok(
       (try? @core.Dialect::get_or_raise(dialect)) is Ok(_),
       msg="get_or_raise(\{dialect}) failed",
@@ -84,9 +89,13 @@ test "TestDialect.test_get_or_raise" {
     "s5": "nonbool",
   })
   t.raises(
-    () => ignore(
-      @core.Dialect::get_or_raise("tsql,normalisation_strategy=case_sensitive"),
-    ),
+    () => {
+      ignore(
+        @core.Dialect::get_or_raise(
+          "tsql,normalisation_strategy=case_sensitive",
+        ),
+      )
+    },
     "ValueError",
     message="Unknown setting 'normalisation_strategy'. Did you mean normalization_strategy?",
   )
@@ -122,9 +131,9 @@ test "TestDialect.test_compare_dialects" {
   t.ok(!a_dialect_eq_name(snowflake_class, bigquery_string))
   t.ok(snowflake_object != bigquery_object)
   t.ok(!a_dialect_eq_name(snowflake_object, bigquery_string))
-  let in_set = (d : @core.Dialect, names : Array[String]) => names
-    .iter()
-    .any(n => a_dialect_eq_name(d, n))
+  let in_set = (d : @core.Dialect, names : Array[String]) => {
+    names.iter().any(n => a_dialect_eq_name(d, n))
+  }
   t.ok(in_set(snowflake_class, ["snowflake", "bigquery"]))
   t.ok(in_set(snowflake_object, ["snowflake", "bigquery"]))
   t.ok(!in_set(snowflake_class, ["bigquery", "redshift"]))
@@ -152,17 +161,22 @@ test "TestDialect.test_compare_dialect_versions" {
 test "TestDialect.test_decimal_literals" {
   let t = t()
   for dialect in ["hive", "spark2", "spark", "databricks"] {
-    for case in [
-      ("10.50", "DECIMAL(3, 1)", "DECIMAL(4, 2)"),
-      ("0", "DECIMAL(1, 0)", "DECIMAL(1, 0)"),
-      ("0.00", "DECIMAL(1, 0)", "DECIMAL(2, 2)"),
-      ("0.01", "DECIMAL(2, 2)", "DECIMAL(2, 2)"),
-      ("0001.50", "DECIMAL(2, 1)", "DECIMAL(3, 2)"),
-      ("1E-18", "DECIMAL(18, 18)", "DECIMAL(18, 18)"),
-      ("1.234567890123456789E2", "DECIMAL(19, 16)", "DECIMAL(19, 16)"),
-      ("12345678901234567890.123456789012345678", "DECIMAL(38, 18)", "DECIMAL(38, 18)"),
-      ("12345678901234567890.123456789012345670", "DECIMAL(37, 17)", "DECIMAL(38, 18)"),
-    ] {
+    for
+      case in [
+        ("10.50", "DECIMAL(3, 1)", "DECIMAL(4, 2)"),
+        ("0", "DECIMAL(1, 0)", "DECIMAL(1, 0)"),
+        ("0.00", "DECIMAL(1, 0)", "DECIMAL(2, 2)"),
+        ("0.01", "DECIMAL(2, 2)", "DECIMAL(2, 2)"),
+        ("0001.50", "DECIMAL(2, 1)", "DECIMAL(3, 2)"),
+        ("1E-18", "DECIMAL(18, 18)", "DECIMAL(18, 18)"),
+        ("1.234567890123456789E2", "DECIMAL(19, 16)", "DECIMAL(19, 16)"),
+        (
+          "12345678901234567890.123456789012345678", "DECIMAL(38, 18)", "DECIMAL(38, 18)",
+        ),
+        (
+          "12345678901234567890.123456789012345670", "DECIMAL(37, 17)", "DECIMAL(38, 18)",
+        ),
+      ] {
       let (literal, hive_type, spark_type) = case
       let data_type = if dialect == "hive" { hive_type } else { spark_type }
       for sign in ["", "-", "+"] {
@@ -187,14 +201,15 @@ test "TestDialect.test_decimal_literals" {
     } else {
       "DECIMAL(4, 2)"
     }
-    for case in [
-      ("CAST(10.50 AS DECIMAL)", "CAST(10.50 AS DECIMAL)"),
-      ("10.50::DECIMAL", "CAST(10.50 AS DECIMAL)"),
-      (
-        "CAST(10.50BD AS DECIMAL)",
-        "CAST(CAST('10.50' AS \{data_type}) AS DECIMAL)",
-      ),
-    ] {
+    for
+      case in [
+        ("CAST(10.50 AS DECIMAL)", "CAST(10.50 AS DECIMAL)"),
+        ("10.50::DECIMAL", "CAST(10.50 AS DECIMAL)"),
+        (
+          "CAST(10.50BD AS DECIMAL)",
+          "CAST(CAST('10.50' AS \{data_type}) AS DECIMAL)",
+        ),
+      ] {
       let (sql_, expected) = case
       t.eqf(() => sql(parse_one(sql_, read=dialect), dialect~), expected)
     }
@@ -205,16 +220,24 @@ test "TestDialect.test_decimal_literals" {
 ///|
 test "TestDialect.test_spark2_negative_scale_decimal_literals" {
   let t = t()
-  for case in [("1E3", 1, -3), ("0E3", 1, -3), ("1.20E3", 3, -1), ("1E38", 1, -38)] {
+  for
+    case in [
+      ("1E3", 1, -3),
+      ("0E3", 1, -3),
+      ("1.20E3", 3, -1),
+      ("1E38", 1, -38),
+    ] {
     let (literal, precision, scale) = case
     let expression = parse_one("\{literal}BD", read="spark2")
     t.eq(sql(expression, dialect="spark2"), "\{literal}BD")
     t.eqf(
-      () => expression
+      () => {
+        expression
         .arg("to")
         .unwrap()
         .expressions()
-        .map(parameter => parameter.this_().to_py().py_repr()),
+        .map(parameter => parameter.this_().to_py().py_repr())
+      },
       ["\{precision}", "\{scale}"],
     )
   }
@@ -247,15 +270,19 @@ test "TestDialect.test_heredoc_strings" {
   for dialect in ["clickhouse", "postgres", "redshift"] {
     // invalid matching tag
     t.raises(
-      () => ignore(
-        parse_one("SELECT $tag1$invalid heredoc string$tag2$", read=dialect),
-      ),
+      () => {
+        ignore(
+          parse_one("SELECT $tag1$invalid heredoc string$tag2$", read=dialect),
+        )
+      },
       "TokenError",
     )
     |> ignore
     // unmatched tag
     t.raises(
-      () => ignore(parse_one("SELECT $tag1$invalid heredoc string", read=dialect)),
+      () => {
+        ignore(parse_one("SELECT $tag1$invalid heredoc string", read=dialect))
+      },
       "TokenError",
     )
     |> ignore
@@ -279,10 +306,11 @@ test "TestDialect.test_array" {
     )
   }
   // array creation semantics: array-creating dialects -> NULL-propagating dialects
-  for case in [
-    ("duckdb", "LIST_APPEND(arr, x)"),
-    ("postgres", "ARRAY_APPEND(arr, x)"),
-  ] {
+  for
+    case in [
+      ("duckdb", "LIST_APPEND(arr, x)"),
+      ("postgres", "ARRAY_APPEND(arr, x)"),
+    ] {
     let (source_dialect, source_sql) = case
     let expr = parse_one(source_sql, read=source_dialect)
     t.eq(sql(expr, dialect="snowflake"), "ARRAY_APPEND(COALESCE(arr, []), x)")
@@ -293,13 +321,14 @@ test "TestDialect.test_array" {
     t.eq(sql(expr, dialect="spark"), "ARRAY_APPEND(COALESCE(arr, ARRAY()), x)")
   }
   // identity transpilation (no wrappers)
-  for case in [
-    ("duckdb", "LIST_APPEND(arr, x)"),
-    ("postgres", "ARRAY_APPEND(arr, x)"),
-    ("snowflake", "ARRAY_APPEND(arr, x)"),
-    ("databricks", "ARRAY_APPEND(arr, x)"),
-    ("spark", "ARRAY_APPEND(arr, x)"),
-  ] {
+  for
+    case in [
+      ("duckdb", "LIST_APPEND(arr, x)"),
+      ("postgres", "ARRAY_APPEND(arr, x)"),
+      ("snowflake", "ARRAY_APPEND(arr, x)"),
+      ("databricks", "ARRAY_APPEND(arr, x)"),
+      ("spark", "ARRAY_APPEND(arr, x)"),
+    ] {
     let (dialect, sql_) = case
     t.eqf(() => sql(parse_one(sql_, read=dialect), dialect~), sql_)
   }
@@ -316,10 +345,11 @@ test "TestDialect.test_array" {
     )
   }
   // ARRAY_PREPEND array creation
-  for case in [
-    ("duckdb", "LIST_PREPEND(x, arr)"),
-    ("postgres", "ARRAY_PREPEND(x, arr)"),
-  ] {
+  for
+    case in [
+      ("duckdb", "LIST_PREPEND(x, arr)"),
+      ("postgres", "ARRAY_PREPEND(x, arr)"),
+    ] {
     let (source_dialect, source_sql) = case
     let expr = parse_one(source_sql, read=source_dialect)
     t.eq(sql(expr, dialect="snowflake"), "ARRAY_PREPEND(COALESCE(arr, []), x)")
@@ -327,27 +357,26 @@ test "TestDialect.test_array" {
       sql(expr, dialect="databricks"),
       "ARRAY_PREPEND(COALESCE(arr, ARRAY()), x)",
     )
-    t.eq(
-      sql(expr, dialect="spark"),
-      "ARRAY_PREPEND(COALESCE(arr, ARRAY()), x)",
-    )
+    t.eq(sql(expr, dialect="spark"), "ARRAY_PREPEND(COALESCE(arr, ARRAY()), x)")
   }
   // ARRAY_PREPEND identity
-  for case in [
-    ("duckdb", "LIST_PREPEND(x, arr)"),
-    ("postgres", "ARRAY_PREPEND(x, arr)"),
-    ("snowflake", "ARRAY_PREPEND(arr, x)"),
-    ("databricks", "ARRAY_PREPEND(arr, x)"),
-    ("spark", "ARRAY_PREPEND(arr, x)"),
-  ] {
+  for
+    case in [
+      ("duckdb", "LIST_PREPEND(x, arr)"),
+      ("postgres", "ARRAY_PREPEND(x, arr)"),
+      ("snowflake", "ARRAY_PREPEND(arr, x)"),
+      ("databricks", "ARRAY_PREPEND(arr, x)"),
+      ("spark", "ARRAY_PREPEND(arr, x)"),
+    ] {
     let (dialect, sql_) = case
     t.eqf(() => sql(parse_one(sql_, read=dialect), dialect~), sql_)
   }
   // ARRAY_CAT NULL propagation
-  for case in [
-    ("snowflake", "ARRAY_CAT(arr1, arr2)"),
-    ("redshift", "ARRAY_CONCAT(arr1, arr2)"),
-  ] {
+  for
+    case in [
+      ("snowflake", "ARRAY_CAT(arr1, arr2)"),
+      ("redshift", "ARRAY_CONCAT(arr1, arr2)"),
+    ] {
     let (source_dialect, source_sql) = case
     let expr = parse_one(source_sql, read=source_dialect)
     t.eq(
@@ -360,10 +389,11 @@ test "TestDialect.test_array" {
     )
   }
   // ARRAY_CAT NULL skipping
-  for case in [
-    ("duckdb", "LIST_CONCAT(arr1, arr2)"),
-    ("postgres", "ARRAY_CAT(arr1, arr2)"),
-  ] {
+  for
+    case in [
+      ("duckdb", "LIST_CONCAT(arr1, arr2)"),
+      ("postgres", "ARRAY_CAT(arr1, arr2)"),
+    ] {
     let (source_dialect, source_sql) = case
     let expr = parse_one(source_sql, read=source_dialect)
     t.eq(
@@ -376,24 +406,26 @@ test "TestDialect.test_array" {
     )
   }
   // ARRAY_CAT identity
-  for case in [
-    ("duckdb", "LIST_CONCAT(arr1, arr2)"),
-    ("postgres", "ARRAY_CAT(arr1, arr2)"),
-    ("snowflake", "ARRAY_CAT(arr1, arr2)"),
-    ("redshift", "ARRAY_CONCAT(arr1, arr2)"),
-  ] {
+  for
+    case in [
+      ("duckdb", "LIST_CONCAT(arr1, arr2)"),
+      ("postgres", "ARRAY_CAT(arr1, arr2)"),
+      ("snowflake", "ARRAY_CAT(arr1, arr2)"),
+      ("redshift", "ARRAY_CONCAT(arr1, arr2)"),
+    ] {
     let (dialect, sql_) = case
     t.eqf(() => sql(parse_one(sql_, read=dialect), dialect~), sql_)
   }
   // ARRAY_CAT with variadic arguments: all arguments are checked
-  for case in [
-    (
-      "snowflake", "ARRAY_CAT(arr1, arr2, arr3)", "CASE WHEN arr1 IS NULL OR arr2 IS NULL OR arr3 IS NULL THEN NULL ELSE LIST_CONCAT(arr1, arr2, arr3) END",
-    ),
-    (
-      "redshift", "ARRAY_CONCAT(arr1, arr2, arr3)", "CASE WHEN arr1 IS NULL OR arr2 IS NULL OR arr3 IS NULL THEN NULL ELSE LIST_CONCAT(arr1, arr2, arr3) END",
-    ),
-  ] {
+  for
+    case in [
+      (
+        "snowflake", "ARRAY_CAT(arr1, arr2, arr3)", "CASE WHEN arr1 IS NULL OR arr2 IS NULL OR arr3 IS NULL THEN NULL ELSE LIST_CONCAT(arr1, arr2, arr3) END",
+      ),
+      (
+        "redshift", "ARRAY_CONCAT(arr1, arr2, arr3)", "CASE WHEN arr1 IS NULL OR arr2 IS NULL OR arr3 IS NULL THEN NULL ELSE LIST_CONCAT(arr1, arr2, arr3) END",
+      ),
+    ] {
     let (source_dialect, source_sql, expected) = case
     t.eqf(
       () => sql(parse_one(source_sql, read=source_dialect), dialect="duckdb"),
@@ -401,16 +433,17 @@ test "TestDialect.test_array" {
     )
   }
   // variadic COALESCE wrapping: all args are wrapped
-  for case in [
-    (
-      "duckdb", "LIST_CONCAT(arr1, arr2, arr3)", "ARRAY_CAT(COALESCE(arr1, []), ARRAY_CAT(COALESCE(arr2, []), COALESCE(arr3, [])))",
-      "ARRAY_CONCAT(COALESCE(arr1, ARRAY()), ARRAY_CONCAT(COALESCE(arr2, ARRAY()), COALESCE(arr3, ARRAY())))",
-    ),
-    (
-      "postgres", "ARRAY_CAT(arr1, arr2, arr3)", "ARRAY_CAT(COALESCE(arr1, []), ARRAY_CAT(COALESCE(arr2, []), COALESCE(arr3, [])))",
-      "ARRAY_CONCAT(COALESCE(arr1, ARRAY()), ARRAY_CONCAT(COALESCE(arr2, ARRAY()), COALESCE(arr3, ARRAY())))",
-    ),
-  ] {
+  for
+    case in [
+      (
+        "duckdb", "LIST_CONCAT(arr1, arr2, arr3)", "ARRAY_CAT(COALESCE(arr1, []), ARRAY_CAT(COALESCE(arr2, []), COALESCE(arr3, [])))",
+        "ARRAY_CONCAT(COALESCE(arr1, ARRAY()), ARRAY_CONCAT(COALESCE(arr2, ARRAY()), COALESCE(arr3, ARRAY())))",
+      ),
+      (
+        "postgres", "ARRAY_CAT(arr1, arr2, arr3)", "ARRAY_CAT(COALESCE(arr1, []), ARRAY_CAT(COALESCE(arr2, []), COALESCE(arr3, [])))",
+        "ARRAY_CONCAT(COALESCE(arr1, ARRAY()), ARRAY_CONCAT(COALESCE(arr2, ARRAY()), COALESCE(arr3, ARRAY())))",
+      ),
+    ] {
     let (source_dialect, source_sql, expected_snowflake, expected_redshift) = case
     let expr = parse_one(source_sql, read=source_dialect)
     t.eq(sql(expr, dialect="snowflake"), expected_snowflake)
@@ -437,7 +470,9 @@ test "TestDialect.test_json" {
   for dialect in ["duckdb", "starrocks"] {
     // json extraction with a digit-prefixed key
     t.eqf(
-      () => sql(parse_one("select '{\"0\": \"v\"}' -> '0'", read=dialect), dialect~),
+      () => {
+        sql(parse_one("select '{\"0\": \"v\"}' -> '0'", read=dialect), dialect~)
+      },
       "SELECT '{\"0\": \"v\"}' -> '0'",
     )
   }
@@ -461,24 +496,25 @@ test "TestDialect.test_typeddiv" {
   let int : @core.DType? = Some(INT)
   let float : @core.DType? = Some(FLOAT)
   let none : @core.DType? = None
-  for case in [
-    (typed_div, (none, none), typed_div_dialect, "a / b"),
-    (typed_div, (none, none), div_dialect, "a / b"),
-    (div, (none, none), typed_div_dialect, "CAST(a AS DOUBLE) / b"),
-    (div, (none, none), div_dialect, "a / b"),
-    (typed_div, (int, int), typed_div_dialect, "a / b"),
-    (typed_div, (int, int), div_dialect, "CAST(a / b AS BIGINT)"),
-    (div, (int, int), typed_div_dialect, "CAST(a AS DOUBLE) / b"),
-    (div, (int, int), div_dialect, "a / b"),
-    (typed_div, (float, float), typed_div_dialect, "a / b"),
-    (typed_div, (float, float), div_dialect, "a / b"),
-    (div, (float, float), typed_div_dialect, "a / b"),
-    (div, (float, float), div_dialect, "a / b"),
-    (typed_div, (int, float), typed_div_dialect, "a / b"),
-    (typed_div, (int, float), div_dialect, "a / b"),
-    (div, (int, float), typed_div_dialect, "a / b"),
-    (div, (int, float), div_dialect, "a / b"),
-  ] {
+  for
+    case in [
+      (typed_div, (none, none), typed_div_dialect, "a / b"),
+      (typed_div, (none, none), div_dialect, "a / b"),
+      (div, (none, none), typed_div_dialect, "CAST(a AS DOUBLE) / b"),
+      (div, (none, none), div_dialect, "a / b"),
+      (typed_div, (int, int), typed_div_dialect, "a / b"),
+      (typed_div, (int, int), div_dialect, "CAST(a / b AS BIGINT)"),
+      (div, (int, int), typed_div_dialect, "CAST(a AS DOUBLE) / b"),
+      (div, (int, int), div_dialect, "a / b"),
+      (typed_div, (float, float), typed_div_dialect, "a / b"),
+      (typed_div, (float, float), div_dialect, "a / b"),
+      (div, (float, float), typed_div_dialect, "a / b"),
+      (div, (float, float), div_dialect, "a / b"),
+      (typed_div, (int, float), typed_div_dialect, "a / b"),
+      (typed_div, (int, float), div_dialect, "a / b"),
+      (div, (int, float), typed_div_dialect, "a / b"),
+      (div, (int, float), div_dialect, "a / b"),
+    ] {
     let (expression, types, dialect, expected) = case
     let expression = expression.copy()
     expression.this_().set_type(types.0.map(@core.datatype_of))
@@ -502,12 +538,13 @@ test "TestDialect.test_safediv" {
   ])
   let safe_div_dialect = "mysql"
   let div_dialect = "snowflake"
-  for case in [
-    (safe_div, safe_div_dialect, "a / b"),
-    (safe_div, div_dialect, "a / NULLIF(b, 0)"),
-    (div, safe_div_dialect, "a / b"),
-    (div, div_dialect, "a / b"),
-  ] {
+  for
+    case in [
+      (safe_div, safe_div_dialect, "a / b"),
+      (safe_div, div_dialect, "a / NULLIF(b, 0)"),
+      (div, safe_div_dialect, "a / b"),
+      (div, div_dialect, "a / b"),
+    ] {
     let (expression, dialect, expected) = case
     t.eqf(() => sql(expression, dialect~), expected)
   }
@@ -537,11 +574,15 @@ test "TestDialect.test_fetch_first_implicit_count" {
 ///|
 test "TestDialect.test_alias" {
   let t = t()
-  for dialect in [
-    "presto", "hive", "postgres", "clickhouse", "bigquery", "snowflake", "duckdb",
-  ] {
+  for
+    dialect in [
+      "presto", "hive", "postgres", "clickhouse", "bigquery", "snowflake", "duckdb",
+    ] {
     // string alias
-    t.raises(() => ignore(parse_one("SELECT 1 'foo'", read=dialect)), "ParseError")
+    t.raises(
+      () => ignore(parse_one("SELECT 1 'foo'", read=dialect)),
+      "ParseError",
+    )
     |> ignore
   }
   t.done()
@@ -568,26 +609,27 @@ test "TestDialect.test_unsupported_null_ordering" {
   let sql_ = "SELECT * FROM t ORDER BY c"
   let sql_nulls_last = "SELECT * FROM t ORDER BY CASE WHEN c IS NULL THEN 1 ELSE 0 END, c"
   let sql_nulls_first = "SELECT * FROM t ORDER BY CASE WHEN c IS NULL THEN 1 ELSE 0 END DESC, c"
-  for case in [
-    (with_last_nulls, false, None, sql_nulls_last),
-    (with_last_nulls, true, None, sql_),
-    (with_last_nulls, false, Some(true), sql_),
-    (with_last_nulls, true, Some(true), sql_nulls_first),
-    (with_last_nulls, false, Some(false), sql_nulls_last),
-    (with_last_nulls, true, Some(false), sql_),
-    (with_small_nulls, false, None, sql_),
-    (with_small_nulls, true, None, sql_),
-    (with_small_nulls, false, Some(true), sql_),
-    (with_small_nulls, true, Some(true), sql_nulls_first),
-    (with_small_nulls, false, Some(false), sql_nulls_last),
-    (with_small_nulls, true, Some(false), sql_),
-    (with_large_nulls, false, None, sql_nulls_last),
-    (with_large_nulls, true, None, sql_nulls_first),
-    (with_large_nulls, false, Some(true), sql_),
-    (with_large_nulls, true, Some(true), sql_nulls_first),
-    (with_large_nulls, false, Some(false), sql_nulls_last),
-    (with_large_nulls, true, Some(false), sql_),
-  ] {
+  for
+    case in [
+      (with_last_nulls, false, None, sql_nulls_last),
+      (with_last_nulls, true, None, sql_),
+      (with_last_nulls, false, Some(true), sql_),
+      (with_last_nulls, true, Some(true), sql_nulls_first),
+      (with_last_nulls, false, Some(false), sql_nulls_last),
+      (with_last_nulls, true, Some(false), sql_),
+      (with_small_nulls, false, None, sql_),
+      (with_small_nulls, true, None, sql_),
+      (with_small_nulls, false, Some(true), sql_),
+      (with_small_nulls, true, Some(true), sql_nulls_first),
+      (with_small_nulls, false, Some(false), sql_nulls_last),
+      (with_small_nulls, true, Some(false), sql_),
+      (with_large_nulls, false, None, sql_nulls_last),
+      (with_large_nulls, true, None, sql_nulls_first),
+      (with_large_nulls, false, Some(true), sql_),
+      (with_large_nulls, true, Some(true), sql_nulls_first),
+      (with_large_nulls, false, Some(false), sql_nulls_last),
+      (with_large_nulls, true, Some(false), sql_),
+    ] {
     let (read_dialect, desc, nulls_first, expected_sql) = case
     let sort_order = if desc { " DESC" } else { "" }
     let null_order = match nulls_first {
@@ -662,20 +704,28 @@ test "TestDialect.test_integer_hex_strings" {
   // hex strings such as 0xCC represent INTEGER values in the read dialects
   let integer_dialects = ["bigquery", "clickhouse"]
   for read_dialect in integer_dialects {
-    for write_dialect in [
-      "", "duckdb", "databricks", "snowflake", "spark", "redshift",
-    ] {
+    for
+      write_dialect in [
+        "", "duckdb", "databricks", "snowflake", "spark", "redshift",
+      ] {
       t.eqf(
-        () => sql(parse_one("SELECT 0xCC", read=read_dialect), dialect=write_dialect),
+        () => {
+          sql(
+            parse_one("SELECT 0xCC", read=read_dialect),
+            dialect=write_dialect,
+          )
+        },
         "SELECT 204",
       )
     }
     for other_integer_dialects in integer_dialects {
       t.eqf(
-        () => sql(
-          parse_one("SELECT 0xCC", read=read_dialect),
-          dialect=other_integer_dialects,
-        ),
+        () => {
+          sql(
+            parse_one("SELECT 0xCC", read=read_dialect),
+            dialect=other_integer_dialects,
+          )
+        },
         "SELECT 0xCC",
       )
     }
@@ -698,12 +748,15 @@ test "TestDialect.test_regexp_replace" {
   let t = t()
   for target_dialect in ["postgres", "duckdb"] {
     // transpilations to Postgres / DuckDB append 'g' (replace all occurrences)
-    for read_dialect in ["", "bigquery", "presto", "trino", "spark", "databricks"] {
+    for
+      read_dialect in ["", "bigquery", "presto", "trino", "spark", "databricks"] {
       t.eqf(
-        () => sql(
-          parse_one("REGEXP_REPLACE('aaa', 'a', 'b')", read=read_dialect),
-          dialect=target_dialect,
-        ),
+        () => {
+          sql(
+            parse_one("REGEXP_REPLACE('aaa', 'a', 'b')", read=read_dialect),
+            dialect=target_dialect,
+          )
+        },
         "REGEXP_REPLACE('aaa', 'a', 'b', 'g')",
       )
     }
@@ -715,7 +768,13 @@ test "TestDialect.test_regexp_replace" {
 test "TestDialect.test_initcap" {
   let t = t()
   let delimiter_chars : Map[String, String] = {}
-  for item in [("", ""), ("bigquery", "bigquery"), ("snowflake", "snowflake"), ("spark", "spark2")] {
+  for
+    item in [
+      ("", ""),
+      ("bigquery", "bigquery"),
+      ("snowflake", "snowflake"),
+      ("spark", "spark2"),
+    ] {
     delimiter_chars[item.0] = @sqlglot.dialect(item.1).cfg.initcap_default_delimiter_chars
   }
   // INITCAP without explicit delimiters
@@ -742,7 +801,12 @@ test "TestDialect.test_initcap" {
         dialect=write_dialect,
       )
       t.eqf(
-        () => sql(parse_one("INITCAP(col)", read=read_dialect), dialect=write_dialect),
+        () => {
+          sql(
+            parse_one("INITCAP(col)", read=read_dialect),
+            dialect=write_dialect,
+          )
+        },
         "INITCAP(col, \{escaped_delimiters})",
       )
     }
@@ -793,7 +857,13 @@ fn T::a_custom_initcap_duckdb_sql(
   for dialect in ["bigquery", "snowflake"] {
     self.run(loc~, () => {
       let expression = parse_one(query, read=dialect)
-      self.a_assert_duckdb_sql(expression, includes~, excludes~, chr_chars~, loc~)
+      self.a_assert_duckdb_sql(
+        expression,
+        includes~,
+        excludes~,
+        chr_chars~,
+        loc~,
+      )
       |> ignore
     })
     |> ignore
@@ -884,9 +954,10 @@ test "TestDialect.test_localtime_and_localtimestamp" {
       |> ignore
     }
   }
-  for dialect in [
-    "tsql", "oracle", "sqlite", "hive", "spark2", "spark", "databricks", "bigquery",
-  ] {
+  for
+    dialect in [
+      "tsql", "oracle", "sqlite", "hive", "spark2", "spark", "databricks", "bigquery",
+    ] {
     for func in ["localtime", "localtimestamp"] {
       // oracle supports localtimestamp but not localtime
       if func == "localtimestamp" && dialect == "oracle" {
@@ -910,7 +981,8 @@ test "TestDialect.test_current_catalog" {
   let t = t()
   let mut sql_ = "SELECT CURRENT_CATALOG"
   let unsupported_dialects = [
-    "bigquery", "mysql", "oracle", "clickhouse", "snowflake", "spark", "databricks", "presto",
+    "bigquery", "mysql", "oracle", "clickhouse", "snowflake", "spark", "databricks",
+    "presto",
   ]
   for dialect in unsupported_dialects {
     // CURRENT_CATALOG as Column
@@ -1010,16 +1082,18 @@ test "TestDialect.test_custom_dialect" {
   let snowflake = @core.get_dialect("snowflake").unwrap()
   let my_dialect = @core.Dialect::subclass(@core.base_dialect(), "mydialect", d => {
     let functions = snowflake.parser_fns.functions.copy()
-    functions["DOUBLE_IT"] = (args, _) => @core.mk(Mul, [
-      ("this", @core.literal_number("2")),
-      (
-        "expression",
-        match args.get(0) {
-          Some(a) => a
-          None => @core.mk0(Null)
-        },
-      ),
-    ])
+    functions["DOUBLE_IT"] = (args, _) => {
+      @core.mk(Mul, [
+        ("this", @core.literal_number("2")),
+        (
+          "expression",
+          match args.get(0) {
+            Some(a) => a
+            None => @core.mk0(Null)
+          },
+        ),
+      ])
+    }
     d.parser_fns.functions = functions
   })
   let result = my_dialect.parse("SELECT DOUBLE_IT(5)")[0].unwrap()
@@ -1043,16 +1117,21 @@ test "TestDialect.test_agg" {
 test "TestDialect.test_order_by" {
   let t = t()
   let order_by_all_sql = "SELECT * FROM t ORDER BY ALL"
-  t.validate_identity(order_by_all_sql).find([Ordered]).unwrap().this_().assert_is(
-    Column,
-  )
+  t
+  .validate_identity(order_by_all_sql)
+  .find([Ordered])
+  .unwrap()
+  .this_()
+  .assert_is(Column)
   |> ignore
   for dialect in ["duckdb", "spark", "databricks"] {
     // ORDER BY ALL
     t.run(() => {
-      parse_one(order_by_all_sql, read=dialect).find([Ordered]).unwrap().this_().assert_is(
-        Var,
-      )
+      parse_one(order_by_all_sql, read=dialect)
+      .find([Ordered])
+      .unwrap()
+      .this_()
+      .assert_is(Var)
       |> ignore
     })
     |> ignore

@@ -4,9 +4,11 @@
 ///|
 test "TestClickhouse.test_clickhouse" {
   let t = t(dialect="clickhouse")
-  t.validate_identity(
+  t
+  .validate_identity(
     "SELECT col.^nested, t.col2.^nested, t.col3.^nested.twice FROM t",
-  ).selects()[0].assert_is(NestedJSONSelect)
+  )
+  .selects()[0].assert_is(NestedJSONSelect)
   |> ignore
   let expr = @optimizer.quote_identifiers(
     t.parse_one("{start_date:String}"),
@@ -19,9 +21,10 @@ test "TestClickhouse.test_clickhouse" {
     let target_type = sql(try_cast.arg("to").unwrap(), dialect="clickhouse")
     t.eq(sql(try_cast, dialect="clickhouse"), "CAST(x AS \{target_type})")
   }
-  for nullable_type in [
-    "INT", "UINT", "BIGINT", "FLOAT", "DOUBLE", "TEXT", "DATE", "UUID",
-  ] {
+  for
+    nullable_type in [
+      "INT", "UINT", "BIGINT", "FLOAT", "DOUBLE", "TEXT", "DATE", "UUID",
+    ] {
     let try_cast = parse_one("TRY_CAST(x AS \{nullable_type})")
     let target_type = sql(
       @sqlglot.datatype_build(nullable_type, dialect="clickhouse"),
@@ -53,24 +56,22 @@ test "TestClickhouse.test_clickhouse" {
   )
   t.ok(modify_order.list("actions")[0].kind.is_a(AlterModifySqlSecurity))
   t.ok(
-    @sqlglot.parse_one(
-      "Tuple(select Int64)",
-      into=DataType,
-      read="clickhouse",
-    ).kind.is_a(DataType),
+    @sqlglot.parse_one("Tuple(select Int64)", into=DataType, read="clickhouse").kind.is_a(
+      DataType,
+    ),
   )
   t.validate_identity("current_timestamp").assert_is(Column) |> ignore
-  t.validate_identity("arrayCompact([1, 1, nan, nan, 2, 3, 3, 3])").assert_is(
-    ArrayCompact,
-  )
+  t
+  .validate_identity("arrayCompact([1, 1, nan, nan, 2, 3, 3, 3])")
+  .assert_is(ArrayCompact)
   |> ignore
   t.validate_identity("arrayConcat([1, 2], [3, 4])").assert_is(ArrayConcat)
   |> ignore
   t.validate_identity("arrayDistinct([1, 2, 2, 3, 1])").assert_is(ArrayDistinct)
   |> ignore
-  t.validate_identity("arrayExcept([1, 2, 3, 2, 4], [3, 5])").assert_is(
-    ArrayExcept,
-  )
+  t
+  .validate_identity("arrayExcept([1, 2, 3, 2, 4], [3, 5])")
+  .assert_is(ArrayExcept)
   |> ignore
   t.done()
 }
@@ -81,11 +82,9 @@ test "TestClickhouse.test_clickhouse_values" {
   let ast = t.parse_one("SELECT * FROM VALUES (1, 2, 3)")
   t.eq(ast.find_all([Tuple]).collect().length(), 4)
   let values = @sqlglot.select(["*"]).from_(
-    @sqlglot.values(
-      [@core.PyExpr(@sqlglot.tuple_([1, 2, 3]))],
-      alias="subq",
-      columns=["a", "b", "c"],
-    ),
+    @sqlglot.values([@core.PyExpr(@sqlglot.tuple_([1, 2, 3]))], alias="subq", columns=[
+      "a", "b", "c",
+    ]),
   )
   t.eq(
     sql(values, dialect="clickhouse"),
@@ -97,16 +96,16 @@ test "TestClickhouse.test_clickhouse_values" {
 ///|
 test "TestClickhouse.test_cte" {
   let t = t(dialect="clickhouse")
-  let query = parse_one("WITH (SELECT 1) AS y SELECT * FROM y", read="clickhouse")
+  let query = parse_one(
+    "WITH (SELECT 1) AS y SELECT * FROM y",
+    read="clickhouse",
+  )
   let cte = query.arg("with_").unwrap().expressions()[0]
   t.ok(cte.this_().kind.is_a(Subquery))
   t.eq(cte.alias(), "y")
   let query = "WITH 1 AS var SELECT var"
   for error_level in [@core.ErrorLevel::Ignore, Raise, Immediate] {
-    t.eqf(
-      () => sql(t.parse_one(query, error_level~), dialect=t.dialect),
-      query,
-    )
+    t.eqf(() => sql(t.parse_one(query, error_level~), dialect=t.dialect), query)
   }
   t.done()
 }
@@ -123,9 +122,10 @@ test "TestClickhouse.test_ternary" {
   t.ok(nested_ternary.this_().kind.is_a(Column))
   t.ok(nested_ternary.arg("true").unwrap().kind.is_a(Literal))
   t.ok(nested_ternary.arg("false").unwrap().kind.is_a(Literal))
-  parse_one("a and b ? 1 : 2", read="clickhouse").assert_is(If).this_().assert_is(
-    And,
-  )
+  parse_one("a and b ? 1 : 2", read="clickhouse")
+  .assert_is(If)
+  .this_()
+  .assert_is(And)
   |> ignore
   t.done()
 }
@@ -217,10 +217,16 @@ test "TestClickhouse.test_ddl" {
 ///|
 test "TestClickhouse.test_agg_functions" {
   let t = t(dialect="clickhouse")
-  let extract_agg_func = (query : String) => parse_one(query, read="clickhouse").selects()[0].this_()
-  t.validate_identity(
+  let extract_agg_func = (query : String) => {
+    parse_one(query, read="clickhouse").selects()[0].this_()
+  }
+  t
+  .validate_identity(
     "SELECT quantileExactInclusive(0.25)(number) AS x FROM numbers(5)",
-  ).selects()[0].this_().assert_is(ParameterizedAgg)
+  )
+  .selects()[0]
+  .this_()
+  .assert_is(ParameterizedAgg)
   |> ignore
   t.ok(
     extract_agg_func(
@@ -247,13 +253,15 @@ test "TestClickhouse.test_agg_functions" {
     AnonymousAggFunc,
   )
   |> ignore
-  t.validate_identity("SELECT approx_top_sum(N)(column, weight) FROM t").selects()[0].assert_is(
-    ParameterizedAgg,
-  )
+  t
+  .validate_identity("SELECT approx_top_sum(N)(column, weight) FROM t")
+  .selects()[0].assert_is(ParameterizedAgg)
   |> ignore
-  t.validate_identity(
+  t
+  .validate_identity(
     "SELECT approx_top_sum(N, reserved)(column, weight) FROM t",
-  ).selects()[0].assert_is(ParameterizedAgg)
+  )
+  .selects()[0].assert_is(ParameterizedAgg)
   |> ignore
   t.done()
 }
@@ -261,31 +269,34 @@ test "TestClickhouse.test_agg_functions" {
 ///|
 test "TestClickhouse.test_agg_functions_multiple_suffixes" {
   let t = t(dialect="clickhouse")
-  for case in [
-    ("SELECT uniqExactIf(x, y) FROM t", @core.Kind::CombinedAggFunc),
-    ("SELECT countIfMerge(state) FROM t", CombinedAggFunc),
-    ("SELECT uniqExactIfMerge(state) FROM t", CombinedAggFunc),
-    ("SELECT avgArgMinIfState(x, y) FROM t", CombinedAggFunc),
-    ("SELECT quantileIfState(0.5)(col, cond) FROM t", CombinedParameterizedAgg),
-    ("SELECT sumMap(k, v) FROM t", AnonymousAggFunc),
-    ("SELECT minMap(k, v) FROM t", AnonymousAggFunc),
-    ("SELECT maxMap(k, v) FROM t", AnonymousAggFunc),
-    ("SELECT sumMapIf(k, v, cond) FROM t", CombinedAggFunc),
-    ("SELECT minMapIf(k, v, cond) FROM t", CombinedAggFunc),
-    ("SELECT maxMapIf(k, v, cond) FROM t", CombinedAggFunc),
-    ("SELECT sumMapState(k, v) FROM t", CombinedAggFunc),
-    ("SELECT sumMapIfState(k, v, cond) FROM t", CombinedAggFunc),
-  ] {
+  for
+    case in [
+      ("SELECT uniqExactIf(x, y) FROM t", @core.Kind::CombinedAggFunc),
+      ("SELECT countIfMerge(state) FROM t", CombinedAggFunc),
+      ("SELECT uniqExactIfMerge(state) FROM t", CombinedAggFunc),
+      ("SELECT avgArgMinIfState(x, y) FROM t", CombinedAggFunc),
+      (
+        "SELECT quantileIfState(0.5)(col, cond) FROM t",
+        CombinedParameterizedAgg,
+      ),
+      ("SELECT sumMap(k, v) FROM t", AnonymousAggFunc),
+      ("SELECT minMap(k, v) FROM t", AnonymousAggFunc),
+      ("SELECT maxMap(k, v) FROM t", AnonymousAggFunc),
+      ("SELECT sumMapIf(k, v, cond) FROM t", CombinedAggFunc),
+      ("SELECT minMapIf(k, v, cond) FROM t", CombinedAggFunc),
+      ("SELECT maxMapIf(k, v, cond) FROM t", CombinedAggFunc),
+      ("SELECT sumMapState(k, v) FROM t", CombinedAggFunc),
+      ("SELECT sumMapIfState(k, v, cond) FROM t", CombinedAggFunc),
+    ] {
     let (sql, kind) = case
     t.validate_identity(sql).selects()[0].assert_is(kind) |> ignore
   }
   let sum_merge_if_merge = t
-    .validate_identity(
-      "SELECT sumMergeIfMerge(s) FROM (SELECT sumMergeIfState(agg, 1 = 1) AS s " +
-      "FROM (SELECT sumState(toFloat64(number)) AS agg FROM numbers(10)))",
-    )
-    .selects()[0]
-    .assert_is(CombinedAggFunc)
+  .validate_identity(
+    "SELECT sumMergeIfMerge(s) FROM (SELECT sumMergeIfState(agg, 1 = 1) AS s " +
+    "FROM (SELECT sumState(toFloat64(number)) AS agg FROM numbers(10)))",
+  )
+  .selects()[0].assert_is(CombinedAggFunc)
   t.eq(sum_merge_if_merge.name(), "sumMergeIfMerge")
   t.done()
 }
@@ -294,19 +305,24 @@ test "TestClickhouse.test_agg_functions_multiple_suffixes" {
 test "TestClickhouse.test_convert" {
   let t = t(dialect="clickhouse")
   t.eq(
-    sql(@core.convert(@core.PyDate(year=2020, month=1, day=1)), dialect=t.dialect),
+    sql(
+      @core.convert(@core.PyDate(year=2020, month=1, day=1)),
+      dialect=t.dialect,
+    ),
     "toDate('2020-01-01')",
   )
-  let dt = (microsecond : Int, tz : (String, Int)?) => @core.PyDateTime(
-    year=2020,
-    month=1,
-    day=1,
-    hour=0,
-    minute=0,
-    second=1,
-    microsecond~,
-    tz~,
-  )
+  let dt = (microsecond : Int, tz : (String, Int)?) => {
+    @core.PyDateTime(
+      year=2020,
+      month=1,
+      day=1,
+      hour=0,
+      minute=0,
+      second=1,
+      microsecond~,
+      tz~,
+    )
+  }
   // no fractional seconds
   t.eq(
     sql(@core.convert(dt(0, None)), dialect=t.dialect),
@@ -470,7 +486,8 @@ test "TestClickhouse.test_array_offset" {
 ///|
 test "TestClickhouse.test_functions" {
   let t = t(dialect="clickhouse")
-  t.is_a(Some(t.validate_identity("arrayMap(x -> x + 1, arr)")), Transform) |> ignore
+  t.is_a(Some(t.validate_identity("arrayMap(x -> x + 1, arr)")), Transform)
+  |> ignore
   t.is_a(Some(t.validate_identity("arrayFilter(x -> x > 0, arr)")), ArrayFilter)
   |> ignore
   t.is_a(
@@ -478,8 +495,7 @@ test "TestClickhouse.test_functions" {
     .validate_identity(
       "SELECT arrayMap((a, b) -> a * b, [1, 2, 3], [10, 20, 30]) AS products",
     )
-    .expressions()[0]
-    .this(),
+    .expressions()[0].this(),
     Anonymous,
   )
   |> ignore
@@ -495,8 +511,7 @@ test "TestClickhouse.test_functions" {
 test "TestClickhouse.test_refreshable_materialized_view" {
   let t = t(dialect="clickhouse")
   let statements = [
-    "CREATE MATERIALIZED VIEW v REFRESH EVERY 30 SECOND AS SELECT 1",
-    "CREATE MATERIALIZED VIEW v REFRESH AFTER 5 MINUTE AS SELECT 1",
+    "CREATE MATERIALIZED VIEW v REFRESH EVERY 30 SECOND AS SELECT 1", "CREATE MATERIALIZED VIEW v REFRESH AFTER 5 MINUTE AS SELECT 1",
     "CREATE MATERIALIZED VIEW v REFRESH DEPENDS ON db.x, db.y APPEND TO db.t AS SELECT 1",
     "CREATE MATERIALIZED VIEW v ON CLUSTER '{cluster}' REFRESH EVERY 1 MONTH OFFSET 5 DAY 2 HOUR RANDOMIZE FOR 1 HOUR DEPENDS ON db.x, db.y SETTINGS refresh_retries = 5 APPEND TO db.t AS SELECT 1",
     "CREATE MATERIALIZED VIEW v REFRESH EVERY 1 HOUR (id UInt64) AS SELECT 1 AS id",

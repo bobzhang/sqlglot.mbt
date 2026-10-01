@@ -20,7 +20,7 @@ priv struct T {
 fn t(dialect? : String = "") -> T {
   @sqlglot.register_dialects()
   @core.take_log_messages() |> ignore
-  { dialect, fails: [] }
+  { dialect, fails: [], }
 }
 
 ///|
@@ -83,9 +83,11 @@ fn T::eq_expr(
   loc~ : SourceLoc,
 ) -> Unit {
   if actual != expected {
-    let show = (e : @core.Expr?) => match e {
-      Some(e) => e.canonical()
-      None => "None"
+    let show = (e : @core.Expr?) => {
+      match e {
+        Some(e) => e.canonical()
+        None => "None"
+      }
     }
     self.fail(
       "\n    actual:   \{show(actual)}\n    expected: \{show(expected)}",
@@ -285,12 +287,14 @@ fn T::assert_logs(
 /// The log messages since the last call in Python's `assertLogs` output format
 /// ("WARNING:sqlglot:message"), keeping only those of `level` or higher.
 fn captured_logs(level? : String = "INFO") -> Array[String] {
-  let rank = (l : String) => match l {
-    "DEBUG" => 0
-    "INFO" => 1
-    "WARNING" => 2
-    "ERROR" => 3
-    _ => 4
+  let rank = (l : String) => {
+    match l {
+      "DEBUG" => 0
+      "INFO" => 1
+      "WARNING" => 2
+      "ERROR" => 3
+      _ => 4
+    }
   }
   @core.take_log_messages().filter_map(m => {
     guard m.find(": ") is Some(i) else { None }
@@ -346,7 +350,12 @@ fn T::validate_identity(
     Some(w) => w
     None => sql
   }
-  let got = @sqlglot.generate(expression, dialect=self.dialect, pretty~, identify~)
+  let got = @sqlglot.generate(
+    expression,
+    dialect=self.dialect,
+    pretty~,
+    identify~,
+  )
   self.eq(got, expected, loc~)
   expression
 }
@@ -405,9 +414,15 @@ fn T::validate_all(
   }
   for write_dialect in write_unsupported {
     self.raises(
-      () => ignore(
-        @sqlglot.generate(expression, dialect=write_dialect, unsupported_level=Raise),
-      ),
+      () => {
+        ignore(
+          @sqlglot.generate(
+            expression,
+            dialect=write_dialect,
+            unsupported_level=Raise,
+          ),
+        )
+      },
       "UnsupportedError",
       loc~,
     )

@@ -5,26 +5,27 @@
 test "TestTrino.test_concat_ws_typed" {
   let t = t(dialect="trino")
   let spark = @core.Dialect::get_or_raise("spark")
-  for case in [
-    (
-      "ARRAY<STRING>",
-      "STRING",
-      "CONCAT_WS(t.sep, CONCAT(COALESCE(CAST(t.a AS ARRAY(VARCHAR)), ARRAY[]), " +
-      "ARRAY[CAST(t.b AS VARCHAR)]))",
-    ),
-    (
-      "ARRAY<STRING>",
-      "ARRAY<STRING>",
-      "CONCAT_WS(t.sep, CONCAT(COALESCE(CAST(t.a AS ARRAY(VARCHAR)), ARRAY[]), " +
-      "COALESCE(CAST(t.b AS ARRAY(VARCHAR)), ARRAY[])))",
-    ),
-    (
-      "ARRAY<INT>",
-      "INT",
-      "CONCAT_WS(t.sep, CONCAT(COALESCE(CAST(t.a AS ARRAY(VARCHAR)), ARRAY[]), " +
-      "ARRAY[CAST(t.b AS VARCHAR)]))",
-    ),
-  ] {
+  for
+    case in [
+      (
+        "ARRAY<STRING>",
+        "STRING",
+        "CONCAT_WS(t.sep, CONCAT(COALESCE(CAST(t.a AS ARRAY(VARCHAR)), ARRAY[]), " +
+        "ARRAY[CAST(t.b AS VARCHAR)]))",
+      ),
+      (
+        "ARRAY<STRING>",
+        "ARRAY<STRING>",
+        "CONCAT_WS(t.sep, CONCAT(COALESCE(CAST(t.a AS ARRAY(VARCHAR)), ARRAY[]), " +
+        "COALESCE(CAST(t.b AS ARRAY(VARCHAR)), ARRAY[])))",
+      ),
+      (
+        "ARRAY<INT>",
+        "INT",
+        "CONCAT_WS(t.sep, CONCAT(COALESCE(CAST(t.a AS ARRAY(VARCHAR)), ARRAY[]), " +
+        "ARRAY[CAST(t.b AS VARCHAR)]))",
+      ),
+    ] {
     let (a_type, b_type, expected) = case
     let schema = @optimizer.MappingSchema::new(
       schema=@optimizer.schema_from_json_string(
@@ -48,9 +49,10 @@ test "TestTrino.test_concat_ws_typed" {
 ///|
 test "TestTrino.test_concat_ws_unknown_types" {
   let t = t(dialect="trino")
-  for sql_ in [
-    "SELECT CONCAT_WS('-', t.a, t.b) FROM t", "SELECT CONCAT_WS('-', ARRAY('a'), t.b) FROM t",
-  ] {
+  for
+    sql_ in [
+      "SELECT CONCAT_WS('-', t.a, t.b) FROM t", "SELECT CONCAT_WS('-', ARRAY('a'), t.b) FROM t",
+    ] {
     for annotated in [false, true] {
       let mut expression = parse_one(sql_, read="spark")
       if annotated {
@@ -95,7 +97,11 @@ test "TestTrino.test_inline_udf_begin_end" {
       @core.mk(Block, [
         (
           "expressions",
-          [parse_one("SELECT 1"), parse_one("SELECT 2"), @core.mk0(EndStatement)],
+          [
+            parse_one("SELECT 1"),
+            parse_one("SELECT 2"),
+            @core.mk0(EndStatement),
+          ],
         ),
       ]),
       dialect="trino",

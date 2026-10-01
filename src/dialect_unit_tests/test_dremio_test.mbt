@@ -6,14 +6,16 @@ test "TestDremio.test_type_mappings" {
   let t = t(dialect="dremio")
   for sql in ["CAST(x AS TIMESTAMPTZ)", "CAST(x AS TIMESTAMPLTZ)"] {
     t.raises(
-      () => ignore(
-        @sqlglot.transpile(
-          sql,
-          read="oracle",
-          write="dremio",
-          unsupported_level=Immediate,
-        ),
-      ),
+      () => {
+        ignore(
+          @sqlglot.transpile(
+            sql,
+            read="oracle",
+            write="dremio",
+            unsupported_level=Immediate,
+          ),
+        )
+      },
       "UnsupportedError",
     )
     |> ignore
@@ -37,10 +39,7 @@ test "TestDremio.test_typed_division" {
 ///|
 test "TestDremio.test_user_defined_types_unsupported" {
   let t = t(dialect="dremio")
-  t.raises(
-    () => ignore(t.parse_one("CAST(x AS MY_CUSTOM_TYPE)")),
-    "ParseError",
-  )
+  t.raises(() => ignore(t.parse_one("CAST(x AS MY_CUSTOM_TYPE)")), "ParseError")
   |> ignore
   t.done()
 }
@@ -49,13 +48,15 @@ test "TestDremio.test_user_defined_types_unsupported" {
 test "TestDremio.test_time_travel" {
   let t = t(dialect="dremio")
   t.raises(
-    () => ignore(
-      @sqlglot.transpile(
-        "SELECT * FROM t FOR VERSION BETWEEN '1' AND '2'",
-        write="dremio",
-        unsupported_level=Immediate,
-      ),
-    ),
+    () => {
+      ignore(
+        @sqlglot.transpile(
+          "SELECT * FROM t FOR VERSION BETWEEN '1' AND '2'",
+          write="dremio",
+          unsupported_level=Immediate,
+        ),
+      )
+    },
     "UnsupportedError",
   )
   |> ignore
@@ -66,14 +67,18 @@ test "TestDremio.test_time_travel" {
 test "TestDremio.test_to_char_special" {
   let t = t(dialect="dremio")
   // numeric formats have is_numeric=True
-  for sql in ["TO_CHAR(5555, '#')", "TO_CHAR(3.14, '#.#')", "TO_CHAR(columnname, '#.##')"] {
+  for
+    sql in [
+      "TO_CHAR(5555, '#')", "TO_CHAR(3.14, '#.#')", "TO_CHAR(columnname, '#.##')",
+    ] {
     let to_char = t.validate_identity(sql).assert_is(ToChar)
     t.ok(to_char.get("is_numeric") is Some(Bool(true)), msg=sql)
   }
   // non-numeric formats or columns have is_numeric=None or False
-  for sql in [
-    "TO_CHAR(5555)", "TO_CHAR(3.14, columnname)", "TO_CHAR(123, 'abcd')", "TO_CHAR(3.14, UPPER('abcd'))",
-  ] {
+  for
+    sql in [
+      "TO_CHAR(5555)", "TO_CHAR(3.14, columnname)", "TO_CHAR(123, 'abcd')", "TO_CHAR(3.14, UPPER('abcd'))",
+    ] {
     let to_char = t.validate_identity(sql).assert_is(ToChar)
     t.ok(!to_char.bool_arg("is_numeric"), msg=sql)
   }

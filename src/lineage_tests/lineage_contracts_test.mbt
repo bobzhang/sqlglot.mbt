@@ -211,7 +211,9 @@ test "TestLineage.test_lineage_on_node_hook" {
   )
   assert_true(nodes_visited.length() >= 3)
   assert_eq(result["v"].payload.get("seen"), Some(true))
-  assert_true(result["v"].walk().iter().all(n => n.payload.get("seen") is Some(True)))
+  assert_true(
+    result["v"].walk().iter().all(n => n.payload.get("seen") is Some(True)),
+  )
 }
 
 ///|

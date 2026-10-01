@@ -17,22 +17,26 @@ test "TestDatabricks.test_databricks" {
   .assert_is(Var)
   |> ignore
   t.raises(
-    () => ignore(
-      @sqlglot.transpile(
-        "CREATE FUNCTION add_one(x INT) RETURNS INT LANGUAGE PYTHON AS $foo$def add_one(x):\n  return x+1$$",
-        read="databricks",
-      ),
-    ),
+    () => {
+      ignore(
+        @sqlglot.transpile(
+          "CREATE FUNCTION add_one(x INT) RETURNS INT LANGUAGE PYTHON AS $foo$def add_one(x):\n  return x+1$$",
+          read="databricks",
+        ),
+      )
+    },
     "ParseError",
   )
   |> ignore
   t.raises(
-    () => ignore(
-      @sqlglot.transpile(
-        "CREATE FUNCTION add_one(x INT) RETURNS INT LANGUAGE PYTHON AS $foo bar$def add_one(x):\n  return x+1$foo bar$",
-        read="databricks",
-      ),
-    ),
+    () => {
+      ignore(
+        @sqlglot.transpile(
+          "CREATE FUNCTION add_one(x INT) RETURNS INT LANGUAGE PYTHON AS $foo bar$def add_one(x):\n  return x+1$foo bar$",
+          read="databricks",
+        ),
+      )
+    },
     "ParseError",
   )
   |> ignore

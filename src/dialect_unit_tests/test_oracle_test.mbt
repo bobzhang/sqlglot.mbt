@@ -33,10 +33,11 @@ test "TestOracle.test_pivot_syntax_restrictions" {
 ///|
 test "TestOracle.test_unrecognized_query_restriction" {
   let t = t(dialect="oracle")
-  for sql in [
-    "SELECT * FROM tbl WITH", "SELECT * FROM tbl WITH READ", "SELECT * FROM tbl WITH GRANT OPTION",
-    "SELECT * FROM t WITH x AS (SELECT 1) SELECT * FROM x",
-  ] {
+  for
+    sql in [
+      "SELECT * FROM tbl WITH", "SELECT * FROM tbl WITH READ", "SELECT * FROM tbl WITH GRANT OPTION",
+      "SELECT * FROM t WITH x AS (SELECT 1) SELECT * FROM x",
+    ] {
     t.raises(
       () => ignore(@sqlglot.parse_one(sql, read="oracle", error_level=Raise)),
       "ParseError",
@@ -59,8 +60,7 @@ test "TestOracle.test_merge_builder_alias" {
   let t = t(dialect="oracle")
   let merge_stmt = @sqlglot.merge(
     [
-      "WHEN MATCHED THEN UPDATE SET my_table.col1 = source_table.col1",
-      "WHEN NOT MATCHED THEN INSERT (my_table.id, my_table.col1) VALUES (source_table.id, source_table.col1)",
+      "WHEN MATCHED THEN UPDATE SET my_table.col1 = source_table.col1", "WHEN NOT MATCHED THEN INSERT (my_table.id, my_table.col1) VALUES (source_table.id, source_table.col1)",
     ],
     into="my_table",
     using_="(SELECT * FROM something) source_table",
@@ -157,9 +157,13 @@ test "TestOracle.test_full_procedure" {
 ///|
 test "TestOracle.test_oracle" {
   let t = t(dialect="oracle")
-  t.is_a(Some(t.parse_one("ALTER TABLE tbl_name DROP FOREIGN KEY fk_symbol")), Alter)
+  t.is_a(
+    Some(t.parse_one("ALTER TABLE tbl_name DROP FOREIGN KEY fk_symbol")),
+    Alter,
+  )
   |> ignore
-  t.is_a(Some(t.validate_identity("DBMS_RANDOM.VALUE(low, high)")), Rand) |> ignore
+  t.is_a(Some(t.validate_identity("DBMS_RANDOM.VALUE(low, high)")), Rand)
+  |> ignore
   t.is_a(Some(t.validate_identity("DBMS_RANDOM.VALUE()")), Rand) |> ignore
   t.is_a(Some(t.validate_identity("SYSTIMESTAMP")), Systimestamp) |> ignore
   t.done()
@@ -175,7 +179,8 @@ test "TestOracle.test_trunc" {
 ///|
 test "TestOracle.test_trunc_type_inference" {
   let t = t(dialect="oracle")
-  t.is_a(Some(t.parse_one("TRUNC(CAST(x AS DATE), 'MONTH')")), DateTrunc) |> ignore
+  t.is_a(Some(t.parse_one("TRUNC(CAST(x AS DATE), 'MONTH')")), DateTrunc)
+  |> ignore
   t.is_a(Some(t.parse_one("TRUNC(SYSDATE, 'MONTH')")), DateTrunc) |> ignore
   t.is_a(Some(t.parse_one("TRUNC(col, 'MONTH')")), DateTrunc) |> ignore
   t.is_a(Some(t.validate_identity("TRUNC(3.14159, 2)")), Trunc) |> ignore
