@@ -2,5 +2,9 @@
 
 ///|
 fn configure_tokenizer(d : @core.Dialect) -> Unit {
-  ignore(d)
+  // JSONPathTokenizer.IDENTIFIERS = ["`", '"']
+  d.jsonpath_tokenizer.identifiers = [
+    @core.QuoteSpec::Same("`"),
+    @core.QuoteSpec::Same("\""),
+  ]
 }

@@ -2,5 +2,6 @@
 
 ///|
 fn configure_tokenizer(d : @core.Dialect) -> Unit {
-  ignore(d)
+  // JSONPathTokenizer.VAR_TOKENS = {*VAR_TOKENS, DASH}
+  d.jsonpath_var_tokens.push(DASH)
 }

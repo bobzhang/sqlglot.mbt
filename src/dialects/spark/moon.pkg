@@ -2,6 +2,7 @@ import {
   "hongbozhang/sqlglot/core",
   "moonbitlang/core/set",
   "hongbozhang/sqlglot/dialects/spark2",
+  "hongbozhang/sqlglot/dialects/hive",
 }
 
 warnings = "-79-15"
