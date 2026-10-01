@@ -377,6 +377,7 @@ def values_equal(a, b):
         return False
 
 
+SNAKE_NAMES = {"DialectConfig": "dialect_config", "ParserConfig": "parser_config", "GeneratorConfig": "generator_config"}
 STRUCT_NAMES = {"dialect": "DialectConfig", "parser": "ParserConfig", "generator": "GeneratorConfig"}
 
 
@@ -405,7 +406,7 @@ def gen():
         L.append("}")
         L.append("")
         L.append("///|")
-        L.append(f"pub fn base_{snake(struct)}() -> {struct} {{")
+        L.append(f"pub fn base_{SNAKE_NAMES[struct]}() -> {struct} {{")
         L.append("  {")
         base = BASES[cat]
         for a, (t, enc) in attrs[cat]:

@@ -3,4 +3,4 @@ import {
   "moonbitlang/core/set",
 }
 
-warnings = "-79"
+warnings = "-79-15"

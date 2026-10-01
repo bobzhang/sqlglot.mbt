@@ -208,7 +208,7 @@ pub fn DialectConfig::copy(self : DialectConfig) -> DialectConfig {
 }
 
 ///|
-pub fn base_dialectconfig() -> DialectConfig {
+pub fn base_dialect_config() -> DialectConfig {
   {
     alias_post_tablesample: false,
     alias_post_version: true,
@@ -595,7 +595,7 @@ pub fn ParserConfig::copy(self : ParserConfig) -> ParserConfig {
 }
 
 ///|
-pub fn base_parserconfig() -> ParserConfig {
+pub fn base_parser_config() -> ParserConfig {
   {
     add_constraint_tokens: TokenSet::new([TokenType::CONSTRAINT, TokenType::FOREIGN_KEY, TokenType::INDEX, TokenType::KEY, TokenType::PRIMARY_KEY, TokenType::UNIQUE]),
     add_join_on_true: false,
@@ -1000,7 +1000,7 @@ pub fn GeneratorConfig::copy(self : GeneratorConfig) -> GeneratorConfig {
 }
 
 ///|
-pub fn base_generatorconfig() -> GeneratorConfig {
+pub fn base_generator_config() -> GeneratorConfig {
   {
     alter_set_type: "SET DATA TYPE",
     alter_set_wrapped: false,
