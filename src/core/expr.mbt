@@ -169,7 +169,7 @@ pub fn mk2(kind : Kind, this : &IntoValue, expression : &IntoValue) -> Expr {
 }
 
 ///|
-let unabbreviated_unit_name : Map[String, String] = {
+pub let unabbreviated_unit_name : Map[String, String] = {
   "D": "DAY",
   "H": "HOUR",
   "M": "MINUTE",
@@ -1296,9 +1296,9 @@ pub fn Expr::pop(self : Expr) -> Expr {
 /// Recursively visits all tree nodes (DFS) and applies `fun` to each, replacing nodes.
 pub fn Expr::transform(
   self : Expr,
-  fun : (Expr) -> Expr?,
+  fun : (Expr) -> Expr? raise?,
   copy? : Bool = true,
-) -> Expr {
+) -> Expr raise? {
   let mut root : Expr? = None
   let mut new_node : Expr? = None
   let start = if copy { self.copy() } else { self }

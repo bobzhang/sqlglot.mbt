@@ -1,0 +1,8 @@
+import {
+  "hongbozhang/sqlglot",
+  "hongbozhang/sqlglot/core",
+  "moonbitlang/core/set",
+  "moonbitlang/core/double",
+}
+
+warnings = "-79"

@@ -1,7 +1,7 @@
 // Port of sqlglot/parsers/prql.py
 
 ///|
-fn select_all(table : @core.Expr?) -> @core.Expr? {
+fn select_all(table : @core.Expr?) -> @core.Expr? raise @core.SqlglotError {
   match table {
     Some(t) => Some(@core.select_([@core.mk0(Star)]).from_(t))
     None => None

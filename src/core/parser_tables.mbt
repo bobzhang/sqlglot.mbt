@@ -1117,7 +1117,9 @@ pub fn base_parser_fns() -> ParserFns {
     (ColumnDef, p => p.parse_column_def(p.parse_column())),
     (Condition, p => p.parse_disjunction()),
     (DataType, p => p.parse_types(allow_identifiers=false, schema=true)),
-    (From, p => p.parse_from(joins=true)),
+    // Python `exp.Expr`
+    (Expression, p => p.parse_expression()),
+    (From,p => p.parse_from(joins=true)),
     (GrantPrincipal, p => p.parse_grant_principal()),
     (GrantPrivilege, p => p.parse_grant_privilege()),
     (Group, p => p.parse_group()),
