@@ -3,3 +3,10 @@ import {
 }
 
 warnings = "-79"
+
+options(
+  targets: {
+    "ast_test.mbt": ["js"],
+    "fixture_ast_test.mbt": ["js"],
+  },
+)
