@@ -260,9 +260,9 @@ test "schema: test_schema_normalization" {
       #|[bar]
     ),
   )
-  inspect(schema.column_names(table_in("foo", "bigquery")), content=(
-    #|[bar]
-  ))
+  // Python: [] (BigQuery table names are case-sensitive); needs the ported BigQuery
+  // normalize_identifier, i.e. it fails until the dialect port is merged
+  inspect(schema.column_names(table_in("foo", "bigquery")), content="[]")
 
   // the schema's normalization setting can be overridden
   let schema = schema_of(
