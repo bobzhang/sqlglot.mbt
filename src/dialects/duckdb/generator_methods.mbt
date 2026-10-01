@@ -1140,7 +1140,8 @@ fn tsordstotime_sql(
       let func_name = if safe { "TRY_STRPTIME" } else { "STRPTIME" }
       let strptime = @core.mk(Anonymous, [
         ("this", func_name),
-        ("expressions", [@core.Value::Node(this), Str(tf)]),
+        // The formatted time is already SQL (a quoted string), like Python's raw str arg
+        ("expressions", [this, @core.var_(tf)]),
       ])
       return g.sql(
         Some(@core.mk(cast_kind, [("this", strptime), ("to", time_type)])),

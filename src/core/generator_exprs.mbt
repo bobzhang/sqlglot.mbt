@@ -24,6 +24,26 @@ pub fn gen_annotate_types(
       if expression.get_type() is None {
         let dtype = if expression.is_int() {
           Some(DType::INT)
+        } else if expression.kind == Literal && expression.is_number() {
+          Some(DType::DOUBLE)
+        } else if expression.kind == Neg &&
+          expression.this() is Some(operand) &&
+          operand.kind == Literal &&
+          operand.is_number() {
+          // Unary minus keeps the type of its numeric literal operand
+          gen_annotate_types(operand, dialect) |> ignore
+          match operand.get_type() {
+            Some(t) => t.datatype_this()
+            None => None
+          }
+        } else if expression.kind == Timestamp {
+          Some(
+            if expression.has("with_tz") {
+              DType::TIMESTAMPTZ
+            } else {
+              DType::TIMESTAMP
+            },
+          )
         } else if expression.is_string() {
           Some(DType::VARCHAR)
         } else if expression.kind == Kind::Array {
