@@ -27,3 +27,14 @@ pub fn Parser::parse_expression(self : Parser) -> Expr? raise SqlglotError {
   ignore(self)
   ...
 }
+
+///|
+/// Parses a single SQL statement (TEMP stub, implemented in parser_api.mbt later).
+pub fn parse_one(
+  sql : String,
+  dialect? : Dialect,
+  into? : Array[Kind],
+) -> Expr raise SqlglotError {
+  ignore((sql, dialect, into))
+  ...
+}
