@@ -21,18 +21,6 @@ fn is_derived_table(e : @core.Expr) -> Bool {
 }
 
 ///|
-fn is_from_or_join(e : @core.Expr) -> Bool {
-  let mut parent = e.parent
-  while parent is Some(p) && p.kind == Subquery {
-    parent = p.parent
-  }
-  match parent {
-    Some(p) => p.kind == From || p.kind == Join
-    None => false
-  }
-}
-
-///|
 /// `_get_source_alias`
 fn get_source_alias(e : @core.Expr) -> String {
   let mut alias_name = e.alias()
@@ -132,42 +120,6 @@ fn build_mini_scope(expression : @core.Expr) -> MiniScope {
     }
   }
   { expression, sources, }
-}
-
-///|
-/// `Scope.references` names: tables, then derived tables, then UDTFs.
-fn scope_reference_names(expression : @core.Expr) -> Array[String] {
-  let tables = []
-  let derived = []
-  let udtfs = []
-  for node in walk_scope(expression) {
-    if physical_equal(node, expression) {
-      continue
-    }
-    if node.kind == Table &&
-      !(match node.parent {
-        Some(p) => p.kind == JoinHint
-        None => false
-      }) {
-      tables.push(node.alias_or_name())
-    } else if node.kind == Lateral ||
-      (node.kind.is_a(UDTF) && is_from_or_join_parent(node)) {
-      udtfs.push(get_source_alias(node))
-    } else if node.kind == CTE {
-      ()
-    } else if is_derived_table(node) && is_from_or_join(node) {
-      derived.push(get_source_alias(node))
-    }
-  }
-  [..tables, ..derived, ..udtfs]
-}
-
-///|
-fn is_from_or_join_parent(e : @core.Expr) -> Bool {
-  match e.parent {
-    Some(p) => p.kind == From || p.kind == Join
-    None => false
-  }
 }
 
 ///|
