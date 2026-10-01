@@ -1,6 +1,6 @@
-// Parser overrides for the druid dialect.
+// Port of sqlglot/parsers/druid.py
 
 ///|
 fn configure_parser(d : @core.Dialect) -> Unit {
-  ignore(d)
+  d.parser_fns.function_parsers["JSON_VALUE"] = p => p.parse_json_value()
 }
