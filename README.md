@@ -24,8 +24,12 @@ let out = @sqlglot.generate(ast, dialect="snowflake", pretty=true)
 | Dialects (34) | Complete: all 15,775 cases extracted from `tests/dialects` match Python |
 | Optimizer (qualify, annotate_types, simplify, all rules), schema | Complete: all optimizer fixtures, TPC-H and TPC-DS match Python |
 | Lineage, diff, planner | Complete: lineage 80/80, diff 24/24, planner 27/27 recorded Python results |
-| Expression API, builders, transforms | Ported, plus unit tests ported from test_expressions/build/transforms/parser/transpile/... |
-| Executor, serde, anonymize, CLI | In progress |
+| Expression API, builders, transforms | Complete: unit tests ported from test_expressions, test_build, test_transforms, test_parser, test_transpile, test_errors, test_tokens, test_jsonpath and others |
+| Executor | Complete: generates Python code like sqlglot and evaluates it with a built-in interpreter; test_executor (445 recorded cases) and 57 TPC-DS queries match Python |
+| Serde, anonymize, CLI | Complete (`src/core/serde.mbt`, `src/anonymize`, `src/cli`, native binary in `src/cmd/sqlglot`) |
+
+Known differences from Python: integers are 64-bit (Python's are unbounded), and the things that need
+Python runtime features, such as defining new expression classes at runtime, aren't supported.
 
 ## Layout
 
@@ -40,7 +44,8 @@ let out = @sqlglot.generate(ast, dialect="snowflake", pretty=true)
   - `dialect.mbt` (generated) derives the dialect from its parent and registers it.
 - `src/optimizer`: schema, scope, the optimizer rules, `optimize`, and per-dialect type annotators
   (`sqlglot/typing`). It installs the real `annotate_types` and `simplify` into core's hooks.
-- `src/lineage`, `src/diff`, `src/planner`: ports of the corresponding Python modules.
+- `src/lineage`, `src/diff`, `src/planner`, `src/executor`, `src/anonymize`: ports of the
+  corresponding Python modules. `src/cli` and `src/cmd/sqlglot` provide the command-line tool.
 - `src/` (package `hongbozhang/sqlglot`): the facade (`transpile`, `parse_one`, `parse`,
   `generate`, `dialect`). It imports and registers all dialects.
 - `src/tests`, `src/generator_tests`, `src/dialect_tests`: conformance suites generated
@@ -69,6 +74,7 @@ moon test -p hongbozhang/sqlglot/tests            # base parser/generator confor
 moon test -p hongbozhang/sqlglot/generator_tests  # generator conformance
 moon test -p hongbozhang/sqlglot/dialect_tests    # per-dialect conformance (prints DIALECT <module>: ...)
 moon test -p hongbozhang/sqlglot/dialect_tests -F "*dialect snowflake*"
+moon test                                         # everything (537 tests)
 ```
 
 Regenerate fixtures and configuration with the scripts in `tools/`. Each script's docstring
