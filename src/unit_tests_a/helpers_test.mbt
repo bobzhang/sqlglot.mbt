@@ -37,6 +37,23 @@ fn[X : Show + Eq] T::eq(
 }
 
 ///|
+/// Python `assertEqual(expr1, expr2)` for expressions (structural equality).
+#callsite(autofill(loc))
+fn T::eq_expr(
+  self : T,
+  actual : @core.Expr,
+  expected : @core.Expr,
+  loc~ : SourceLoc,
+) -> Unit {
+  if actual != expected {
+    self.fail(
+      "\n    actual:   \{actual.canonical()}\n    expected: \{expected.canonical()}",
+      loc,
+    )
+  }
+}
+
+///|
 fn[X : Show] repr_of(x : X) -> String {
   let s = x.to_string()
   s.escape()
