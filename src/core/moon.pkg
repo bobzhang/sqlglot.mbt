@@ -13,6 +13,7 @@ options(
     "parser_from.mbt": ["js"],
     "parser_clauses.mbt": ["js"],
     "parser_expr.mbt": ["js"],
+    "parser_columns.mbt": ["js"],
     "parser_stubs.mbt": ["not", "js"],
   },
 )
