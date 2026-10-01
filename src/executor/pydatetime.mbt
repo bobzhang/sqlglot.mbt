@@ -402,7 +402,7 @@ fn datetime_from_timestamp_utc(ts : Value) -> PyDateTime raise PyException {
     Bool(b) => if b { 1000000L } else { 0L }
     Float(d) => {
       if d.is_nan() || d.is_inf() {
-        raise value_error("Invalid value \{@core.py_float_repr(d)}")
+        raise value_error("Invalid value \{float_repr(d)}")
       }
       let secs = d.floor()
       let frac = d - secs

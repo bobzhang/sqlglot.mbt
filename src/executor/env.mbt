@@ -760,9 +760,7 @@ fn build_env() -> Map[String, Value] {
   set(null_if_any("LIKE", 2, 2, args => like(args[0], args[1], false)))
   set(null_if_any("ILIKE", 2, 2, args => like(args[0], args[1], true)))
   set(
-    null_if_any("LOWER", 1, 1, args => {
-      str_method(args[0], "lower", @core.py_lower)
-    }),
+    null_if_any("LOWER", 1, 1, args => str_method(args[0], "lower", str_lower)),
   )
   set(null_if_any("LT", 2, 2, args => Bool(py_lt(args[0], args[1]))))
   set(null_if_any("LTE", 2, 2, args => Bool(py_le(args[0], args[1]))))
@@ -825,9 +823,7 @@ fn build_env() -> Map[String, Value] {
     }),
   )
   set(
-    null_if_any("UPPER", 1, 1, args => {
-      str_method(args[0], "upper", @core.py_upper)
-    }),
+    null_if_any("UPPER", 1, 1, args => str_method(args[0], "upper", str_upper)),
   )
   set(
     pyfunc("ZIPNOTNULL", 0, -1, args => {

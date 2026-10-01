@@ -71,19 +71,25 @@ fn nested_set(
 /// - `schema`: the database schema, in one of the forms `{table: {col: type}}`,
 ///   `{db: {table: {col: type}}}` or `{catalog: {db: {table: {col: type}}}}`. When it is
 ///   omitted or empty, it is inferred from the first row of each table.
-/// - `dialect`: the SQL dialect to apply during parsing (eg. "spark", "hive", "presto").
+/// - `mapping_schema`: the schema as a `MappingSchema` (takes precedence over `schema`).
+/// - `dialect`: the SQL dialect to apply during parsing (eg. "spark", "hive", "presto");
+///   `read` is an alias of it.
 /// - `tables`: the tables to register.
 ///
 /// Returns a simple columnar data structure.
 pub fn[T : @core.IntoPy] execute(
   sql : T,
   schema? : Map[String, @optimizer.SchemaNode] = {},
+  mapping_schema? : @optimizer.MappingSchema,
+  read? : String,
   dialect? : String = "",
   tables? : Map[String, TableData] = {},
 ) -> Table raise {
-  let d = @sqlglot.dialect(dialect)
+  let d = @sqlglot.dialect(read.unwrap_or(dialect))
   let tables_ = ensure_tables(Some(tables), dialect=d)
-  let schema = if schema.is_empty() {
+  let schema = if mapping_schema is Some(_) || !schema.is_empty() {
+    schema
+  } else {
     let inferred : Map[String, @optimizer.SchemaNode] = {}
     for keys in tables_.flatten() {
       let table = tables_.get(keys).unwrap()
@@ -101,10 +107,11 @@ pub fn[T : @core.IntoPy] execute(
       }
     }
     inferred
-  } else {
-    schema
   }
-  let schema = @optimizer.MappingSchema::new(schema~, dialect=d)
+  let schema = match mapping_schema {
+    Some(s) => s
+    None => @optimizer.MappingSchema::new(schema~, dialect=d)
+  }
   let table_args = tables_.supported_table_args
   if !table_args.is_empty() && table_args != schema.supported_table_args() {
     raise ExecuteError(

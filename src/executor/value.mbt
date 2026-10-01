@@ -138,7 +138,7 @@ pub fn Value::repr(self : Value) -> String {
     Null => "None"
     Bool(b) => if b { "True" } else { "False" }
     Int(i) => i.to_string()
-    Float(d) => @core.py_float_repr(d)
+    Float(d) => float_repr(d)
     Str(s) => @core.py_repr_str(s)
     List(l) => "[" + l.map(x => x.repr()).join(", ") + "]"
     Iter(l) => "<generator [" + l.map(x => x.repr()).join(", ") + "]>"
