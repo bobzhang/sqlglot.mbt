@@ -698,10 +698,11 @@ pub fn Parser::parse_set_operations(
       match t.expression() {
         Some(expression) =>
           for arg in self.cfg.set_op_modifiers {
-            match expression.arg(arg) {
-              Some(expr) if !(arg == "limit" && expr.meta_bool("top")) => {
+            match expression.get(arg) {
+              Some(Node(expr)) if arg == "limit" && expr.meta_bool("top") => ()
+              Some(v) if v.truthy() => {
                 expression.set(arg, null_arg)
-                t.set(arg, expr)
+                t.set(arg, v)
               }
               _ => ()
             }

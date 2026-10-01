@@ -35,6 +35,8 @@ pub(all) struct DialectHooks {
   mut generate_values_aliases : ((Dialect, Expr) -> Array[Expr])?
   /// `Dialect.tokenize` override (e.g. Athena routes to the Hive or Trino tokenizer).
   mut tokenize : ((Dialect, String) -> Array[Token] raise SqlglotError)?
+  /// `can_quote(identifier, identify)` override; base is `Dialect::can_quote_base`.
+  mut can_quote : ((Dialect, Expr, String) -> Bool)?
   mut extra : Map[String, (Dialect, Expr) -> Expr?]
 }
 
@@ -44,6 +46,7 @@ pub fn DialectHooks::new() -> DialectHooks {
     normalize_identifier: None,
     generate_values_aliases: None,
     tokenize: None,
+    can_quote: None,
     extra: Map([]),
   }
 }
@@ -54,6 +57,7 @@ pub fn DialectHooks::copy(self : DialectHooks) -> DialectHooks {
     normalize_identifier: self.normalize_identifier,
     generate_values_aliases: self.generate_values_aliases,
     tokenize: self.tokenize,
+    can_quote: self.can_quote,
     extra: Map::from_iter(self.extra.iter()),
   }
 }
@@ -409,6 +413,18 @@ pub fn Dialect::case_sensitive(self : Dialect, text : String) -> Bool {
 ///|
 /// Checks if an identifier can be quoted. `identify` is "always", "safe" or "unsafe".
 pub fn Dialect::can_quote(
+  self : Dialect,
+  identifier : Expr,
+  identify? : String = "safe",
+) -> Bool {
+  match self.hooks.can_quote {
+    Some(f) => f(self, identifier, identify)
+    None => self.can_quote_base(identifier, identify~)
+  }
+}
+
+///|
+pub fn Dialect::can_quote_base(
   self : Dialect,
   identifier : Expr,
   identify? : String = "safe",
