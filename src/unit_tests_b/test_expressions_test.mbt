@@ -1691,13 +1691,7 @@ test "TestExprs.test_assert_is" {
   ignore(p1("x").assert_is(Column))
   try p1("x").assert_is(Identifier) catch {
     @core.ValueError(m) =>
-      // Python: "x is not <class 'sqlglot.expressions.core.Identifier'>." (the port does
-      // not track the Python module of each expression class)
-      assert_true(
-        m.has_prefix("x is not <class 'sqlglot.expressions.") &&
-        m.has_suffix("Identifier'>."),
-        msg=m,
-      )
+      inspect(m, content="x is not <class 'sqlglot.expressions.core.Identifier'>.")
     e => fail("unexpected error \{e}")
   } noraise {
     _ => fail("expected an error")
