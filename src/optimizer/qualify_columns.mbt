@@ -601,7 +601,10 @@ fn expand_order_by_and_distinct_on(
       let selects : Array[(@core.Expr, @core.Expr)] = []
       for s in expression.selects() {
         if alias_names.contains(s.alias_or_name()) {
-          selects.push((s.this_(), column_with_table(s.alias_or_name())))
+          match s.this() {
+            Some(t) => selects.push((t, column_with_table(s.alias_or_name())))
+            None => ()
+          }
         }
       }
       for node in modifier_expressions {

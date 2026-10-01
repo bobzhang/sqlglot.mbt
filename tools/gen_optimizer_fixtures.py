@@ -323,6 +323,37 @@ def gen_invalid():
     return len(records)
 
 
+def gen_identity_stress():
+    """Runs optimize / qualify / annotate_types on every statement of identity.sql."""
+    from sqlglot import parse_one as p1
+
+    records = []
+    with open(os.path.join(SG, "tests", "fixtures", "identity.sql"), encoding="utf-8") as f:
+        lines = [line.strip() for line in f if line.strip() and not line.startswith("--")]
+    for _, sql, _ in load_sql_fixture_pairs("pretty.sql"):
+        lines.append(sql)
+    for sql in lines:
+        try:
+            expression = p1(sql)
+        except Exception:  # noqa: BLE001
+            continue
+        for mode in ("optimize", "qualify", "annotate"):
+            try:
+                e = expression.copy()
+                if mode == "optimize":
+                    out = optimizer.optimize(e).sql()
+                elif mode == "qualify":
+                    out = qualify(e, validate_qualify_columns=False).sql()
+                else:
+                    annotated = annotate_types(e)
+                    out = annotated.type.sql() if annotated.type else "None"
+            except Exception as ex:  # noqa: BLE001
+                out = f"ERROR: {type(ex).__name__}"
+            records.append((mode, "", "{}", sql, out))
+    write_fixtures("identity_stress", records)
+    return len(records)
+
+
 def gen_schemas():
     consts = [
         ("test_schema_json", schema_json(TEST_SCHEMA)),
@@ -355,3 +386,5 @@ if __name__ == "__main__":
         print("annotate_functions", gen_annotate_functions())
     if not only or "invalid" in only:
         print("qualify_columns__invalid", gen_invalid())
+    if not only or "identity_stress" in only:
+        print("identity_stress", gen_identity_stress())
