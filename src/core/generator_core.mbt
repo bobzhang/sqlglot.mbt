@@ -845,6 +845,15 @@ priv enum BinItem {
 }
 
 ///|
+/// An operand of a binary node; Python's `self.sql(str)` returns raw strings as-is.
+fn bin_item(node : Expr, key : String) -> BinItem {
+  match node.args.get(key) {
+    Some(Str(s)) => BStr(s)
+    _ => BNode(node.arg(key))
+  }
+}
+
+///|
 pub fn Generator::binary(
   self : Generator,
   expression : Expr,
@@ -862,11 +871,11 @@ pub fn Generator::binary(
             op = "OPERATOR(" + self.sql_value(op_func) + ")"
           _ => ()
         }
-        stack.push(BNode(node.arg("expression")))
+        stack.push(bin_item(node, "expression"))
         stack.push(
           BStr(" " + self.maybe_comment(op, comments?=node.comments) + " "),
         )
-        stack.push(BNode(node.arg("this")))
+        stack.push(bin_item(node, "this"))
       }
       BNode(n) => sqls.push(self.sql(n))
       BStr(s) => sqls.push(s)

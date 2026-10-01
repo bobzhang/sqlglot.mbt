@@ -30,8 +30,10 @@ pub fn gen_annotate_types(
           Some(DType::ARRAY)
         } else if expression.kind == Boolean {
           Some(DType::BOOLEAN)
-        } else if expression.kind is (Map | VarMap) {
+        } else if expression.kind == Map || expression.kind == VarMap {
           Some(DType::MAP)
+        } else if expression.kind == Struct {
+          Some(DType::STRUCT)
         } else {
           None
         }
@@ -168,7 +170,9 @@ pub fn Generator::hexstring_sql(
       self.unsupported("Unsupported transpilation from BINARY/BLOB hex string")
     }
   }
-  g_opt_str(self.dialect.cfg.hex_start) + this + g_opt_str(self.dialect.cfg.hex_end)
+  g_opt_str(self.dialect.cfg.hex_start) +
+  this +
+  g_opt_str(self.dialect.cfg.hex_end)
 }
 
 ///|
