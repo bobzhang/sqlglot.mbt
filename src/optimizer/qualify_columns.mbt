@@ -17,6 +17,7 @@ pub fn qualify_columns(
   }
   let dialect = schema.dialect
   let pseudocolumns = dialect.cfg.pseudocolumns
+  let ancestry : Map[Int, (Scope?, Bool?)] = {}
   for scope in traverse_scope(expression) {
     if dialect.cfg.prefer_cte_alias_column {
       pushdown_cte_alias_columns(scope)
@@ -34,6 +35,7 @@ pub fn qualify_columns(
         scope,
         resolver,
         dialect,
+        ancestry,
         expand_only_groupby=dialect.cfg.expand_only_group_alias_ref,
       )
     }
@@ -41,7 +43,7 @@ pub fn qualify_columns(
     qualify_columns_impl(scope, resolver, allow_partial_qualification)
     scope.clear_column_cache()
     if !schema.empty() && expand_alias_refs {
-      expand_alias_refs_impl(scope, resolver, dialect)
+      expand_alias_refs_impl(scope, resolver, dialect, ancestry)
     }
     if is_select {
       if expand_stars {
@@ -338,11 +340,74 @@ fn join_method(join : @core.Expr) -> String {
 }
 
 ///|
+/// Walks up from `scope` through non-CTE scopes (`while parent_scope and not
+/// parent_scope.is_cte`): returns the scope the walk stops at and whether the last UNION
+/// crossed was entered from its right side. Walks are memoized in `memo` (keyed by scope
+/// expression) so that the scopes of a long set operation chain don't each walk the whole
+/// chain.
+fn scope_ancestry(
+  scope : Scope,
+  memo : Map[Int, (Scope?, Bool?)],
+) -> (Scope?, Bool) {
+  if scope.is_cte() {
+    return (Some(scope), false)
+  }
+  // memo[ps]: where the walk from the non-CTE scope `ps` stops, and the side flag of the
+  // topmost UNION step on the way (if any)
+  let path : Array[(Scope, Bool?)] = []
+  let mut ps = scope
+  let mut tail : (Scope?, Bool?) = (None, None)
+  for ;; {
+    match memo.get(ps.expression.uid) {
+      Some(r) => {
+        tail = r
+        break
+      }
+      None => ()
+    }
+    let local = match ps.parent {
+      Some(pps) if pps.expression.kind.is_a(Union) =>
+        Some(
+          match pps.expression.expression() {
+            Some(r) => physical_equal(r.unnest(), ps.expression)
+            None => false
+          },
+        )
+      _ => None
+    }
+    path.push((ps, local))
+    match ps.parent {
+      None => {
+        tail = (None, None)
+        break
+      }
+      Some(pps) if pps.is_cte() => {
+        tail = (Some(pps), None)
+        break
+      }
+      Some(pps) => ps = pps
+    }
+  }
+  // fill in from the top of the path down: a higher UNION step overrides lower ones
+  let (top, top_flag) = tail
+  let mut flag = top_flag
+  for i = path.length() - 1; i >= 0; i = i - 1 {
+    let (p, local) = path[i]
+    if flag is None {
+      flag = local
+    }
+    memo[p.expression.uid] = (top, flag)
+  }
+  (top, flag.unwrap_or(false))
+}
+
+///|
 /// Expand references to aliases.
 fn expand_alias_refs_impl(
   scope : Scope,
   resolver : Resolver,
   dialect : @core.Dialect,
+  ancestry : Map[Int, (Scope?, Bool?)],
   expand_only_groupby? : Bool = false,
 ) -> Unit raise @core.SqlglotError {
   let expression = scope.expression
@@ -451,24 +516,7 @@ fn expand_alias_refs_impl(
       alias_to_expression[projection.alias()] = (projection.this_(), i + 1)
     }
   }
-  let mut child_scope : Scope? = Some(scope)
-  let mut parent_scope : Scope? = Some(scope)
-  let mut on_right_sub_tree = false
-  while parent_scope is Some(ps) && !ps.is_cte() {
-    child_scope = Some(ps)
-    parent_scope = ps.parent
-    match parent_scope {
-      Some(pps) =>
-        if pps.expression.kind.is_a(Union) {
-          on_right_sub_tree = match pps.expression.expression() {
-            Some(r) => physical_equal(r.unnest(), ps.expression)
-            None => false
-          }
-        }
-      None => ()
-    }
-  }
-  ignore(child_scope)
+  let (parent_scope, on_right_sub_tree) = scope_ancestry(scope, ancestry)
   match parent_scope {
     Some(ps) if on_right_sub_tree =>
       match ps.expression.parent {
@@ -555,14 +603,26 @@ fn expand_order_by_and_distinct_on(
   if !expression.kind.is_a(Selectable) {
     return
   }
-  let counts : Map[String, Int] = {}
-  for n in expression.named_selects() {
-    counts[n] = counts.get_or_default(n, 0) + 1
-  }
-  let alias_names : @set.Set[String] = @set.new()
-  for n, c in counts {
-    if c == 1 {
-      alias_names.add(n)
+  // Only needed with an ORDER BY / DISTINCT ON; computed lazily since `named_selects` of
+  // a left-deep set operation chain walks the whole chain.
+  let mut alias_names_ : @set.Set[String]? = None
+  let alias_names = () => {
+    match alias_names_ {
+      Some(a) => a
+      None => {
+        let counts : Map[String, Int] = {}
+        for n in expression.named_selects() {
+          counts[n] = counts.get_or_default(n, 0) + 1
+        }
+        let a : @set.Set[String] = @set.new()
+        for n, c in counts {
+          if c == 1 {
+            a.add(n)
+          }
+        }
+        alias_names_ = Some(a)
+        a
+      }
     }
   }
   for modifier_key in ["order", "distinct"] {
@@ -583,7 +643,7 @@ fn expand_order_by_and_distinct_on(
       scope,
       modifier_expressions,
       resolver.dialect,
-      Some(alias_names),
+      Some(alias_names()),
     )
     for idx, original in modifier_expressions {
       match expanded.get(idx) {
@@ -603,7 +663,7 @@ fn expand_order_by_and_distinct_on(
     if expression.has("group") {
       let selects : Array[(@core.Expr, @core.Expr)] = []
       for s in expression.selects() {
-        if alias_names.contains(s.alias_or_name()) {
+        if alias_names().contains(s.alias_or_name()) {
           match s.this() {
             Some(t) => selects.push((t, column_with_table(s.alias_or_name())))
             None => ()

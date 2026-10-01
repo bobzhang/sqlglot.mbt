@@ -65,6 +65,16 @@ pub fn unnest_subqueries(
   let next_alias_name = @core.name_sequence("_u_")
   for scope in traverse_scope(expression) {
     let select = scope.expression
+    // (checked before the upward `parent_select` walk, which only the scopes that get
+    // rewritten need)
+    let rewritten = if !scope.external_columns().is_empty() {
+      scope.scope_type != SetOperationScope
+    } else {
+      scope.scope_type == SubqueryScope
+    }
+    if !rewritten {
+      continue
+    }
     let parent = match select.parent_select() {
       Some(p) => p
       None => continue

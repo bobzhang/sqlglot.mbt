@@ -74,11 +74,67 @@ fn PyDT::add_timedelta(
   seconds : Int64,
   microseconds : Int64,
 ) -> PyDT raise @core.SqlglotError {
-  let total_us = (self.h.to_int64() * 3600L + self.mi.to_int64() * 60L + self.s.to_int64()) *
+  self.add_timedelta_big(
+    big(days),
+    @bigint.BigInt::from_int64(seconds),
+    @bigint.BigInt::from_int64(microseconds),
+  )
+}
+
+///|
+/// `OverflowError` (reported as a `ValueError` whose message names the Python type).
+fn overflow_error(msg : String) -> @core.SqlglotError {
+  @core.ValueError("OverflowError: \{msg}")
+}
+
+///|
+/// Python's `_PyLong_AsInt`: the value as a C int, or `OverflowError`.
+fn c_int(v : @bigint.BigInt) -> Int raise @core.SqlglotError {
+  if v < big(-2147483647 - 1) || v > big(2147483647) {
+    raise overflow_error("Python int too large to convert to C int")
+  }
+  v.to_int()
+}
+
+///|
+/// Python floor division and modulo of big integers by a positive `base`.
+fn big_floor_divmod(
+  v : @bigint.BigInt,
+  base : @bigint.BigInt,
+) -> (@bigint.BigInt, @bigint.BigInt) {
+  let q = v / base
+  let r = v - q * base
+  if r < big(0) {
+    (q - big(1), r + base)
+  } else {
+    (q, r)
+  }
+}
+
+///|
+/// `self + timedelta(days=days, seconds=seconds, microseconds=microseconds)` with
+/// Python's range checks: the normalized day count must fit a C int and have magnitude
+/// <= 999999999, and the result must lie in years 1..9999 (`OverflowError` otherwise).
+fn PyDT::add_timedelta_big(
+  self : PyDT,
+  days : @bigint.BigInt,
+  seconds : @bigint.BigInt,
+  microseconds : @bigint.BigInt,
+) -> PyDT raise @core.SqlglotError {
+  // timedelta(...) normalization
+  let us_per_day = @bigint.BigInt::from_int64(86400000000L)
+  let delta_us = (days * big(86400) + seconds) * big(1000000) + microseconds
+  let (delta_days_big, delta_rem) = big_floor_divmod(delta_us, us_per_day)
+  let delta_days = c_int(delta_days_big)
+  if delta_days < -999999999 || delta_days > 999999999 {
+    raise overflow_error("days=\{delta_days}; must have magnitude <= 999999999")
+  }
+  let total_us = (
+      self.h.to_int64() * 3600L + self.mi.to_int64() * 60L + self.s.to_int64()
+    ) *
     1000000L +
     self.us.to_int64() +
-    seconds * 1000000L +
-    microseconds
+    delta_rem.to_int64()
   let day_us = 86400000000L
   let mut extra_days = total_us / day_us
   let mut rem = total_us % day_us
@@ -86,9 +142,12 @@ fn PyDT::add_timedelta(
     rem = rem + day_us
     extra_days = extra_days - 1L
   }
-  let ord = self.ordinal() + days + extra_days.to_int()
-  let (y, m, d) = civil_from_days(ord)
-  check_year(y)
+  // date.max.toordinal() == 3652059
+  let ord = self.ordinal().to_int64() + delta_days.to_int64() + extra_days
+  if ord < 1L || ord > 3652059L {
+    raise overflow_error("date value out of range")
+  }
+  let (y, m, d) = civil_from_days(ord.to_int())
   let secs = (rem / 1000000L).to_int()
   {
     ..self,
@@ -330,45 +389,53 @@ fn parse_iso_time_parts(arr : Array[Char]) -> (Int, Int, Int, Int, Int?)? {
 }
 
 ///|
-/// A `dateutil.relativedelta` (normalized as by its `_fix`).
+/// A `dateutil.relativedelta` (normalized as by its `_fix`). Python ints are unbounded,
+/// so the components are big integers.
 priv struct RelDelta {
-  years : Int
-  months : Int
-  days : Int
-  hours : Int
-  minutes : Int
-  seconds : Int
-  microseconds : Int
+  years : @bigint.BigInt
+  months : @bigint.BigInt
+  days : @bigint.BigInt
+  hours : @bigint.BigInt
+  minutes : @bigint.BigInt
+  seconds : @bigint.BigInt
+  microseconds : @bigint.BigInt
 }
 
 ///|
-fn sign_divmod(v : Int, base : Int) -> (Int, Int) {
+fn sign_divmod(
+  v : @bigint.BigInt,
+  base : Int,
+) -> (@bigint.BigInt, @bigint.BigInt) {
   // Python: s = sign(v); div, mod = divmod(v * s, base); return (div * s, mod * s)
-  let s = if v < 0 { -1 } else { 1 }
+  let s = if v < big(0) { big(-1) } else { big(1) }
   let a = v * s
-  (a / base * s, a % base * s)
+  let b = big(base)
+  (a / b * s, a % b * s)
 }
 
 ///|
 fn RelDelta::fix(self : RelDelta) -> RelDelta {
   let mut r = self
-  if r.microseconds > 999999 || r.microseconds < -999999 {
+  let out_of = (v : @bigint.BigInt, limit : Int) => {
+    v > big(limit) || v < big(-limit)
+  }
+  if out_of(r.microseconds, 999999) {
     let (div, md) = sign_divmod(r.microseconds, 1000000)
     r = { ..r, microseconds: md, seconds: r.seconds + div }
   }
-  if r.seconds > 59 || r.seconds < -59 {
+  if out_of(r.seconds, 59) {
     let (div, md) = sign_divmod(r.seconds, 60)
     r = { ..r, seconds: md, minutes: r.minutes + div }
   }
-  if r.minutes > 59 || r.minutes < -59 {
+  if out_of(r.minutes, 59) {
     let (div, md) = sign_divmod(r.minutes, 60)
     r = { ..r, minutes: md, hours: r.hours + div }
   }
-  if r.hours > 23 || r.hours < -23 {
+  if out_of(r.hours, 23) {
     let (div, md) = sign_divmod(r.hours, 24)
     r = { ..r, hours: md, days: r.days + div }
   }
-  if r.months > 11 || r.months < -11 {
+  if out_of(r.months, 11) {
     let (div, md) = sign_divmod(r.months, 12)
     r = { ..r, months: md, years: r.years + div }
   }
@@ -377,7 +444,15 @@ fn RelDelta::fix(self : RelDelta) -> RelDelta {
 
 ///|
 fn RelDelta::zero() -> RelDelta {
-  { years: 0, months: 0, days: 0, hours: 0, minutes: 0, seconds: 0, microseconds: 0 }
+  {
+    years: big(0),
+    months: big(0),
+    days: big(0),
+    hours: big(0),
+    minutes: big(0),
+    seconds: big(0),
+    microseconds: big(0),
+  }
 }
 
 ///|
@@ -395,10 +470,24 @@ fn RelDelta::neg(self : RelDelta) -> RelDelta {
 
 ///|
 fn RelDelta::has_time(self : RelDelta) -> Bool {
-  self.hours != 0 ||
-  self.minutes != 0 ||
-  self.seconds != 0 ||
-  self.microseconds != 0
+  !self.hours.is_zero() ||
+  !self.minutes.is_zero() ||
+  !self.seconds.is_zero() ||
+  !self.microseconds.is_zero()
+}
+
+///|
+fn RelDelta::moves_months(self : RelDelta) -> Bool {
+  !self.months.is_zero() || !self.years.is_zero()
+}
+
+///|
+/// `calendar.monthrange(year, month)[1]` for any year (the leap pattern repeats every
+/// 400 years).
+fn days_in_month_big(year : @bigint.BigInt, month : Int) -> Int {
+  let (_, y400) = big_floor_divmod(year, big(400))
+  // 2000 + y400 has the same leap status as `year`
+  days_in_month(2000 + y400.to_int(), month)
 }
 
 ///|
@@ -409,42 +498,45 @@ fn add_reldelta(other : PyDT, rd : RelDelta) -> PyDT raise @core.SqlglotError {
   } else {
     other
   }
-  let mut year = other.y + rd.years
+  let mut year = big(other.y) + rd.years
   let mut month = other.m
-  if rd.months != 0 {
-    month += rd.months
+  if !rd.months.is_zero() {
+    // |months| <= 11 after `fix`
+    month += rd.months.to_int()
     if month > 12 {
-      year += 1
+      year = year + big(1)
       month -= 12
     } else if month < 1 {
-      year -= 1
+      year = year - big(1)
       month += 12
     }
   }
+  let day = @core.min_int(days_in_month_big(year, month), other.d)
+  // other.replace(year=year, ...)
+  let year = c_int(year)
   check_year(year)
-  let day = @core.min_int(days_in_month(year, month), other.d)
   let replaced = { ..other, y: year, m: month, d: day }
-  replaced.add_timedelta(
+  replaced.add_timedelta_big(
     rd.days,
-    rd.hours.to_int64() * 3600L + rd.minutes.to_int64() * 60L + rd.seconds.to_int64(),
-    rd.microseconds.to_int64(),
+    rd.hours * big(3600) + rd.minutes * big(60) + rd.seconds,
+    rd.microseconds,
   )
 }
 
 ///|
 /// Python `interval(unit, n)`; `None` for unsupported units.
-fn interval_delta(unit : String, n? : Int = 1) -> RelDelta? {
+fn interval_delta(unit : String, n? : @bigint.BigInt = big(1)) -> RelDelta? {
   let z = RelDelta::zero()
   let r = match unit {
     "year" => { ..z, years: n }
-    "quarter" => { ..z, months: 3 * n }
+    "quarter" => { ..z, months: big(3) * n }
     "month" => { ..z, months: n }
-    "week" => { ..z, days: 7 * n }
+    "week" => { ..z, days: big(7) * n }
     "day" => { ..z, days: n }
     "hour" => { ..z, hours: n }
     "minute" => { ..z, minutes: n }
     "second" => { ..z, seconds: n }
-    "millisecond" => { ..z, microseconds: 1000 * n }
+    "millisecond" => { ..z, microseconds: big(1000) * n }
     "microsecond" => { ..z, microseconds: n }
     _ => return None
   }

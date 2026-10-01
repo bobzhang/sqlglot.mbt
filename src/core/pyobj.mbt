@@ -420,11 +420,13 @@ pub fn Expr::to_py(self : Expr) -> PyObj raise SqlglotError {
       if !self.is_number() {
         return PyStr(this)
       }
-      match parse_int_str(this) {
+      // `int(this)` (Int64 only: larger ints raise `int64_range_error`), else
+      // `Decimal(this)` (kept as `str(Decimal(this))`)
+      match parse_int_checked(this) {
         Some(i) => PyInt(i)
         None =>
           if is_float_str(this) {
-            PyDecimal(this)
+            PyDecimal(py_decimal_str(this))
           } else {
             raise ValueError("Invalid numeric literal: \{py_repr_str(this)}")
           }
@@ -432,6 +434,16 @@ pub fn Expr::to_py(self : Expr) -> PyObj raise SqlglotError {
     }
     Some(Null) => PyNone
     Some(Boolean) => PyBool(self.bool_arg("this"))
+    // `-<int literal>` may be -2**63, whose absolute value is outside Int64
+    Some(Neg) if self.is_number() &&
+      self.this_().kind == Literal &&
+      is_int_str(self.this_().text("this")) &&
+      !py_strip(self.this_().text("this")).has_prefix("-") &&
+      !py_strip(self.this_().text("this")).has_prefix("+") =>
+      match parse_int_checked("-" + py_strip(self.this_().text("this"))) {
+        Some(i) => PyInt(i)
+        None => raise ValueError("Invalid numeric literal")
+      }
     Some(Neg) if self.is_number() =>
       match self.this_().to_py() {
         PyInt(i) => PyInt(-i)

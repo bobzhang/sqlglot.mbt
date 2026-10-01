@@ -531,18 +531,7 @@ pub fn Generator::sql(
     None =>
       match self.fns.methods.get(kind) {
         Some(f) => f(self, e)
-        None =>
-          match self.base_dispatch(kind, e) {
-            Some(s) => s
-            None =>
-              if kind.is_a(Func) {
-                self.function_fallback_sql(e)
-              } else if kind.is_a(Property) {
-                self.call_method(Property, e)
-              } else {
-                raise ValueError("Unsupported expression type \{kind.name()}")
-              }
-          }
+        None => self.default_sql(kind, e)
       }
   }
   if self.comments && comment {
@@ -550,6 +539,124 @@ pub fn Generator::sql(
   } else {
     sql
   }
+}
+
+///|
+/// The base generation of `e` (no dialect transform or method override applies).
+fn Generator::default_sql(
+  self : Generator,
+  kind : Kind,
+  e : Expr,
+) -> String raise SqlglotError {
+  if is_unary_chain_kind(kind) {
+    match self.unary_chain_sql(e) {
+      Some(s) => return s
+      None => ()
+    }
+  }
+  match self.base_dispatch(kind, e) {
+    Some(s) => s
+    None =>
+      if kind.is_a(Func) {
+        self.function_fallback_sql(e)
+      } else if kind.is_a(Property) {
+        self.call_method(Property, e)
+      } else {
+        raise ValueError("Unsupported expression type \{kind.name()}")
+      }
+  }
+}
+
+///|
+fn is_unary_chain_kind(kind : Kind) -> Bool {
+  kind is (Neg | Not | Paren | BitwiseNot)
+}
+
+///|
+/// Chains shorter than this are generated recursively.
+let unary_chain_min_length : Int = 64
+
+///|
+/// Generates a long chain of NOT / unary minus / ~ / parentheses (e.g. `NOT NOT ... x`
+/// or `((((x))))`) without one level of recursion per link: the innermost operand is
+/// generated, then each link's base `*_sql` formatting (and comment) is applied from the
+/// inside out, producing exactly what the recursive calls produce. Links whose
+/// generation a dialect overrides end the chain. Returns `None` for short chains.
+fn Generator::unary_chain_sql(
+  self : Generator,
+  e : Expr,
+) -> String? raise SqlglotError {
+  let chain = [e]
+  let mut cur = e
+  for ;; {
+    match cur.args.get("this") {
+      Some(Node(c)) if is_unary_chain_kind(c.kind) &&
+        self.fns.transforms.get(c.kind) is None &&
+        self.fns.methods.get(c.kind) is None => {
+        chain.push(c)
+        cur = c
+      }
+      _ => break
+    }
+  }
+  if chain.length() < unary_chain_min_length {
+    return None
+  }
+  // The text is `prefixes (outermost last) + inner + suffixes (innermost first)`, kept
+  // apart so that each link costs O(1) instead of copying the text built so far;
+  // pretty parentheses (which re-indent their contents) and comments materialize it.
+  let mut inner = self.sql_key(cur, "this")
+  let prefixes : Array[String] = []
+  let suffixes : Array[String] = []
+  let materialize = () => {
+    if prefixes.is_empty() && suffixes.is_empty() {
+      return inner
+    }
+    let sb = StringBuilder()
+    for i = prefixes.length() - 1; i >= 0; i = i - 1 {
+      sb.write_string(prefixes[i])
+    }
+    sb.write_string(inner)
+    for x in suffixes {
+      sb.write_string(x)
+    }
+    prefixes.clear()
+    suffixes.clear()
+    sb.to_string()
+  }
+  for i = chain.length() - 1; i >= 0; i = i - 1 {
+    let node = chain[i]
+    match node.kind {
+      Neg => {
+        let starts_with_minus = match prefixes.last() {
+          Some(p) => p.has_prefix("-")
+          None => inner.has_prefix("-")
+        }
+        prefixes.push(if starts_with_minus { "- " } else { "-" })
+      }
+      Not => prefixes.push("NOT ")
+      BitwiseNot => prefixes.push("~")
+      _ =>
+        if self.pretty {
+          inner = "(" +
+            self.seg(self.indent(materialize()), sep="") +
+            self.seg(")", sep="")
+        } else {
+          prefixes.push("(")
+          suffixes.push(")")
+        }
+    }
+    // the inner links are generated through `sql_key`, i.e. with their comments
+    if i > 0 &&
+      self.comments &&
+      (match node.comments {
+        Some(c) => !c.is_empty()
+        None => false
+      }) {
+      inner = self.maybe_comment(materialize(), expression=node)
+    }
+  }
+  Some(materialize())
 }
 
 ///|

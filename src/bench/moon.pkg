@@ -1,0 +1,12 @@
+import {
+  "hongbozhang/sqlglot",
+  "hongbozhang/sqlglot/core",
+  "hongbozhang/sqlglot/optimizer",
+  "moonbitlang/core/bench" @timing,
+  "moonbitlang/core/env",
+  "moonbitlang/core/string",
+}
+
+options(
+  "is-main": true,
+)

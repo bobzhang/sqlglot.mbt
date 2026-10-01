@@ -117,6 +117,9 @@ test "TestJsonpath.test_cts_file" {
       // invalid selector: may raise ParseError/TokenError, or parse
       try jsonpath(selector) catch {
         @core.ParseError(_, _) | @core.TokenError(_, ..) => ()
+        // Python parses integers outside Int64 (e.g. an overflowing slice step); the
+        // port refuses them (AST integers are Int64)
+        @core.ValueError(m) if m.contains("Int64 range") => ()
         e => t.ok(false, msg="\{selector} /* \{name} */: unexpected error \{e}")
       } noraise {
         _ => ()

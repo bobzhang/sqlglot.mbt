@@ -272,7 +272,7 @@ fn g_sub_escaped_digits(
     }
     if matches {
       let mut k = i + pn
-      while k < n && is_digit_char(chars[k]) {
+      while k < n && is_decimal(chars[k]) {
         k += 1
       }
       if k > i + pn {
@@ -453,7 +453,7 @@ pub fn Generator::identifier_sql(
     (
       !self.dialect.cfg.identifiers_can_start_with_digit &&
       (match g_first_char(text) {
-        Some(c) => is_digit_char(c)
+        Some(c) => is_py_digit(c)
         None => false
       })
     ) {

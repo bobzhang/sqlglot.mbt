@@ -74,11 +74,6 @@ fn split_canonical_time_format(fmt : String) -> (Array[String], Array[String]) {
 }
 
 ///|
-fn is_digit_char(c : Char) -> Bool {
-  c >= '0' && c <= '9'
-}
-
-///|
 /// Changes a lax month/day/hour/minute/second in a canonical format to its non-padded
 /// form (e.g. %m -> %-m), only for delimited specifiers.
 fn lenient_parse_format(fmt : String) -> String {
@@ -358,30 +353,6 @@ fn to_date_sql(
     _ => ()
   }
   g.func("TO_DATE", [e.this()])
-}
-
-///|
-fn safe_json_path_key(s : String) -> Bool {
-  // ^[_\-a-zA-Z][\-\w]*$
-  let chars = s.to_array()
-  if chars.is_empty() {
-    return false
-  }
-  let first = chars[0]
-  if !(first == '_' || first == '-' || first.is_ascii_alphabetic()) {
-    return false
-  }
-  for i in 1..<chars.length() {
-    let c = chars[i]
-    if !(c == '-' ||
-      c == '_' ||
-      c.is_ascii_alphabetic() ||
-      is_digit_char(c) ||
-      c.to_int() > 127) {
-      return false
-    }
-  }
-  true
 }
 
 ///|
@@ -878,4 +849,32 @@ pub fn fileformatproperty_sql(
     _ => @core.py_upper(e.name())
   }
   "STORED AS \{this}"
+}
+
+///|
+/// Python `str.isdigit()` for one character.
+fn is_digit_char(c : Char) -> Bool {
+  @core.is_py_digit(c)
+}
+
+///|
+/// `re.match(r"^[_\-a-zA-Z][\-\w]*$", s)` (`$` also matches before a trailing newline).
+fn safe_json_path_key(s : String) -> Bool {
+  let s = if s.has_suffix("\n") {
+    s.unsafe_substring(start=0, end=s.length() - 1)
+  } else {
+    s
+  }
+  let mut first = true
+  for c in s {
+    if first {
+      if !(c == '_' || c == '-' || c.is_ascii_alphabetic()) {
+        return false
+      }
+      first = false
+    } else if !(c == '-' || @core.is_word_char(c)) {
+      return false
+    }
+  }
+  !first
 }

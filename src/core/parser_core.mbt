@@ -21,6 +21,9 @@ pub(all) struct Parser {
   max_errors : Int
   max_nodes : Int
   mut sql : String
+  /// UTF-16 offsets of the code points of `sql` (`[]` when they coincide, i.e. no
+  /// surrogate pairs), computed on first use by `find_sql`; `None` until then
+  mut sql_offsets : Array[Int]?
   mut errors : Array[SqlglotError]
   mut tokens : Array[Token]
   mut tokens_size : Int
@@ -52,6 +55,7 @@ pub fn Parser::new(
     max_errors,
     max_nodes,
     sql: "",
+    sql_offsets: None,
     errors: [],
     tokens: [],
     tokens_size: 0,
@@ -70,6 +74,7 @@ pub fn Parser::new(
 ///|
 pub fn Parser::reset(self : Parser) -> Unit {
   self.sql = ""
+  self.sql_offsets = None
   self.errors = []
   self.tokens = []
   self.tokens_size = 0
@@ -304,7 +309,43 @@ pub fn Parser::is_connected(self : Parser) -> Bool {
 
 ///|
 pub fn Parser::find_sql(self : Parser, start : Token, end : Token) -> String {
-  substr(self.sql, start.start, end.end + 1)
+  self.sql_slice(start.start, end.end + 1)
+}
+
+///|
+/// `self.sql[start:end]` (code point indices, Python slicing) in O(end - start): the
+/// code point -> UTF-16 offset table is built once per SQL string, instead of converting
+/// the whole string on every call.
+pub fn Parser::sql_slice(self : Parser, start : Int, end : Int) -> String {
+  let offsets = match self.sql_offsets {
+    Some(o) => o
+    None => {
+      let o = code_point_offsets(self.sql)
+      self.sql_offsets = Some(o)
+      o
+    }
+  }
+  let n = if offsets.is_empty() {
+    self.sql.length()
+  } else {
+    offsets.length() - 1
+  }
+  let mut a = if start < 0 { n + start } else { start }
+  let mut b = if end < 0 { n + end } else { end }
+  if a < 0 {
+    a = 0
+  }
+  if b > n {
+    b = n
+  }
+  if a >= b {
+    return ""
+  }
+  if offsets.is_empty() {
+    self.sql.unsafe_substring(start=a, end=b)
+  } else {
+    self.sql.unsafe_substring(start=offsets[a], end=offsets[b])
+  }
 }
 
 ///|
@@ -541,6 +582,7 @@ pub fn Parser::parse_tokens_with(
 ) -> Array[Expr?] raise SqlglotError {
   self.reset()
   self.sql = sql
+  self.sql_offsets = None
   let total = raw_tokens.length()
   let chunks : Array[Array[Token]] = [[]]
   for i, token in raw_tokens {

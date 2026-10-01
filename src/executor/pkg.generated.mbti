@@ -92,10 +92,6 @@ pub fn python_dialect() -> @core.Dialect
 
 pub fn python_generate(@core.Expr, identify? : Bool) -> String raise @core.SqlglotError
 
-pub fn str_lower(String) -> String
-
-pub fn str_upper(String) -> String
-
 pub fn strftime(PyDateTime, String) -> String
 
 pub fn strptime(String, String) -> PyDateTime raise PyException

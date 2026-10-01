@@ -65,17 +65,24 @@ fn serde_leaf_from_json(j : Json) -> Value raise SqlglotError {
     String(s) => Str(s)
     True => Bool(true)
     False => Bool(false)
-    Number(n, repr~) =>
-      Int(
-        match repr {
-          Some(r) =>
-            match parse_int_str(r) {
-              Some(v) => v
-              None => n.to_int64()
-            }
-          None => n.to_int64()
-        },
-      )
+    // Argument integers are Int64: refuse (rather than round or wrap) anything else.
+    Number(n, repr~) => {
+      let text = match repr {
+        Some(r) => r
+        None => n.to_string()
+      }
+      match parse_int_checked(text) {
+        Some(v) => Int(v)
+        None =>
+          if repr is None && n == n.trunc() && n.abs() < 9.2e18 {
+            Int(n.to_int64())
+          } else {
+            raise ValueError(
+              "Cannot load the number \{text} as an argument (only Int64 integers are supported)",
+            )
+          }
+      }
+    }
     Array(items) =>
       // A list of payload objects is a nested dump (see `serde_leaf_to_json`).
       if !items.is_empty() && items.iter().all(x => x is Object(_)) {

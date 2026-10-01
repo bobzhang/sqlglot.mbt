@@ -174,6 +174,8 @@ pub fn char_lower(Char) -> Char
 
 pub fn char_upper(Char) -> Char
 
+pub fn code_point_offsets(String) -> Array[Int]
+
 pub fn column_from_parts(Expr, table? : Expr?, db? : Expr?, catalog? : Expr?, fields? : Array[Expr]) -> Expr
 
 pub fn column_of(String, table? : String, quoted? : Bool) -> Expr
@@ -219,6 +221,8 @@ pub fn date_delta_to_binary_interval_op(cast? : Bool) -> (Generator, Expr) -> St
 pub fn date_trunc_to_time(Array[Expr]) -> Expr
 
 pub fn datestrtodate_sql(Generator, Expr) -> String raise SqlglotError
+
+pub fn decimal_value(Char) -> Int
 
 pub let default_pretty : @ref.Ref[Bool]
 
@@ -390,6 +394,8 @@ pub fn inline_array_sql(Generator, Expr) -> String raise SqlglotError
 
 pub fn inline_array_unless_query(Generator, Expr) -> String raise SqlglotError
 
+pub fn int64_range_error(String) -> SqlglotError
+
 pub fn int_str_from_base(String, Int) -> String raise SqlglotError
 
 pub fn interval_day_time_match(String) -> Bool
@@ -400,19 +406,35 @@ pub fn is_alnum(Char) -> Bool
 
 pub fn is_alpha(Char) -> Bool
 
+pub fn is_decimal(Char) -> Bool
+
 pub fn is_digit_char(Char) -> Bool
 
 pub fn is_float_str(String) -> Bool
 
 pub fn is_identifier_char(Char) -> Bool
 
+pub fn is_identifier_continue(Char) -> Bool
+
 pub fn is_int_str(String) -> Bool
 
+pub fn is_lower_char(Char) -> Bool
+
+pub fn is_numeric(Char) -> Bool
+
 pub fn is_parse_json(Expr) -> Bool
+
+pub fn is_printable(Char) -> Bool
+
+pub fn is_py_digit(Char) -> Bool
 
 pub fn is_safe_identifier(String) -> Bool
 
 pub fn is_space(Char) -> Bool
+
+pub fn is_upper_char(Char) -> Bool
+
+pub fn is_word_char(Char) -> Bool
 
 pub fn isnull_to_is_null(Array[Expr]) -> Expr
 
@@ -540,6 +562,8 @@ pub fn parse(String, dialect? : Dialect, error_level? : ErrorLevel, error_messag
 
 pub fn parse_identifier(String, dialect? : Dialect) -> Expr
 
+pub fn parse_int_checked(String) -> Int64? raise SqlglotError
+
 pub fn parse_int_str(String) -> Int64?
 
 pub fn parse_json_path(String, Dialect) -> Expr raise SqlglotError
@@ -558,9 +582,13 @@ pub fn property_sql(Generator, Expr) -> String raise SqlglotError
 
 pub let property_to_name : Map[Kind, String]
 
+pub fn py_casefold(String) -> String
+
 pub fn py_decimal_str(String) -> String
 
 pub fn py_float_repr(Double) -> String
+
+pub fn py_int_text_add(String, Int) -> String?
 
 pub fn py_len(String) -> Int
 
@@ -583,6 +611,8 @@ pub fn py_str_value(Value?) -> String raise SqlglotError
 pub fn py_strip(String) -> String
 
 pub fn py_upper(String) -> String
+
+pub fn re_ignorecase_char_eq(Char, Char) -> Bool
 
 pub fn regexp_extract_sql(Generator, Expr) -> String raise SqlglotError
 
@@ -632,6 +662,8 @@ pub fn str_is_alnum(String) -> Bool
 
 pub fn str_is_digit(String) -> Bool
 
+pub fn str_is_identifier(String) -> Bool
+
 pub fn strip_chars(String, String) -> String
 
 pub fn strposition_sql(Generator, Expr, func_name? : String, supports_position? : Bool, supports_occurrence? : Bool, use_ansi_position? : Bool) -> String raise SqlglotError
@@ -663,6 +695,8 @@ pub fn timestamptrunc_sql(func? : String, zone? : Bool) -> (Generator, Expr) -> 
 pub fn timestrtotime_sql(Generator, Expr, include_precision? : Bool) -> String raise SqlglotError
 
 pub let timezones : @set.Set[String]
+
+pub fn to_ascii_decimal(String) -> String
 
 pub fn to_bool_str(String) -> Bool?
 
@@ -699,6 +733,8 @@ pub fn tuple_(Array[Expr], copy? : Bool) -> Expr
 pub fn unabbreviate_unit(String) -> String?
 
 pub let unabbreviated_unit_name : Map[String, String]
+
+pub let unicode_version : String
 
 pub fn unit_to_str(Expr, default? : String) -> Expr?
 
@@ -925,8 +961,8 @@ pub fn Dialect::parse_into(Self, Array[Kind], String, error_level? : ErrorLevel,
 pub fn Dialect::parser(Self, error_level? : ErrorLevel, error_message_context? : Int, max_errors? : Int, max_nodes? : Int) -> Parser
 pub fn Dialect::quote_identifier(Self, Expr, identify? : Bool) -> Expr
 pub fn Dialect::subclass(Self, String, (Self) -> Unit) -> Self
-pub fn Dialect::to_json_path(Self, Expr?) -> Expr?
-pub fn Dialect::to_json_path_base(Self, Expr?) -> Expr?
+pub fn Dialect::to_json_path(Self, Expr?) -> Expr? raise SqlglotError
+pub fn Dialect::to_json_path_base(Self, Expr?) -> Expr? raise SqlglotError
 pub fn Dialect::tokenize(Self, String) -> Array[Token] raise SqlglotError
 pub fn Dialect::tokenize_base(Self, String) -> Array[Token] raise SqlglotError
 pub impl Eq for Dialect
@@ -1039,7 +1075,7 @@ pub(all) struct DialectHooks {
   mut generate_values_aliases : ((Dialect, Expr) -> Array[Expr])?
   mut tokenize : ((Dialect, String) -> Array[Token] raise SqlglotError)?
   mut can_quote : ((Dialect, Expr, String) -> Bool)?
-  mut to_json_path : ((Dialect, Expr?) -> Expr?)?
+  mut to_json_path : ((Dialect, Expr?) -> Expr? raise SqlglotError)?
   mut extra : Map[String, (Dialect, Expr) -> Expr?]
 }
 pub fn DialectHooks::copy(Self) -> Self
@@ -3080,6 +3116,7 @@ pub(all) struct Parser {
   max_errors : Int
   max_nodes : Int
   mut sql : String
+  mut sql_offsets : Array[Int]?
   mut errors : Array[SqlglotError]
   mut tokens : Array[Token]
   mut tokens_size : Int
@@ -3579,6 +3616,7 @@ pub fn Parser::raise_error(Self, String, token? : Token) -> Unit raise SqlglotEr
 pub fn Parser::replace_lambda(Self, Expr?, Array[Expr]) -> Expr? raise SqlglotError
 pub fn Parser::reset(Self) -> Unit
 pub fn Parser::retreat(Self, Int) -> Unit
+pub fn Parser::sql_slice(Self, Int, Int) -> String
 pub fn Parser::to_prop_eq(Self, Expr, Int) -> Expr raise SqlglotError
 pub fn[T] Parser::try_parse(Self, () -> T? raise SqlglotError, retreat? : Bool) -> T?
 pub fn Parser::validate_expression(Self, Expr, nargs? : Int) -> Expr raise SqlglotError

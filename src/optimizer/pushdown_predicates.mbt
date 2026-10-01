@@ -149,8 +149,18 @@ fn pushdown_cnf(
   scope_ref_count : Map[Int, Int],
   join_index : Map[String, Int]?,
 ) -> Unit raise @core.SqlglotError {
+  // The predicates are the operands of one connector: their JOIN/WHERE ancestor is
+  // found once for the whole chain (pushing a predicate replaces it by TRUE, which
+  // doesn't move the others).
+  let clauses = AncestorCache::new([Join, Where])
   for predicate in predicates {
-    for _, node in nodes_for_predicate(predicate, sources, scope_ref_count) {
+    for
+      _, node in nodes_for_predicate(
+        predicate,
+        sources,
+        scope_ref_count,
+        clauses~,
+      ) {
       if node.kind.is_a(Join) {
         let name = node.alias_or_name()
         let predicate_tables = @core.column_table_names(predicate, exclude=name)
@@ -252,10 +262,15 @@ fn nodes_for_predicate(
   predicate : @core.Expr,
   sources : Map[String, (@core.Expr, Source)],
   scope_ref_count : Map[Int, Int],
+  clauses? : AncestorCache,
 ) -> Map[String, @core.Expr] raise @core.SqlglotError {
   let nodes : Map[String, @core.Expr] = {}
   let tables = @core.column_table_names(predicate)
-  let where_condition = match predicate.find_ancestor([Join, Where]) {
+  let clause = match clauses {
+    Some(c) => c.find(predicate)
+    None => predicate.find_ancestor([Join, Where])
+  }
+  let where_condition = match clause {
     Some(a) => a.kind.is_a(Where)
     None => false
   }

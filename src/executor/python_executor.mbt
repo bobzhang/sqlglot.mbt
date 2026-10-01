@@ -142,9 +142,9 @@ fn PythonExecutor::execute_plan(
         SetOperation => self.set_operation(node, context)
       }
       contexts[node.uid] = result
-      if node.offset != 0 {
+      if node.offset != 0L {
         let table = result.get_table(node.name)
-        table.rows = slice_rows(table.rows, node.offset, None)
+        table.rows = slice_rows(table.rows, clamp_int(node.offset), None)
       }
       finished.push(node)
       for dep in node.dependents {
@@ -494,7 +494,10 @@ fn PythonExecutor::project_and_filter(
   let projections = self.generate_tuple(step.projections)
   while (table_iter.next)() is Some(reader) {
     match step.limit {
-      Some(limit) => if sink.length() >= step.offset + limit { break }
+      Some(limit) =>
+        if sink.length().to_int64() >= sat_add64(step.offset, limit) {
+          break
+        }
       None => ()
     }
     match condition {
@@ -903,7 +906,10 @@ fn PythonExecutor::aggregate(
       }
       if step.condition is None {
         match step.limit {
-          Some(limit) => if table.rows.length() >= step.offset + limit { break }
+          Some(limit) =>
+            if table.rows.length().to_int64() >= sat_add64(step.offset, limit) {
+              break
+            }
           None => ()
         }
       }
@@ -913,7 +919,7 @@ fn PythonExecutor::aggregate(
       }
     }
   } else if (match step.limit {
-      Some(l) => l > 0
+      Some(l) => l > 0L
       None => true
     }) &&
     group_by.is_empty() {
@@ -962,7 +968,7 @@ fn PythonExecutor::sort(
       sort_ctx.table().rows = slice_rows(
         sort_ctx.table().rows,
         0,
-        Some(step.offset + limit),
+        Some(clamp_int(sat_add64(step.offset, limit))),
       )
     None => ()
   }
@@ -1041,7 +1047,11 @@ fn PythonExecutor::set_operation(
   }
   match step.limit {
     Some(limit) =>
-      sink.rows = slice_rows(sink.rows, 0, Some(step.offset + limit))
+      sink.rows = slice_rows(
+        sink.rows,
+        0,
+        Some(clamp_int(sat_add64(step.offset, limit))),
+      )
     None => ()
   }
   self.context([(step.name, sink)])

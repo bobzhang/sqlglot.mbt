@@ -375,7 +375,7 @@ fn number_alias(counter : Int, text : String) -> String {
     let mut digits_seen = false
     let sb = StringBuilder()
     for ch in chars {
-      if @core.is_digit_char(ch) {
+      if @core.is_py_digit(ch) {
         sb.write_char(if digits_seen { '0' } else { '1' })
         digits_seen = true
       } else {

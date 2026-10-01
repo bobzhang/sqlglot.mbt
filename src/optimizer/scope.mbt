@@ -104,10 +104,6 @@ pub fn Scope::new(
   cte_sources? : Map[String, Source],
   can_be_correlated? : Bool = false,
 ) -> Scope {
-  let sources = match sources {
-    Some(s) => s
-    None => {}
-  }
   let lateral_sources = match lateral_sources {
     Some(s) => s
     None => {}
@@ -116,11 +112,28 @@ pub fn Scope::new(
     Some(s) => s
     None => {}
   }
-  for k, v in lateral_sources {
-    sources[k] = v
-  }
-  for k, v in cte_sources {
-    sources[k] = v
+  let sources = match sources {
+    Some(s) => {
+      for k, v in lateral_sources {
+        s[k] = v
+      }
+      for k, v in cte_sources {
+        s[k] = v
+      }
+      s
+    }
+    // (the common case of a branched scope: a copy of the CTE sources)
+    None if lateral_sources.is_empty() => cte_sources.copy()
+    None => {
+      let s = {}
+      for k, v in lateral_sources {
+        s[k] = v
+      }
+      for k, v in cte_sources {
+        s[k] = v
+      }
+      s
+    }
   }
   scope_id_counter.val += 1
   {
@@ -423,16 +436,36 @@ pub fn Scope::columns(self : Scope) -> Array[@core.Expr] {
     }
   }
   let expr = self.expression
-  let named_selects : @set.Set[String] = if expr.kind.is_a(Query) {
-    @set.from_array(expr.named_selects())
-  } else {
-    @set.new()
+  // computed on first use (`named_selects` of a set operation walks its left spine)
+  let mut named_selects_ : @set.Set[String]? = None
+  let named_selects = () => {
+    match named_selects_ {
+      Some(s) => s
+      None => {
+        let s : @set.Set[String] = if expr.kind.is_a(Query) {
+          @set.from_array(expr.named_selects())
+        } else {
+          @set.new()
+        }
+        named_selects_ = Some(s)
+        s
+      }
+    }
   }
   let result = []
+  let ancestors = AncestorCache::new([
+    Select,
+    Qualify,
+    Order,
+    Cluster,
+    Having,
+    Hint,
+    Table,
+    Star,
+    Distinct,
+  ])
   for column in columns.iter().concat(external_columns.iter()) {
-    let ancestor = column.find_ancestor([
-      Select, Qualify, Order, Cluster, Having, Hint, Table, Star, Distinct,
-    ])
+    let ancestor = ancestors.find(column)
     let keep = match ancestor {
       None => true
       Some(a) =>
@@ -446,7 +479,7 @@ pub fn Scope::columns(self : Scope) -> Array[@core.Expr] {
         (a.kind.is_any([Order, Cluster, Distinct]) &&
         (parent_is(a, [Window, WithinGroup]) ||
         !parent_is(a, [Select]) ||
-        !named_selects.contains(column.name()))) ||
+        !named_selects().contains(column.name()))) ||
         (a.kind.is_a(Star) && column.arg_key != Some("except_"))
     }
     if keep {

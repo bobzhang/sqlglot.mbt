@@ -38,7 +38,7 @@ pub(all) struct DialectHooks {
   /// `can_quote(identifier, identify)` override; base is `Dialect::can_quote_base`.
   mut can_quote : ((Dialect, Expr, String) -> Bool)?
   /// `Dialect.to_json_path` override (e.g. DuckDB's JSON pointer passthrough).
-  mut to_json_path : ((Dialect, Expr?) -> Expr?)?
+  mut to_json_path : ((Dialect, Expr?) -> Expr? raise SqlglotError)?
   mut extra : Map[String, (Dialect, Expr) -> Expr?]
 }
 
@@ -425,9 +425,9 @@ pub fn Dialect::case_sensitive(self : Dialect, text : String) -> Bool {
   }
   for c in text {
     let unsafe_ = if self.normalization_strategy == Uppercase {
-      char_upper(c) != c || c.is_ascii_lowercase()
+      is_lower_char(c)
     } else {
-      char_lower(c) != c || c.is_ascii_uppercase()
+      is_upper_char(c)
     }
     if unsafe_ {
       return true

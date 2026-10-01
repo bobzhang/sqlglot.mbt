@@ -422,11 +422,24 @@ pub fn projection_reachability(
     }
   }
   let r = empty_reachability(scopes)
+  // `named_selects` of a set operation is that of its left operand: memoized by
+  // expression so that a long left-deep chain isn't walked once per set operation
+  let set_names_by_expr : Map[Int, Array[String]] = {}
   for scope in scopes {
     r.live[scope.id] = scope_nodes[scope.id].required_by
     r.selections[scope.id] = output_nodes[scope.id].map(o => o.required_by)
-    if scope.expression.kind.is_a(SetOperation) {
-      r.set_names[scope.id] = scope.expression.named_selects()
+    let query = scope.expression
+    if query.kind.is_a(SetOperation) {
+      let names = match query.this().map(t => t.unnest()) {
+        Some(left) if left.kind.is_a(SetOperation) =>
+          match set_names_by_expr.get(left.uid) {
+            Some(n) => n
+            None => query.named_selects()
+          }
+        _ => query.named_selects()
+      }
+      set_names_by_expr[query.uid] = names
+      r.set_names[scope.id] = names
     }
   }
   for k, v in is_agg {

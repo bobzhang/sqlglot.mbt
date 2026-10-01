@@ -358,7 +358,7 @@ pub fn interval_day_time_match(text : String) -> Bool {
 
   fn digits() -> Bool {
     let st = i
-    while i < n && is_digit_char(s[i]) {
+    while i < n && is_decimal(s[i]) {
       i += 1
     }
     i > st

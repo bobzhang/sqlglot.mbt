@@ -31,7 +31,7 @@ fn as_float(v : Value) -> Double? {
 pub fn py_add(a : Value, b : Value) -> Value raise PyException {
   match (a, b) {
     (Int(_) | Bool(_), Int(_) | Bool(_)) =>
-      Int(as_int(a).unwrap() + as_int(b).unwrap())
+      Int(checked_add(as_int(a).unwrap(), as_int(b).unwrap()))
     (Float(_) | Int(_) | Bool(_), Float(_) | Int(_) | Bool(_)) =>
       Float(as_float(a).unwrap() + as_float(b).unwrap())
     (Str(x), Str(y)) => Str(x + y)
@@ -52,7 +52,7 @@ pub fn py_add(a : Value, b : Value) -> Value raise PyException {
 pub fn py_sub(a : Value, b : Value) -> Value raise PyException {
   match (a, b) {
     (Int(_) | Bool(_), Int(_) | Bool(_)) =>
-      Int(as_int(a).unwrap() - as_int(b).unwrap())
+      Int(checked_sub(as_int(a).unwrap(), as_int(b).unwrap()))
     (Float(_) | Int(_) | Bool(_), Float(_) | Int(_) | Bool(_)) =>
       Float(as_float(a).unwrap() - as_float(b).unwrap())
     (Date(d), TimeDelta(td)) => Date(d.add_days(-td.days))
@@ -94,7 +94,7 @@ fn repeat_seq(items : Array[Value], n : Int64) -> Array[Value] {
 pub fn py_mul(a : Value, b : Value) -> Value raise PyException {
   match (a, b) {
     (Int(_) | Bool(_), Int(_) | Bool(_)) =>
-      Int(as_int(a).unwrap() * as_int(b).unwrap())
+      Int(checked_mul(as_int(a).unwrap(), as_int(b).unwrap()))
     (Float(_) | Int(_) | Bool(_), Float(_) | Int(_) | Bool(_)) =>
       Float(as_float(a).unwrap() * as_float(b).unwrap())
     (Str(s), Int(_) | Bool(_)) | (Int(_) | Bool(_), Str(s)) => {
@@ -112,7 +112,7 @@ pub fn py_mul(a : Value, b : Value) -> Value raise PyException {
         Some(n) => n
         None => as_int(b).unwrap()
       }
-      TimeDelta(check_td(PyTimeDelta::from_us(td.total_us() * n)))
+      TimeDelta(check_td(PyTimeDelta::from_us(checked_mul(td.total_us(), n))))
     }
     (TimeDelta(td), Float(f)) | (Float(f), TimeDelta(td)) =>
       TimeDelta(
@@ -274,7 +274,7 @@ pub fn py_floordiv(a : Value, b : Value) -> Value raise PyException {
       if y == 0L {
         raise zero_division("integer division or modulo by zero")
       }
-      Int(floor_div64(as_int(a).unwrap(), y))
+      Int(checked_floordiv(as_int(a).unwrap(), y))
     }
     (Float(_) | Int(_) | Bool(_), Float(_) | Int(_) | Bool(_)) => {
       let y = as_float(b).unwrap()
@@ -303,7 +303,7 @@ pub fn py_mod(a : Value, b : Value) -> Value raise PyException {
       if y == 0L {
         raise zero_division("integer modulo by zero")
       }
-      Int(x - floor_div64(x, y) * y)
+      Int(py_mod64(x, y))
     }
     (Float(_) | Int(_) | Bool(_), Float(_) | Int(_) | Bool(_)) => {
       let y = as_float(b).unwrap()
@@ -331,17 +331,7 @@ pub fn py_pow(a : Value, b : Value) -> Value raise PyException {
         }
         return Float(@math.pow(x.to_double(), y.to_double()))
       }
-      let mut r = 1L
-      let mut base = x
-      let mut e = y
-      while e > 0L {
-        if e % 2L == 1L {
-          r = r * base
-        }
-        base = base * base
-        e = e / 2L
-      }
-      Int(r)
+      Int(checked_pow(x, y))
     }
     (Float(_) | Int(_) | Bool(_), Float(_) | Int(_) | Bool(_)) => {
       let x = as_float(a).unwrap()
@@ -362,7 +352,7 @@ pub fn py_pow(a : Value, b : Value) -> Value raise PyException {
 /// Python `-a`.
 pub fn py_neg(a : Value) -> Value raise PyException {
   match a {
-    Int(i) => Int(-i)
+    Int(i) => Int(checked_neg(i))
     Bool(b) => Int(if b { -1L } else { 0L })
     Float(d) => Float(-d)
     TimeDelta(td) => TimeDelta(check_td(PyTimeDelta::from_us(-td.total_us())))
@@ -413,7 +403,7 @@ pub fn py_bitop(op : String, a : Value, b : Value) -> Value raise PyException {
                 if y < 0L {
                   raise value_error("negative shift count")
                 }
-                x << y.to_int()
+                checked_shl(x, y)
               }
               _ => {
                 if y < 0L {
@@ -440,7 +430,7 @@ pub fn py_bitop(op : String, a : Value, b : Value) -> Value raise PyException {
 /// Python `abs(a)`.
 pub fn py_abs(a : Value) -> Value raise PyException {
   match a {
-    Int(i) => Int(i.abs())
+    Int(i) => Int(if i < 0L { checked_neg(i) } else { i })
     Bool(b) => Int(if b { 1L } else { 0L })
     Float(d) => Float(d.abs())
     TimeDelta(td) => if td.days < 0L { py_neg(a) } else { a }
@@ -463,11 +453,13 @@ pub fn py_int(v : Value) -> Value raise PyException {
           "OverflowError", "cannot convert float infinity to integer",
         )
       }
-      Int(d.trunc().to_int64())
+      Int(float_to_int64(d))
     }
     Str(s) =>
       match parse_py_int_literal(s) {
         Some(i) => Int(i)
+        None if @core.is_int_str(s) =>
+          raise int64_overflow("int(\{@core.py_repr_str(s)})")
         None =>
           raise value_error(
             "invalid literal for int() with base 10: \{@core.py_repr_str(s)}",
@@ -481,73 +473,17 @@ pub fn py_int(v : Value) -> Value raise PyException {
 }
 
 ///|
-fn is_py_space(c : Char) -> Bool {
-  c == ' ' ||
-  c == '\t' ||
-  c == '\n' ||
-  c == '\r' ||
-  c == '\u{0b}' ||
-  c == '\u{0c}' ||
-  c == '\u{1c}' ||
-  c == '\u{1d}' ||
-  c == '\u{1e}' ||
-  c == '\u{1f}' ||
-  c == '\u{85}' ||
-  c == '\u{a0}' ||
-  c == '\u{2028}' ||
-  c == '\u{2029}' ||
-  c == '\u{3000}' ||
-  (c >= '\u{2000}' && c <= '\u{200a}')
-}
-
-///|
 fn py_strip_ws(s : String) -> String {
   let chars = s.to_array()
   let mut i = 0
   let mut j = chars.length()
-  while i < j && is_py_space(chars[i]) {
+  while i < j && @core.is_space(chars[i]) {
     i += 1
   }
-  while j > i && is_py_space(chars[j - 1]) {
+  while j > i && @core.is_space(chars[j - 1]) {
     j -= 1
   }
   String::from_array(chars[i:j].to_array())
-}
-
-///|
-/// `int(s)` parsing (base 10, optional sign, underscores between digits).
-fn parse_py_int_literal(s : String) -> Int64? {
-  let chars = py_strip_ws(s).to_array()
-  if chars.is_empty() {
-    return None
-  }
-  let mut i = 0
-  let mut neg = false
-  if chars[0] == '+' || chars[0] == '-' {
-    neg = chars[0] == '-'
-    i = 1
-  }
-  if i >= chars.length() {
-    return None
-  }
-  let mut v = 0L
-  let mut prev_digit = false
-  while i < chars.length() {
-    let c = chars[i]
-    if c >= '0' && c <= '9' {
-      v = v * 10L + (c.to_int() - '0'.to_int()).to_int64()
-      prev_digit = true
-    } else if c == '_' && prev_digit && i + 1 < chars.length() {
-      prev_digit = false
-    } else {
-      return None
-    }
-    i += 1
-  }
-  if !prev_digit {
-    return None
-  }
-  Some(if neg { -v } else { v })
 }
 
 ///|
