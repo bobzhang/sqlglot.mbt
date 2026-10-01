@@ -1,7 +1,10 @@
 ///|
 /// Errors raised by sqlglot.
 pub(all) suberror SqlglotError {
-  TokenError(String)
+  /// Error raised when tokenizing fails. When available, `start` and `end` are the
+  /// offsets in the source SQL of the context snippet quoted in the message, i.e.
+  /// the snippet is `sql[start:end]`.
+  TokenError(String, start~ : Int?, end~ : Int?)
   ParseError(String, Array[ParseErrorInfo])
   UnsupportedError(String)
   OptimizeError(String)
@@ -25,7 +28,7 @@ pub(all) struct ParseErrorInfo {
 ///|
 pub fn SqlglotError::message(self : SqlglotError) -> String {
   match self {
-    TokenError(m) => m
+    TokenError(m, ..) => m
     ParseError(m, _) => m
     UnsupportedError(m) => m
     OptimizeError(m) => m
@@ -38,7 +41,7 @@ pub fn SqlglotError::message(self : SqlglotError) -> String {
 ///|
 pub impl Show for SqlglotError with fn output(self, logger) {
   let name = match self {
-    TokenError(_) => "TokenError"
+    TokenError(_, ..) => "TokenError"
     ParseError(_, _) => "ParseError"
     UnsupportedError(_) => "UnsupportedError"
     OptimizeError(_) => "OptimizeError"

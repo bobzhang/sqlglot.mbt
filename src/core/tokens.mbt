@@ -387,7 +387,11 @@ pub fn Tokenizer::tokenize(
       let start = @cmp.maximum(self.current - 50, 0)
       let end = @cmp.minimum(self.current + 50, self.size - 1)
       let context = self.slice(start, end)
-      raise TokenError("Error tokenizing '\{context}'") // original: \{e}
+      raise TokenError(
+        "Error tokenizing '\{context}'",
+        start=Some(start),
+        end=Some(end),
+      ) // original: \{e}
         |> ignore_err(e)
     }
   }
@@ -489,7 +493,7 @@ fn Tokenizer::advance(
   self.end = self.current >= self.size
   if self.current - 1 >= self.size {
     // Python: `sql[self._current - 1]` raises IndexError past the end of the input
-    raise TokenError("string index out of range")
+    raise TokenError("string index out of range", start=None, end=None)
   }
   self.char = self.at(self.current - 1)
   self.peek = if self.end { nul } else { self.sql[self.current] }
@@ -633,7 +637,8 @@ fn Tokenizer::scan_keywords(self : Tokenizer) -> Unit raise SqlglotError {
             self.add(tt, text=w)
             return
           }
-          None => raise TokenError("Unknown keyword \{w}")
+          None =>
+            raise TokenError("Unknown keyword \{w}", start=None, end=None)
         }
       }
     }
@@ -955,6 +960,8 @@ fn Tokenizer::scan_string(
     if !is_valid_int(text, base) {
       raise TokenError(
         "Numeric string contains invalid characters from \{self.line}:\{self.start}",
+        start=None,
+        end=None,
       )
     }
   }
@@ -1215,6 +1222,8 @@ fn Tokenizer::extract_string(
       } else {
         raise TokenError(
           "Missing \{delimiter} from \{self.line}:\{self.current}",
+          start=None,
+          end=None,
         )
       }
     } else {
@@ -1228,7 +1237,11 @@ fn Tokenizer::extract_string(
         if !raise_unmatched {
           return text.to_string() + char_s
         }
-        raise TokenError("Missing \{delimiter} from \{self.line}:\{self.start}")
+        raise TokenError(
+          "Missing \{delimiter} from \{self.line}:\{self.start}",
+          start=None,
+          end=None,
+        )
       }
       let current = self.current - 1
       self.advance(alnum=true)

@@ -48,7 +48,7 @@ pub fn Parser::parse_types_base(
           )
         } else {
           let tokens = self.dialect.tokenize(identifier.name()) catch {
-            TokenError(_) => []
+            TokenError(_, ..) => []
             e => raise e
           }
           if !tokens.is_empty() &&

@@ -116,7 +116,7 @@ test "TestJsonpath.test_cts_file" {
     if cts_fixtures[i + 2] == "1" {
       // invalid selector: may raise ParseError/TokenError, or parse
       try jsonpath(selector) catch {
-        @core.ParseError(_, _) | @core.TokenError(_) => ()
+        @core.ParseError(_, _) | @core.TokenError(_, ..) => ()
         e => t.ok(false, msg="\{selector} /* \{name} */: unexpected error \{e}")
       } noraise {
         _ => ()
