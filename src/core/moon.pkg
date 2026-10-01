@@ -14,6 +14,7 @@ options(
     "parser_clauses.mbt": ["js"],
     "parser_expr.mbt": ["js"],
     "parser_columns.mbt": ["js"],
+    "parser_funcs.mbt": ["js"],
     "parser_stubs.mbt": ["not", "js"],
   },
 )
