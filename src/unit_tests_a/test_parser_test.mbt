@@ -18,7 +18,7 @@ fn meta_of(e : @core.Expr?) -> Array[(String, Int)] {
       let out = []
       for k, v in e.get_meta() {
         match v {
-          @core.Int(i) => out.push((k, i))
+          @core.Int(i) => out.push((k, i.to_int()))
           _ => out.push((k, -999999))
         }
       }
@@ -1638,7 +1638,7 @@ test "TestParser.test_quoted_identifier_meta" {
   let slice = (m : Map[String, @core.Value]) => {
     match (m.get("start"), m.get("end")) {
       (Some(@core.Int(s)), Some(@core.Int(e))) =>
-        sql.unsafe_substring(start=s, end=e + 1)
+        sql.unsafe_substring(start=s.to_int(), end=e.to_int() + 1)
       _ => "<missing meta>"
     }
   }

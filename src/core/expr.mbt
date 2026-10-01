@@ -8,7 +8,7 @@ pub(all) enum Value {
   List(Array[Value])
   Str(String)
   Bool(Bool)
-  Int(Int)
+  Int(Int64)
   DT(DType)
 }
 
@@ -59,6 +59,11 @@ pub impl IntoValue for Bool with fn into_value(self) {
 
 ///|
 pub impl IntoValue for Int with fn into_value(self) {
+  Some(Int(self.to_int64()))
+}
+
+///|
+pub impl IntoValue for Int64 with fn into_value(self) {
   Some(Int(self))
 }
 
@@ -1387,10 +1392,10 @@ pub fn Expr::update_positions(self : Expr, other : Expr?) -> Expr {
 /// Updates position meta from a token.
 pub fn Expr::update_positions_from_token(self : Expr, token : Token) -> Expr {
   let m = self.get_meta()
-  m["line"] = Int(token.line)
-  m["col"] = Int(token.col)
-  m["start"] = Int(token.start)
-  m["end"] = Int(token.end)
+  m["line"] = Int(token.line.to_int64())
+  m["col"] = Int(token.col.to_int64())
+  m["start"] = Int(token.start.to_int64())
+  m["end"] = Int(token.end.to_int64())
   self
 }
 
@@ -1582,8 +1587,8 @@ fn hash_value(hasher : Hasher, v : Value, raw : Bool) -> Unit {
       }
     }
     Str(s) => hasher.combine_string(if raw { s } else { py_lower(s) })
-    Bool(b) => hasher.combine_int(if b { 1 } else { 0 })
-    Int(i) => hasher.combine_int(i)
+    Bool(b) => hasher.combine_int64(if b { 1 } else { 0 })
+    Int(i) => hasher.combine_int64(i)
     DT(d) => hasher.combine_int(d.id() + 1000)
   }
 }

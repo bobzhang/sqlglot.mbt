@@ -63,7 +63,7 @@ pub fn qualify_columns(
 ///|
 fn meta_int(e : @core.Expr, key : String) -> Int? {
   match e.meta_get(key) {
-    Some(Int(i)) => Some(i)
+    Some(Int(i)) => Some(i.to_int())
     _ => None
   }
 }

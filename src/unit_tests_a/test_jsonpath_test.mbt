@@ -121,10 +121,6 @@ test "TestJsonpath.test_cts_file" {
       } noraise {
         _ => ()
       }
-    } else if selector.contains("113667776004") {
-      // SKIP (6 selectors): JSONPath indices are stored as 32-bit `Value::Int`
-      // (Python ints are unbounded), so 113667776004 overflows.
-      continue
     } else {
       let expected = overrides
         .get(selector)

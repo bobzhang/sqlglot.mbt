@@ -119,9 +119,9 @@ fn CanonParser::value(self : CanonParser) -> @core.Value {
       neg = true
       self.pos += 1
     }
-    let mut n = 0
+    let mut n = 0L
     while self.peek() >= '0' && self.peek() <= '9' {
-      n = n * 10 + (self.peek().to_int() - '0'.to_int())
+      n = n * 10 + (self.peek().to_int() - '0'.to_int()).to_int64()
       self.pos += 1
     }
     return Int(if neg { -n } else { n })

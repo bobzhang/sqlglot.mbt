@@ -97,7 +97,7 @@ fn JsonPathParser::parse_literal(
   }
   if !number.is_empty() {
     return match parse_int_str(number) {
-      Some(n) => Int(n.to_int())
+      Some(n) => Int(n)
       None => raise ParseError(self.error("Invalid number \{number}"), [])
     }
   }

@@ -346,7 +346,7 @@ fn array_insert_sql(
   let element = expr_of(e)
   let element_array = @core.mk(Array, [("expressions", [element])])
   let index_offset = match e.get("offset") {
-    Some(Int(i)) => i
+    Some(Int(i)) => i.to_int()
     Some(Node(n)) => to_int(n)
     _ => 0
   }

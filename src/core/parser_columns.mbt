@@ -719,12 +719,7 @@ pub fn Parser::parse_colon_as_variant_extract(
 /// integral, else the textual decimal).
 pub fn number_value(e : Expr) -> Value {
   match e.to_py_int() {
-    Some(i) =>
-      if i >= -2147483648L && i <= 2147483647L {
-        Int(i.to_int())
-      } else {
-        Str(i.to_string())
-      }
+    Some(i) => Int(i)
     None => Str(decimal_str(e))
   }
 }
