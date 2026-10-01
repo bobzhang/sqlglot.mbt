@@ -236,3 +236,26 @@ fn Template::get(self : Template) -> @core.Expr raise @core.SqlglotError {
     }
   }
 }
+
+///|
+/// Python `expression.this` where the generator code requires it to be set: raises
+/// (like Python's AttributeError on `None`) instead of aborting.
+fn this_of(e : @core.Expr) -> @core.Expr raise @core.SqlglotError {
+  req(e, "this")
+}
+
+///|
+/// Python `expression.expression` where the generator code requires it to be set.
+fn expr_of(e : @core.Expr) -> @core.Expr raise @core.SqlglotError {
+  req(e, "expression")
+}
+
+///|
+/// Python `expression.args["key"]`: raises when the argument is missing.
+fn req(e : @core.Expr, key : String) -> @core.Expr raise @core.SqlglotError {
+  match e.arg(key) {
+    Some(x) => x
+    None =>
+      raise @core.ValueError("\{e.kind.name()} has no `\{key}` expression")
+  }
+}

@@ -256,7 +256,7 @@ fn configure_methods(d : @core.Dialect) -> Unit {
   m[BitmapBucketNumber] = bitmapbucketnumber_sql
   m[BitmapBitPosition] = bitmapbitposition_sql
   m[BitmapConstructAgg] = (g, e) => {
-    "(\{g.sql(Some(tmpl(bitmap_construct_agg_template.get(), [("arg", e.this_())])))})"
+    "(\{g.sql(Some(tmpl(bitmap_construct_agg_template.get(), [("arg", this_of(e))])))})"
   }
   m[GetIgnoreCase] = unsupported_fallback(
     "DuckDB does not support the GET_IGNORE_CASE() function",
@@ -337,10 +337,10 @@ fn configure_methods(d : @core.Dialect) -> Unit {
         else_(
           when(
             case_(),
-            eq(func("json_type", [e.this_()]), str_lit("NULL")),
+            eq(func("json_type", [this_of(e)]), str_lit("NULL")),
             @core.null_(),
           ),
-          e.this_(),
+          this_of(e),
         ),
       ),
     )
@@ -371,10 +371,10 @@ fn configure_methods(d : @core.Dialect) -> Unit {
   m[Pad] = pad_sql
   m[Minhash] = minhash_sql
   m[MinhashCombine] = (g, e) => {
-    "(\{g.sql(Some(tmpl(minhash_combine_template.get(), [("expr", e.this_())])))})"
+    "(\{g.sql(Some(tmpl(minhash_combine_template.get(), [("expr", this_of(e))])))})"
   }
   m[ApproximateSimilarity] = (g, e) => {
-    "(\{g.sql(Some(tmpl(approximate_similarity_template.get(), [("expr", e.this_())])))})"
+    "(\{g.sql(Some(tmpl(approximate_similarity_template.get(), [("expr", this_of(e))])))})"
   }
   m[ArrayUniqueAgg] = (g, e) => {
     g.sql(
@@ -382,9 +382,9 @@ fn configure_methods(d : @core.Dialect) -> Unit {
         @core.mk(Filter, [
           (
             "this",
-            func("LIST", [@core.mk(Distinct, [("expressions", [e.this_()])])]),
+            func("LIST", [@core.mk(Distinct, [("expressions", [this_of(e)])])]),
           ),
-          ("expression", @core.mk1(Where, not_(is_null(e.this_().copy())))),
+          ("expression", @core.mk1(Where, not_(is_null(this_of(e).copy())))),
         ]),
       ),
     )
@@ -407,8 +407,8 @@ fn configure_methods(d : @core.Dialect) -> Unit {
     g.function_fallback_sql(e)
   }
   m[ArrayExcept] = (g, e) => {
-    let arr1 = e.this_()
-    let arr2 = e.expression_()
+    let arr1 = this_of(e)
+    let arr2 = expr_of(e)
     if e.has("is_multiset") {
       return array_bag_sql(g, array_except_condition.get(), arr1, arr2)
     }
@@ -439,7 +439,7 @@ fn configure_methods(d : @core.Dialect) -> Unit {
   m[Stuff] = stuff_sql
   m[Rand] = rand_sql
   m[ByteLength] = (g, e) => {
-    let arg = e.this_()
+    let arg = this_of(e)
     if is_text(arg) {
       return g.func("OCTET_LENGTH", [@core.mk1(Encode, arg)])
     }
@@ -464,18 +464,12 @@ fn configure_methods(d : @core.Dialect) -> Unit {
   m[MapCat] = (g, e) => {
     g.sql(
       Some(
-        tmpl(mapcat_template.get(), [
-          ("map1", e.this_()),
-          ("map2", e.expression_()),
-        ]),
+        tmpl(mapcat_template.get(), [("map1", this_of(e)), ("map2", expr_of(e))]),
       ),
     )
   }
   m[MapContainsKey] = (g, e) => {
-    g.func("ARRAY_CONTAINS", [
-      func("MAP_KEYS", [e.arg("key").unwrap()]),
-      e.this_(),
-    ])
+    g.func("ARRAY_CONTAINS", [func("MAP_KEYS", [req(e, "key")]), this_of(e)])
   }
   m[MapDelete] = mapdelete_sql
   m[MapPick] = mappick_sql
@@ -493,7 +487,7 @@ fn configure_methods(d : @core.Dialect) -> Unit {
       Some(
         @core.mk(Repeat, [
           ("this", str_lit(" ")),
-          ("times", cast(e.this_(), BIGINT)),
+          ("times", cast(this_of(e), BIGINT)),
         ]),
       ),
     )
@@ -666,7 +660,7 @@ fn timeslice_sql(
   g : @core.Generator,
   e : @core.Expr,
 ) -> String raise @core.SqlglotError {
-  let date_expr = e.this_()
+  let date_expr = this_of(e)
   let slice_length = e.expression()
   let unit = e.arg("unit")
   let kind = @core.py_upper(e.text("kind"))
@@ -693,7 +687,7 @@ fn bitmapbucketnumber_sql(
   g : @core.Generator,
   e : @core.Expr,
 ) -> String raise @core.SqlglotError {
-  let value = e.this_()
+  let value = this_of(e)
   let positive_formula = add(intdiv(sub(value, num(1)), num(32768)), num(1))
   let non_positive_formula = intdiv(value, num(32768))
   let case_expr = else_(
@@ -712,7 +706,7 @@ fn bitmapbitposition_sql(
   g : @core.Generator,
   e : @core.Expr,
 ) -> String raise @core.SqlglotError {
-  let this = e.this_()
+  let this = this_of(e)
   g.sql(
     Some(
       @core.mk(Mod, [
@@ -738,8 +732,8 @@ fn jarowinklersimilarity_sql(
   g : @core.Generator,
   e : @core.Expr,
 ) -> String raise @core.SqlglotError {
-  let mut this = e.this_()
-  let mut expr = e.expression_()
+  let mut this = this_of(e)
+  let mut expr = expr_of(e)
   if e.has("case_insensitive") {
     this = @core.mk1(Upper, this)
     expr = @core.mk1(Upper, expr)
@@ -756,7 +750,7 @@ fn randstr_sql(
   g : @core.Generator,
   e : @core.Expr,
 ) -> String raise @core.SqlglotError {
-  let length = e.this_()
+  let length = this_of(e)
   let seed_value = match e.arg("generator") {
     Some(generator) =>
       if generator.kind == Rand {
@@ -817,9 +811,9 @@ fn zipf_sql(
   g : @core.Generator,
   e : @core.Expr,
 ) -> String raise @core.SqlglotError {
-  let s = e.this_()
-  let n = e.arg("elementcount").unwrap()
-  let gen = e.arg("gen").unwrap()
+  let s = this_of(e)
+  let n = req(e, "elementcount")
+  let gen = req(e, "gen")
   let random_expr = if gen.kind != Rand {
     hash_random_expr(gen.copy())
   } else {
@@ -833,7 +827,7 @@ fn tobinary_sql(
   g : @core.Generator,
   e : @core.Expr,
 ) -> String raise @core.SqlglotError {
-  let value = e.this_()
+  let value = this_of(e)
   let format_arg = e.arg("format")
   let is_safe = e.has("safe")
   let is_bin = is_binary(Some(e))
@@ -876,7 +870,7 @@ fn tonumber_sql(
       if e.has("safe") {
         return g.sql(Some(@core.mk(TryCast, [("this", e.this()), ("to", to)])))
       }
-      g.sql(Some(@core.exp_cast_to(e.this_(), to, dialect=dialect())))
+      g.sql(Some(@core.exp_cast_to(this_of(e), to, dialect=dialect())))
     }
     _ => g.tonumber_sql(e)
   }
@@ -888,7 +882,7 @@ fn greatest_least_sql(
   g : @core.Generator,
   e : @core.Expr,
 ) -> String raise @core.SqlglotError {
-  let all_args = [e.this_(), ..e.expressions()]
+  let all_args = [this_of(e), ..e.expressions()]
   let fallback_sql = g.function_fallback_sql(e)
   if e.has("ignore_nulls") {
     return fallback_sql
@@ -1013,7 +1007,7 @@ fn strposition_sql(
   g : @core.Generator,
   e : @core.Expr,
 ) -> String raise @core.SqlglotError {
-  let this = e.this_()
+  let this = this_of(e)
   let substr = e.arg("substr")
   let position = e.arg("position")
   // For BINARY/BLOB: DuckDB's STRPOS doesn't support BLOB types
@@ -1130,7 +1124,7 @@ fn tsordstotime_sql(
   g : @core.Generator,
   e : @core.Expr,
 ) -> String raise @core.SqlglotError {
-  let this = e.this_()
+  let this = this_of(e)
   let time_format = g.format_time(e)
   let safe = e.has("safe")
   let time_type = duck_type("TIME")
@@ -1179,7 +1173,7 @@ fn checkjson_sql(
   g : @core.Generator,
   e : @core.Expr,
 ) -> String raise @core.SqlglotError {
-  let arg = e.this_()
+  let arg = this_of(e)
   g.sql(
     Some(
       else_(
@@ -1203,7 +1197,7 @@ fn parsejson_sql(
   g : @core.Generator,
   e : @core.Expr,
 ) -> String raise @core.SqlglotError {
-  let arg = e.this_()
+  let arg = this_of(e)
   if e.has("safe") {
     return g.sql(
       Some(
@@ -1230,10 +1224,10 @@ fn unicode_sql(
     return g.sql(
       Some(
         else_(
-          when(case_(), eq(e.this_(), str_lit("")), num(0)),
+          when(case_(), eq(this_of(e), str_lit("")), num(0)),
           @core.mk(Anonymous, [
             ("this", "UNICODE"),
-            ("expressions", [e.this_()]),
+            ("expressions", [this_of(e)]),
           ]),
         ),
       ),
@@ -1262,13 +1256,13 @@ fn normal_sql(
   g : @core.Generator,
   e : @core.Expr,
 ) -> String raise @core.SqlglotError {
-  let mean = e.this_()
-  let stddev = e.arg("stddev").unwrap()
-  let gen = e.arg("gen").unwrap()
+  let mean = this_of(e)
+  let stddev = req(e, "stddev")
+  let gen = req(e, "gen")
   let (u1, u2) = if gen.kind == Rand && gen.this() is None {
     (@core.mk0(Rand), @core.mk0(Rand))
   } else {
-    let seed = if gen.kind == Rand { gen.this_() } else { gen }
+    let seed = if gen.kind == Rand { this_of(gen) } else { gen }
     (
       tmpl(seeded_random_template.get(), [("seed", seed)]),
       tmpl(seeded_random_template.get(), [
@@ -1294,8 +1288,8 @@ fn uniform_sql(
   g : @core.Generator,
   e : @core.Expr,
 ) -> String raise @core.SqlglotError {
-  let min_val = e.this_()
-  let max_val = e.expression_()
+  let min_val = this_of(e)
+  let max_val = expr_of(e)
   let gen = e.arg("gen")
   let is_int_result = min_val.is_int() && max_val.is_int()
   let random_expr = match gen {
@@ -1370,9 +1364,9 @@ fn timefromparts_sql(
   let nano = e.arg("nano")
   // Snowflake's TIME_FROM_PARTS supports overflow
   if e.has("overflow") {
-    let hour = e.arg("hour").unwrap()
-    let minute = e.arg("min").unwrap()
-    let mut sec = e.arg("sec").unwrap()
+    let hour = req(e, "hour")
+    let minute = req(e, "min")
+    let mut sec = req(e, "sec")
     // Check if values are within normal ranges - use MAKE_TIME for efficiency
     if nano is None && hour.is_int() && minute.is_int() && sec.is_int() {
       let h_val = to_int(hour)
@@ -1414,7 +1408,7 @@ fn timefromparts_sql(
   // Default: MAKE_TIME
   match nano {
     Some(n) => {
-      let sec = e.arg("sec").unwrap()
+      let sec = req(e, "sec")
       e.set("sec", add(sec, div(n.pop(), numstr("1000000000.0"))))
     }
     None => ()
@@ -1428,8 +1422,8 @@ fn extract_sql(
   g : @core.Generator,
   e : @core.Expr,
 ) -> String raise @core.SqlglotError {
-  let this = e.this_()
-  let datetime_expr = e.expression_()
+  let this = this_of(e)
+  let datetime_expr = expr_of(e)
   if datetime_expr.is_type([TIMESTAMPTZ, TIMESTAMPLTZ]) {
     g.unsupported(
       "EXTRACT from TIMESTAMPTZ / TIMESTAMPLTZ may produce different results due to timezone handling differences",
@@ -1612,7 +1606,7 @@ fn in_sql(
         Some(
           tmpl(in_unnest_template.get(), [
             ("arr", unnest.expressions()[0]),
-            ("value", e.this_()),
+            ("value", this_of(e)),
           ]),
         ),
       )
@@ -1652,7 +1646,7 @@ fn countif_sql(
   e : @core.Expr,
 ) -> String raise @core.SqlglotError {
   if g.dialect.version >= (1, 2, 0) {
-    let this = e.this_()
+    let this = this_of(e)
     let mut e = e
     if e.has("zero_on_all_null") && this.kind != Distinct {
       // DuckDB >= 1.2's COUNT_IF returns NULL when the condition is NULL on all rows,
@@ -1674,7 +1668,7 @@ fn bracket_sql(
     return g.bracket_sql(e)
   }
   // https://duckdb.org/2025/02/05/announcing-duckdb-120.html#breaking-changes
-  let mut this = e.this_()
+  let mut this = this_of(e)
   if this.kind == Array {
     this.replace(Some(@core.exp_paren(this))) |> ignore
   }
@@ -1695,7 +1689,7 @@ fn withingroup_sql(
   g : @core.Generator,
   e : @core.Expr,
 ) -> String raise @core.SqlglotError {
-  let func = e.this_()
+  let func = this_of(e)
   // For ARRAY_AGG, DuckDB requires ORDER BY inside the function, not in WITHIN GROUP
   if func.kind == ArrayAgg {
     guard e.expression() is Some(order) && order.kind == Order else {
@@ -1705,7 +1699,7 @@ fn withingroup_sql(
     func.set(
       "this",
       @core.mk(Order, [
-        ("this", func.this_().copy()),
+        ("this", this_of(func).copy()),
         ("expressions", order.expressions()),
       ]),
     )
@@ -1741,7 +1735,7 @@ fn length_sql(
   g : @core.Generator,
   e : @core.Expr,
 ) -> String raise @core.SqlglotError {
-  let mut arg = e.this_()
+  let mut arg = this_of(e)
   // Dialects like BQ and Snowflake also accept binary values as args, so
   // DDB will attempt to infer the type or resort to case/when resolution
   if !e.has("binary") || arg.is_string() {
@@ -1778,7 +1772,7 @@ fn bitlength_sql(
   g : @core.Generator,
   e : @core.Expr,
 ) -> String raise @core.SqlglotError {
-  let arg = e.this_()
+  let arg = this_of(e)
   if !is_binary(Some(arg)) {
     return g.func("BIT_LENGTH", [arg])
   }
@@ -1791,10 +1785,10 @@ fn collate_sql(
   g : @core.Generator,
   e : @core.Expr,
 ) -> String raise @core.SqlglotError {
-  if !e.expression_().is_string() {
+  if !expr_of(e).is_string() {
     return g.collate_sql(e)
   }
-  let raw = e.expression_().name()
+  let raw = expr_of(e).name()
   if raw == "" {
     return g.sql(e.this())
   }
@@ -1864,8 +1858,8 @@ fn regexpcount_sql(
   g : @core.Generator,
   e : @core.Expr,
 ) -> String raise @core.SqlglotError {
-  let mut this = e.this_()
-  let mut pattern = e.expression_()
+  let mut this = this_of(e)
+  let mut pattern = expr_of(e)
   let position = e.arg("position")
   let parameters = e.arg("parameters")
   let validated_flags = validate_regexp_flags(g, parameters, "ims")
@@ -1902,8 +1896,8 @@ fn regexpreplace_sql(
   g : @core.Generator,
   e : @core.Expr,
 ) -> String raise @core.SqlglotError {
-  let mut subject = e.this_()
-  let pattern = e.expression_()
+  let mut subject = this_of(e)
+  let pattern = expr_of(e)
   let replacement = match e.arg("replacement") {
     Some(r) => r
     None => str_lit("")
@@ -2013,13 +2007,13 @@ fn pad_sql(
   g : @core.Generator,
   e : @core.Expr,
 ) -> String raise @core.SqlglotError {
-  let string_arg = e.this_()
+  let string_arg = this_of(e)
   let fill_arg = match e.arg("fill_pattern") {
     Some(f) => f
     None => str_lit(" ")
   }
   if is_binary(Some(string_arg)) || is_binary(Some(fill_arg)) {
-    let length_arg = e.expression_()
+    let length_arg = expr_of(e)
     let is_left = e.has("is_left")
     let input_len = @core.mk1(ByteLength, string_arg)
     let chars_needed = sub(length_arg, input_len)
@@ -2047,7 +2041,7 @@ fn minhash_sql(
   g : @core.Generator,
   e : @core.Expr,
 ) -> String raise @core.SqlglotError {
-  let k = e.this_()
+  let k = this_of(e)
   let exprs = e.expressions()
   if exprs.length() != 1 || exprs[0].kind == Star {
     g.unsupported(
@@ -2068,12 +2062,12 @@ fn arrayconcatagg_sql(
   g : @core.Generator,
   e : @core.Expr,
 ) -> String raise @core.SqlglotError {
-  let mut this = e.this_()
+  let mut this = this_of(e)
   if this.kind == Limit {
     g.unsupported("LIMIT in ARRAY_CONCAT_AGG cannot be transpiled to DuckDB")
-    this = this.this_()
+    this = this_of(this)
   }
-  let inner = if this.kind == Order { this.this_() } else { this }
+  let inner = if this.kind == Order { this_of(this) } else { this }
   g.func("FLATTEN", [
     @core.mk(Filter, [
       ("this", @core.mk1(ArrayAgg, this)),
@@ -2087,7 +2081,7 @@ fn arraydistinct_sql(
   g : @core.Generator,
   e : @core.Expr,
 ) -> String raise @core.SqlglotError {
-  let arr = e.this_()
+  let arr = this_of(e)
   let func_sql = g.func("LIST_DISTINCT", [arr])
   if e.has("check_null") {
     let add_null_to_array = func("LIST_APPEND", [
@@ -2235,8 +2229,8 @@ fn left_right_sql(
   e : @core.Expr,
   func_name : String,
 ) -> String raise @core.SqlglotError {
-  let arg = e.this_()
-  let length = e.expression_()
+  let arg = this_of(e)
+  let length = expr_of(e)
   let is_bin = is_binary(Some(arg))
   let mut result = if is_bin {
     let hex_arg = @core.mk1(Hex, arg)
@@ -2266,10 +2260,10 @@ fn stuff_sql(
   g : @core.Generator,
   e : @core.Expr,
 ) -> String raise @core.SqlglotError {
-  let mut base = e.this_()
-  let start = e.arg("start").unwrap()
-  let length = e.arg("length").unwrap()
-  let mut insertion = e.expression_()
+  let mut base = this_of(e)
+  let start = req(e, "start")
+  let length = req(e, "length")
+  let mut insertion = expr_of(e)
   let is_bin = is_binary(Some(base))
   let (left, right) = if is_bin {
     base = @core.mk1(Hex, base)
@@ -2334,7 +2328,7 @@ fn base64encode_sql(
   g : @core.Generator,
   e : @core.Expr,
 ) -> String raise @core.SqlglotError {
-  let mut result = e.this_()
+  let mut result = this_of(e)
   if is_text(result) {
     result = @core.mk1(Encode, result)
   }
@@ -2408,7 +2402,7 @@ fn objectinsert_sql(
   g : @core.Generator,
   e : @core.Expr,
 ) -> String raise @core.SqlglotError {
-  let this = e.this_()
+  let this = this_of(e)
   let key_sql = match e.arg("key") {
     Some(k) => k.name()
     None => ""
@@ -2436,7 +2430,7 @@ fn mapdelete_sql(
   g : @core.Generator,
   e : @core.Expr,
 ) -> String raise @core.SqlglotError {
-  let map_arg = e.this_()
+  let map_arg = this_of(e)
   let keys_to_delete = e.expressions()
   let lambda_expr = @core.mk(Lambda, [
     (
@@ -2461,7 +2455,7 @@ fn mappick_sql(
   g : @core.Generator,
   e : @core.Expr,
 ) -> String raise @core.SqlglotError {
-  let map_arg = e.this_()
+  let map_arg = this_of(e)
   let keys_to_pick = e.expressions()
   let lambda_expr = if keys_to_pick.length() == 1 &&
     keys_to_pick[0].is_type([ARRAY]) {
@@ -2490,7 +2484,7 @@ fn mapinsert_sql(
   e : @core.Expr,
 ) -> String raise @core.SqlglotError {
   g.unsupported_args(e, ["update_flag"])
-  let map_arg = e.this_()
+  let map_arg = this_of(e)
   let key = e.arg("key")
   let mut value = e.arg("value")
   match (value, map_arg.get_type()) {
@@ -2571,7 +2565,7 @@ fn ignorenulls_sql(
   g : @core.Generator,
   e : @core.Expr,
 ) -> String raise @core.SqlglotError {
-  let mut this = e.this_()
+  let mut this = this_of(e)
   if this.kind.is_any(ignore_respect_nulls_window_functions) {
     // DuckDB should render IGNORE NULLS only for the general-purpose
     // window functions that accept it e.g. FIRST_VALUE(... IGNORE NULLS) OVER (...)
@@ -2597,21 +2591,17 @@ fn split_sql(
   g : @core.Generator,
   e : @core.Expr,
 ) -> String raise @core.SqlglotError {
-  let base_func = func("STR_SPLIT", [e.this_(), e.expression_()])
+  let base_func = func("STR_SPLIT", [this_of(e), expr_of(e)])
   let mut case_expr = else_(case_(), base_func)
   let mut needs_case = false
   if e.has("null_returns_null") {
-    case_expr = when(case_expr, is_null(e.expression_()), @core.null_())
+    case_expr = when(case_expr, is_null(expr_of(e)), @core.null_())
     needs_case = true
   }
   if e.has("empty_delimiter_returns_whole") {
     // When delimiter is empty string, return input string as single array element
-    let array_with_input = @core.array_([e.this_().copy()])
-    case_expr = when(
-      case_expr,
-      eq(e.expression_(), str_lit("")),
-      array_with_input,
-    )
+    let array_with_input = @core.array_([this_of(e).copy()])
+    case_expr = when(case_expr, eq(expr_of(e), str_lit("")), array_with_input)
     needs_case = true
   }
   g.sql(Some(if needs_case { case_expr } else { base_func }))
@@ -2622,7 +2612,7 @@ fn splitpart_sql(
   g : @core.Generator,
   e : @core.Expr,
 ) -> String raise @core.SqlglotError {
-  let string_arg = e.this_()
+  let string_arg = this_of(e)
   match (e.arg("delimiter"), e.arg("part_index")) {
     (Some(delimiter_arg), Some(part_index_arg)) => {
       let mut part_index_arg = part_index_arg
@@ -2675,7 +2665,7 @@ fn arraytostring_sql(
   if e.has("null_is_empty") {
     let x = @core.to_identifier("x")
     let list_transform = @core.mk(Transform, [
-      ("this", e.this_().copy()),
+      ("this", this_of(e).copy()),
       (
         "expression",
         @core.mk(Lambda, [
@@ -2698,7 +2688,7 @@ fn arraytostring_sql(
       return g.sql(
         Some(
           else_(
-            when(case_(), is_null(e.expression_().copy()), @core.null_()),
+            when(case_(), is_null(expr_of(e).copy()), @core.null_()),
             array_to_string,
           ),
         ),
@@ -2764,7 +2754,7 @@ fn regexp_extract_sql(
   g : @core.Generator,
   e : @core.Expr,
 ) -> String raise @core.SqlglotError {
-  let mut this = e.this_()
+  let mut this = this_of(e)
   let mut group = e.arg("group")
   let mut params = e.arg("parameters")
   let position = e.arg("position")
@@ -2808,7 +2798,7 @@ fn regexp_extract_sql(
   } else {
     "REGEXP_EXTRACT"
   }
-  let exprs : Array[@core.Expr] = [this, e.expression_()]
+  let exprs : Array[@core.Expr] = [this, expr_of(e)]
   match group {
     Some(gr) => exprs.push(gr)
     None => ()
@@ -2837,8 +2827,8 @@ fn regexpinstr_sql(
   g : @core.Generator,
   e : @core.Expr,
 ) -> String raise @core.SqlglotError {
-  let mut this = e.this_()
-  let mut pattern = e.expression_()
+  let mut this = this_of(e)
+  let mut pattern = expr_of(e)
   let position = e.arg("position")
   let orig_occ = e.arg("occurrence")
   let occurrence = match orig_occ {
@@ -3044,14 +3034,14 @@ fn addmonths_sql(
   g : @core.Generator,
   e : @core.Expr,
 ) -> String raise @core.SqlglotError {
-  let mut this = e.this_()
+  let mut this = this_of(e)
   if !has_type(this) {
     this = @core.gen_annotate_types(this, g.dialect)
   }
   if is_text(this) {
     this = @core.mk(Cast, [("this", this), ("to", @core.datatype_of(TIMESTAMP))])
   }
-  let mut months_expr = e.expression_()
+  let mut months_expr = expr_of(e)
   if !has_type(months_expr) {
     months_expr = @core.gen_annotate_types(months_expr, g.dialect)
   }
@@ -3090,7 +3080,7 @@ fn datetrunc_sql(
   e : @core.Expr,
 ) -> String raise @core.SqlglotError {
   let unit_arg = e.arg("unit")
-  let date = e.this_()
+  let date = this_of(e)
   let week_start = week_trunc_start_dow(unit_arg)
   let unit = @core.unit_to_str(e)
   let result = match week_start {
@@ -3115,7 +3105,7 @@ fn datetimetrunc_sql(
   g : @core.Generator,
   e : @core.Expr,
 ) -> String raise @core.SqlglotError {
-  let this = cast(e.this_(), DATETIME)
+  let this = cast(this_of(e), DATETIME)
   match week_trunc_start_dow(e.arg("unit")) {
     Some(ws) if ws != 0 =>
       g.sql(
@@ -3138,7 +3128,7 @@ fn timestamptrunc_sql(
   e : @core.Expr,
 ) -> String raise @core.SqlglotError {
   let zone = e.arg("zone")
-  let mut timestamp = e.this_()
+  let mut timestamp = this_of(e)
   let week_start = match week_trunc_start_dow(e.arg("unit")) {
     Some(0) => None
     w => w
@@ -3207,7 +3197,7 @@ fn trim_sql(
   g : @core.Generator,
   e : @core.Expr,
 ) -> String raise @core.SqlglotError {
-  let this = e.this_()
+  let this = this_of(e)
   this.replace(cast_to_varchar(Some(this))) |> ignore
   match e.expression() {
     Some(x) => x.replace(cast_to_varchar(Some(x))) |> ignore
@@ -3253,8 +3243,8 @@ fn trycast_sql(
   g : @core.Generator,
   e : @core.Expr,
 ) -> String raise @core.SqlglotError {
-  let to = e.arg("to").unwrap()
-  let src = e.this_()
+  let to = req(e, "to")
+  let src = this_of(e)
   let to_type = to.get("this")
   if e.has("null_on_text_overflow") &&
     to.is_type(@core.dtype_text_types) &&
@@ -3339,7 +3329,7 @@ fn strtok_sql(
   g : @core.Generator,
   e : @core.Expr,
 ) -> String raise @core.SqlglotError {
-  let string_arg = e.this_()
+  let string_arg = this_of(e)
   match (e.arg("delimiter"), e.arg("part_index")) {
     (Some(delimiter_arg), Some(part_index_arg)) => {
       // Escape regex chars and build character class at runtime using REGEXP_REPLACE
@@ -3393,7 +3383,7 @@ fn strtoktoarray_sql(
   g : @core.Generator,
   e : @core.Expr,
 ) -> String raise @core.SqlglotError {
-  let string_arg = e.this_()
+  let string_arg = this_of(e)
   let delimiter_arg = match e.arg("expression") {
     Some(d) => d
     None => str_lit(" ")
@@ -3487,7 +3477,7 @@ fn approxquantiles_sql(
   g : @core.Generator,
   e : @core.Expr,
 ) -> String raise @core.SqlglotError {
-  let this = e.this_()
+  let this = this_of(e)
   let num_quantiles_expr = if this.kind == Distinct {
     // APPROX_QUANTILES requires 2 args and DISTINCT node grabs both
     let exprs = this.expressions()
@@ -3497,7 +3487,7 @@ fn approxquantiles_sql(
     }
     exprs[1].pop()
   } else {
-    e.expression_()
+    expr_of(e)
   }
   if num_quantiles_expr.kind != Literal || !num_quantiles_expr.is_int() {
     g.unsupported("APPROX_QUANTILES bucket count must be a positive integer")
@@ -3553,7 +3543,7 @@ fn bitwisenot_sql(
   g : @core.Generator,
   e : @core.Expr,
 ) -> String raise @core.SqlglotError {
-  let this = e.this_()
+  let this = this_of(e)
   if is_binary(Some(this)) {
     e.set_type(Some(@core.datatype_of(BINARY)))
   }

@@ -117,14 +117,14 @@ fn configure_transforms(d : @core.Dialect) -> Unit {
   t[DayOfYear] = @core.rename_func("DAYOFYEAR")
   t[Dayname] = (g, e) => {
     if e.has("abbreviated") {
-      g.func("STRFTIME", [e.this_(), str_lit("%a")])
+      g.func("STRFTIME", [this_of(e), str_lit("%a")])
     } else {
       g.func("DAYNAME", [e.this()])
     }
   }
   t[Monthname] = (g, e) => {
     if e.has("abbreviated") {
-      g.func("STRFTIME", [e.this_(), str_lit("%b")])
+      g.func("STRFTIME", [this_of(e), str_lit("%b")])
     } else {
       g.func("MONTHNAME", [e.this()])
     }
@@ -175,10 +175,10 @@ fn configure_transforms(d : @core.Dialect) -> Unit {
   t[IsInf] = @core.rename_func("ISINF")
   t[IsNan] = @core.rename_func("ISNAN")
   t[IsNullValue] = (g, e) => {
-    g.sql(Some(eq(func("JSON_TYPE", [e.this_()]), str_lit("NULL"))))
+    g.sql(Some(eq(func("JSON_TYPE", [this_of(e)]), str_lit("NULL"))))
   }
   t[IsArray] = (g, e) => {
-    g.sql(Some(eq(func("JSON_TYPE", [e.this_()]), str_lit("ARRAY"))))
+    g.sql(Some(eq(func("JSON_TYPE", [this_of(e)]), str_lit("ARRAY"))))
   }
   t[Ceil] = ceil_floor
   t[Floor] = ceil_floor
@@ -241,15 +241,17 @@ fn configure_transforms(d : @core.Dialect) -> Unit {
       Some(u) => @core.expr_to_sql(u)
       None => "None"
     }
-    g.func("DATE_DIFF", [str_lit(unit), e.expression_(), e.this_()])
+    g.func("DATE_DIFF", [str_lit(unit), expr_of(e), this_of(e)])
   }
   t[TimestampSub] = duck_date_delta_to_binary_interval_op()
-  t[TimeStrToDate] = (g, e) => g.sql(Some(cast(e.this_(), DATE)))
+  t[TimeStrToDate] = (g, e) => g.sql(Some(cast(this_of(e), DATE)))
   t[TimeStrToTime] = (g, e) => @core.timestrtotime_sql(g, e)
-  t[TimeStrToUnix] = (g, e) => g.func("EPOCH", [cast(e.this_(), TIMESTAMP)])
+  t[TimeStrToUnix] = (g, e) => g.func("EPOCH", [cast(this_of(e), TIMESTAMP)])
   t[TimeToStr] = (g, e) => g.func("STRFTIME", [e.this(), g.format_time(e)])
   t[ToBoolean] = to_boolean_sql
-  t[ToVariant] = (g, e) => g.sql(Some(cast_to(e.this_(), duck_type("VARIANT"))))
+  t[ToVariant] = (g, e) => {
+    g.sql(Some(cast_to(this_of(e), duck_type("VARIANT"))))
+  }
   t[TimeToUnix] = @core.rename_func("EPOCH")
   t[TsOrDiToDi] = (g, e) => {
     "CAST(SUBSTR(REPLACE(CAST(\{g.sql_key(e, "this")} AS TEXT), '-', ''), 1, 8) AS INT)"
@@ -263,8 +265,8 @@ fn configure_transforms(d : @core.Dialect) -> Unit {
     }
     g.func("DATE_DIFF", [
       "'\{unit}'",
-      cast(e.expression_(), TIMESTAMP),
-      cast(e.this_(), TIMESTAMP),
+      cast(expr_of(e), TIMESTAMP),
+      cast(this_of(e), TIMESTAMP),
     ])
   }
   t[UnixMicros] = (g, e) => {

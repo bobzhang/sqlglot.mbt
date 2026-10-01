@@ -114,7 +114,7 @@ fn base64_decode_sql(
   e : @core.Expr,
   to_string : Bool,
 ) -> String raise @core.SqlglotError {
-  let mut input_expr = e.this_()
+  let mut input_expr = this_of(e)
   let alphabet = e.arg("alphabet")
   input_expr = apply_base64_alphabet_replacements(
     input_expr,
@@ -134,7 +134,7 @@ fn last_day_sql(
   g : @core.Generator,
   e : @core.Expr,
 ) -> String raise @core.SqlglotError {
-  let date_expr = e.this_()
+  let date_expr = this_of(e)
   let unit_expr = e.arg("unit")
   match @core.week_unit_to_dow(unit_expr) {
     Some(week_start) if week_start != 0 => {
@@ -226,7 +226,7 @@ fn to_boolean_sql(
   g : @core.Generator,
   e : @core.Expr,
 ) -> String raise @core.SqlglotError {
-  let arg = e.this_()
+  let arg = this_of(e)
   let is_safe = e.has("safe")
   let base_case_expr = case_()
     |> when(
@@ -267,7 +267,7 @@ fn date_sql(
   g : @core.Generator,
   e : @core.Expr,
 ) -> String raise @core.SqlglotError {
-  let mut this = e.this_()
+  let mut this = this_of(e)
   let zone = g.sql_key(e, "zone")
   if zone != "" {
     this = cast(this, TIMESTAMP)
@@ -285,10 +285,10 @@ fn timediff_sql(
 ) -> String raise @core.SqlglotError {
   let unit = e.arg("unit")
   if is_nanosecond_unit(unit) {
-    return handle_nanosecond_diff(g, e.expression_(), e.this_())
+    return handle_nanosecond_diff(g, expr_of(e), this_of(e))
   }
-  let this = cast(e.this_(), TIME)
-  let expr = cast(e.expression_(), TIME)
+  let this = cast(this_of(e), TIME)
+  let expr = cast(expr_of(e), TIME)
   // Although the 2 dialects share similar signatures, BQ seems to inverse
   // the sign of the result so the start/end time operands are flipped
   g.func("DATE_DIFF", [@core.unit_to_str(e), expr, this])
@@ -308,7 +308,7 @@ fn duck_date_delta_to_binary_interval_op(cast? : Bool = true) -> @core.GenFn {
         Some(iv) if iv.kind == Interval => interval_value = iv.this()
         _ => ()
       }
-      let timestamp_ns = @core.exp_cast(e.this_(), TIMESTAMP_NS)
+      let timestamp_ns = @core.exp_cast(this_of(e), TIMESTAMP_NS)
       return g.sql(
         Some(
           func("MAKE_TIMESTAMP_NS", [
@@ -341,9 +341,9 @@ fn array_insert_sql(
   g : @core.Generator,
   e : @core.Expr,
 ) -> String raise @core.SqlglotError {
-  let this = e.this_()
+  let this = this_of(e)
   let position = e.arg("position")
-  let element = e.expression_()
+  let element = expr_of(e)
   let element_array = @core.mk(Array, [("expressions", [element])])
   let index_offset = match e.get("offset") {
     Some(Int(i)) => i
@@ -409,7 +409,7 @@ fn array_remove_at_sql(
   g : @core.Generator,
   e : @core.Expr,
 ) -> String raise @core.SqlglotError {
-  let this = e.this_()
+  let this = this_of(e)
   let position = e.arg("position")
   guard position is Some(position) && position.is_int() else {
     g.unsupported(
@@ -494,8 +494,8 @@ fn array_contains_sql(
   g : @core.Generator,
   e : @core.Expr,
 ) -> String raise @core.SqlglotError {
-  let this = e.this_()
-  let expr = e.expression_()
+  let this = this_of(e)
+  let expr = expr_of(e)
   let func_sql = g.func("ARRAY_CONTAINS", [this, expr])
   if e.has("check_null") {
     let check_null_in_array = @core.mk(Nullif, [
@@ -524,8 +524,8 @@ fn array_overlaps_sql(
   if !e.has("null_safe") {
     return g.binary(e, "&&")
   }
-  let arr1 = e.this_()
-  let arr2 = e.expression_()
+  let arr1 = this_of(e)
+  let arr2 = expr_of(e)
   let check_nulls = @core.exp_and(
     [
       @core.mk(NEQ, [
@@ -717,8 +717,8 @@ fn connect_by_to_recursive_cte(
   guard expression.kind == Select && expression.has("connect") else {
     return expression
   }
-  let connect = expression.arg("connect").unwrap()
-  let connect_pred = connect.arg("connect").unwrap()
+  let connect = req(expression, "connect")
+  let connect_pred = req(connect, "connect")
   let priors = connect_pred.find_all([Prior]).collect()
   if priors.is_empty() {
     return expression
@@ -727,7 +727,7 @@ fn connect_by_to_recursive_cte(
   guard from_ is Some(from_) && !expression.has("joins") else {
     return expression
   }
-  let source_table = from_.this_()
+  let source_table = this_of(from_)
   let base_select_exprs = expression.expressions()
   let base_where = expression.arg("where")
   let base_with = expression.arg("with_")
@@ -752,7 +752,7 @@ fn connect_by_to_recursive_cte(
   for i, root in roots {
     let name = "_connect_by_root_\{i}"
     root_col_names.push(name)
-    anchor_root_cols.push(@core.alias_(root.this_(), name))
+    anchor_root_cols.push(@core.alias_(this_of(root), name))
     inner_root_cols.push(
       @core.alias_(@core.column_of(name, table="_parent_row"), name),
     )
@@ -831,7 +831,7 @@ fn connect_by_to_recursive_cte(
     @core.to_table(cte_name),
   )
   match base_where {
-    Some(w) => outer_query = outer_query.where_([w.this_().copy()])
+    Some(w) => outer_query = outer_query.where_([this_of(w).copy()])
     None => ()
   }
   match base_with {
@@ -890,7 +890,7 @@ fn unix_to_time_sql(
   e : @core.Expr,
 ) -> String raise @core.SqlglotError {
   let scale = e.arg("scale")
-  let mut timestamp = e.this_()
+  let mut timestamp = this_of(e)
   let is_ntz = match e.arg("target_type") {
     Some(t) => t.is_type([TIMESTAMP, TIMESTAMPNTZ]) && t.kind == DataType
     None => false
@@ -1016,7 +1016,7 @@ fn date_diff_sql(
 ) -> String raise @core.SqlglotError {
   let unit = e.arg("unit")
   if is_nanosecond_unit(unit) {
-    return handle_nanosecond_diff(g, e.this_(), e.expression_())
+    return handle_nanosecond_diff(g, this_of(e), expr_of(e))
   }
   let mut this = implicit_datetime_cast(e.this())
   let mut expr = implicit_datetime_cast(e.expression())
@@ -1137,8 +1137,8 @@ fn day_navigation_sql(
   g : @core.Generator,
   e : @core.Expr,
 ) -> String raise @core.SqlglotError {
-  let date_expr = e.this_()
-  let day_name_expr = e.expression_()
+  let date_expr = this_of(e)
+  let day_name_expr = expr_of(e)
   let isodow_call = func("ISODOW", [date_expr])
   let target_dow = if day_name_expr.kind == Literal {
     let day_name_str = @core.py_upper(day_name_expr.name())
@@ -1223,7 +1223,7 @@ fn bitwise_agg_sql(
     BitwiseAndAgg => "BIT_AND"
     _ => "BIT_XOR"
   }
-  let mut arg = e.this_()
+  let mut arg = this_of(e)
   if !has_type(arg) {
     arg = @core.gen_annotate_types(arg, g.dialect)
   }
@@ -1378,7 +1378,7 @@ fn bitshift_sql(
 ) -> String raise @core.SqlglotError {
   let operator = if e.kind == BitwiseLeftShift { "<<" } else { ">>" }
   let mut result_is_blob = false
-  let this = e.this_()
+  let this = this_of(e)
   if is_binary(Some(this)) {
     result_is_blob = true
     e.set("this", cast(this, BIT))
@@ -1410,7 +1410,7 @@ fn scale_rounding_sql(
   guard e.arg("decimals") is Some(decimals) && e.arg("to") is None else {
     return None
   }
-  let mut this = e.this_()
+  let mut this = this_of(e)
   if this.kind.is_a(Binary) {
     this = @core.mk1(Paren, this)
   }
@@ -1454,8 +1454,8 @@ fn regr_val_sql(
   g : @core.Generator,
   e : @core.Expr,
 ) -> String raise @core.SqlglotError {
-  let y = e.this_()
-  let x = e.expression_()
+  let y = this_of(e)
+  let x = expr_of(e)
   let (check_for_null, return_value, return_value_attr) = if e.kind == RegrValx {
     (y, x, "expression")
   } else {
@@ -1548,7 +1548,7 @@ fn boolnot_sql(
   g : @core.Generator,
   e : @core.Expr,
 ) -> String raise @core.SqlglotError {
-  let arg = round_arg(e.this_(), e.has("round_input"))
+  let arg = round_arg(this_of(e), e.has("round_input"))
   g.sql(Some(@core.exp_not(@core.exp_paren(arg))))
 }
 
@@ -1558,8 +1558,8 @@ fn booland_sql(
   e : @core.Expr,
 ) -> String raise @core.SqlglotError {
   let round_input = e.has("round_input")
-  let left = round_arg(e.this_(), round_input)
-  let right = round_arg(e.expression_(), round_input)
+  let left = round_arg(this_of(e), round_input)
+  let right = round_arg(expr_of(e), round_input)
   g.sql(
     Some(
       @core.exp_paren(
@@ -1578,8 +1578,8 @@ fn boolor_sql(
   e : @core.Expr,
 ) -> String raise @core.SqlglotError {
   let round_input = e.has("round_input")
-  let left = round_arg(e.this_(), round_input)
-  let right = round_arg(e.expression_(), round_input)
+  let left = round_arg(this_of(e), round_input)
+  let right = round_arg(expr_of(e), round_input)
   g.sql(
     Some(
       @core.exp_paren(
@@ -1598,8 +1598,8 @@ fn xor_sql(
   e : @core.Expr,
 ) -> String raise @core.SqlglotError {
   let round_input = e.has("round_input")
-  let left = round_arg(e.this_(), round_input)
-  let right = round_arg(e.expression_(), round_input)
+  let left = round_arg(this_of(e), round_input)
+  let right = round_arg(expr_of(e), round_input)
   g.sql(
     Some(
       @core.exp_or(
@@ -1636,7 +1636,7 @@ fn explode_to_unnest_sql(
         (
           "expressions",
           [
-            ex.this_(),
+            this_of(ex),
             @core.mk(Kwarg, [
               ("this", @core.var_("max_depth")),
               ("expression", num(2)),
@@ -1677,7 +1677,7 @@ fn sha_sql(
   hash_func : String,
   binary? : Bool = false,
 ) -> String raise @core.SqlglotError {
-  let mut arg = e.this_()
+  let mut arg = this_of(e)
   if hash_func == "SHA256" {
     let length = match e.text("length") {
       "" => "256"
