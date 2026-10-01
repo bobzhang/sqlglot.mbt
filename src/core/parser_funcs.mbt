@@ -1291,7 +1291,7 @@ pub fn Parser::parse_bracket_base(
             )
           None => ()
         }
-        let expressions = apply_index_offset(
+        let expressions = gen_apply_index_offset(
           t,
           expressions,
           -self.dialect.cfg.index_offset,
