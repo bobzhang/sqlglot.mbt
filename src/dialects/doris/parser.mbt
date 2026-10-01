@@ -156,17 +156,25 @@ fn parse_refresh_property(
 ) -> @core.Expr raise @core.SqlglotError {
   let method_ = p.parse_var(upper=true)
   p.match_(ON) |> ignore
-  let kind : String? = if p.match_texts(["MANUAL", "COMMIT", "SCHEDULE"]) {
-    Some(@core.py_upper(p.prev.text))
+  // Python `x and y` chains store False when the first operand fails
+  let kind : @core.Value = if p.match_texts(["MANUAL", "COMMIT", "SCHEDULE"]) {
+    Str(@core.py_upper(p.prev.text))
   } else {
-    None
+    Bool(false)
   }
-  let every = if p.match_text_seq(["EVERY"]) { p.parse_number() } else { None }
-  let unit = if every is Some(_) { p.parse_var(any_token=true) } else { None }
-  let starts = if p.match_text_seq(["STARTS"]) {
-    p.parse_string()
+  let every : @core.Value? = if p.match_text_seq(["EVERY"]) {
+    p.parse_number().map(e => @core.Value::Node(e))
   } else {
-    None
+    Some(Bool(false))
+  }
+  let unit = match every {
+    Some(Node(_)) => p.parse_var(any_token=true)
+    _ => None
+  }
+  let starts : @core.Value? = if p.match_text_seq(["STARTS"]) {
+    p.parse_string().map(e => @core.Value::Node(e))
+  } else {
+    Some(Bool(false))
   }
   p.expression(
     @core.mk(RefreshTriggerProperty, [

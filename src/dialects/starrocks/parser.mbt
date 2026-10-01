@@ -233,20 +233,21 @@ fn parse_partitioning_granularity_dynamic(
 fn parse_refresh_property(
   p : @core.Parser,
 ) -> @core.Expr raise @core.SqlglotError {
-  let method_ : String? = if p.match_texts(["DEFERRED", "IMMEDIATE"]) {
-    Some(@core.py_upper(p.prev.text))
+  // Python `x and y` chains store False when the first operand fails
+  let method_ : @core.Value = if p.match_texts(["DEFERRED", "IMMEDIATE"]) {
+    Str(@core.py_upper(p.prev.text))
   } else {
-    None
+    Bool(false)
   }
-  let kind : String? = if p.match_texts(["ASYNC", "MANUAL"]) {
-    Some(@core.py_upper(p.prev.text))
+  let kind : @core.Value = if p.match_texts(["ASYNC", "MANUAL"]) {
+    Str(@core.py_upper(p.prev.text))
   } else {
-    None
+    Bool(false)
   }
-  let start = if p.match_text_seq(["START"]) {
-    p.parse_wrapped(() => p.parse_string())
+  let start : @core.Value? = if p.match_text_seq(["START"]) {
+    p.parse_wrapped(() => p.parse_string()).map(e => @core.Value::Node(e))
   } else {
-    None
+    Some(Bool(false))
   }
   let (every, unit) = if p.match_text_seq(["EVERY"]) {
     p.match_l_paren()

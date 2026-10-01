@@ -181,6 +181,12 @@ fn ts_or_ds_to_date_sql(
 
 ///|
 fn configure_generator(d : @core.Dialect) -> Unit {
+  // AFTER_HAVING_MODIFIER_TRANSFORMS = generator.AFTER_HAVING_MODIFIER_TRANSFORMS
+  // (the module-level table: only WINDOW and QUALIFY)
+  d.gen_fns.after_having_modifier_transforms = d.gen_fns.after_having_modifier_transforms.filter(kv => {
+      kv.0 == "windows" || kv.0 == "qualify"
+    },
+  )
   let t = d.gen_fns.transforms
   t[ArrayAgg] = @core.rename_func("GROUP_CONCAT")
   t[BitwiseAndAgg] = @core.rename_func("BIT_AND")
@@ -242,7 +248,11 @@ fn configure_generator(d : @core.Dialect) -> Unit {
   t[TimeFromParts] = @core.rename_func("MAKETIME")
   t[TimestampAdd] = @core.date_add_interval_sql("DATE", "ADD")
   t[TimestampDiff] = (g, e) => {
-    g.func("TIMESTAMPDIFF", [@core.unit_to_var(e), e.expression(), e.this()])
+    g.func("TIMESTAMPDIFF", [
+      @core.unit_to_var(e),
+      e.get("expression"),
+      e.get("this"),
+    ])
   }
   t[TimestampSub] = @core.date_add_interval_sql("DATE", "SUB")
   t[TimeStrToUnix] = @core.rename_func("UNIX_TIMESTAMP")

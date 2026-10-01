@@ -283,14 +283,14 @@ fn configure_generator(d : @core.Dialect) -> Unit {
   m[JSONExtractScalar] = (g, e) => {
     let func_name = match e.get("json_type") {
       None => "JSON_EXTRACT_JSON"
-      Some(_) => "JSON_EXTRACT_\{e.text("json_type")}"
+      Some(v) => "JSON_EXTRACT_\{py_format(v)}"
     }
     @core.json_extract_segments(func_name)(g, e)
   }
   m[JSONBExtractScalar] = (g, e) => {
     let func_name = match e.get("json_type") {
       None => "BSON_EXTRACT_BSON"
-      Some(_) => "BSON_EXTRACT_\{e.text("json_type")}"
+      Some(v) => "BSON_EXTRACT_\{py_format(v)}"
     }
     @core.json_extract_segments(func_name)(g, e)
   }
@@ -531,5 +531,18 @@ fn datatype_sql(
   match parent {
     Some(f) => f(g, e)
     None => g.datatype_sql(e)
+  }
+}
+
+///|
+/// Python f-string formatting of an argument value (`str(expr)` is its base SQL).
+fn py_format(v : @core.Value) -> String raise @core.SqlglotError {
+  match v {
+    Node(e) => @core.expr_to_sql(e)
+    Str(s) => s
+    Bool(b) => if b { "True" } else { "False" }
+    Int(i) => i.to_string()
+    DT(d) => d.value()
+    List(_) => ""
   }
 }

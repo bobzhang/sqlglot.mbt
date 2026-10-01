@@ -482,7 +482,14 @@ fn parse_index_constraint(
     p.match_texts(["INDEX", "KEY"]) |> ignore
   }
   let this = p.parse_id_var(any_token=false)
-  let index_type = parse_index_type(p)
+  // `self._match(USING) and self._advance_any() and self._prev.text`
+  let index_type : @core.Value? = if !p.match_(USING) {
+    Some(Bool(false))
+  } else if p.advance_any() is Some(_) {
+    Some(Str(p.prev.text))
+  } else {
+    None
+  }
   let expressions = p.parse_wrapped_csv(() => parse_index_key_part(p))
   p.expression(
     @core.mk(IndexColumnConstraint, [
