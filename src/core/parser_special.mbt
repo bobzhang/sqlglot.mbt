@@ -268,6 +268,12 @@ pub fn Parser::build_cast_base(
       None => ()
     }
   }
+  if kind == TryCast {
+    match self.dialect.cfg.try_cast_requires_string {
+      Some(b) => args["requires_string"] = Bool(b)
+      None => ()
+    }
+  }
   self.expression(Expr::new(kind, args))
 }
 
