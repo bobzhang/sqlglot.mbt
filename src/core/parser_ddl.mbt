@@ -1814,21 +1814,8 @@ pub fn Parser::parse_returns_base(self : Parser) -> Expr? raise SqlglotError {
 }
 
 ///|
-/// Python `f"{expr}"`: the SQL of an expression in the parser's dialect.
-pub fn Parser::dialect_sql(self : Parser, e : Expr) -> String {
+/// Python `f"{expr}"`: the SQL of an expression with the base dialect.
+pub fn Parser::dialect_sql(self : Parser, e : Expr) -> String raise SqlglotError {
   ignore(self)
-  expr_to_sql(e, base_dialect())
-}
-
-///|
-/// Hook to the generator (set when the generator is available). Used for
-/// Python's implicit `str(expression)` conversions.
-pub let expr_to_sql_hook : Ref[((Expr, Dialect) -> String)?] = Ref::new(None)
-
-///|
-pub fn expr_to_sql(e : Expr, d : Dialect) -> String {
-  match expr_to_sql_hook.val {
-    Some(f) => f(e, d)
-    None => e.name()
-  }
+  expr_to_sql(e)
 }

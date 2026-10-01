@@ -11,6 +11,7 @@ options(
     "parser_dml.mbt": ["js"],
     "parser_select.mbt": ["js"],
     "parser_from.mbt": ["js"],
+    "parser_clauses.mbt": ["js"],
     "parser_stubs.mbt": ["not", "js"],
   },
 )

@@ -1467,7 +1467,7 @@ pub fn Parser::parse_pivot(self : Parser) -> Expr? raise SqlglotError {
       all_fields.push(
         pivot_field_expressions.map(fld => if self.cfg.identify_pivot_strings &&
           fld.kind != PivotAlias {
-          expr_to_sql(fld, base_dialect())
+          expr_to_sql(fld)
         } else {
           fld.alias_or_name()
         }),
