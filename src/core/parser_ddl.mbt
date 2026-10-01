@@ -146,7 +146,14 @@ pub fn Parser::parse_condition(self : Parser) -> Expr? raise SqlglotError {
 ///|
 pub fn Parser::parse_block(self : Parser) -> Expr raise SqlglotError {
   let stmts = self.parse_batch_statements(p => p.parse_statement())
-  self.expression(mk(Block, [("expressions", stmts.filter_map(x => x))]))
+  let expressions = stmts.filter_map(x => x)
+  if expressions.is_empty() && !stmts.is_empty() {
+    // Python keeps `[None]` here, which passes the required-arg validation
+    let block = mk(Block, [("expressions", expressions)])
+    self.add_comments(Some(block))
+    return block
+  }
+  self.expression(mk(Block, [("expressions", expressions)]))
 }
 
 ///|
