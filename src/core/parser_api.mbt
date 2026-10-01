@@ -2,8 +2,20 @@
 // Dialect.parse / Dialect.tokenize).
 
 ///|
-/// Tokenizes `sql` with this dialect's tokenizer.
+/// Tokenizes `sql` with this dialect's tokenizer (virtual: see `DialectHooks::tokenize`).
 pub fn Dialect::tokenize(
+  self : Dialect,
+  sql : String,
+) -> Array[Token] raise SqlglotError {
+  match self.hooks.tokenize {
+    Some(f) => f(self, sql)
+    None => self.tokenize_base(sql)
+  }
+}
+
+///|
+/// Tokenizes `sql` with this dialect's tokenizer settings.
+pub fn Dialect::tokenize_base(
   self : Dialect,
   sql : String,
 ) -> Array[Token] raise SqlglotError {
