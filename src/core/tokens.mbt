@@ -179,7 +179,7 @@ pub fn TokenizerSettings::copy(self : TokenizerSettings) -> TokenizerSettings {
 
 ///|
 fn convert_quotes(arr : Array[QuoteSpec]) -> Map[String, String] {
-  let m = Map([])
+  let m : Map[_, _] = Map([])
   for q in arr {
     m[q.start()] = q.end()
   }
@@ -188,7 +188,7 @@ fn convert_quotes(arr : Array[QuoteSpec]) -> Map[String, String] {
 
 ///|
 fn str_set(arr : Array[String]) -> Map[String, Bool] {
-  let m = Map([])
+  let m : Map[_, _] = Map([])
   for s in arr {
     m[s] = true
   }
