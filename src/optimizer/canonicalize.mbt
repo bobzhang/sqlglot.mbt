@@ -84,7 +84,7 @@ fn replace_date_funcs(
   if node.kind.is_any([Date, TsOrDsToDate]) &&
     node.expressions().is_empty() &&
     !node.has("zone") &&
-    node.this_().is_string() &&
+    req(node.this(), "is_string").is_string() &&
     is_iso_date(node.this_().name()) {
     return @core.exp_cast(node.this_(), DATE)
   }

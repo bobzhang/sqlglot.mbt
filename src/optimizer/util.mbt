@@ -124,3 +124,15 @@ fn py_str_cmp(a : String, b : String) -> Int {
     }
   }
 }
+
+///|
+/// Python attribute access on a possibly missing child (raises like AttributeError).
+fn req(e : @core.Expr?, what : String) -> @core.Expr raise @core.SqlglotError {
+  match e {
+    Some(x) => x
+    None =>
+      raise @core.OptimizeError(
+        "AttributeError: 'NoneType' object has no attribute '\{what}'",
+      )
+  }
+}
