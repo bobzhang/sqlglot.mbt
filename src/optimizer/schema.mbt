@@ -463,6 +463,29 @@ pub fn MappingSchema::find(
 }
 
 ///|
+/// `find(table, raise_on_missing=False, ensure_data_types=True)`: the column types of a
+/// table (string types are converted to `DataType`s).
+pub fn MappingSchema::find_column_types(
+  self : MappingSchema,
+  table : @core.Expr,
+) -> Map[String, @core.Expr?]? raise @core.SqlglotError {
+  match self.find(table, raise_on_missing=false) {
+    Some(cols) => {
+      let out : Map[String, @core.Expr?] = {}
+      for col, dtype in cols {
+        out[col] = match dtype {
+          Type(s) => Some(self.to_data_type(s))
+          DataType(dt) => Some(dt)
+          _ => None
+        }
+      }
+      Some(out)
+    }
+    None => None
+  }
+}
+
+///|
 /// Register or update a table.
 pub fn MappingSchema::add_table(
   self : MappingSchema,
