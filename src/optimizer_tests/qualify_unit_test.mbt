@@ -10,7 +10,7 @@ test "qualify_tables: on_qualify" {
     on_qualify=t => if !tables.contains(t.name()) { tables.push(t.name()) },
   )
   |> ignore
-  tables.sort()
+  tables.sort_by(py_cmp)
   inspect(tables, content="[bar, baz]")
 
   // Tables referenced by lateral sources (e.g. UNNEST) must only be qualified once

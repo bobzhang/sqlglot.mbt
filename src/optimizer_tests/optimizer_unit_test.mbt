@@ -319,7 +319,7 @@ test "pushdown_projections: keeps positionally aliased columns" {
 ///|
 fn alias_names(selects : Array[@core.Expr]) -> Array[String] {
   let names = selects.map(s => s.alias_or_name())
-  names.sort()
+  names.sort_by(py_cmp)
   names.dedup()
   names
 }
