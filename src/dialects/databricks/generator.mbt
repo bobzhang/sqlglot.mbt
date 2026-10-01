@@ -92,7 +92,7 @@ fn configure_generator(d : @core.Dialect) -> Unit {
   d.gen_fns.hooks.columndef_sql = Some((g, e, sep) => {
     let constraint = e.find([GeneratedAsIdentityColumnConstraint])
     match (constraint, e.arg("kind")) {
-      (Some(_), Some(kind)) if kind.kind == DataType &&
+      (Some(_), Some(kind)) if kind.kind.is_a(DataType) &&
         (match kind.datatype_this() {
           Some(dt) => @core.dtype_integer_types.contains(dt)
           None => false

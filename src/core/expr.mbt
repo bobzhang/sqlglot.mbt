@@ -415,7 +415,7 @@ pub fn Expr::is_star(self : Expr) -> Bool {
     _ =>
       self.kind == Star ||
       (
-        self.kind == Column &&
+        self.kind.is_a(Column) &&
         (match self.this() {
           Some(t) => t.kind == Star
           None => false

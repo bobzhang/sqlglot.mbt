@@ -13,7 +13,7 @@ fn resolve_projection(
   s : @core.Expr,
   projections : Map[String, @core.Expr],
 ) -> @core.Expr {
-  if s.kind == Column {
+  if s.kind.is_a(Column) {
     match projections.get(s.name()) {
       Some(p) => return p.copy()
       None => ()

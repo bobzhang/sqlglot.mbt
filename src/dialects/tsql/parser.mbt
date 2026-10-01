@@ -560,7 +560,7 @@ fn configure_parser(d : @core.Dialect) -> Unit {
   // The DCOLON (::) operator serves as a scope resolution (exp.ScopeResolution) operator in T-SQL
   fns.column_operators[DCOLON] = Some((p, this, to) => {
     match to {
-      Some(t) if t.kind == DataType && t.datatype_this() != Some(USERDEFINED) =>
+      Some(t) if t.kind.is_a(DataType) && t.datatype_this() != Some(USERDEFINED) =>
         Some(p.expression(@core.mk(Cast, [("this", this), ("to", to)])))
       _ =>
         Some(
@@ -780,7 +780,7 @@ fn parse_projections(
   let projections = p.parse_expressions()
   let out = projections.map(projection => {
     match projection.this() {
-      Some(col) if projection.kind == EQ && col.kind == Column =>
+      Some(col) if projection.kind == EQ && col.kind.is_a(Column) =>
         @core.alias_expr(
           projection.expression().unwrap(),
           col.this(),
@@ -1078,7 +1078,7 @@ fn parse_alter_table_alter(
   match expression {
     Some(e) => {
       match e.arg("collate") {
-        Some(collation) if collation.kind == Column &&
+        Some(collation) if collation.kind.is_a(Column) &&
           collation.this() is Some(identifier) &&
           identifier.kind == Identifier =>
           collation.set("this", @core.var_(identifier.name()))

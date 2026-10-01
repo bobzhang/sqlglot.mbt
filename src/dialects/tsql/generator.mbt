@@ -62,7 +62,7 @@ fn string_agg_sql(
   }
   let mut order = ""
   match e.this() {
-    Some(o) if o.kind == Order => {
+    Some(o) if o.kind.is_a(Order) => {
       match o.this() {
         Some(t) => this = Some(t.pop())
         None => ()
@@ -102,7 +102,7 @@ fn qualify_outputs(
       }
     } else if !selection.kind.is_any([Alias, Aliases]) && !selection.is_star() {
       let unwrapped = selection.unnest()
-      let source_identifier = if unwrapped.kind == Column {
+      let source_identifier = if unwrapped.kind.is_a(Column) {
         unwrapped.this()
       } else if unwrapped.kind == Dot {
         unwrapped.expression()
@@ -153,7 +153,7 @@ pub fn qualify_derived_table_outputs(
       guard expression.this() is Some(query) else { return expression }
       let unaliased_column_indexes : Array[Int] = []
       for i, c in query.selects() {
-        if c.kind == Column && c.alias() == "" {
+        if c.kind.is_a(Column) && c.alias() == "" {
           unaliased_column_indexes.push(i)
         }
       }
@@ -623,7 +623,7 @@ fn uncast_text(
 ) -> String raise @core.SqlglotError {
   let this = e.this()
   let this_sql = match this {
-    Some(t) if t.kind == Cast && t.is_type([TEXT]) => g.sql_key(t, "this")
+    Some(t) if t.kind.is_a(Cast) && t.is_type([TEXT]) => g.sql_key(t, "this")
     _ => g.sql(this)
   }
   let expression_sql = g.sql_key(e, "expression")
@@ -683,7 +683,7 @@ fn set_operations(
         let emulate_null_ordering = (desc && nulls_first) ||
           (!desc && !nulls_first)
         if emulate_null_ordering ||
-          (this.kind != Column && !selects.contains(this)) {
+          (!this.kind.is_a(Column) && !selects.contains(this)) {
           wrap_order = true
           break
         }

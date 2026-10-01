@@ -524,7 +524,7 @@ pub fn remove_within_group_for_percentiles(
   if expression.kind == WithinGroup {
     match (expression.this(), expression.expression()) {
       (Some(t), Some(e)) if t.kind.is_any([PercentileCont, PercentileDisc]) &&
-        e.kind == Order => {
+        e.kind.is_a(Order) => {
         let quantile = t.this()
         let input_value = expression.find([Ordered]).unwrap().this()
         return expression

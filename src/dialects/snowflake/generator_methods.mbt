@@ -222,7 +222,7 @@ fn datatype_sql(
   // https://docs.snowflake.com/en/sql-reference/data-types-vector
   if e.is_type([DOUBLE]) {
     match e.parent {
-      Some(p) if p.kind == DataType && p.is_type([VECTOR]) => return "FLOAT"
+      Some(p) if p.kind.is_a(DataType) && p.is_type([VECTOR]) => return "FLOAT"
       _ => ()
     }
   }
@@ -230,7 +230,7 @@ fn datatype_sql(
   if !expressions.is_empty() && e.is_type(@core.dtype_struct_types) {
     for field_type in expressions {
       // The correct syntax is OBJECT [ (<key> <value_type [NOT NULL] [, ...]) ]
-      if field_type.kind == DataType {
+      if field_type.kind.is_a(DataType) {
         return "OBJECT"
       }
       if field_type.kind == ColumnDef {
@@ -578,7 +578,7 @@ fn strtotime_sql(
 ) -> String raise @core.SqlglotError {
   // target_type is stored as a DataType instance
   let type_enum = match e.arg("target_type") {
-    Some(t) if t.kind == DataType => t.datatype_this()
+    Some(t) if t.kind.is_a(DataType) => t.datatype_this()
     _ =>
       match e.get_type() {
         Some(t) => t.datatype_this()
@@ -658,7 +658,7 @@ fn arrayagg_sql(
   // If an ORDER BY clause is present, we need to remove it from ARRAY_AGG
   // and add it later as part of the WITHIN GROUP clause
   let order = match e.this() {
-    Some(t) if t.kind == Order => Some(t)
+    Some(t) if t.kind.is_a(Order) => Some(t)
     _ => None
   }
   if order is Some(o) {
@@ -687,7 +687,7 @@ fn array_sql(
       for expr in first_expr.expressions() {
         // Alias case: SELECT AS STRUCT foo AS alias_foo -> OBJECT_CONSTRUCT('alias_foo', foo)
         // Column case: SELECT AS STRUCT foo -> OBJECT_CONSTRUCT('foo', foo)
-        let name = if expr.kind == Alias { expr.this_() } else { expr }
+        let name = if expr.kind.is_a(Alias) { expr.this_() } else { expr }
         object_construct_args.push(@core.literal_string(expr.alias_or_name()))
         object_construct_args.push(name)
       }
@@ -822,7 +822,7 @@ fn filter_sql(
   }
   // `DISTINCT` and `ORDER BY` are part of the aggregate's own argument list, so the
   // condition has to wrap the values underneath them rather than the whole clause
-  if agg_arg is Some(a) && a.kind == Order {
+  if agg_arg is Some(a) && a.kind.is_a(Order) {
     agg_arg = a.this()
   }
   let targets = match agg_arg {
@@ -846,7 +846,8 @@ fn withingroup_sql(
   match e.this() {
     Some(t) if t.kind == Mode && !t.has("this") =>
       match e.expression() {
-        Some(order) if order.kind == Order && order.expressions().length() == 1 =>
+        Some(order) if order.kind.is_a(Order) &&
+          order.expressions().length() == 1 =>
           return g.sql(Some(@core.mk1(Mode, order.expressions()[0].this())))
         _ => ()
       }

@@ -327,7 +327,7 @@ pub fn Parser::parse_types_base(
       _ => ()
     }
   }
-  if with_collation && this.kind == DataType && self.match_(COLLATE) {
+  if with_collation && this.kind.is_a(DataType) && self.match_(COLLATE) {
     this.set(
       "collate",
       expr_or(self.parse_identifier(), () => self.parse_column()),
@@ -423,7 +423,7 @@ pub fn Parser::parse_struct_types_base(
   self.match_(COLON) |> ignore
   if type_required &&
     !(match this {
-      Some(t) => t.kind == DataType
+      Some(t) => t.kind.is_a(DataType)
       None => false
     }) &&
     !self.match_set(self.cfg.type_tokens, advance=false) {

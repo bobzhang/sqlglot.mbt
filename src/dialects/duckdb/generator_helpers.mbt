@@ -737,7 +737,7 @@ fn connect_by_to_recursive_cte(
     .any(e => {
       e
       .find_all([Column])
-      .any(col => col.kind == Column && @core.py_upper(col.name()) == "LEVEL")
+      .any(col => col.kind.is_a(Column) && @core.py_upper(col.name()) == "LEVEL")
     })
   let has_star = expression.is_star()
   let root_col_names : Array[String] = []
@@ -863,9 +863,9 @@ fn seq_sql(
   byte_width : Int,
 ) -> String raise @core.SqlglotError {
   match e.find_ancestor([Where, Having, AggFunc, Order, Select]) {
-    Some(ancestor) if (ancestor.kind != Order && ancestor.kind != Select) ||
+    Some(ancestor) if (!ancestor.kind.is_a(Order) && ancestor.kind != Select) ||
       (
-        ancestor.kind == Order &&
+        ancestor.kind.is_a(Order) &&
         (match ancestor.parent {
           Some(p) => p.kind == Window
           None => false

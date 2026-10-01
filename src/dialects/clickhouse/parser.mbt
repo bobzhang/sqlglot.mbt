@@ -661,7 +661,7 @@ fn parse_table(
   match this {
     Some(t) if t.kind == Table =>
       match (t.this(), t.arg("alias")) {
-        (Some(inner), Some(alias)) if inner.kind == GenerateSeries &&
+        (Some(inner), Some(alias)) if inner.kind.is_a(GenerateSeries) &&
           alias.list("columns").is_empty() =>
           alias.set("columns", [@core.to_identifier("generate_series")])
         _ => ()

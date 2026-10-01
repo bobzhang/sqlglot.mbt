@@ -842,7 +842,7 @@ pub fn Parser::parse_group_concat_base(
 
   let this = if !args.is_empty() {
     let last = args[args.length() - 1]
-    let order = if last.kind == Order { Some(last) } else { None }
+    let order = if last.kind.is_a(Order) { Some(last) } else { None }
     match order {
       Some(o) => {
         args[args.length() - 1] = o.this().unwrap()

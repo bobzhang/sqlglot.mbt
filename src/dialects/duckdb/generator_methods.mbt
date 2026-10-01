@@ -541,7 +541,7 @@ fn configure_methods(d : @core.Dialect) -> Unit {
   }
   m[Aliases] = (g, e) => {
     match e.this() {
-      Some(t) if t.kind == Posexplode => g.call_method(Posexplode, t)
+      Some(t) if t.kind.is_a(Posexplode) => g.call_method(Posexplode, t)
       _ => g.aliases_sql(e)
     }
   }
@@ -1692,7 +1692,7 @@ fn withingroup_sql(
   let func = this_of(e)
   // For ARRAY_AGG, DuckDB requires ORDER BY inside the function, not in WITHIN GROUP
   if func.kind == ArrayAgg {
-    guard e.expression() is Some(order) && order.kind == Order else {
+    guard e.expression() is Some(order) && order.kind.is_a(Order) else {
       return g.sql(Some(func))
     }
     let original_this = func.this()
@@ -2067,7 +2067,7 @@ fn arrayconcatagg_sql(
     g.unsupported("LIMIT in ARRAY_CONCAT_AGG cannot be transpiled to DuckDB")
     this = this_of(this)
   }
-  let inner = if this.kind == Order { this_of(this) } else { this }
+  let inner = if this.kind.is_a(Order) { this_of(this) } else { this }
   g.func("FLATTEN", [
     @core.mk(Filter, [
       ("this", @core.mk1(ArrayAgg, this)),

@@ -382,7 +382,7 @@ fn groupconcat_sql(
   }
   let window = node.parent
   match (e.this(), window) {
-    (Some(order), Some(w)) if order.kind == Order &&
+    (Some(order), Some(w)) if order.kind.is_a(Order) &&
       w.kind == Window &&
       w.this() is Some(wt) &&
       physical_equal(wt, node) => {

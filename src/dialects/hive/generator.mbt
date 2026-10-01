@@ -670,7 +670,7 @@ fn arrayagg_sql(
   e : @core.Expr,
 ) -> String raise @core.SqlglotError {
   let arg = match e.this() {
-    Some(o) if o.kind == Order => o.this()
+    Some(o) if o.kind.is_a(Order) => o.this()
     x => x
   }
   g.func("COLLECT_LIST", [arg])
@@ -751,7 +751,7 @@ fn columndef_sql(
   sep : String,
 ) -> String raise @core.SqlglotError {
   let sep = match e.parent {
-    Some(p) if p.kind == DataType && p.is_type([STRUCT]) => ": "
+    Some(p) if p.kind.is_a(DataType) && p.is_type([STRUCT]) => ": "
     _ => sep
   }
   g.columndef_sql(e, sep~)

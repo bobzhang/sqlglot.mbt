@@ -322,7 +322,7 @@ fn configure_generator(d : @core.Dialect) -> Unit {
           PercentileCont,
           PercentileDisc,
         ]) &&
-        order.kind == Order => {
+        order.kind.is_a(Order) => {
         e = e.copy()
         for ordered in e.expression_().expressions() {
           ordered.set("nulls_first", true)
@@ -357,7 +357,7 @@ fn configure_generator(d : @core.Dialect) -> Unit {
     // already there (e.g. when regenerating previously generated SQL), don't add
     // another one, so that generation stays idempotent.
     match e.this() {
-      Some(this) if this.kind == Cast &&
+      Some(this) if this.kind.is_a(Cast) &&
         this.arg("to") is Some(to) &&
         to.get("this") is Some(DT(LONGTEXT)) => g.binary(e, "COLLATE")
       _ => g.binary(e, ":> LONGTEXT COLLATE")

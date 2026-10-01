@@ -772,7 +772,7 @@ fn parse_table_parts(
 fn parse_column(p : @core.Parser) -> @core.Expr? raise @core.SqlglotError {
   let column = p.parse_column_base()
   match column {
-    Some(c) if c.kind == Column => {
+    Some(c) if c.kind.is_a(Column) => {
       let parts = c.parts()
       if parts.iter().any(part => part.name().contains(".")) {
         let joined = parts.map(part => part.name()).join(".")

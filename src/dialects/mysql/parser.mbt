@@ -327,7 +327,7 @@ fn configure_parser(d : @core.Dialect) -> Unit {
     if p.match_(BINARY, advance=false) {
       let data_type = p.parse_types(check_func=true, allow_identifiers=false)
       match data_type {
-        Some(dt) if dt.kind == DataType =>
+        Some(dt) if dt.kind.is_a(DataType) =>
           return Some(
             p.expression(
               @core.mk(Cast, [("this", p.parse_column()), ("to", dt)]),
@@ -855,7 +855,7 @@ pub fn parse_partition_range_value(
   }
   let mut values = p.parse_wrapped_csv(() => p.parse_expression())
   if values.length() == 1 &&
-    values[0].kind == Column &&
+    values[0].kind.is_a(Column) &&
     @core.py_upper(values[0].name()) == "MAXVALUE" {
     values = [@core.var_("MAXVALUE")]
   }

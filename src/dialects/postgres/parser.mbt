@@ -361,7 +361,7 @@ fn parse_date_part(p : @core.Parser) -> @core.Expr? raise @core.SqlglotError {
   p.match_(COMMA) |> ignore
   let value = p.parse_bitwise()
   match part {
-    Some(pt) if pt.kind == Column || pt.kind == Literal =>
+    Some(pt) if pt.kind.is_a(Column) || pt.kind == Literal =>
       part = Some(@core.var_(@core.py_upper(pt.name())))
     _ => ()
   }

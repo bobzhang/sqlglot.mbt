@@ -33,9 +33,9 @@ fn build_date_delta_with_cast_interval(kind : @core.Kind) -> @core.FuncBuilder {
     if args.length() == 2 {
       let date_arg = args[0]
       let interval_arg = args[1]
-      if interval_arg.kind == Cast {
+      if interval_arg.kind.is_a(Cast) {
         match interval_arg.arg("to") {
-          Some(to) if to.kind == DataType &&
+          Some(to) if to.kind.is_a(DataType) &&
             to.arg("this") is Some(iv) &&
             iv.kind == Interval =>
             return @core.mk(kind, [

@@ -421,7 +421,7 @@ fn configure_generator(d : @core.Dialect) -> Unit {
   m[StrToDate] = (g, e) => {
     let strtodate_sql = g.function_fallback_sql(e)
     match e.parent {
-      Some(p) if p.kind == Cast => strtodate_sql
+      Some(p) if p.kind.is_a(Cast) => strtodate_sql
       // StrToDate returns DATEs in other dialects (eg. postgres), so
       // this branch aims to improve the transpilation to clickhouse
       _ => g.cast_sql_v(@core.exp_cast(e, DATE))

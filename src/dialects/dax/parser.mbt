@@ -49,7 +49,7 @@ fn parse_column(p : @core.Parser) -> @core.Expr? raise @core.SqlglotError {
   let mut this = p.parse_column_base()
   // Combine adjacent identifiers into a column reference: Table[Column]
   match this {
-    Some(t) if t.kind == Column =>
+    Some(t) if t.kind.is_a(Column) =>
       match p.parse_identifier() {
         Some(column) =>
           this = Some(

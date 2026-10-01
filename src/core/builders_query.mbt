@@ -420,7 +420,7 @@ pub fn cast_(expression : Expr, to : DType, copy? : Bool = false) -> Expr {
 /// `exp.cast(expression, to)` with a DataType expression target.
 pub fn cast_to(expression : Expr, to : Expr, copy? : Bool = false) -> Expr {
   let expr = maybe_copy(expression, copy)
-  if expr.kind == Cast {
+  if expr.kind.is_a(Cast) {
     match expr.arg("to") {
       Some(existing) if existing == to => return expr
       _ => ()

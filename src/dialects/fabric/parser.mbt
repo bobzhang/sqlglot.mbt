@@ -20,7 +20,7 @@ fn configure_parser(d : @core.Dialect) -> Unit {
             continue
           }
           match column.arg("kind") {
-            Some(column_type) if column_type.kind == DataType &&
+            Some(column_type) if column_type.kind.is_a(DataType) &&
               (
                 column_type.datatype_this() == Some(VARCHAR) ||
                 column_type.datatype_this() == Some(CHAR)

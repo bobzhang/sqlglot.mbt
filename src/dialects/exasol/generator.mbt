@@ -37,7 +37,7 @@ fn prefix_local(
   node : @core.Expr,
   visible_aliases : Map[String, @core.Expr],
 ) -> @core.Expr {
-  if node.kind == Column && node.text("table") == "" {
+  if node.kind.is_a(Column) && node.text("table") == "" {
     match node.this() {
       Some(this) =>
         match visible_aliases.get(local_key(dialect, this)) {
@@ -65,7 +65,7 @@ fn add_local_prefix_for_aliases(
   }
   let aliases : Map[String, @core.Expr] = Map([])
   for sel in expression.selects() {
-    if sel.kind == Alias {
+    if sel.kind.is_a(Alias) {
       match sel.arg("alias") {
         Some(a) => aliases[local_key(dialect, a)] = a
         None => ()
@@ -97,7 +97,7 @@ fn add_local_prefix_for_aliases(
   let seen_aliases : Map[String, @core.Expr] = Map([])
   let new_selects : Array[@core.Expr] = []
   for sel in expression.selects() {
-    if sel.kind == Alias {
+    if sel.kind.is_a(Alias) {
       let inner = sel
         .this()
         .unwrap()

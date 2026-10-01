@@ -90,7 +90,7 @@ fn alias_ordered_group(
       (Some(group), Some(_)) => {
         let aliases : Array[(@core.Expr, @core.Expr)] = []
         for select in expression.selects() {
-          if select.kind == Alias {
+          if select.kind.is_a(Alias) {
             match (select.this(), select.arg("alias")) {
               (Some(t), Some(a)) => aliases.push((t, a))
               _ => ()
@@ -143,7 +143,7 @@ fn pushdown_cte_column_names(
     for i in 0..<n {
       let name = column_names[i]
       let to_replace = selects[i]
-      let select = if to_replace.kind == Alias {
+      let select = if to_replace.kind.is_a(Alias) {
         to_replace.this().unwrap()
       } else {
         to_replace

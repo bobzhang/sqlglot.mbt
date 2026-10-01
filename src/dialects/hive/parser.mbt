@@ -377,7 +377,7 @@ pub fn parse_types(
       Some(
         t.transform(
           node => {
-            if node.kind == DataType && node.is_type([CHAR, VARCHAR]) {
+            if node.kind.is_a(DataType) && node.is_type([CHAR, VARCHAR]) {
               node.set("this", @core.DType::TEXT)
               node.set("expressions", (None : @core.Expr?))
             }
@@ -482,7 +482,7 @@ fn to_prop_eq(
   if expression.is_star() {
     return expression
   }
-  let key = if expression.kind == Column {
+  let key = if expression.kind.is_a(Column) {
     expression.this().unwrap()
   } else {
     @core.to_identifier("col\{index + 1}")

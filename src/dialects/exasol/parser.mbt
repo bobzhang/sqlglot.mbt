@@ -145,7 +145,7 @@ fn configure_parser(d : @core.Dialect) -> Unit {
       None => p.parse_column_base()
     }
     match column {
-      Some(c) if c.kind == Column =>
+      Some(c) if c.kind.is_a(Column) =>
         match c.arg("table") {
           Some(t) if t.kind == Identifier &&
             @core.py_upper(t.name()) == "LOCAL" &&

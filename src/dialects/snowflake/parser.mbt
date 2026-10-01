@@ -162,7 +162,7 @@ fn configure_parser(d : @core.Dialect) -> Unit {
   fns.lambdas[ARROW] = (p, expressions) => {
     let body = p.replace_lambda(p.parse_assignment(), expressions)
     let args = expressions.map(e => {
-      if e.kind == Cast {
+      if e.kind.is_a(Cast) {
         e.this().unwrap()
       } else {
         e
@@ -386,7 +386,7 @@ fn parse_property_before(
 ///|
 fn policy_to_dot(policy : @core.Expr?) -> @core.Expr? {
   match policy {
-    Some(c) if c.kind == Column => Some(c.to_dot())
+    Some(c) if c.kind.is_a(Column) => Some(c.to_dot())
     _ => policy
   }
 }
@@ -541,7 +541,7 @@ fn parse_bracket_key_value(
 fn parse_lateral(p : @core.Parser) -> @core.Expr? raise @core.SqlglotError {
   let lateral = p.parse_lateral_base()
   guard lateral is Some(l) else { return lateral }
-  if l.this() is Some(t) && t.kind == Explode {
+  if l.this() is Some(t) && t.kind.is_a(Explode) {
     let table_alias = l.arg("alias")
     match table_alias {
       Some(ta) =>
