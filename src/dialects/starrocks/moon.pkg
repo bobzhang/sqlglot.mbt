@@ -1,5 +1,6 @@
 import {
   "hongbozhang/sqlglot/core",
+  "moonbitlang/core/set",
   "hongbozhang/sqlglot/dialects/mysql",
 }
 

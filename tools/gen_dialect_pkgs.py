@@ -37,7 +37,7 @@ def main():
     for name in names:
         parent = parent_of(name)
         pkg_dir = os.path.join(DIALECTS, name)
-        imports = ['  "hongbozhang/sqlglot/core",']
+        imports = ['  "hongbozhang/sqlglot/core",', '  "moonbitlang/core/set",']
         if parent != "base":
             imports.append(f'  "hongbozhang/sqlglot/dialects/{parent}",')
         write(
@@ -52,7 +52,7 @@ def main():
 // overrides in tokenizer.mbt, parser.mbt and generator.mbt).
 
 ///|
-let dialect_cell : Ref[@core.Dialect?] = Ref::new(None)
+let dialect_cell : Ref[@core.Dialect?] = Ref(None)
 
 ///|
 /// The `{name}` dialect (a subclass of `{parent}`).

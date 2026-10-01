@@ -3,7 +3,7 @@
 // overrides in tokenizer.mbt, parser.mbt and generator.mbt).
 
 ///|
-let dialect_cell : Ref[@core.Dialect?] = Ref::new(None)
+let dialect_cell : Ref[@core.Dialect?] = Ref(None)
 
 ///|
 /// The `postgres` dialect (a subclass of `base`).
@@ -11,11 +11,7 @@ pub fn dialect() -> @core.Dialect {
   match dialect_cell.val {
     Some(d) => d
     None => {
-      let d = @core.Dialect::subclass(
-        @core.base_dialect(),
-        "postgres",
-        configure,
-      )
+      let d = @core.Dialect::subclass(@core.base_dialect(), "postgres", configure)
       dialect_cell.val = Some(d)
       d
     }

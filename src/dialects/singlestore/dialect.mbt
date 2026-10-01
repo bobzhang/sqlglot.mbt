@@ -3,7 +3,7 @@
 // overrides in tokenizer.mbt, parser.mbt and generator.mbt).
 
 ///|
-let dialect_cell : Ref[@core.Dialect?] = Ref::new(None)
+let dialect_cell : Ref[@core.Dialect?] = Ref(None)
 
 ///|
 /// The `singlestore` dialect (a subclass of `mysql`).
@@ -11,11 +11,7 @@ pub fn dialect() -> @core.Dialect {
   match dialect_cell.val {
     Some(d) => d
     None => {
-      let d = @core.Dialect::subclass(
-        @mysql.dialect(),
-        "singlestore",
-        configure,
-      )
+      let d = @core.Dialect::subclass(@mysql.dialect(), "singlestore", configure)
       dialect_cell.val = Some(d)
       d
     }

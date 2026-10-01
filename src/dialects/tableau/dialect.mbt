@@ -3,7 +3,7 @@
 // overrides in tokenizer.mbt, parser.mbt and generator.mbt).
 
 ///|
-let dialect_cell : Ref[@core.Dialect?] = Ref::new(None)
+let dialect_cell : Ref[@core.Dialect?] = Ref(None)
 
 ///|
 /// The `tableau` dialect (a subclass of `base`).
@@ -11,11 +11,7 @@ pub fn dialect() -> @core.Dialect {
   match dialect_cell.val {
     Some(d) => d
     None => {
-      let d = @core.Dialect::subclass(
-        @core.base_dialect(),
-        "tableau",
-        configure,
-      )
+      let d = @core.Dialect::subclass(@core.base_dialect(), "tableau", configure)
       dialect_cell.val = Some(d)
       d
     }
