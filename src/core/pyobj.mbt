@@ -1,0 +1,407 @@
+// Host ("Python") values accepted by the builder API, and the conversions between them and
+// expressions: `maybe_parse`, `convert`, `Expr.to_py` and `Expr.__repr__` (port of the
+// corresponding helpers in sqlglot/expressions/core.py).
+
+///|
+/// A host value, mirroring the Python objects that sqlglot's builder API accepts
+/// (`ExpOrStr`, and the values understood by `exp.convert`).
+pub(all) enum PyObj {
+  PyExpr(Expr)
+  PyStr(String)
+  PyInt(Int64)
+  PyFloat(Double)
+  /// A `decimal.Decimal`, kept in its textual form.
+  PyDecimal(String)
+  PyBool(Bool)
+  PyNone
+  PyTuple(Array[PyObj])
+  PyList(Array[PyObj])
+  PyDict(Array[(PyObj, PyObj)])
+  PyBytes(Bytes)
+  /// An object with named attributes (a namedtuple or an object with a `__dict__`).
+  PyObject(Array[(String, PyObj)])
+} derive(Eq)
+
+///|
+/// Conversion of MoonBit values into host values (`PyObj`).
+pub(open) trait IntoPy {
+  into_py(Self) -> PyObj
+}
+
+///|
+pub impl IntoPy for PyObj with into_py(self) {
+  self
+}
+
+///|
+pub impl IntoPy for Expr with into_py(self) {
+  PyExpr(self)
+}
+
+///|
+pub impl IntoPy for String with into_py(self) {
+  PyStr(self)
+}
+
+///|
+pub impl IntoPy for Int with into_py(self) {
+  PyInt(self.to_int64())
+}
+
+///|
+pub impl IntoPy for Int64 with into_py(self) {
+  PyInt(self)
+}
+
+///|
+pub impl IntoPy for Double with into_py(self) {
+  PyFloat(self)
+}
+
+///|
+pub impl IntoPy for Bool with into_py(self) {
+  PyBool(self)
+}
+
+///|
+pub impl IntoPy for Bytes with into_py(self) {
+  PyBytes(self)
+}
+
+///|
+pub impl[T : IntoPy] IntoPy for T? with into_py(self) {
+  match self {
+    Some(x) => x.into_py()
+    None => PyNone
+  }
+}
+
+///|
+pub impl[T : IntoPy] IntoPy for Array[T] with into_py(self) {
+  PyList(self.map(x => x.into_py()))
+}
+
+///|
+pub impl[V : IntoPy] IntoPy for Map[String, V] with into_py(self) {
+  PyDict(self.iter().map(kv => (PyStr(kv.0), kv.1.into_py())).collect())
+}
+
+///|
+/// Python `repr(float)`.
+pub fn py_float_repr(d : Double) -> String {
+  if d.is_nan() {
+    return "nan"
+  }
+  if d.is_pos_inf() {
+    return "inf"
+  }
+  if d.is_neg_inf() {
+    return "-inf"
+  }
+  let abs = d.abs()
+  if d == d.floor() && abs < 1.0e16 {
+    return d.to_int64().to_string() + ".0"
+  }
+  let s = d.to_string()
+  // MoonBit prints exponents as e.g. `1e+20` / `1e-7`; Python pads to two digits.
+  match s.find("e") {
+    Some(i) => {
+      let mantissa = s.view(end_offset=i).to_string()
+      let exp = s.view(start_offset=i + 1).to_string()
+      let (sign, digits) = if exp.has_prefix("-") {
+        ("-", exp.view(start_offset=1).to_string())
+      } else if exp.has_prefix("+") {
+        ("+", exp.view(start_offset=1).to_string())
+      } else {
+        ("+", exp)
+      }
+      let digits = if digits.length() < 2 { "0" + digits } else { digits }
+      "\{mantissa}e\{sign}\{digits}"
+    }
+    None => s
+  }
+}
+
+///|
+/// Python `str(value)` for a host value.
+pub fn PyObj::py_str(self : PyObj) -> String {
+  match self {
+    PyExpr(e) => e.to_s()
+    PyStr(s) => s
+    PyInt(i) => i.to_string()
+    PyFloat(d) => py_float_repr(d)
+    PyDecimal(s) => s
+    PyBool(b) => if b { "True" } else { "False" }
+    PyNone => "None"
+    PyTuple(items) =>
+      if items.length() == 1 {
+        "(\{items[0].py_repr()},)"
+      } else {
+        "(" + items.map(x => x.py_repr()).join(", ") + ")"
+      }
+    PyList(items) => "[" + items.map(x => x.py_repr()).join(", ") + "]"
+    PyDict(items) =>
+      "{" +
+      items.map(kv => "\{kv.0.py_repr()}: \{kv.1.py_repr()}").join(", ") +
+      "}"
+    PyBytes(b) => {
+      let sb = StringBuilder()
+      sb.write_string("b'")
+      for byte in b {
+        let c = byte.to_int()
+        if c == '\\'.to_int() || c == '\''.to_int() {
+          sb.write_char('\\')
+          sb.write_char(Int::unsafe_to_char(c))
+        } else if c >= 32 && c < 127 {
+          sb.write_char(Int::unsafe_to_char(c))
+        } else {
+          let hex = "0123456789abcdef"
+          sb.write_string("\\x")
+          sb.write_char(hex.get_char(c / 16).unwrap())
+          sb.write_char(hex.get_char(c % 16).unwrap())
+        }
+      }
+      sb.write_char('\'')
+      sb.to_string()
+    }
+    PyObject(fields) =>
+      "(" + fields.map(kv => "\{kv.0}=\{kv.1.py_repr()}").join(", ") + ")"
+  }
+}
+
+///|
+/// Python `repr(value)` for a host value.
+pub fn PyObj::py_repr(self : PyObj) -> String {
+  match self {
+    PyStr(s) => py_repr_str(s)
+    PyDecimal(s) => "Decimal(\{py_repr_str(s)})"
+    PyExpr(e) => e.to_s()
+    _ => self.py_str()
+  }
+}
+
+///|
+/// Python `maybe_parse`: returns the given expression (copied if `copy`), or parses the
+/// given SQL code (`str(sql_or_expression)`, optionally prefixed by `prefix`) into one of
+/// the kinds `into`.
+pub fn[T : IntoPy] maybe_parse(
+  sql_or_expression : T,
+  into? : ArrayView[Kind],
+  dialect? : Dialect,
+  prefix? : String,
+  copy? : Bool = false,
+  error_level? : ErrorLevel = Immediate,
+) -> Expr raise SqlglotError {
+  let obj = sql_or_expression.into_py()
+  match obj {
+    PyExpr(e) => return if copy { e.copy() } else { e }
+    PyNone => raise ParseError("SQL cannot be None", [])
+    _ => ()
+  }
+  let mut sql = obj.py_str()
+  match prefix {
+    Some(p) if !p.is_empty() => sql = "\{p} \{sql}"
+    _ => ()
+  }
+  parse_one(sql, dialect?, into?=into.map(i => i.to_array()), error_level~)
+}
+
+///|
+/// Python `exp.convert`: converts a host value into an expression. Raises `ValueError`
+/// when a conversion is not possible.
+pub fn[T : IntoPy] convert(value : T, copy? : Bool = false) -> Expr raise SqlglotError {
+  convert_obj(value.into_py(), copy~)
+}
+
+///|
+fn convert_obj(value : PyObj, copy~ : Bool) -> Expr raise SqlglotError {
+  match value {
+    PyExpr(e) => maybe_copy(e, copy)
+    PyStr(s) => literal_string(s)
+    PyBool(b) => boolean(b)
+    PyNone => null_()
+    PyFloat(d) if d.is_nan() => null_()
+    PyFloat(d) => literal_number(py_float_repr(d))
+    PyInt(i) => literal_number(i.to_string())
+    PyDecimal(s) => literal_number(s)
+    PyBytes(b) => {
+      let sb = StringBuilder()
+      let hex = "0123456789abcdef"
+      for byte in b {
+        let c = byte.to_int()
+        sb.write_char(hex.get_char(c / 16).unwrap())
+        sb.write_char(hex.get_char(c % 16).unwrap())
+      }
+      mk1(HexString, sb.to_string())
+    }
+    PyObject(fields) => {
+      let exprs = []
+      for kv in fields {
+        exprs.push(
+          mk(PropertyEQ, [
+            ("this", to_identifier(kv.0)),
+            ("expression", convert_obj(kv.1, copy~)),
+          ]),
+        )
+      }
+      mk(Struct, [("expressions", exprs)])
+    }
+    PyTuple(items) => {
+      let exprs = []
+      for v in items {
+        exprs.push(convert_obj(v, copy~))
+      }
+      mk(Tuple, [("expressions", exprs)])
+    }
+    PyList(items) => {
+      let exprs = []
+      for v in items {
+        exprs.push(convert_obj(v, copy~))
+      }
+      mk(Array, [("expressions", exprs)])
+    }
+    PyDict(items) => {
+      let keys = []
+      let values = []
+      for kv in items {
+        keys.push(convert_obj(kv.0, copy~))
+        values.push(convert_obj(kv.1, copy~))
+      }
+      mk(Map, [
+        ("keys", mk(Array, [("expressions", keys)])),
+        ("values", mk(Array, [("expressions", values)])),
+      ])
+    }
+  }
+}
+
+///|
+/// Python `Expr.to_py()`: returns a host value equivalent of the SQL node. Raises
+/// `ValueError` for nodes that can't be converted.
+pub fn Expr::to_py(self : Expr) -> PyObj raise SqlglotError {
+  match self.kind.owner_to_py() {
+    Some(Literal) => {
+      let this = self.text("this")
+      if !self.is_number() {
+        return PyStr(this)
+      }
+      match parse_int_str(this) {
+        Some(i) => PyInt(i)
+        None =>
+          if is_float_str(this) {
+            PyDecimal(this)
+          } else {
+            raise ValueError("Invalid numeric literal: \{py_repr_str(this)}")
+          }
+      }
+    }
+    Some(Null) => PyNone
+    Some(Boolean) => PyBool(self.bool_arg("this"))
+    Some(Neg) if self.is_number() =>
+      match self.this_().to_py() {
+        PyInt(i) => PyInt(-i)
+        PyDecimal(s) =>
+          PyDecimal(if s.has_prefix("-") { s.view(start_offset=1).to_string() } else { "-" + s })
+        other => other
+      }
+    _ => raise ValueError("\{self.to_s()} cannot be converted to a Python object.")
+  }
+}
+
+///|
+/// Python `Expr.__repr__` (`_to_s`): a textual representation of the expression tree.
+pub fn Expr::to_s(self : Expr) -> String {
+  to_s_node(self, 0)
+}
+
+///|
+fn to_s_value(value : Value, level : Int, repr_str : Bool) -> String {
+  let indent = "\n" + "  ".repeat(level + 1)
+  let delim = ",\{indent}"
+  match value {
+    Node(e) => to_s_node(e, level)
+    List(items) => {
+      let s = items.map(v => to_s_value(v, level + 1, false)).join(delim)
+      if s.is_empty() {
+        "[]"
+      } else {
+        "[\{indent}\{s}]"
+      }
+    }
+    Str(s) => {
+      let s = if repr_str { py_repr_str(s) } else { s }
+      // Indent multiline strings to match the current level
+      to_s_dedent(s).join(indent)
+    }
+    Bool(b) => if b { "True" } else { "False" }
+    Int(i) => i.to_string()
+    DT(d) => "DType.\{d}"
+  }
+}
+
+///|
+/// `textwrap.dedent(s.strip("\n")).splitlines()`
+fn to_s_dedent(s : String) -> Array[String] {
+  let lines = strip_chars(s, "\n").split("\n").map(l => l.to_string()).collect()
+  let mut margin : Int? = None
+  for line in lines {
+    if py_strip(line).is_empty() {
+      continue
+    }
+    let mut n = 0
+    for c in line {
+      if c == ' ' || c == '\t' {
+        n += 1
+      } else {
+        break
+      }
+    }
+    margin = match margin {
+      Some(m) if m <= n => Some(m)
+      _ => Some(n)
+    }
+  }
+  let m = margin.unwrap_or(0)
+  lines.map(line => {
+    if py_strip(line).is_empty() {
+      ""
+    } else {
+      line.view(start_offset=m).to_string()
+    }
+  })
+}
+
+///|
+fn to_s_node(node : Expr, level : Int) -> String {
+  let mut indent = "\n" + "  ".repeat(level + 1)
+  let mut delim = ",\{indent}"
+  let items : Array[(String, String)] = []
+  let repr_str = node.is_string() ||
+    (node.kind == Identifier && node.bool_arg("quoted"))
+  for k, v in node.args {
+    match v {
+      List(l) if l.is_empty() => continue
+      _ => ()
+    }
+    items.push((k, to_s_value(v, level + 1, repr_str)))
+  }
+  if !node.kind.is_data_type() {
+    match node.type_ {
+      Some(t) => items.push(("_type", to_s_node(t, level + 1)))
+      None => ()
+    }
+  }
+  match node.comments {
+    Some(c) if !c.is_empty() =>
+      items.push(
+        ("_comments", to_s_value(List(c.map(x => Str(x))), level + 1, false)),
+      )
+    _ => ()
+  }
+  if node.is_leaf() {
+    indent = ""
+    delim = ", "
+  }
+  let body = items.map(kv => "\{kv.0}=\{kv.1}").join(delim)
+  "\{node.kind.name()}(\{indent}\{body})"
+}

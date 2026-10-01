@@ -717,7 +717,7 @@ fn set_operations(
 }
 
 ///|
-fn prepare_limit_offset(e : @core.Expr) -> Unit {
+fn prepare_limit_offset(e : @core.Expr) -> Unit raise @core.SqlglotError {
   let limit = e.arg("limit")
   let mut offset = e.arg("offset")
   match limit {

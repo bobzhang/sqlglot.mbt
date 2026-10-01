@@ -1,28 +1,37 @@
 // Query builder methods (port of the Select/Query builder API in
-// sqlglot/expressions/query.py and builders.py) for expression arguments.
+// sqlglot/expressions/query.py and builders.py).
+//
+// Arguments are host values (`IntoPy`): expressions are used as-is, other values (e.g. SQL
+// strings) are parsed with `maybe_parse`, as in Python. Note that, unlike Python, these
+// builder methods default to `copy=false` (they modify the instance in place).
 
 ///|
 /// `exp.select(*expressions)`
-pub fn select_(expressions : Array[Expr]) -> Expr {
-  mk(Select, [("expressions", expressions)])
+pub fn[T : IntoPy] select_(
+  expressions : Array[T],
+  dialect? : Dialect,
+) -> Expr raise SqlglotError {
+  mk0(Select).select_(expressions, dialect?)
 }
 
 ///|
-/// `Select.select(*expressions, append=...)`
-pub fn Expr::select_(
+/// `Select.select(*expressions, append=...)` (also `SetOperation.select` and
+/// `Subquery.select`).
+pub fn[T : IntoPy] Expr::select_(
   self : Expr,
-  expressions : Array[Expr],
+  expressions : Array[T],
   append? : Bool = true,
+  dialect? : Dialect,
   copy? : Bool = false,
-) -> Expr {
+) -> Expr raise SqlglotError {
   let inst = maybe_copy(self, copy)
   if inst.kind.is_a(SetOperation) {
     match inst.this() {
-      Some(t) => t.unnest().select_(expressions, append~) |> ignore
+      Some(t) => t.unnest().select_(expressions, append~, dialect?) |> ignore
       None => ()
     }
     match inst.expression() {
-      Some(t) => t.unnest().select_(expressions, append~) |> ignore
+      Some(t) => t.unnest().select_(expressions, append~, dialect?) |> ignore
       None => ()
     }
     return inst
@@ -30,34 +39,42 @@ pub fn Expr::select_(
   if inst.kind.is_a(Subquery) {
     let inner = inst.unnest()
     if inner.kind == Select || inner.kind.is_a(SetOperation) {
-      inner.select_(expressions, append~) |> ignore
+      inner.select_(expressions, append~, dialect?) |> ignore
     }
     return inst
   }
-  let parsed = if append {
-    inst.expressions() + expressions
-  } else {
-    expressions
-  }
-  inst.set("expressions", parsed)
-  inst
+  apply_list_builder(
+    py_list(expressions),
+    inst,
+    "expressions",
+    append~,
+    copy=false,
+    into=Expression,
+    dialect?,
+  )
 }
 
 ///|
-/// `Select.from_(expression)`
-pub fn Expr::from_(
+/// `Select.from_(expression)` / `Update.from_(expression)`
+pub fn[T : IntoPy] Expr::from_(
   self : Expr,
-  expression : Expr,
+  expression : T,
+  dialect? : Dialect,
   copy? : Bool = false,
-) -> Expr {
-  let inst = maybe_copy(self, copy)
-  let f = if expression.kind == From {
-    expression
-  } else {
-    mk1(From, expression)
+) -> Expr raise SqlglotError {
+  let expression = expression.into_py()
+  if self.kind == Update && !expression.truthy() {
+    return maybe_copy(self, copy)
   }
-  inst.set("from_", f)
-  inst
+  apply_builder(
+    expression,
+    self,
+    "from_",
+    copy~,
+    prefix="FROM",
+    into=From,
+    dialect?,
+  )
 }
 
 ///|
@@ -85,198 +102,160 @@ pub fn table_of(name : String) -> Expr {
 }
 
 ///|
-fn apply_conjunction(
-  inst : Expr,
-  arg : String,
-  into : Kind?,
-  expressions : Array[Expr],
-  append : Bool,
-) -> Expr {
-  if expressions.is_empty() {
-    return inst
-  }
-  let filtered = []
-  match inst.arg(arg) {
-    Some(existing) if append =>
-      filtered.push(
-        match into {
-          Some(_) =>
-            match existing.this() {
-              Some(t) => t
-              None => existing
-            }
-          None => existing
-        },
-      )
-    _ => ()
-  }
-  for e in expressions {
-    filtered.push(e)
-  }
-  let node = and_(filtered)
-  inst.set(
-    arg,
-    match into {
-      Some(k) => mk1(k, node)
-      None => node
-    },
-  )
-  inst
-}
-
-///|
-/// `Query.where(*expressions)`
-pub fn Expr::where_(
+/// `Query.where(*expressions)` (also `Delete.where` / `Update.where`)
+pub fn[T : IntoPy] Expr::where_(
   self : Expr,
-  expressions : Array[Expr],
+  expressions : Array[T],
   append? : Bool = true,
+  dialect? : Dialect,
   copy? : Bool = false,
-) -> Expr {
-  let inst = maybe_copy(self, copy)
+) -> Expr raise SqlglotError {
   let exprs = expressions.map(e => {
-    if e.kind == Where {
-      match e.this() {
-        Some(t) => t
-        None => e
-      }
-    } else {
-      e
+    match e.into_py() {
+      PyExpr(w) if w.kind == Where =>
+        match w.this() {
+          Some(t) => PyExpr(t)
+          None => PyNone
+        }
+      other => other
     }
   })
-  apply_conjunction(inst, "where", Some(Where), exprs, append)
+  apply_conjunction_builder(
+    exprs,
+    self,
+    "where",
+    into=Where,
+    append~,
+    copy~,
+    dialect?,
+  )
 }
 
 ///|
 /// `Select.having(*expressions)`
-pub fn Expr::having_(
+pub fn[T : IntoPy] Expr::having_(
   self : Expr,
-  expressions : Array[Expr],
+  expressions : Array[T],
   append? : Bool = true,
+  dialect? : Dialect,
   copy? : Bool = false,
-) -> Expr {
-  let inst = maybe_copy(self, copy)
-  apply_conjunction(inst, "having", Some(Having), expressions, append)
-}
-
-///|
-fn apply_child_list(
-  inst : Expr,
-  arg : String,
-  into : Kind,
-  expressions : Array[Expr],
-  append : Bool,
-) -> Expr {
-  let parsed = []
-  let properties : Array[(String, Value)] = []
-  for expression in expressions {
-    let e = if expression.kind.is_a(into) {
-      expression
-    } else {
-      mk(into, [("expressions", [expression])])
-    }
-    for k, v in e.args {
-      if k == "expressions" {
-        match v {
-          List(l) =>
-            for x in l {
-              match x {
-                Node(n) => parsed.push(n)
-                _ => ()
-              }
-            }
-          _ => ()
-        }
-      } else {
-        properties.push((k, v))
-      }
-    }
-  }
-  let all = match inst.arg(arg) {
-    Some(existing) if append => existing.expressions() + parsed
-    _ => parsed
-  }
-  let child = mk(into, [("expressions", all)])
-  for kv in properties {
-    child.set(kv.0, kv.1)
-  }
-  inst.set(arg, child)
-  inst
+) -> Expr raise SqlglotError {
+  apply_conjunction_builder(
+    py_list(expressions),
+    self,
+    "having",
+    into=Having,
+    append~,
+    copy~,
+    dialect?,
+  )
 }
 
 ///|
 /// `Select.group_by(*expressions)`
-pub fn Expr::group_by(
+pub fn[T : IntoPy] Expr::group_by(
   self : Expr,
-  expressions : Array[Expr],
+  expressions : Array[T],
   append? : Bool = true,
+  dialect? : Dialect,
   copy? : Bool = false,
-) -> Expr {
-  let inst = maybe_copy(self, copy)
+) -> Expr raise SqlglotError {
   if expressions.is_empty() {
-    return inst
+    return maybe_copy(self, copy)
   }
-  apply_child_list(inst, "group", Group, expressions, append)
+  apply_child_list_builder(
+    py_list(expressions),
+    self,
+    "group",
+    append~,
+    copy~,
+    prefix="GROUP BY",
+    into=Group,
+    dialect?,
+  )
 }
 
 ///|
 /// `Query.order_by(*expressions)`
-pub fn Expr::order_by(
+pub fn[T : IntoPy] Expr::order_by(
   self : Expr,
-  expressions : Array[Expr],
+  expressions : Array[T],
   append? : Bool = true,
+  dialect? : Dialect,
   copy? : Bool = false,
-) -> Expr {
-  let inst = maybe_copy(self, copy)
-  apply_child_list(inst, "order", Order, expressions, append)
+) -> Expr raise SqlglotError {
+  apply_child_list_builder(
+    py_list(expressions),
+    self,
+    "order",
+    append~,
+    copy~,
+    prefix="ORDER BY",
+    into=Order,
+    dialect?,
+  )
 }
 
 ///|
 /// `Query.limit(expression)`
-pub fn Expr::limit_(
+pub fn[T : IntoPy] Expr::limit_(
   self : Expr,
-  expression : Expr,
+  expression : T,
+  dialect? : Dialect,
   copy? : Bool = false,
-) -> Expr {
-  let inst = maybe_copy(self, copy)
-  let l = if expression.kind == Limit {
-    expression
-  } else {
-    mk(Limit, [("expression", expression)])
-  }
-  inst.set("limit", l)
-  inst
+) -> Expr raise SqlglotError {
+  apply_builder(
+    expression.into_py(),
+    self,
+    "limit",
+    copy~,
+    prefix="LIMIT",
+    into=Limit,
+    dialect?,
+    into_arg="expression",
+  )
 }
 
 ///|
 /// `Query.offset(expression)`
-pub fn Expr::offset_(
+pub fn[T : IntoPy] Expr::offset_(
   self : Expr,
-  expression : Expr,
+  expression : T,
+  dialect? : Dialect,
   copy? : Bool = false,
-) -> Expr {
-  let inst = maybe_copy(self, copy)
-  let o = if expression.kind == Offset {
-    expression
-  } else {
-    mk(Offset, [("expression", expression)])
-  }
-  inst.set("offset", o)
-  inst
+) -> Expr raise SqlglotError {
+  apply_builder(
+    expression.into_py(),
+    self,
+    "offset",
+    copy~,
+    prefix="OFFSET",
+    into=Offset,
+    dialect?,
+    into_arg="expression",
+  )
 }
 
 ///|
 /// `Select.distinct(*ons, distinct=True)`
 pub fn Expr::distinct_(
   self : Expr,
-  ons? : Array[Expr] = [],
+  ons? : Array[&IntoPy] = [],
   distinct? : Bool = true,
   copy? : Bool = false,
-) -> Expr {
+) -> Expr raise SqlglotError {
   let inst = maybe_copy(self, copy)
   let on = if ons.is_empty() {
     None
   } else {
-    Some(mk(Tuple, [("expressions", ons)]))
+    let exprs = []
+    for on in ons {
+      let o = on.into_py()
+      if o.truthy() {
+        exprs.push(maybe_parse(o, copy~))
+      }
+    }
+    Some(mk(Tuple, [("expressions", exprs)]))
   }
   inst.set(
     "distinct",
@@ -290,28 +269,51 @@ pub fn Expr::distinct_(
 }
 
 ///|
-/// `Select.join(expression, on=..., using=..., join_type=...)`
-pub fn Expr::join_(
+/// `Select.join(expression, on=..., using=..., join_type=..., join_alias=...)`.
+///
+/// `side`, `kind` and `method` directly set the corresponding join arguments.
+pub fn[T : IntoPy] Expr::join_(
   self : Expr,
-  expression : Expr,
-  on? : Array[Expr] = [],
-  using_? : Array[Expr] = [],
+  expression : T,
+  on? : Array[&IntoPy] = [],
+  using_? : Array[&IntoPy] = [],
+  append? : Bool = true,
+  join_type? : String,
+  join_alias? : String,
   side? : String,
   kind? : String,
   method? : String,
-  join_alias? : String,
-  append? : Bool = true,
+  dialect? : Dialect,
   copy? : Bool = false,
-) -> Expr {
-  let inst = maybe_copy(self, copy)
-  let join = if expression.kind == Join {
-    expression
-  } else {
-    mk1(Join, expression)
+) -> Expr raise SqlglotError {
+  let expression = expression.into_py()
+  let parsed = maybe_parse(expression, into=[Join], prefix="JOIN", dialect?) catch {
+    ParseError(_, _) => maybe_parse(expression, into=[Join, Expression], dialect?)
+    e => raise e
   }
+  let join = if parsed.kind == Join { parsed } else { mk1(Join, parsed) }
   match join.this() {
-    Some(t) if t.kind == Select =>
-      t.replace(Some(t.subquery(copy=false))) |> ignore
+    Some(t) if t.kind == Select => t.replace(Some(t.subquery())) |> ignore
+    _ => ()
+  }
+  match join_type {
+    Some(jt) if !jt.is_empty() => {
+      let new_join = maybe_parse("FROM _ \{jt} JOIN _", dialect?)
+        .find([Join])
+        .unwrap()
+      let m = py_upper(new_join.text("method"))
+      let s = py_upper(new_join.text("side"))
+      let k = py_upper(new_join.text("kind"))
+      if !m.is_empty() {
+        join.set("method", m)
+      }
+      if !s.is_empty() {
+        join.set("side", s)
+      }
+      if !k.is_empty() {
+        join.set("kind", k)
+      }
+    }
     _ => ()
   }
   match method {
@@ -327,11 +329,22 @@ pub fn Expr::join_(
     None => ()
   }
   if !on.is_empty() {
-    join.set("on", and_(on))
+    join.set(
+      "on",
+      combine_py(on.map(o => o.into_py()), And, dialect?, copy~),
+    )
   }
-  if !using_.is_empty() {
-    let existing = if append { join.list("using") } else { [] }
-    join.set("using", existing + using_)
+  let join = if !using_.is_empty() {
+    apply_list_builder(
+      using_.map(u => u.into_py()),
+      join,
+      "using",
+      append~,
+      copy~,
+      into=Identifier,
+    )
+  } else {
+    join
   }
   match join_alias {
     Some(a) =>
@@ -341,10 +354,7 @@ pub fn Expr::join_(
       }
     None => ()
   }
-  let joins = if append { inst.list("joins") } else { [] }
-  joins.push(join)
-  inst.set("joins", joins)
-  inst
+  apply_list_builder([PyExpr(join)], self, "joins", append~, copy~)
 }
 
 ///|
@@ -359,28 +369,41 @@ pub fn set_operation(
 }
 
 ///|
-/// `Query.union(other, distinct=...)`
-pub fn Expr::union_(self : Expr, other : Expr, distinct? : Bool = true) -> Expr {
-  set_operation(Union, self, other, distinct~)
+/// `Query.union(*expressions, distinct=...)`
+pub fn[T : IntoPy] Expr::union_(
+  self : Expr,
+  other : T,
+  distinct? : Bool = true,
+  dialect? : Dialect,
+  copy? : Bool = true,
+) -> Expr raise SqlglotError {
+  apply_set_operation(
+    [PyExpr(self), other.into_py()],
+    Union,
+    distinct~,
+    dialect?,
+    copy~,
+  )
 }
 
 ///|
-/// `Query.with_(alias, as_, recursive=...)`
-pub fn Expr::with_(
+/// `Query.with_(alias, as_, recursive=...)` (also `Insert.with_` / `Update.with_`)
+pub fn[A : IntoPy, B : IntoPy] Expr::with_(
   self : Expr,
-  alias : String,
-  as_ : Expr,
+  alias : A,
+  as_ : B,
   recursive? : Bool,
   materialized? : Bool,
   append? : Bool = true,
-  scalar? : Bool,
+  dialect? : Dialect,
   copy? : Bool = false,
-) -> Expr {
-  let inst = maybe_copy(self, copy)
-  let alias_expression = mk1(TableAlias, to_identifier(alias))
-  let as_expression = match scalar {
-    Some(true) if as_.kind != Subquery => mk1(Subquery, as_)
-    _ => as_
+  scalar? : Bool,
+) -> Expr raise SqlglotError {
+  let alias_expression = maybe_parse(alias, dialect?, into=[TableAlias])
+  let mut as_expression = maybe_parse(as_, dialect?, copy~)
+  if scalar == Some(true) && as_expression.kind != Subquery {
+    // scalar CTE must be wrapped in a subquery
+    as_expression = mk1(Subquery, as_expression)
   }
   let cte = mk(CTE, [
     ("this", as_expression),
@@ -388,26 +411,19 @@ pub fn Expr::with_(
     ("materialized", materialized),
     ("scalar", scalar),
   ])
-  let existing = match inst.arg("with_") {
-    Some(w) if append => w.expressions()
-    _ => []
+  let properties : Map[String, Value] = Map([])
+  if recursive == Some(true) {
+    properties["recursive"] = Bool(true)
   }
-  let w = mk(With, [("expressions", existing + [cte])])
-  match inst.arg("with_") {
-    Some(old) =>
-      for k, v in old.args {
-        if k != "expressions" {
-          w.set(k, v)
-        }
-      }
-    None => ()
-  }
-  match recursive {
-    Some(true) => w.set("recursive", true)
-    _ => ()
-  }
-  inst.set("with_", w)
-  inst
+  apply_child_list_builder(
+    [PyExpr(cte)],
+    self,
+    "with_",
+    append~,
+    copy~,
+    into=With,
+    properties~,
+  )
 }
 
 ///|
@@ -457,16 +473,35 @@ pub fn case_(this? : Expr) -> Expr {
 
 ///|
 /// `Case.when(condition, then)`
-pub fn Expr::when_(self : Expr, condition : Expr, then : Expr) -> Expr {
-  self.append("ifs", mk(If, [("this", condition), ("true", then)]))
-  self
+pub fn[C : IntoPy, T : IntoPy] Expr::when_(
+  self : Expr,
+  condition : C,
+  then : T,
+  dialect? : Dialect,
+  copy? : Bool = true,
+) -> Expr raise SqlglotError {
+  let instance = maybe_copy(self, copy)
+  instance.append(
+    "ifs",
+    mk(If, [
+      ("this", maybe_parse(condition, copy~, dialect?)),
+      ("true", maybe_parse(then, copy~, dialect?)),
+    ]),
+  )
+  instance
 }
 
 ///|
 /// `Case.else_(condition)`
-pub fn Expr::else_(self : Expr, default : Expr) -> Expr {
-  self.set("default", default)
-  self
+pub fn[T : IntoPy] Expr::else_(
+  self : Expr,
+  default : T,
+  dialect? : Dialect,
+  copy? : Bool = true,
+) -> Expr raise SqlglotError {
+  let instance = maybe_copy(self, copy)
+  instance.set("default", maybe_parse(default, copy~, dialect?))
+  instance
 }
 
 ///|
@@ -476,20 +511,32 @@ pub fn Expr::as_(
   alias : String,
   quoted? : Bool,
   copy? : Bool = true,
+  table? : Array[String],
 ) -> Expr {
-  alias_(self, alias, quoted?, copy~)
+  match table {
+    Some(columns) => {
+      let e = maybe_copy(self, copy)
+      let table_alias = mk1(TableAlias, to_identifier(alias, quoted?))
+      e.set("alias", table_alias)
+      for c in columns {
+        table_alias.append("columns", to_identifier(c, quoted?))
+      }
+      e
+    }
+    None => alias_(self, alias, quoted?, copy~)
+  }
 }
 
 ///|
 /// `expr.eq(other)`
-pub fn Expr::eq_(self : Expr, other : Expr) -> Expr {
-  mk(EQ, [("this", self), ("expression", other)])
+pub fn[T : IntoPy] Expr::eq_(self : Expr, other : T) -> Expr raise SqlglotError {
+  self.binop(EQ, other)
 }
 
 ///|
 /// `expr.is_(other)`
-pub fn Expr::is__(self : Expr, other : Expr) -> Expr {
-  mk(Is, [("this", self), ("expression", other)])
+pub fn[T : IntoPy] Expr::is__(self : Expr, other : T) -> Expr raise SqlglotError {
+  self.binop(Is, other)
 }
 
 ///|

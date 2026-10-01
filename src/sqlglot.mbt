@@ -34,8 +34,14 @@ pub fn transpile(
 pub fn parse_one(
   sql : String,
   read? : String = "",
+  dialect? : String,
+  into? : Array[@core.Kind],
 ) -> @core.Expr raise @core.SqlglotError {
-  @core.parse_one(sql, dialect=@core.Dialect::get_or_raise(read))
+  let name = match dialect {
+    Some(d) if read.is_empty() => d
+    _ => read
+  }
+  @core.parse_one(sql, dialect=@core.Dialect::get_or_raise(name), into?)
 }
 
 ///|
@@ -54,12 +60,29 @@ pub fn generate(
   dialect? : String = "",
   pretty? : Bool = false,
   identify? : Bool = false,
+  normalize? : Bool = false,
+  normalize_functions? : String,
+  comments? : Bool = true,
+  pad? : Int = 2,
+  indent? : Int = 2,
+  leading_comma? : Bool = false,
+  max_text_width? : Int = 80,
+  unsupported_level? : @core.ErrorLevel = Warn,
+  copy? : Bool = true,
 ) -> String raise @core.SqlglotError {
   @core.Generator::new(
     @core.Dialect::get_or_raise(dialect),
     pretty~,
     identify=if identify { "always" } else { "" },
-  ).generate(expression)
+    normalize~,
+    normalize_functions?,
+    comments~,
+    pad~,
+    indent~,
+    leading_comma~,
+    max_text_width~,
+    unsupported_level~,
+  ).generate(expression, copy~)
 }
 
 ///|
