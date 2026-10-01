@@ -162,9 +162,14 @@ pub(all) struct Generator {
 }
 
 ///|
+/// Python's module-level `sqlglot.pretty`: the default for generators created without
+/// an explicit `pretty` option.
+pub let default_pretty : Ref[Bool] = Ref(false)
+
+///|
 pub fn Generator::new(
   dialect : Dialect,
-  pretty? : Bool = false,
+  pretty? : Bool,
   identify? : String = "",
   normalize? : Bool = false,
   pad? : Int = 2,
@@ -184,6 +189,10 @@ pub fn Generator::new(
         B(true) => "upper"
         B(false) => ""
       }
+  }
+  let pretty = match pretty {
+    Some(p) => p
+    None => default_pretty.val
   }
   let identify = match identify {
     "true" | "True" => "always"

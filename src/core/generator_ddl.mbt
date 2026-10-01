@@ -795,7 +795,7 @@ pub fn Generator::property_location(
     Some(loc) => loc
     None =>
       raise ValueError(
-        "KeyError: <class 'sqlglot.expressions.\{p.kind.name()}'>",
+        "KeyError: \{p.kind.class_path()}",
       )
   }
 }

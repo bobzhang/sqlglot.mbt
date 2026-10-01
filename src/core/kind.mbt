@@ -11,6 +11,18 @@ pub fn Kind::key(self : Kind) -> String {
 }
 
 ///|
+/// The Python module defining this kind, e.g. `sqlglot.expressions.query`.
+pub fn Kind::module_name(self : Kind) -> String {
+  kind_modules[self.id()]
+}
+
+///|
+/// Python `str(cls)`, e.g. `<class 'sqlglot.expressions.query.Select'>`.
+pub fn Kind::class_path(self : Kind) -> String {
+  "<class '\{self.module_name()}.\{self.name()}'>"
+}
+
+///|
 pub impl Show for Kind with fn output(self, logger) {
   logger.write_string(self.name())
 }
