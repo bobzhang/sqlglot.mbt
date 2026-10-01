@@ -254,7 +254,7 @@ fn configure_generator(d : @core.Dialect) -> Unit {
   t[RegexpILike] = regexpilike_sql
   t[RowAccessProperty] = (g, e) => g.call_method(RowAccessProperty, e)
   t[Select] = @core.preprocess([
-    @core.eliminate_window_clause, @core.eliminate_distinct_on, @core.explode_projection_to_unnest(),
+    @core.eliminate_window_clause, @core.eliminate_distinct_on, @optimizer.explode_projection_to_unnest(),
     @core.eliminate_semi_and_anti_joins, transform_generate_date_array, qualify_unnested_columns,
     eliminate_dot_variant_lookup,
   ])

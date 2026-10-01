@@ -40,10 +40,16 @@ def main():
         imports = ['  "hongbozhang/sqlglot/core",', '  "moonbitlang/core/set",']
         if parent != "base":
             imports.append(f'  "hongbozhang/sqlglot/dialects/{parent}",')
-        write(
-            os.path.join(pkg_dir, "moon.pkg"),
-            "import {\n" + "\n".join(imports) + "\n}\n\nwarnings = \"-79-15\"\n",
-        )
+        # Keep any extra imports added by hand (e.g. spark importing hive for explicit
+        # super(HiveGenerator, ...) calls); only ensure the required ones are present.
+        pkg_path = os.path.join(pkg_dir, "moon.pkg")
+        if os.path.exists(pkg_path):
+            existing = re.findall(r'^\s*"[^"]+",?\s*$', open(pkg_path).read(), re.M)
+            for line in existing:
+                line = "  " + line.strip().rstrip(",") + ","
+                if line not in imports:
+                    imports.append(line)
+        write(pkg_path, "import {\n" + "\n".join(imports) + "\n}\n\nwarnings = \"-79-15\"\n")
         parent_expr = "@core.base_dialect()" if parent == "base" else f"@{parent}.dialect()"
         write(
             os.path.join(pkg_dir, "dialect.mbt"),

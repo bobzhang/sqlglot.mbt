@@ -1,5 +1,5 @@
 // Port of the scope-dependent Select transforms used by the Snowflake generator:
-// (`explode_projection_to_unnest` now comes from core),
+// (`explode_projection_to_unnest` comes from the optimizer package),
 // `_transform_generate_date_array` and `_qualify_unnested_columns`.
 
 ///|

@@ -17,7 +17,7 @@ fn configure_generator(d : @core.Dialect) -> Unit {
   t[Select] = @core.preprocess([
     @core.eliminate_qualify,
     @core.eliminate_distinct_on,
-    @core.explode_projection_to_unnest(index_offset=1, unnest_map=true),
+    @optimizer.explode_projection_to_unnest(index_offset=1, unnest_map=true),
     @core.eliminate_semi_and_anti_joins,
     @presto.amend_exploded_column_table,
   ])

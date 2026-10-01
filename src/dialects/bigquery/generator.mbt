@@ -459,7 +459,7 @@ fn configure_generator(d : @core.Dialect) -> Unit {
   }
   t[Select] = @core.preprocess([
     unnest_explode_generate_series,
-    @core.explode_projection_to_unnest(index_offset=0),
+    @optimizer.explode_projection_to_unnest(index_offset=0),
     @core.unqualify_unnest,
     @core.eliminate_distinct_on,
     alias_ordered_group,
