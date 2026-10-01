@@ -137,7 +137,7 @@ pub fn Expr::new(kind : Kind, args : Map[String, Value]) -> Expr {
 ///|
 /// Builds an expression, Python style: `mk(Column, [("this", ident), ("table", tbl)])`.
 pub fn mk(kind : Kind, args : ArrayView[(String, &IntoValue)]) -> Expr {
-  let m = Map::new(capacity=args.length())
+  let m = Map([], capacity=args.length())
   for kv in args {
     match kv.1.into_value() {
       Some(v) => m[kv.0] = v
@@ -150,7 +150,7 @@ pub fn mk(kind : Kind, args : ArrayView[(String, &IntoValue)]) -> Expr {
 ///|
 /// Builds an expression with no arguments.
 pub fn mk0(kind : Kind) -> Expr {
-  Expr::new(kind, Map::new())
+  Expr::new(kind, Map([]))
 }
 
 ///|
@@ -673,7 +673,7 @@ pub fn Expr::get_meta(self : Expr) -> Map[String, Value] {
   match self.meta {
     Some(m) => m
     None => {
-      let m = Map::new()
+      let m = Map([])
       self.meta = Some(m)
       m
     }
@@ -711,7 +711,7 @@ fn copy_value(v : Value) -> Value {
 ///|
 /// Returns a deep copy of the expression.
 pub fn Expr::copy(self : Expr) -> Expr {
-  let args = Map::new(capacity=self.args.length())
+  let args = Map([], capacity=self.args.length())
   for k, v in self.args {
     args[k] = copy_value(v)
   }
@@ -731,7 +731,7 @@ pub fn Expr::copy(self : Expr) -> Expr {
     },
     meta: match self.meta {
       Some(m) => {
-        let m2 = Map::new()
+        let m2 = Map([])
         for k, v in m {
           m2[k] = v
         }

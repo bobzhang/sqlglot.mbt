@@ -81,7 +81,7 @@ pub fn highlight_sql(
   let mut start_context = ""
   let mut end_context = ""
   let mut first_highlight_start = 0
-  let parts = StringBuilder::new()
+  let parts = StringBuilder()
   let mut previous_part_end = 0
   let sorted = positions.copy()
   sorted.sort_by((a, b) => a.0 - b.0)

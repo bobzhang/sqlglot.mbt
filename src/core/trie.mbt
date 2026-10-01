@@ -10,11 +10,11 @@ pub(all) enum TrieResult {
   Failed
   Prefix
   Exists
-} derive(Eq, Show)
+} derive(Eq, Debug)
 
 ///|
 pub fn Trie::new() -> Trie {
-  { children: Map::new(), terminal: false }
+  { children: Map([]), terminal: false }
 }
 
 ///|

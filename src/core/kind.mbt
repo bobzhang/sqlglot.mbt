@@ -115,7 +115,7 @@ pub fn Kind::sql_name(self : Kind) -> String {
 
 ///|
 let kind_by_key : Map[String, Kind] = {
-  let m = Map::new(capacity=all_kinds.length())
+  let m = Map([], capacity=all_kinds.length())
   for k in all_kinds {
     m[k.key()] = k
   }
@@ -159,7 +159,7 @@ pub impl Show for TokenType with output(self, logger) {
 
 ///|
 let token_type_by_name : Map[String, TokenType] = {
-  let m = Map::new(capacity=all_token_types.length())
+  let m = Map([], capacity=all_token_types.length())
   for t in all_token_types {
     m[t.name()] = t
   }
@@ -190,7 +190,7 @@ pub impl Show for DType with output(self, logger) {
 
 ///|
 let dtype_by_name : Map[String, DType] = {
-  let m = Map::new(capacity=all_dtypes.length())
+  let m = Map([], capacity=all_dtypes.length())
   for t in all_dtypes {
     m[t.name()] = t
   }
@@ -199,7 +199,7 @@ let dtype_by_name : Map[String, DType] = {
 
 ///|
 let dtype_by_value : Map[String, DType] = {
-  let m = Map::new(capacity=all_dtypes.length())
+  let m = Map([], capacity=all_dtypes.length())
   for t in all_dtypes {
     m[t.value()] = t
   }

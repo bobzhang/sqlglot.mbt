@@ -13,7 +13,7 @@ pub fn py_upper(s : String) -> String {
   if ascii {
     return s.to_upper()
   }
-  let sb = StringBuilder::new()
+  let sb = StringBuilder()
   for c in s {
     sb.write_char(char_upper(c))
   }
@@ -33,7 +33,7 @@ pub fn py_lower(s : String) -> String {
   if ascii {
     return s.to_lower()
   }
-  let sb = StringBuilder::new()
+  let sb = StringBuilder()
   for c in s {
     sb.write_char(char_lower(c))
   }
@@ -215,7 +215,7 @@ pub fn strip_chars(s : String, chars : String) -> String {
 /// Python `str.split()` (no separator: splits on runs of whitespace).
 pub fn py_split_ws(s : String) -> Array[String] {
   let out = []
-  let sb = StringBuilder::new()
+  let sb = StringBuilder()
   let mut has = false
   for c in s {
     if is_space(c) {
@@ -244,7 +244,7 @@ pub fn py_split(s : String, sep : String) -> Array[String] {
 ///|
 /// Converts `name` from CamelCase to SNAKE_CASE (upper).
 pub fn camel_to_snake_case(name : String) -> String {
-  let sb = StringBuilder::new()
+  let sb = StringBuilder()
   let mut first = true
   for c in name {
     if !first && c >= 'A' && c <= 'Z' {
@@ -433,7 +433,7 @@ pub fn ends_with(s : String, suffix : String) -> Bool {
 /// Python's `repr()` for a string (single-quoted unless it contains single quotes only).
 pub fn py_repr_str(s : String) -> String {
   let quote = if s.contains("'") && !s.contains("\"") { '"' } else { '\'' }
-  let sb = StringBuilder::new()
+  let sb = StringBuilder()
   sb.write_char(quote)
   for c in s {
     match c {

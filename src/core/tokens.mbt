@@ -163,23 +163,23 @@ pub fn TokenizerSettings::copy(self : TokenizerSettings) -> TokenizerSettings {
     numeric_literals: Map::from_iter(self.numeric_literals.iter()),
     numbers_can_have_decimals: self.numbers_can_have_decimals,
     comments: self.comments.copy(),
-    quotes_map: Map::new(),
-    identifiers_map: Map::new(),
-    identifier_chars: Map::new(),
-    format_strings: Map::new(),
-    string_escapes_set: Map::new(),
-    byte_string_escapes_set: Map::new(),
-    escape_follow_chars_set: Map::new(),
-    identifier_escapes_set: Map::new(),
-    comments_map: Map::new(),
+    quotes_map: Map([]),
+    identifiers_map: Map([]),
+    identifier_chars: Map([]),
+    format_strings: Map([]),
+    string_escapes_set: Map([]),
+    byte_string_escapes_set: Map([]),
+    escape_follow_chars_set: Map([]),
+    identifier_escapes_set: Map([]),
+    comments_map: Map([]),
     keyword_trie: Trie::new(),
-    commands_set: Map::new(),
+    commands_set: Map([]),
   }
 }
 
 ///|
 fn convert_quotes(arr : Array[QuoteSpec]) -> Map[String, String] {
-  let m = Map::new()
+  let m = Map([])
   for q in arr {
     m[q.start()] = q.end()
   }
@@ -188,7 +188,7 @@ fn convert_quotes(arr : Array[QuoteSpec]) -> Map[String, String] {
 
 ///|
 fn str_set(arr : Array[String]) -> Map[String, Bool] {
-  let m = Map::new()
+  let m = Map([])
   for s in arr {
     m[s] = true
   }
@@ -200,14 +200,14 @@ fn str_set(arr : Array[String]) -> Map[String, Bool] {
 pub fn TokenizerSettings::finalize(self : TokenizerSettings) -> TokenizerSettings {
   self.quotes_map = convert_quotes(self.quotes)
   self.identifiers_map = convert_quotes(self.identifiers)
-  self.identifier_chars = Map::new()
+  self.identifier_chars = Map([])
   for k, v in self.identifiers_map {
     match k.get_char(0) {
       Some(c) => if k.length() == 1 { self.identifier_chars[c] = v }
       None => ()
     }
   }
-  let fs : Map[String, (String, TokenType)] = Map::new()
+  let fs : Map[String, (String, TokenType)] = Map([])
   for s, e in self.quotes_map {
     fs["n" + s] = (e, NATIONAL_STRING)
   }
@@ -215,7 +215,7 @@ pub fn TokenizerSettings::finalize(self : TokenizerSettings) -> TokenizerSetting
     fs["N" + s] = (e, NATIONAL_STRING)
   }
   // Python builds {n.., N..} with a single comprehension ordered by quotes then prefix
-  let fs2 : Map[String, (String, TokenType)] = Map::new()
+  let fs2 : Map[String, (String, TokenType)] = Map([])
   for s, e in self.quotes_map {
     fs2["n" + s] = (e, NATIONAL_STRING)
     fs2["N" + s] = (e, NATIONAL_STRING)
@@ -242,7 +242,7 @@ pub fn TokenizerSettings::finalize(self : TokenizerSettings) -> TokenizerSetting
   self.byte_string_escapes_set = str_set(byte_escapes)
   self.escape_follow_chars_set = str_set(self.escape_follow_chars)
   self.identifier_escapes_set = str_set(self.identifier_escapes)
-  let cm : Map[String, String?] = Map::new()
+  let cm : Map[String, String?] = Map([])
   for c in self.comments {
     match c {
       Same(s) => cm[s] = None
@@ -289,7 +289,7 @@ pub fn TokenizerSettings::finalize(self : TokenizerSettings) -> TokenizerSetting
     consider(k)
   }
   self.keyword_trie = trie
-  self.commands_set = Map::new()
+  self.commands_set = Map([])
   for t in self.commands {
     self.commands_set[t] = true
   }
@@ -328,7 +328,7 @@ pub fn Tokenizer::new(
   settings : TokenizerSettings,
   numbers_can_be_underscore_separated? : Bool = false,
   identifiers_can_start_with_digit? : Bool = false,
-  unescaped_sequences? : Map[String, String] = Map::new(),
+  unescaped_sequences? : Map[String, String] = Map([]),
 ) -> Tokenizer {
   {
     settings,
@@ -560,7 +560,7 @@ fn Tokenizer::scan_keywords(self : Tokenizer) -> Unit raise SqlglotError {
   let single_tokens = self.settings.single_tokens
   let mut size = 0
   let mut word : String? = None
-  let chars = StringBuilder::new()
+  let chars = StringBuilder()
   chars.write_char(self.char)
   let mut char = self.char
   let mut prev_space = false
@@ -722,7 +722,7 @@ fn Tokenizer::scan_number(self : Tokenizer) -> Unit raise SqlglotError {
   let mut scientific = 0
   let mut is_underscore_separated = false
   let mut number_text = ""
-  let numeric_literal = StringBuilder::new()
+  let numeric_literal = StringBuilder()
   let mut numeric_type : TokenType? = None
   while true {
     if is_digit_char(self.peek) {
@@ -1069,7 +1069,7 @@ fn Tokenizer::extract_string(
   raw_string? : Bool = false,
   raise_unmatched? : Bool = true,
 ) -> String raise SqlglotError {
-  let text = StringBuilder::new()
+  let text = StringBuilder()
   let delim_size = py_len(delimiter)
   let escapes = match escapes {
     Some(e) => e
