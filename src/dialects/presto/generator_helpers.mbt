@@ -134,23 +134,11 @@ fn ts_or_ds_to_date_sql(
       tf != g.dialect.cfg.time_format &&
       tf != g.dialect.cfg.date_format =>
       return g.sql(
-        Some(
-          @core.exp_cast(
-            @core.mk1(Var, str_to_time_sql(g, e)),
-            DATE,
-          ),
-        ),
+        Some(@core.exp_cast(@core.mk1(Var, str_to_time_sql(g, e)), DATE)),
       )
     _ => ()
   }
-  g.sql(
-    Some(
-      @core.exp_cast(
-        @core.exp_cast(e.this_(), TIMESTAMP),
-        DATE,
-      ),
-    ),
-  )
+  g.sql(Some(@core.exp_cast(@core.exp_cast(e.this_(), TIMESTAMP), DATE)))
 }
 
 ///|

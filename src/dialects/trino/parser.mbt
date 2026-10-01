@@ -160,15 +160,11 @@ fn parse_routine_statements(
 }
 
 ///|
-fn parse_routine_block(
-  p : @core.Parser,
-) -> @core.Expr raise @core.SqlglotError {
+fn parse_routine_block(p : @core.Parser) -> @core.Expr raise @core.SqlglotError {
   p.match_(BEGIN) |> ignore
   let statements = parse_routine_statements(p, ["END"])
   statements.push(@core.mk0(EndStatement))
-  p.expression(
-    @core.mk(Block, [("expressions", statements), ("begin", true)]),
-  )
+  p.expression(@core.mk(Block, [("expressions", statements), ("begin", true)]))
 }
 
 ///|
@@ -181,10 +177,7 @@ fn parse_routine_if(p : @core.Parser) -> @core.Expr raise @core.SqlglotError {
     p.match_text("THEN") |> ignore
     let true_ = p.expression(
       @core.mk(Block, [
-        (
-          "expressions",
-          parse_routine_statements(p, ["ELSEIF", "ELSE", "END"]),
-        ),
+        ("expressions", parse_routine_statements(p, ["ELSEIF", "ELSE", "END"])),
       ]),
     )
     p.expression(@core.mk(IfBlock, [("this", condition), ("true", true_)]))
@@ -239,11 +232,7 @@ fn parse_routine_case(p : @core.Parser) -> @core.Expr raise @core.SqlglotError {
   }
   p.match_text("CASE") |> ignore
   p.expression(
-    @core.mk(CaseStatement, [
-      ("this", this),
-      ("ifs", ifs),
-      ("default", default),
-    ]),
+    @core.mk(CaseStatement, [("this", this), ("ifs", ifs), ("default", default)]),
   )
 }
 
@@ -260,11 +249,7 @@ fn parse_routine_while(
   )
   p.match_text("WHILE") |> ignore
   p.expression(
-    @core.mk(WhileBlock, [
-      ("this", condition),
-      ("body", body),
-      ("label", label),
-    ]),
+    @core.mk(WhileBlock, [("this", condition), ("body", body), ("label", label)]),
   )
 }
 
@@ -294,11 +279,7 @@ fn parse_routine_repeat(
   let until = p.parse_disjunction()
   p.match_text_seq(["END", "REPEAT"]) |> ignore
   p.expression(
-    @core.mk(RepeatBlock, [
-      ("body", body),
-      ("until", until),
-      ("label", label),
-    ]),
+    @core.mk(RepeatBlock, [("body", body), ("until", until), ("label", label)]),
   )
 }
 
