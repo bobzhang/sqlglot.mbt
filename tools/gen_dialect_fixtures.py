@@ -22,6 +22,7 @@ direct assertions is neither ported nor excluded.
 Usage: python3 tools/gen_dialect_fixtures.py cases.jsonl [manifest.json]
 """
 
+import ast
 import collections
 import json
 import os
@@ -31,6 +32,7 @@ import sys
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(ROOT, "src", "dialect_tests")
 UNIT = os.path.join(ROOT, "src", "dialect_unit_tests")
+PY_TESTS = os.path.join(ROOT, ".repos", "sqlglot", "tests", "dialects")
 MANIFEST = os.path.join(ROOT, "docs", "dialect-test-manifest.md")
 
 # Test methods whose direct assertions are intentionally not ported, with the reason.
@@ -161,9 +163,30 @@ def ported_tests():
     return ported
 
 
+def bare_asserts():
+    """Number of plain `assert` statements per `module:TestClass.test_method` (these
+    can't be counted at run time like the `self.assert*` calls)."""
+    counts = collections.Counter()
+    for f in os.listdir(PY_TESTS):
+        if not (f.startswith("test_") and f.endswith(".py")):
+            continue
+        module = f[len("test_"):-len(".py")]
+        tree = ast.parse(open(os.path.join(PY_TESTS, f)).read())
+        for cls in tree.body:
+            if not isinstance(cls, ast.ClassDef):
+                continue
+            for fn in cls.body:
+                if isinstance(fn, ast.FunctionDef) and fn.name.startswith("test_"):
+                    n = sum(isinstance(node, ast.Assert) for node in ast.walk(fn))
+                    if n:
+                        counts[f"{module}:{cls.name}.{fn.name}"] = n
+    return counts
+
+
 def write_manifest(path):
     stats = json.load(open(path))
     ported = ported_tests()
+    bare = bare_asserts()
     rows = []
     missing = []
     totals = collections.Counter()
@@ -173,7 +196,7 @@ def write_manifest(path):
         module = module_of(test_id)
         short = ".".join(test_id.split(".")[3:])
         replayed = sum(s.get(k, 0) for k in ("identity", "transpile", "all_read", "all_write", "error_call"))
-        direct = s.get("direct_asserts", 0)
+        direct = s.get("direct_asserts", 0) + bare.get(f"{module}:{short}", 0)
         if short in ported.get(module, ()):
             status = "ported"
         elif short in EXCLUDED:
@@ -201,8 +224,9 @@ def write_manifest(path):
         "",
         "- *replayed*: Validator checks (validate_identity / validate_all / validate_transpile)",
         "  and failing direct API calls (error cases) replayed by src/dialect_tests.",
-        "- *direct*: assertions the method makes outside the Validator helpers (counted at run",
-        "  time, so loops count every iteration); these are hand-ported in",
+        "- *direct*: assertions the method makes outside the Validator helpers (`self.assert*`",
+        "  calls counted at run time, so loops count every iteration, plus plain `assert`",
+        "  statements counted statically); these are hand-ported in",
         "  src/dialect_unit_tests/test_<module>_test.mbt (*ported*).",
         "- *unrecorded errors*: failing calls whose arguments couldn't be recorded as data.",
         "",

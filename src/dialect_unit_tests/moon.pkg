@@ -1,0 +1,7 @@
+import {
+  "hongbozhang/sqlglot",
+  "hongbozhang/sqlglot/core",
+  "hongbozhang/sqlglot/optimizer",
+} for "test"
+
+warnings = "-79"
