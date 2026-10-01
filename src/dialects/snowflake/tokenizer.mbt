@@ -2,5 +2,6 @@
 
 ///|
 fn configure_tokenizer(d : @core.Dialect) -> Unit {
-  ignore(d)
+  // JSONPathTokenizer.SINGLE_TOKENS.pop("$")
+  d.jsonpath_tokenizer.single_tokens.remove('$')
 }
