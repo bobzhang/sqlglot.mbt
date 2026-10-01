@@ -475,7 +475,7 @@ fn Tokenizer::advance(
   self : Tokenizer,
   i? : Int = 1,
   alnum? : Bool = false,
-) -> Unit {
+) -> Unit raise SqlglotError {
   let char = self.char
   if char == '\n' || char == '\r' {
     if !(char == '\r' && self.peek == '\n') {
@@ -487,6 +487,10 @@ fn Tokenizer::advance(
   }
   self.current += i
   self.end = self.current >= self.size
+  if self.current - 1 >= self.size {
+    // Python: `sql[self._current - 1]` raises IndexError past the end of the input
+    raise TokenError("string index out of range")
+  }
   self.char = self.at(self.current - 1)
   self.peek = if self.end { nul } else { self.sql[self.current] }
   if alnum && is_alnum(self.char) {
@@ -876,7 +880,7 @@ fn Tokenizer::scan_hex(self : Tokenizer) -> Unit raise SqlglotError {
 }
 
 ///|
-fn Tokenizer::extract_value(self : Tokenizer) -> String {
+fn Tokenizer::extract_value(self : Tokenizer) -> String raise SqlglotError {
   while true {
     let char = self.peek
     if char != nul &&
@@ -1034,7 +1038,7 @@ fn Tokenizer::read_numeric_escape(
 }
 
 ///|
-fn Tokenizer::scan_numeric_escape(self : Tokenizer) -> String {
+fn Tokenizer::scan_numeric_escape(self : Tokenizer) -> String raise SqlglotError {
   let start = self.current
   let peek = self.peek
   let is_octal = peek >= '0' && peek <= '7'

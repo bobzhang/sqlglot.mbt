@@ -3,63 +3,145 @@
 
 ///|
 /// Parses `sql` (possibly several statements) in dialect `read` and generates it in
-/// dialect `write` (defaults to `read`).
+/// dialect `write` (Python `sqlglot.transpile`). When `identity` is true (the default)
+/// and `write` is omitted, `write` defaults to `read`; otherwise to the base dialect.
+/// The remaining options are the generator options (see `generate`).
 pub fn transpile(
   sql : String,
   read? : String = "",
   write? : String,
+  identity? : Bool = true,
+  error_level? : @core.ErrorLevel = Immediate,
   pretty? : Bool = false,
   identify? : Bool = false,
-  error_level? : @core.ErrorLevel = Immediate,
+  identify_mode? : String,
+  normalize? : Bool = false,
+  pad? : Int = 2,
+  indent? : Int = 2,
+  normalize_functions? : String,
   unsupported_level? : @core.ErrorLevel = Warn,
+  max_unsupported? : Int = 3,
+  leading_comma? : Bool = false,
+  max_text_width? : Int = 80,
+  comments? : Bool = true,
 ) -> Array[String] raise @core.SqlglotError {
   let r = @core.Dialect::get_or_raise(read)
   let w = match write {
     Some(w) => @core.Dialect::get_or_raise(w)
-    None => r
+    None => if identity { r } else { @core.Dialect::get_or_raise("") }
   }
-  @core.transpile(
+  let out = []
+  for e in r.parse(sql, error_level~) {
+    match e {
+      Some(expr) =>
+        out.push(
+          @core.Generator::new(
+            w,
+            pretty~,
+            identify=identify_value(identify, identify_mode),
+            normalize~,
+            pad~,
+            indent~,
+            normalize_functions?,
+            unsupported_level~,
+            max_unsupported~,
+            leading_comma~,
+            max_text_width~,
+            comments~,
+          ).generate(expr, copy=false),
+        )
+      None => out.push("")
+    }
+  }
+  out
+}
+
+///|
+/// Python `identify`: `identify=true` means "always"; `identify_mode` ("always",
+/// "safe", ...) takes precedence when given.
+fn identify_value(identify : Bool, identify_mode : String?) -> String {
+  match identify_mode {
+    Some(m) => m
+    None => if identify { "always" } else { "" }
+  }
+}
+
+///|
+/// Parses a single SQL statement in dialect `read` (Python `sqlglot.parse_one`).
+/// `into` restricts parsing to the given expression type(s).
+pub fn parse_one(
+  sql : String,
+  read? : String = "",
+  into? : Array[@core.Kind],
+  error_level? : @core.ErrorLevel = Immediate,
+  error_message_context? : Int = 100,
+  max_errors? : Int = 3,
+  max_nodes? : Int = -1,
+) -> @core.Expr raise @core.SqlglotError {
+  @core.parse_one(
     sql,
-    read=r,
-    write=w,
-    pretty~,
-    identify=if identify { "always" } else { "" },
+    dialect=@core.Dialect::get_or_raise(read),
+    into?,
     error_level~,
-    unsupported_level~,
+    error_message_context~,
+    max_errors~,
+    max_nodes~,
   )
 }
 
 ///|
-/// Parses a single SQL statement in dialect `read`.
-pub fn parse_one(
-  sql : String,
-  read? : String = "",
-) -> @core.Expr raise @core.SqlglotError {
-  @core.parse_one(sql, dialect=@core.Dialect::get_or_raise(read))
-}
-
-///|
-/// Parses all statements of `sql` in dialect `read`.
+/// Parses all statements of `sql` in dialect `read` (Python `sqlglot.parse`).
 pub fn parse(
   sql : String,
   read? : String = "",
+  error_level? : @core.ErrorLevel = Immediate,
+  error_message_context? : Int = 100,
+  max_errors? : Int = 3,
+  max_nodes? : Int = -1,
 ) -> Array[@core.Expr?] raise @core.SqlglotError {
-  @core.parse(sql, dialect=@core.Dialect::get_or_raise(read))
+  @core.parse(
+    sql,
+    dialect=@core.Dialect::get_or_raise(read),
+    error_level~,
+    error_message_context~,
+    max_errors~,
+    max_nodes~,
+  )
 }
 
 ///|
-/// Generates SQL for `expression` in dialect `dialect`.
+/// Generates SQL for `expression` in dialect `dialect` (Python `Expr.sql`).
 pub fn generate(
   expression : @core.Expr,
   dialect? : String = "",
+  copy? : Bool = true,
   pretty? : Bool = false,
   identify? : Bool = false,
+  identify_mode? : String,
+  normalize? : Bool = false,
+  pad? : Int = 2,
+  indent? : Int = 2,
+  normalize_functions? : String,
+  unsupported_level? : @core.ErrorLevel = Warn,
+  max_unsupported? : Int = 3,
+  leading_comma? : Bool = false,
+  max_text_width? : Int = 80,
+  comments? : Bool = true,
 ) -> String raise @core.SqlglotError {
   @core.Generator::new(
     @core.Dialect::get_or_raise(dialect),
     pretty~,
-    identify=if identify { "always" } else { "" },
-  ).generate(expression)
+    identify=identify_value(identify, identify_mode),
+    normalize~,
+    pad~,
+    indent~,
+    normalize_functions?,
+    unsupported_level~,
+    max_unsupported~,
+    leading_comma~,
+    max_text_width~,
+    comments~,
+  ).generate(expression, copy~)
 }
 
 ///|

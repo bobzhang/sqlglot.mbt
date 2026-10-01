@@ -65,7 +65,10 @@ pub fn highlight_sql(
   sql : String,
   positions : Array[(Int, Int)],
   context_length? : Int = 100,
-) -> (String, String, String, String) {
+) -> (String, String, String, String) raise SqlglotError {
+  if positions.is_empty() {
+    raise ValueError("positions must contain at least one (start, end) tuple")
+  }
   let chars = sql.to_array()
   let n = chars.length()
   fn sl(a : Int, b : Int) -> String {
