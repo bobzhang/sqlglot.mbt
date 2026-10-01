@@ -10,6 +10,14 @@ pub(all) enum StepKind {
 } derive(Eq, Debug)
 
 ///|
+#deprecated
+pub extend StepKind with Eq::{not_equal, equal}
+
+///|
+#deprecated
+pub extend StepKind with Debug::{to_repr}
+
+///|
 /// The join information of a Join step.
 pub struct JoinInfo {
   side : String

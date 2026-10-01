@@ -231,6 +231,10 @@ pub impl Show for Table with fn output(self, logger) {
 }
 
 ///|
+#deprecated
+pub extend Table with Show::{output}
+
+///|
 /// The input data of `execute`: rows given as records, a `Table`, or a nested mapping
 /// of `{db: {table: ...}}`.
 pub(all) enum TableData {

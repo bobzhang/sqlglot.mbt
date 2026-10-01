@@ -739,6 +739,10 @@ pub impl SqlArg for Expr with fn arg_sql(self, g) {
 }
 
 ///|
+#deprecated
+pub extend Expr with SqlArg::{arg_sql}
+
+///|
 pub impl SqlArg for String with fn arg_sql(self, _g) {
   Some(self)
 }
@@ -750,6 +754,10 @@ pub impl SqlArg for Value with fn arg_sql(self, g) {
     v => Some(g.sql_value(v))
   }
 }
+
+///|
+#deprecated
+pub extend Value with SqlArg::{arg_sql}
 
 ///|
 pub impl[T : SqlArg] SqlArg for T? with fn arg_sql(self, g) {

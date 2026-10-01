@@ -13,6 +13,14 @@ pub(all) enum TrieResult {
 } derive(Eq, Debug)
 
 ///|
+#deprecated
+pub extend TrieResult with Eq::{not_equal, equal}
+
+///|
+#deprecated
+pub extend TrieResult with Debug::{to_repr}
+
+///|
 pub fn Trie::new() -> Trie {
   { children: Map([]), terminal: false, }
 }

@@ -8,12 +8,20 @@ pub(all) struct PyDate {
 } derive(Eq)
 
 ///|
+#deprecated
+pub extend PyDate with Eq::{not_equal, equal}
+
+///|
 pub(all) struct PyTime {
   hour : Int
   minute : Int
   second : Int
   microsecond : Int
 } derive(Eq)
+
+///|
+#deprecated
+pub extend PyTime with Eq::{not_equal, equal}
 
 ///|
 /// A `datetime.datetime`; `tz` is the UTC offset in seconds of an aware datetime (only
@@ -31,6 +39,10 @@ pub(all) struct PyTimeDelta {
   seconds : Int
   microseconds : Int
 } derive(Eq)
+
+///|
+#deprecated
+pub extend PyTimeDelta with Eq::{not_equal, equal}
 
 ///|
 let days_in_month_table : FixedArray[Int] = [

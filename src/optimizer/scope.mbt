@@ -11,6 +11,14 @@ pub(all) enum ScopeType {
 } derive(Eq, Debug)
 
 ///|
+#deprecated
+pub extend ScopeType with Eq::{not_equal, equal}
+
+///|
+#deprecated
+pub extend ScopeType with Debug::{to_repr}
+
+///|
 /// A source of a scope: either a table or another scope.
 pub enum Source {
   TableSource(@core.Expr)

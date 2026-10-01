@@ -20,6 +20,14 @@ pub(all) struct CliResult {
 } derive(Debug, Eq)
 
 ///|
+#deprecated
+pub extend CliResult with Debug::{to_repr}
+
+///|
+#deprecated
+pub extend CliResult with Eq::{not_equal, equal}
+
+///|
 let prog : String = "sqlglot"
 
 ///|

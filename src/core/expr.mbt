@@ -52,6 +52,10 @@ pub impl IntoValue for Expr with fn into_value(self) {
 }
 
 ///|
+#deprecated
+pub extend Expr with IntoValue::{into_value}
+
+///|
 pub impl IntoValue for String with fn into_value(self) {
   Some(Str(self))
 }
@@ -77,9 +81,17 @@ pub impl IntoValue for DType with fn into_value(self) {
 }
 
 ///|
+#deprecated
+pub extend DType with IntoValue::{into_value}
+
+///|
 pub impl IntoValue for Value with fn into_value(self) {
   Some(self)
 }
+
+///|
+#deprecated
+pub extend Value with IntoValue::{into_value}
 
 ///|
 pub impl[T : IntoValue] IntoValue for T? with fn into_value(self) {
@@ -1685,6 +1697,14 @@ pub impl Eq for Expr with fn equal(self, other) {
 }
 
 ///|
+/// `expr.equal(other)` mirrors Python `expression == other` (structural equality).
+pub extend Expr with Eq::{equal}
+
+///|
+#deprecated
+pub extend Expr with Eq::{not_equal}
+
+///|
 /// Hashes an argument value; nested expressions are pushed on `pending` and hashed into
 /// the same hasher afterwards (in a fixed order).
 fn hash_value_shallow(
@@ -1734,6 +1754,14 @@ pub impl Hash for Expr with fn hash_combine(self, hasher) {
     }
   }
 }
+
+///|
+/// `expr.hash()` mirrors Python `hash(expression)`.
+pub extend Expr with Hash::{hash}
+
+///|
+#deprecated
+pub extend Expr with Hash::{hash_combine}
 
 // ---------------------------------------------------------------------------
 // Selectable / Query properties

@@ -30,6 +30,10 @@ pub impl Eq for Edit with fn equal(self, other) {
 }
 
 ///|
+#deprecated
+pub extend Edit with Eq::{not_equal, equal}
+
+///|
 fn edit_sql(e : @core.Expr) -> String {
   @core.expr_to_sql(e) catch {
     _ => e.kind.name()

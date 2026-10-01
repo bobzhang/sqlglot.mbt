@@ -28,6 +28,13 @@ pub impl Show for Kind with fn output(self, logger) {
 }
 
 ///|
+pub extend Kind with Show::{to_string}
+
+///|
+#deprecated
+pub extend Kind with Show::{output}
+
+///|
 /// Whether `self` is `base` or a subclass of `base` (Python `issubclass`).
 pub fn Kind::is_a(self : Kind, base : Kind) -> Bool {
   if self == base {
@@ -170,6 +177,13 @@ pub impl Show for TokenType with fn output(self, logger) {
 }
 
 ///|
+pub extend TokenType with Show::{to_string}
+
+///|
+#deprecated
+pub extend TokenType with Show::{output}
+
+///|
 let token_type_by_name : Map[String, TokenType] = {
   let m : Map[_, _] = Map([], capacity=all_token_types.length())
   for t in all_token_types {
@@ -201,6 +215,13 @@ pub impl Show for DType with fn output(self, logger) {
 }
 
 ///|
+pub extend DType with Show::{to_string}
+
+///|
+#deprecated
+pub extend DType with Show::{output}
+
+///|
 let dtype_by_name : Map[String, DType] = {
   let m : Map[_, _] = Map([], capacity=all_dtypes.length())
   for t in all_dtypes {
@@ -227,3 +248,42 @@ pub fn dtype_from_name(name : String) -> DType? {
 pub fn dtype_from_value(value : String) -> DType? {
   dtype_by_value.get(value)
 }
+
+// Derived trait methods of the generated enums (gen_*.mbt) are only kept as deprecated
+// dot-methods (warning implicit_impl_as_method); use the operators / `Trait::method`.
+
+///|
+#deprecated
+pub extend DType with Eq::{not_equal, equal}
+
+///|
+#deprecated
+pub extend DType with Hash::{hash, hash_combine}
+
+///|
+#deprecated
+pub extend DType with Compare::{op_lt, op_le, op_ge, compare, op_gt}
+
+///|
+#deprecated
+pub extend DType with Debug::{to_repr}
+
+///|
+#deprecated
+pub extend Kind with Eq::{not_equal, equal}
+
+///|
+#deprecated
+pub extend Kind with Hash::{hash, hash_combine}
+
+///|
+#deprecated
+pub extend TokenType with Eq::{not_equal, equal}
+
+///|
+#deprecated
+pub extend TokenType with Hash::{hash, hash_combine}
+
+///|
+#deprecated
+pub extend TokenType with Compare::{op_lt, op_le, op_ge, compare, op_gt}

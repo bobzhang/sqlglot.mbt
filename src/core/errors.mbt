@@ -26,6 +26,10 @@ pub(all) struct ParseErrorInfo {
 } derive(Debug)
 
 ///|
+#deprecated
+pub extend ParseErrorInfo with Debug::{to_repr}
+
+///|
 pub fn SqlglotError::message(self : SqlglotError) -> String {
   match self {
     TokenError(m, ..) => m
@@ -55,12 +59,27 @@ pub impl Show for SqlglotError with fn output(self, logger) {
 }
 
 ///|
+pub extend SqlglotError with Show::{to_string}
+
+///|
+#deprecated
+pub extend SqlglotError with Show::{output}
+
+///|
 pub(all) enum ErrorLevel {
   Ignore
   Warn
   Raise
   Immediate
 } derive(Eq, Debug)
+
+///|
+#deprecated
+pub extend ErrorLevel with Eq::{not_equal, equal}
+
+///|
+#deprecated
+pub extend ErrorLevel with Debug::{to_repr}
 
 ///|
 /// Highlight a SQL string using ANSI codes at the given (inclusive) positions.

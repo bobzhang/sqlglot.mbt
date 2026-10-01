@@ -54,6 +54,13 @@ pub impl Show for Token with fn output(self, logger) {
 }
 
 ///|
+pub extend Token with Show::{to_string}
+
+///|
+#deprecated
+pub extend Token with Show::{output}
+
+///|
 /// A quote specification: either a symmetric delimiter or a (start, end) pair.
 pub(all) enum QuoteSpec {
   Same(String)

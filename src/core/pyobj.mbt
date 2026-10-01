@@ -39,6 +39,10 @@ pub(all) enum PyObj {
 } derive(Eq)
 
 ///|
+#deprecated
+pub extend PyObj with Eq::{not_equal, equal}
+
+///|
 fn pad_int(n : Int, width : Int) -> String {
   let s = n.abs().to_string()
   let s = if s.length() < width {
@@ -112,9 +116,17 @@ pub impl IntoPy for PyObj with fn into_py(self) {
 }
 
 ///|
+#deprecated
+pub extend PyObj with IntoPy::{into_py}
+
+///|
 pub impl IntoPy for Expr with fn into_py(self) {
   PyExpr(self)
 }
+
+///|
+#deprecated
+pub extend Expr with IntoPy::{into_py}
 
 ///|
 pub impl IntoPy for String with fn into_py(self) {
@@ -575,3 +587,7 @@ fn to_s_node(node : Expr, level : Int) -> String {
 pub impl IntoPy for DType with fn into_py(self) {
   PyExpr(mk1(DataType, self))
 }
+
+///|
+#deprecated
+pub extend DType with IntoPy::{into_py}
