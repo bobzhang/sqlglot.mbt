@@ -559,7 +559,7 @@ fn merge_where(
   outer_scope : Scope,
   inner_scope : Scope,
   from_or_join : @core.Expr,
-) -> Unit {
+) -> Unit raise @core.SqlglotError {
   let where_ = match inner_scope.expression.arg("where") {
     Some(w) => w
     None => return
