@@ -27,7 +27,9 @@ fn opt_item(e : @core.Expr?) -> GenItem? {
 
 ///|
 /// Simple pseudo sql generator for quickly generating sortable and uniq strings.
-pub fn gen(expression : @core.Expr) -> String {
+///
+/// `comments` controls whether the expressions' comments are included.
+pub fn gen(expression : @core.Expr, comments? : Bool = false) -> String {
   let stack : Array[GenItem?] = [Some(GE(expression))]
   let sqls = StringBuilder::new()
   fn push(x : GenItem?) {
@@ -94,7 +96,10 @@ pub fn gen(expression : @core.Expr) -> String {
           stack.pop() |> ignore
         }
       }
-      Some(GE(e)) =>
+      Some(GE(e)) => {
+        if comments && e.comments is Some(cs) && !cs.is_empty() {
+          s(" /*" + cs.join(",") + "*/")
+        }
         match e.kind.key() {
           "add" => binary(e, " + ")
           "alias" => {
@@ -240,6 +245,7 @@ pub fn gen(expression : @core.Expr) -> String {
               s(if has { "\{key} " } else { key })
             }
         }
+      }
     }
   }
   sqls.to_string()

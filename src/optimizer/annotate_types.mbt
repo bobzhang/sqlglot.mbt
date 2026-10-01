@@ -478,8 +478,8 @@ fn TypeAnnotator::get_source_scope_selects(
   }
   if expression.kind.is_a(SetOperation) &&
     (expression.has("by_name") ||
-    expression.this_().selects().length() ==
-    expression.expression_().selects().length()) {
+    selects_of(expression.this_()).length() ==
+    selects_of(expression.expression_()).length()) {
     let out : Map[String, TType?] = {}
     for kv in self.get_setop_column_types(expression) {
       out[kv.0] = Some(kv.1)
@@ -488,7 +488,7 @@ fn TypeAnnotator::get_source_scope_selects(
   }
   if expression.kind.is_a(Selectable) {
     let out : Map[String, TType?] = {}
-    for s in expression.selects() {
+    for s in selects_of(expression) {
       match s.get_type() {
         Some(t) => out[s.alias_or_name()] = Some(T(t))
         None => ()
@@ -549,7 +549,7 @@ pub fn TypeAnnotator::annotate_scope(
   if self.dialect.cfg.query_results_are_structs &&
     scope.expression.kind.is_a(Query) {
     let defs = []
-    for select in scope.expression.selects() {
+    for select in selects_of(scope.expression) {
       defs.push(
         @core.mk(ColumnDef, [
           ("this", @core.to_identifier(select.output_name())),
@@ -721,7 +721,7 @@ fn TypeAnnotator::fixup_order_by_aliases(
     None => return
   }
   let alias_types : Map[String, @core.Expr] = {}
-  for sel in query.selects() {
+  for sel in selects_of(query) {
     if sel.kind.is_a(Alias) {
       match sel.this_().get_type() {
         Some(t) if !sel.this_().is_type([UNKNOWN]) => alias_types[sel.alias()] = t
@@ -828,11 +828,11 @@ fn TypeAnnotator::get_setop_column_types(
   }
 
   let left_selects = match setop.this() {
-    Some(t) => t.selects()
+    Some(t) => selects_of(t)
     None => []
   }
   let right_selects = match setop.expression() {
-    Some(t) => t.selects()
+    Some(t) => selects_of(t)
     None => []
   }
   if !(setop.kind.is_a(SetOperation) &&
@@ -848,7 +848,7 @@ fn TypeAnnotator::get_setop_column_types(
     let setop_cols : Array[(String, TType)] = []
     if set_op.has("by_name") {
       let r_type_by_select : Array[(String, TType?)] = []
-      for s in set_op.expression_().selects() {
+      for s in selects_of(set_op.expression_()) {
         let name = s.alias_or_name()
         let t = type_of(s)
         let mut found = false
@@ -862,7 +862,7 @@ fn TypeAnnotator::get_setop_column_types(
           r_type_by_select.push((name, t))
         }
       }
-      for s in set_op.this_().selects() {
+      for s in selects_of(set_op.this_()) {
         let name = s.alias_or_name()
         let mut r : TType? = Some(D(NULL))
         for i, kv in r_type_by_select {
@@ -909,8 +909,8 @@ fn TypeAnnotator::get_setop_column_types(
         }
       }
     } else {
-      let ls = set_op.this_().selects()
-      let rs = set_op.expression_().selects()
+      let ls = selects_of(set_op.this_())
+      let rs = selects_of(set_op.expression_())
       for i in 0..<@core.min_int(ls.length(), rs.length()) {
         let name = ls[i].alias_or_name()
         let l = match type_of(ls[i]) {

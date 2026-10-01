@@ -815,6 +815,9 @@ fn traverse_scope_impl(
     }
     return
   } else {
+    @core.log_warning(
+      "Cannot traverse scope \{expr_sql(expression)} with type '\{expression.kind}'",
+    )
     return
   }
   out.push(scope)
