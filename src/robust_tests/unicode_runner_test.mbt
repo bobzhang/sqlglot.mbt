@@ -253,7 +253,7 @@ test "unicode: SQL identifiers, tokens and normalization match Python" {
           @sqlglot.generate(
             @sqlglot.to_identifier(name).unwrap(),
             dialect=d,
-            identify_mode="safe",
+            identify=Safe,
           )
         }),
         safe,
