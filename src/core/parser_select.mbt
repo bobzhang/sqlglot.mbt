@@ -549,9 +549,7 @@ pub fn Parser::parse_query_modifiers(
 }
 
 ///|
-pub fn Parser::parse_hint_fallback_to_string(
-  self : Parser,
-) -> Expr? raise SqlglotError {
+pub fn Parser::parse_hint_fallback_to_string(self : Parser) -> Expr? {
   let start = self.curr
   while self.curr.ok() {
     self.advance()

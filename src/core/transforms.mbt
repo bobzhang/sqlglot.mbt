@@ -3,6 +3,9 @@
 // the optimizer package).
 
 ///|
+/// A `preprocess` step. Every public transform has this signature (even those that cannot
+/// currently raise, which carry `#warnings("-unused_error_type")`) so that it can be
+/// passed to `preprocess` directly, as in Python.
 pub type Transform = (Expr) -> Expr raise SqlglotError
 
 ///|
@@ -146,6 +149,7 @@ pub fn unnest_generate_date_array_using_recursive_cte(
 
 ///|
 /// Unnests GENERATE_SERIES or SEQUENCE table references.
+#warnings("-unused_error_type")
 pub fn unnest_generate_series(expression : Expr) -> Expr raise SqlglotError {
   match expression.this() {
     Some(this) if expression.kind == Table && this.kind.is_a(GenerateSeries) => {
@@ -333,6 +337,7 @@ fn column_of_parsed(name : String) -> Expr raise SqlglotError {
 
 ///|
 /// Removes the precision of parameterized types in expressions.
+#warnings("-unused_error_type")
 pub fn remove_precision_parameterized_types(
   expression : Expr,
 ) -> Expr raise SqlglotError {
@@ -347,6 +352,7 @@ pub fn remove_precision_parameterized_types(
 
 ///|
 /// Remove references to unnest table aliases, added by the optimizer's qualify_columns step.
+#warnings("-unused_error_type")
 pub fn unqualify_unnest(expression : Expr) -> Expr raise SqlglotError {
   if expression.kind == Select {
     let unnest_aliases = []
@@ -518,6 +524,7 @@ pub fn unnest_to_explode(unnest_using_arrays_zip? : Bool = true) -> Transform {
 
 ///|
 /// Transforms percentiles by adding a WITHIN GROUP clause to them.
+#warnings("-unused_error_type")
 pub fn add_within_group_for_percentiles(
   expression : Expr,
 ) -> Expr raise SqlglotError {
@@ -537,6 +544,7 @@ pub fn add_within_group_for_percentiles(
 
 ///|
 /// Transforms percentiles by getting rid of their corresponding WITHIN GROUP clause.
+#warnings("-unused_error_type")
 pub fn remove_within_group_for_percentiles(
   expression : Expr,
 ) -> Expr raise SqlglotError {
@@ -562,6 +570,7 @@ pub fn remove_within_group_for_percentiles(
 
 ///|
 /// Uses projection output names in recursive CTE definitions to define the CTEs' columns.
+#warnings("-unused_error_type")
 pub fn add_recursive_cte_column_names(
   expression : Expr,
 ) -> Expr raise SqlglotError {
@@ -596,6 +605,7 @@ pub fn add_recursive_cte_column_names(
 
 ///|
 /// Replace 'epoch' in casts by the equivalent date literal.
+#warnings("-unused_error_type")
 pub fn epoch_cast_to_ts(expression : Expr) -> Expr raise SqlglotError {
   if expression.kind.is_any([Cast, TryCast]) &&
     py_lower(expression.name()) == "epoch" {
@@ -703,6 +713,7 @@ pub fn eliminate_full_outer_join(expression : Expr) -> Expr raise SqlglotError {
 }
 
 ///|
+#warnings("-unused_error_type")
 pub fn unqualify_columns(expression : Expr) -> Expr raise SqlglotError {
   for column in expression.find_all([Column]).collect() {
     let parts = column.parts()
@@ -726,6 +737,7 @@ pub fn unqualify_pivot_fields(expression : Expr) -> Expr raise SqlglotError {
 }
 
 ///|
+#warnings("-unused_error_type")
 pub fn remove_unique_constraints(expression : Expr) -> Expr raise SqlglotError {
   for constraint in expression.find_all([UniqueColumnConstraint]).collect() {
     match constraint.parent {
@@ -763,6 +775,7 @@ pub fn ctas_with_tmp_tables_to_create_tmp_view(
 }
 
 ///|
+#warnings("-unused_error_type")
 pub fn move_schema_columns_to_partitioned_by(
   expression : Expr,
 ) -> Expr raise SqlglotError {
@@ -806,6 +819,7 @@ pub fn move_schema_columns_to_partitioned_by(
 }
 
 ///|
+#warnings("-unused_error_type")
 pub fn move_partitioned_by_to_schema_columns(
   expression : Expr,
 ) -> Expr raise SqlglotError {
@@ -832,6 +846,7 @@ pub fn move_partitioned_by_to_schema_columns(
 
 ///|
 /// Converts struct arguments to aliases, e.g. STRUCT(1 AS y).
+#warnings("-unused_error_type")
 pub fn struct_kv_to_alias(expression : Expr) -> Expr raise SqlglotError {
   if expression.kind == Struct {
     expression.set(
@@ -852,6 +867,7 @@ pub fn struct_kv_to_alias(expression : Expr) -> Expr raise SqlglotError {
 
 ///|
 /// Transform ANY operator to Spark's EXISTS.
+#warnings("-unused_error_type")
 pub fn any_to_exists(expression : Expr) -> Expr raise SqlglotError {
   if expression.kind == Select {
     for any_expr in expression.find_all([Any]).collect() {
@@ -887,6 +903,7 @@ pub fn any_to_exists(expression : Expr) -> Expr raise SqlglotError {
 
 ///|
 /// Eliminates the `WINDOW` query clause by inlining each named window.
+#warnings("-unused_error_type")
 pub fn eliminate_window_clause(expression : Expr) -> Expr raise SqlglotError {
   match expression.get("windows") {
     Some(List(_)) if expression.kind == Select => {
@@ -933,6 +950,7 @@ pub fn eliminate_window_clause(expression : Expr) -> Expr raise SqlglotError {
 
 ///|
 /// Inherit field names from the first struct in an array.
+#warnings("-unused_error_type")
 pub fn inherit_struct_field_names(expression : Expr) -> Expr raise SqlglotError {
   if expression.kind == Array && expression.has("struct_name_inheritance") {
     let exprs = expression.expressions()

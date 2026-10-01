@@ -35,9 +35,7 @@ fn cap_data_type_precision(
 
 ///|
 /// Transform function to add VARCHAR(MAX) or CHAR(MAX) for cross-dialect conversion.
-fn add_default_precision_to_varchar(
-  expression : @core.Expr,
-) -> @core.Expr raise @core.SqlglotError {
+fn add_default_precision_to_varchar(expression : @core.Expr) -> @core.Expr {
   match expression.this() {
     Some(schema) if expression.kind == Create &&
       expression.text("kind") == "TABLE" &&
@@ -106,7 +104,7 @@ fn configure_generator(d : @core.Dialect) -> Unit {
   cfg.type_mapping[UUID] = "UNIQUEIDENTIFIER"
   cfg.type_mapping[XML] = "VARCHAR(MAX)"
   d.gen_fns.transforms[Create] = @core.preprocess([
-    add_default_precision_to_varchar,
+    e => add_default_precision_to_varchar(e),
   ])
   let m = d.gen_fns.methods
   let h = d.gen_fns.hooks

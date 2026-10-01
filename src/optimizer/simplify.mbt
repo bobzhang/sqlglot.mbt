@@ -925,9 +925,7 @@ pub fn Simplifier::simplify_equality(
   self : Simplifier,
   expression : @core.Expr,
 ) -> @core.Expr raise @core.SqlglotError {
-  let result = self.simplify_equality_impl(expression) catch {
-    UnsupportedUnit => expression
-  }
+  let result = self.simplify_equality_impl(expression)
   self.changed(expression, result)
 }
 
@@ -935,7 +933,7 @@ pub fn Simplifier::simplify_equality(
 fn Simplifier::simplify_equality_impl(
   self : Simplifier,
   expression : @core.Expr,
-) -> @core.Expr raise UnsupportedUnit {
+) -> @core.Expr {
   ignore(self)
   if !is_comparison(expression) {
     return expression

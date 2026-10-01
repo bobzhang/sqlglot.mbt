@@ -5,9 +5,7 @@
 /// BETWEEN expressions to explicit comparisons.
 ///
 /// https://docs.starrocks.io/docs/sql-reference/sql-statements/table_bucket_part_index/DELETE/#parameters
-fn eliminate_between_in_delete(
-  expression : @core.Expr,
-) -> @core.Expr raise @core.SqlglotError {
+fn eliminate_between_in_delete(expression : @core.Expr) -> @core.Expr {
   match expression.arg("where") {
     Some(where_) =>
       for between in where_.find_all([Between]) {
@@ -83,7 +81,7 @@ fn configure_generator(d : @core.Dialect) -> Unit {
       e.expression(),
     ])
   }
-  t[Delete] = @core.preprocess([eliminate_between_in_delete])
+  t[Delete] = @core.preprocess([e => eliminate_between_in_delete(e)])
   t[Flatten] = @core.rename_func("ARRAY_FLATTEN")
   t[JSONExtractScalar] = (g, e) => @core.arrow_json_extract_sql(g, e)
   t[JSONExtract] = (g, e) => @core.arrow_json_extract_sql(g, e)

@@ -174,10 +174,7 @@ fn date_fmt_re_search(s : String) -> Bool {
 }
 
 ///|
-fn build_format(
-  args : Array[@core.Expr],
-  _p : @core.Parser,
-) -> @core.Expr raise @core.SqlglotError {
+fn build_format(args : Array[@core.Expr], _p : @core.Parser) -> @core.Expr {
   let this = seq_get(args, 0)
   let fmt = seq_get(args, 1)
   let culture = seq_get(args, 2)
@@ -211,10 +208,7 @@ fn build_format(
 }
 
 ///|
-fn build_eomonth(
-  args : Array[@core.Expr],
-  _p : @core.Parser,
-) -> @core.Expr raise @core.SqlglotError {
+fn build_eomonth(args : Array[@core.Expr], _p : @core.Parser) -> @core.Expr {
   let date = @core.mk1(TsOrDsToDate, seq_get(args, 0))
   let this = match seq_get(args, 1) {
     None => date
@@ -344,7 +338,7 @@ fn build_date_delta(
 fn build_datetimefromparts(
   args : Array[@core.Expr],
   _p : @core.Parser,
-) -> @core.Expr raise @core.SqlglotError {
+) -> @core.Expr {
   @core.mk(TimestampFromParts, [
     ("year", seq_get(args, 0)),
     ("month", seq_get(args, 1)),
@@ -360,7 +354,7 @@ fn build_datetimefromparts(
 fn build_timefromparts(
   args : Array[@core.Expr],
   _p : @core.Parser,
-) -> @core.Expr raise @core.SqlglotError {
+) -> @core.Expr {
   @core.mk(TimeFromParts, [
     ("hour", seq_get(args, 0)),
     ("min", seq_get(args, 1)),
@@ -383,10 +377,7 @@ fn build_with_arg_as_text(kind : @core.Kind) -> @core.FuncBuilder {
 
 ///|
 /// https://learn.microsoft.com/en-us/sql/t-sql/functions/parsename-transact-sql
-fn build_parsename(
-  args : Array[@core.Expr],
-  _p : @core.Parser,
-) -> @core.Expr raise @core.SqlglotError {
+fn build_parsename(args : Array[@core.Expr], _p : @core.Parser) -> @core.Expr {
   // PARSENAME(...) will be stored into exp.SplitPart if:
   // - All args are literals
   // - The part index (2nd arg) is <= 4 (max valid value, otherwise TSQL returns NULL)
@@ -425,10 +416,7 @@ fn build_json_query(
 }
 
 ///|
-fn build_datetrunc(
-  args : Array[@core.Expr],
-  _p : @core.Parser,
-) -> @core.Expr raise @core.SqlglotError {
+fn build_datetrunc(args : Array[@core.Expr], _p : @core.Parser) -> @core.Expr {
   let unit = seq_get(args, 0)
   let this = match seq_get(args, 1) {
     Some(t) if t.is_string() => Some(@core.exp_cast(t, DATETIME2))
@@ -489,10 +477,10 @@ fn configure_parser(d : @core.Dialect) -> Unit {
     big_int=true,
   )
   f["DATENAME"] = build_formatted_time(TimeToStr, full_format_mapping=true)
-  f["DATETIMEFROMPARTS"] = build_datetimefromparts
+  f["DATETIMEFROMPARTS"] = (args, p) => build_datetimefromparts(args, p)
   f["DAY"] = ts_or_ds_part(Day)
-  f["EOMONTH"] = build_eomonth
-  f["FORMAT"] = build_format
+  f["EOMONTH"] = (args, p) => build_eomonth(args, p)
+  f["FORMAT"] = (args, p) => build_format(args, p)
   f["GETDATE"] = @core.from_arg_list_builder(CurrentTimestamp)
   f["HASHBYTES"] = build_hashbytes
   f["ISNULL"] = (args, _) => @core.build_coalesce(args, is_null=true)
@@ -503,7 +491,7 @@ fn configure_parser(d : @core.Dialect) -> Unit {
   f["MONTH"] = ts_or_ds_part(Month)
   f["NEWID"] = @core.from_arg_list_builder(Uuid)
   f["RIGHT"] = build_with_arg_as_text(Right)
-  f["PARSENAME"] = build_parsename
+  f["PARSENAME"] = (args, p) => build_parsename(args, p)
   f["REPLICATE"] = @core.from_arg_list_builder(Repeat)
   f["SCHEMA_NAME"] = @core.from_arg_list_builder(CurrentSchema)
   f["SQUARE"] = (args, _) => {
@@ -517,8 +505,8 @@ fn configure_parser(d : @core.Dialect) -> Unit {
   f["SUSER_SNAME"] = @core.from_arg_list_builder(CurrentUser)
   f["SYSDATETIMEOFFSET"] = @core.from_arg_list_builder(CurrentTimestampLTZ)
   f["SYSTEM_USER"] = @core.from_arg_list_builder(CurrentUser)
-  f["TIMEFROMPARTS"] = build_timefromparts
-  f["DATETRUNC"] = build_datetrunc
+  f["TIMEFROMPARTS"] = (args, p) => build_timefromparts(args, p)
+  f["DATETRUNC"] = (args, p) => build_datetrunc(args, p)
   f["YEAR"] = ts_or_ds_part(Year)
   fns.query_modifier_parsers[OPTION] = p => {
     (

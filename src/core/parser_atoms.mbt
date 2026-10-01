@@ -115,9 +115,7 @@ pub fn Parser::parse_string(self : Parser) -> Expr? raise SqlglotError {
 }
 
 ///|
-pub fn Parser::parse_string_as_identifier(
-  self : Parser,
-) -> Expr? raise SqlglotError {
+pub fn Parser::parse_string_as_identifier(self : Parser) -> Expr? {
   if !self.match_(STRING) {
     return None
   }

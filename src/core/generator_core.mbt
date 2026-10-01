@@ -298,10 +298,7 @@ pub fn Generator::preprocess(
 }
 
 ///|
-pub fn Generator::preprocess_base(
-  self : Generator,
-  expression : Expr,
-) -> Expr raise SqlglotError {
+pub fn Generator::preprocess_base(self : Generator, expression : Expr) -> Expr {
   let mut expression = self.move_ctes_to_top_level(expression)
   if self.cfg.ensure_bools {
     expression = ensure_bools(expression)

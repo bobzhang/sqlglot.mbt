@@ -422,7 +422,7 @@ fn TypeAnnotator::get_scope_source_selects(
 fn TypeAnnotator::get_source_scope_selects(
   self : TypeAnnotator,
   source : Scope,
-) -> Map[String, TType?] raise @core.SqlglotError {
+) -> Map[String, TType?] {
   let expression = source.expression
   if expression.kind.is_a(UDTF) {
     let values = if expression.kind.is_a(Lateral) {

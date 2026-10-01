@@ -108,6 +108,7 @@ fn unalias_pivot(
 
 ///|
 /// spark2, spark, Databricks require a storage provider for temporary tables
+#warnings("-unused_error_type")
 pub fn temporary_storage_provider(
   expression : @core.Expr,
 ) -> @core.Expr raise @core.SqlglotError {

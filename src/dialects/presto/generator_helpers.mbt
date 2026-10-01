@@ -304,6 +304,7 @@ fn explode_to_unnest_sql(
 
 ///|
 /// Amends LATERAL VIEW EXPLODE column references (only when types were inferred).
+#warnings("-unused_error_type")
 pub fn amend_exploded_column_table(
   expression : @core.Expr,
 ) -> @core.Expr raise @core.SqlglotError {

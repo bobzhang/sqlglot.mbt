@@ -385,7 +385,7 @@ fn configure_parser(d : @core.Dialect) -> Unit {
   h.parse_table = Some(parse_table)
   h.parse_position = Some((p, _) => p.parse_position_base(haystack_first=true))
   h.parse_cte = Some(parse_cte)
-  h.parse_join_parts = Some(parse_join_parts)
+  h.parse_join_parts = Some(p => parse_join_parts(p))
   h.parse_join = Some(parse_join)
   h.parse_function = Some(parse_function)
   h.parse_group_concat = Some(parse_group_concat)
@@ -696,7 +696,7 @@ fn parse_cte(p : @core.Parser) -> @core.Expr? raise @core.SqlglotError {
 ///|
 fn parse_join_parts(
   p : @core.Parser,
-) -> (@core.Token?, @core.Token?, @core.Token?) raise @core.SqlglotError {
+) -> (@core.Token?, @core.Token?, @core.Token?) {
   let is_global = if p.match_(GLOBAL) { Some(p.prev) } else { None }
   let kind_pre = if p.match_set(p.cfg.join_kinds) { Some(p.prev) } else { None }
   let side = if p.match_set(p.cfg.join_sides) { Some(p.prev) } else { None }

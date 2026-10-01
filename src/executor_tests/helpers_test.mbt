@@ -8,7 +8,7 @@ fn date_ctor(args : Array[@executor.Value]) -> @executor.Value raise {
 }
 
 ///|
-fn time_ctor(args : Array[@executor.Value]) -> @executor.Value raise {
+fn time_ctor(args : Array[@executor.Value]) -> @executor.Value {
   let f = args.map(a => {
     match a {
       Int(i) => i.to_int()
@@ -24,7 +24,7 @@ fn time_ctor(args : Array[@executor.Value]) -> @executor.Value raise {
 }
 
 ///|
-fn datetime_ctor(args : Array[@executor.Value]) -> @executor.Value raise {
+fn datetime_ctor(args : Array[@executor.Value]) -> @executor.Value {
   let tz = match args.last() {
     Some(Str("utc")) => Some(0)
     _ => None
@@ -56,8 +56,8 @@ fn timedelta_ctor(args : Array[@executor.Value]) -> @executor.Value raise {
 ///|
 let literal_globals : Map[String, @executor.Value] = {
   "date": Func({ name: "date", call: date_ctor, }),
-  "time": Func({ name: "time", call: time_ctor, }),
-  "datetime": Func({ name: "datetime", call: datetime_ctor, }),
+  "time": Func({ name: "time", call: args => time_ctor(args), }),
+  "datetime": Func({ name: "datetime", call: args => datetime_ctor(args), }),
   "timedelta": Func({ name: "timedelta", call: timedelta_ctor, }),
 }
 

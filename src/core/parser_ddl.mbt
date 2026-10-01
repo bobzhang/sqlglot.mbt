@@ -283,10 +283,7 @@ pub fn Parser::parse_drop(
 
 ///|
 /// `IF [NOT] EXISTS`. Returns None when `IF` isn't matched (Python `None`).
-pub fn Parser::parse_exists(
-  self : Parser,
-  not_? : Bool = false,
-) -> Bool? raise SqlglotError {
+pub fn Parser::parse_exists(self : Parser, not_? : Bool = false) -> Bool? {
   if !self.match_text("IF") {
     return Some(false)
   }
@@ -786,9 +783,7 @@ pub fn Parser::parse_trigger_referencing(
 }
 
 ///|
-pub fn Parser::parse_trigger_for_each(
-  self : Parser,
-) -> String? raise SqlglotError {
+pub fn Parser::parse_trigger_for_each(self : Parser) -> String? {
   if !self.match_text_seq(["FOR", "EACH"]) {
     return None
   }
