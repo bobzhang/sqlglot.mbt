@@ -57,7 +57,7 @@ def canonical_typed(node):
     parts = []
     for k in keys:
         v = node.args[k]
-        if v is None or (isinstance(v, list) and not v):
+        if v is None:
             continue
         r = val(v)
         parts.append(f"{k}={r if r is not None else scalar(v)}")
