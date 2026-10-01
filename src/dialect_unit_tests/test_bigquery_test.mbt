@@ -554,7 +554,7 @@ test "TestBigQuery.test_json_extract" {
     @sqlglot.generate(
       t.parse_one(sql_),
       dialect="bigquery",
-      normalize_functions="upper",
+      normalize_functions=Upper,
     ),
     sql_,
   )
@@ -570,7 +570,7 @@ test "TestBigQuery.test_json_extract_array" {
       @sqlglot.generate(
         t.parse_one(sql_),
         dialect="bigquery",
-        normalize_functions="upper",
+        normalize_functions=Upper,
       ),
       sql_,
     )

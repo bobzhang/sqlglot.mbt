@@ -59,5 +59,11 @@ fn b_sql_identify(
   dialect~ : String,
   identify_mode~ : String,
 ) -> String raise {
-  @sqlglot.generate(e, dialect~, identify_mode~)
+  let identify : @sqlglot.Identify = match identify_mode {
+    "always" => Always
+    "safe" => Safe
+    "unsafe" => Unsafe
+    _ => Never
+  }
+  @sqlglot.generate(e, dialect~, identify~)
 }

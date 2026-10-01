@@ -354,7 +354,7 @@ fn T::validate_identity(
     expression,
     dialect=self.dialect,
     pretty~,
-    identify~,
+    identify=identify_of(identify),
   )
   self.eq(got, expected, loc~)
   expression
@@ -398,7 +398,7 @@ fn T::validate_all(
       dialect=self.dialect,
       unsupported_level=Ignore,
       pretty~,
-      identify~,
+      identify=identify_of(identify),
     )
     self.eq(got, sql, loc~)
   }
@@ -408,7 +408,7 @@ fn T::validate_all(
       dialect=write_dialect,
       unsupported_level=Ignore,
       pretty~,
-      identify~,
+      identify=identify_of(identify),
     )
     self.eq(got, write_sql, loc~)
   }
@@ -448,5 +448,21 @@ fn sql(
   identify? : Bool = false,
   unsupported_level? : @core.ErrorLevel = Warn,
 ) -> String raise {
-  @sqlglot.generate(e, dialect~, pretty~, identify~, unsupported_level~)
+  @sqlglot.generate(
+    e,
+    dialect~,
+    pretty~,
+    identify=identify_of(identify),
+    unsupported_level~,
+  )
+}
+
+///|
+/// Python `identify=True/False` as the facade's `Identify` mode.
+fn identify_of(identify : Bool) -> @sqlglot.Identify {
+  if identify {
+    Always
+  } else {
+    Never
+  }
 }
