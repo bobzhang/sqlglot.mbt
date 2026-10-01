@@ -6,6 +6,11 @@ test "dialect athena" {
 }
 
 ///|
+test "dialect bigquery" {
+  run_dialect_cases("bigquery", bigquery_cases)
+}
+
+///|
 test "dialect clickhouse" {
   run_dialect_cases("clickhouse", clickhouse_cases)
 }
