@@ -35,13 +35,13 @@ pub fn Generator::with_sql(
   self : Generator,
   expression : Expr,
 ) -> String raise SqlglotError {
-  let udfs = pfx("WITH ", self.expressions(expression~, key="udfs", flat=true))
+  let udfs = g_pfx("WITH ", self.expressions(expression~, key="udfs", flat=true))
   let sql = self.expressions(expression~, flat=true)
-  let recursive = when(
+  let recursive = g_when(
     self.cfg.cte_recursive_keyword_required && expression.has("recursive"),
     "RECURSIVE ",
   )
-  let search = pfx(" ", self.sql_key(expression, "search"))
+  let search = g_pfx(" ", self.sql_key(expression, "search"))
   let sql = if sql != "" { "WITH " + recursive + sql + search } else { "" }
   if udfs != "" && sql != "" {
     udfs + " " + sql
@@ -65,7 +65,7 @@ pub fn Generator::cte_sql(
     Some(v) if v.truthy() => "MATERIALIZED "
     _ => ""
   }
-  let key_expressions = around(
+  let key_expressions = g_around(
     " USING KEY (",
     self.expressions(expression~, key="key_expressions", flat=true),
     ")",
@@ -79,7 +79,7 @@ pub fn Generator::tablealias_sql(
   expression : Expr,
 ) -> String raise SqlglotError {
   let mut alias_ = self.sql_key(expression, "this")
-  let mut columns = around(
+  let mut columns = g_around(
     "(",
     self.expressions(expression~, key="columns", flat=true),
     ")",
@@ -147,10 +147,10 @@ pub fn Generator::set_operation(
   if kind != "" {
     parts.push(kind)
   }
-  let side_kind = pfx("", parts.join(" "))
+  let side_kind = g_pfx("", parts.join(" "))
   let side_kind = if side_kind != "" { side_kind + " " } else { "" }
-  let by_name = when(expression.has("by_name"), " BY NAME")
-  let on = around(
+  let by_name = g_when(expression.has("by_name"), " BY NAME")
+  let on = g_around(
     " ON (",
     self.expressions(expression~, key="on", flat=true),
     ")",
@@ -242,7 +242,7 @@ pub fn Generator::fetch_sql(
     Some(v) if v.truthy() => " " + py_str_value(Some(v))
     _ => ""
   }
-  let count = pfx(" ", self.sql_key(expression, "count"))
+  let count = g_pfx(" ", self.sql_key(expression, "count"))
   let limit_options = self.sql_key(expression, "limit_options")
   let limit_options = if limit_options != "" {
     limit_options
@@ -258,9 +258,9 @@ pub fn Generator::limitoptions_sql(
   expression : Expr,
 ) -> String {
   ignore(self)
-  let percent = when(expression.has("percent"), " PERCENT")
-  let rows = when(expression.has("rows"), " ROWS")
-  let mut with_ties = when(expression.has("with_ties"), " WITH TIES")
+  let percent = g_when(expression.has("percent"), " PERCENT")
+  let rows = g_when(expression.has("rows"), " ROWS")
+  let mut with_ties = g_when(expression.has("with_ties"), " WITH TIES")
   if with_ties == "" && rows != "" {
     with_ties = " ONLY"
   }
@@ -292,7 +292,7 @@ pub fn Generator::hint_sql(
 }
 
 ///|
-fn Generator::simplify_unless_literal(
+pub fn Generator::simplify_unless_literal(
   self : Generator,
   expression : Expr,
 ) -> Expr raise SqlglotError {
@@ -331,7 +331,7 @@ pub fn Generator::limit_sql(
   if top && args.iter().any(e => !e.is_number()) {
     args_sql = "(" + args_sql + ")"
   }
-  let expressions = pfx(" BY ", self.expressions(expression~, flat=true))
+  let expressions = g_pfx(" BY ", self.expressions(expression~, flat=true))
   let limit_options = self.sql_key(expression, "limit_options")
   this +
   self.seg(if top { "TOP" } else { "LIMIT" }) +
@@ -358,7 +358,7 @@ pub fn Generator::offset_sql(
       )
     None => None
   }
-  let expressions = pfx(" BY ", self.expressions(expression~, flat=true))
+  let expressions = g_pfx(" BY ", self.expressions(expression~, flat=true))
   this + self.seg("OFFSET") + " " + self.sql(value) + expressions
 }
 
@@ -412,10 +412,10 @@ pub fn Generator::table_sql(
   sep? : String = " AS ",
 ) -> String raise SqlglotError {
   let mut table = self.table_parts(expression)
-  let only = when(expression.has("only"), "ONLY ")
-  let partition = pfx(" ", self.sql_key(expression, "partition"))
-  let version = pfx(" ", self.sql_key(expression, "version"))
-  let mut alias_ = pfx(sep, self.sql_key(expression, "alias"))
+  let only = g_when(expression.has("only"), "ONLY ")
+  let partition = g_pfx(" ", self.sql_key(expression, "partition"))
+  let version = g_pfx(" ", self.sql_key(expression, "version"))
+  let mut alias_ = g_pfx(sep, self.sql_key(expression, "alias"))
   let sample = self.sql_key(expression, "sample")
   let mut post_alias = ""
   let mut pre_alias = ""
@@ -440,7 +440,7 @@ pub fn Generator::table_sql(
   let mut file_format = self.sql_key(expression, "format")
   let pattern = self.sql_key(expression, "pattern")
   if file_format != "" {
-    let pattern = pfx(", PATTERN => ", pattern)
+    let pattern = g_pfx(", PATTERN => ", pattern)
     file_format = " (FILE_FORMAT => " + file_format + pattern + ")"
   } else if pattern != "" {
     file_format = " (PATTERN => " + pattern + ")"
@@ -458,7 +458,7 @@ pub fn Generator::table_sql(
       table = table + " " + when_
     }
   }
-  let changes = pfx(" ", self.sql_key(expression, "changes"))
+  let changes = g_pfx(" ", self.sql_key(expression, "changes"))
   let rows_from = self.expressions(expression~, key="rows_from")
   if rows_from != "" {
     table = "ROWS FROM " + self.wrap_str(rows_from)
@@ -494,7 +494,7 @@ pub fn Generator::tablefromrows_sql(
   expression : Expr,
 ) -> String raise SqlglotError {
   let table = self.func("TABLE", [expression.get("this")])
-  let alias_ = pfx(" AS ", self.sql_key(expression, "alias"))
+  let alias_ = g_pfx(" AS ", self.sql_key(expression, "alias"))
   let sample = self.sql_key(expression, "sample")
   let pivots = self.expressions(expression~, key="pivots", sep="", flat=true)
   let joins = self.indent(
@@ -531,13 +531,13 @@ pub fn Generator::tablesample_sql(
   }
   let numerator = self.sql_key(expression, "bucket_numerator")
   let denominator = self.sql_key(expression, "bucket_denominator")
-  let field = pfx(" ON ", self.sql_key(expression, "bucket_field"))
+  let field = g_pfx(" ON ", self.sql_key(expression, "bucket_field"))
   let bucket = if numerator != "" {
     "BUCKET " + numerator + " OUT OF " + denominator + field
   } else {
     ""
   }
-  let seed = around(
+  let seed = g_around(
     " " + self.cfg.tablesample_seed_keyword + " (",
     self.sql_key(expression, "seed"),
     ")",
@@ -562,7 +562,7 @@ pub fn Generator::tablesample_sql(
 }
 
 ///|
-fn value_bool_or(v : Value?, default : Bool) -> Bool {
+fn g_value_bool_or(v : Value?, default : Bool) -> Bool {
   match v {
     Some(Bool(b)) => b
     Some(x) => x.truthy()
@@ -585,11 +585,11 @@ pub fn Generator::pivot_in_value_aliases(
   let tgt_identify_pivot_strings = pcfg.identify_pivot_strings
   let tgt_prefixed_pivot_columns = pcfg.prefixed_pivot_columns
   let tgt_pivot_column_naming = pcfg.pivot_column_naming
-  let src_identify_pivot_strings = value_bool_or(
+  let src_identify_pivot_strings = g_value_bool_or(
     expression.get("identify_pivot_strings"),
     tgt_identify_pivot_strings,
   )
-  let src_prefixed_pivot_columns = value_bool_or(
+  let src_prefixed_pivot_columns = g_value_bool_or(
     expression.get("prefixed_pivot_columns"),
     tgt_prefixed_pivot_columns,
   )
@@ -617,7 +617,7 @@ pub fn Generator::pivot_in_value_aliases(
   if !first_stored.has_prefix(first_base) {
     return None
   }
-  let suffix = str_from(first_stored, py_len(first_base))
+  let suffix = g_str_from(first_stored, py_len(first_base))
   let target_has_suffix = (
       expression.expressions().length() > 1 ||
       tgt_pivot_column_naming != "agg_name_if_multiple"
@@ -725,7 +725,7 @@ pub fn Generator::pivot_sql(
     Some(v) => if v.truthy() { " INCLUDE NULLS " } else { " EXCLUDE NULLS " }
     None => ""
   }
-  let default_on_null = around(
+  let default_on_null = g_around(
     " DEFAULT ON NULL (",
     self.sql_key(expression, "default_on_null"),
     ")",
@@ -831,7 +831,7 @@ pub fn Generator::update_sql(
   } else {
     returning + from_sql + where_sql
   }
-  let options = around(
+  let options = g_around(
     " OPTION(",
     self.expressions(expression~, key="options"),
     ")",
@@ -940,8 +940,8 @@ pub fn Generator::into_sql(
   expression : Expr,
 ) -> String raise SqlglotError {
   self.unsupported_args(expression, ["expressions"])
-  let temporary = when(expression.has("temporary"), " TEMPORARY")
-  let unlogged = when(expression.has("unlogged"), " UNLOGGED")
+  let temporary = g_when(expression.has("temporary"), " TEMPORARY")
+  let unlogged = g_when(expression.has("unlogged"), " UNLOGGED")
   self.seg("INTO") +
   (if temporary != "" { temporary } else { unlogged }) +
   " " +
@@ -985,7 +985,7 @@ pub fn Generator::rollupindex_sql(
 ) -> String raise SqlglotError {
   let this = self.sql_key(expression, "this")
   let columns = self.expressions(expression~, flat=true)
-  let from_sql = pfx(" FROM ", self.sql_key(expression, "from_index"))
+  let from_sql = g_pfx(" FROM ", self.sql_key(expression, "from_index"))
   let properties_sql = match expression.arg("properties") {
     Some(p) => " " + self.properties(p, prefix="PROPERTIES")
     None => ""
@@ -1091,7 +1091,7 @@ pub fn Generator::connect_sql(
 ) -> String raise SqlglotError {
   let start = self.sql_key(expression, "start")
   let start = if start != "" { self.seg("START WITH " + start) } else { "" }
-  let nocycle = when(expression.has("nocycle"), " NOCYCLE")
+  let nocycle = g_when(expression.has("nocycle"), " NOCYCLE")
   let connect = self.sql_key(expression, "connect")
   let connect = self.seg("CONNECT BY" + nocycle + " " + connect)
   start + connect
@@ -1119,7 +1119,7 @@ pub fn Generator::join_sql(
   }
   let ops = [
     py_upper(expression.text("method")),
-    when(expression.has("global_"), "GLOBAL"),
+    g_when(expression.has("global_"), "GLOBAL"),
     side,
     kind,
     if self.cfg.join_hints {
@@ -1127,10 +1127,10 @@ pub fn Generator::join_sql(
     } else {
       ""
     },
-    when(expression.has("directed") && self.cfg.directed_joins, "DIRECTED"),
+    g_when(expression.has("directed") && self.cfg.directed_joins, "DIRECTED"),
   ]
   let mut op_sql = csv(ops, sep=" ")
-  let match_cond = around(
+  let match_cond = g_around(
     " MATCH_CONDITION (",
     self.sql_key(expression, "match_condition"),
     ")",
@@ -1215,10 +1215,10 @@ pub fn Generator::lateral_sql(
       Some(a) => a.name()
       None => ""
     }
-    let table = pfx(" ", alias_name)
-    let columns = pfx(" AS ", columns)
+    let table = g_pfx(" ", alias_name)
+    let columns = g_pfx(" AS ", columns)
     let op_sql = self.seg(
-      "LATERAL VIEW" + when(expression.has("outer"), " OUTER"),
+      "LATERAL VIEW" + g_when(expression.has("outer"), " OUTER"),
     )
     return op_sql + self.sep() + this + table + columns
   }
@@ -1238,7 +1238,7 @@ pub fn Generator::lateral_sql(
     }
     _ => ()
   }
-  let mut alias_ = pfx(" AS ", self.sql(table_alias))
+  let mut alias_ = g_pfx(" AS ", self.sql(table_alias))
   let mut ordinality = ""
   if expression.has("ordinality") {
     ordinality = " WITH ORDINALITY" + alias_
@@ -1256,15 +1256,15 @@ pub fn Generator::setitem_sql(
   if !self.cfg.set_assignment_requires_variable_keyword && kind == "VARIABLE" {
     kind = ""
   } else {
-    kind = pfx("", kind)
+    kind = g_pfx("", kind)
     if kind != "" {
       kind = kind + " "
     }
   }
   let this = self.sql_key(expression, "this")
   let expressions = self.expressions(expression~)
-  let collate = pfx(" COLLATE ", self.sql_key(expression, "collate"))
-  let global_ = when(expression.has("global_"), "GLOBAL ")
+  let collate = g_pfx(" COLLATE ", self.sql_key(expression, "collate"))
+  let global_ = g_when(expression.has("global_"), "GLOBAL ")
   global_ + kind + this + expressions + collate
 }
 
@@ -1274,7 +1274,7 @@ pub fn Generator::set_sql(
   expression : Expr,
 ) -> String raise SqlglotError {
   let expressions = " " + self.expressions(expression~, flat=true)
-  let tag = when(expression.has("tag"), " TAG")
+  let tag = g_when(expression.has("tag"), " TAG")
   (if expression.has("unset") { "UNSET" } else { "SET" }) + tag + expressions
 }
 
@@ -1284,8 +1284,8 @@ pub fn Generator::queryband_sql(
   expression : Expr,
 ) -> String raise SqlglotError {
   let this = self.sql_key(expression, "this")
-  let update = when(expression.has("update"), " UPDATE")
-  let scope = pfx(" FOR ", self.sql_key(expression, "scope"))
+  let update = g_when(expression.has("update"), " UPDATE")
+  let scope = g_pfx(" FOR ", self.sql_key(expression, "scope"))
   "QUERY_BAND = " + this + update + scope
 }
 
@@ -1319,7 +1319,7 @@ pub fn Generator::lock_sql(
   } else {
     "FOR SHARE"
   }
-  let expressions = pfx(" OF ", self.expressions(expression~, flat=true))
+  let expressions = g_pfx(" OF ", self.expressions(expression~, flat=true))
   let wait = match expression.get("wait") {
     Some(Node(w)) if w.kind.is_a(Literal) => " WAIT " + self.sql(Some(w))
     Some(v) => if v.truthy() { " NOWAIT" } else { " SKIP LOCKED" }
@@ -1336,7 +1336,7 @@ pub fn Generator::order_sql(
 ) -> String raise SqlglotError {
   let this = self.sql_key(expression, "this")
   let this = if this != "" { this + " " } else { this }
-  let siblings = when(expression.has("siblings"), "SIBLINGS ")
+  let siblings = g_when(expression.has("siblings"), "SIBLINGS ")
   self.op_expressions(
     this + "ORDER " + siblings + "BY",
     expression,
@@ -1349,9 +1349,9 @@ pub fn Generator::withfill_sql(
   self : Generator,
   expression : Expr,
 ) -> String raise SqlglotError {
-  let from_sql = pfx(" FROM ", self.sql_key(expression, "from_"))
-  let to_sql = pfx(" TO ", self.sql_key(expression, "to"))
-  let step_sql = pfx(" STEP ", self.sql_key(expression, "step"))
+  let from_sql = g_pfx(" FROM ", self.sql_key(expression, "from_"))
+  let to_sql = g_pfx(" TO ", self.sql_key(expression, "to"))
+  let step_sql = g_pfx(" STEP ", self.sql_key(expression, "step"))
   let interpolated_values = []
   for e in expression.list("interpolate") {
     interpolated_values.push(
@@ -1546,7 +1546,7 @@ pub fn Generator::ordered_sql(
       }
     }
   }
-  let with_fill = pfx(" ", self.sql_key(expression, "with_fill"))
+  let with_fill = g_pfx(" ", self.sql_key(expression, "with_fill"))
   this + sort_order + nulls_sort_change + with_fill
 }
 
@@ -1591,14 +1591,14 @@ pub fn Generator::matchrecognize_sql(
       self.sql_key(definition, "this"),
     )
   }
-  let definitions = self.expressions(sqls=strs(definition_sqls))
+  let definitions = self.expressions(sqls=g_strs(definition_sqls))
   let define_ = if definitions != "" {
     self.seg("DEFINE" + self.seg(definitions))
   } else {
     ""
   }
   let body = partition + order + measures + rows + after + pattern + define_
-  let alias_ = pfx(" ", self.sql_key(expression, "alias"))
+  let alias_ = g_pfx(" ", self.sql_key(expression, "alias"))
   self.seg("MATCH_RECOGNIZE") + " " + self.wrap_str(body) + alias_
 }
 
@@ -1681,7 +1681,7 @@ pub fn Generator::options_modifier_base(
   self : Generator,
   expression : Expr,
 ) -> String raise SqlglotError {
-  pfx(" ", self.expressions(expression~, key="options"))
+  g_pfx(" ", self.expressions(expression~, key="options"))
 }
 
 ///|
@@ -1755,7 +1755,7 @@ pub fn Generator::after_limit_modifiers_base(
   self : Generator,
   expression : Expr,
 ) -> Array[String] raise SqlglotError {
-  let locks = pfx(" ", self.expressions(expression~, key="locks", sep=" "))
+  let locks = g_pfx(" ", self.expressions(expression~, key="locks", sep=" "))
   [locks, self.sql_key(expression, "sample")]
 }
 
@@ -1772,7 +1772,7 @@ pub fn Generator::select_sql(
     }
   }
   let hint = self.sql_key(expression, "hint")
-  let distinct = pfx(" ", self.sql_key(expression, "distinct"))
+  let distinct = g_pfx(" ", self.sql_key(expression, "distinct"))
   let mut kind = self.sql_key(expression, "kind")
   let top = match expression.arg("limit") {
     Some(limit) if limit.kind.is_a(Limit) && self.cfg.limit_is_top => {
@@ -1808,7 +1808,7 @@ pub fn Generator::select_sql(
       kind = ""
     }
   }
-  let operation_modifiers = pfx(
+  let operation_modifiers = g_pfx(
     self.sep(),
     self.expressions(expression~, key="operation_modifiers", sep=" "),
   )
@@ -1822,7 +1822,7 @@ pub fn Generator::select_sql(
   } else {
     top + hint + distinct
   }
-  let expressions = pfx(self.sep(), expressions)
+  let expressions = g_pfx(self.sep(), expressions)
   let mut sql = self.query_modifiers(expression, [
     "SELECT" + top_distinct + operation_modifiers + kind + expressions,
     self.sql_key(expression, "into"),
@@ -1926,7 +1926,7 @@ pub fn Generator::subquery_sql(
   expression : Expr,
   sep? : String = " AS ",
 ) -> String raise SqlglotError {
-  let mut alias_ = pfx(sep, self.sql_key(expression, "alias"))
+  let mut alias_ = g_pfx(sep, self.sql_key(expression, "alias"))
   let sample = self.sql_key(expression, "sample")
   if self.dialect.cfg.alias_post_tablesample && sample != "" {
     alias_ = sample + alias_
@@ -1978,7 +1978,7 @@ pub fn Generator::unnest_sql(
     }
     _ => self.sql(alias_)
   }
-  let alias_sql = pfx(" AS ", alias_sql)
+  let alias_sql = g_pfx(" AS ", alias_sql)
   let offset_truthy = match offset {
     Some(v) => v.truthy()
     None => false
@@ -2053,7 +2053,7 @@ pub fn Generator::partition_by_sql(
   self : Generator,
   expression : Expr,
 ) -> String raise SqlglotError {
-  pfx(
+  g_pfx(
     "PARTITION BY ",
     self.expressions(expression~, key="partition_by", flat=true),
   )
@@ -2092,7 +2092,7 @@ pub fn Generator::withingroup_sql(
   expression : Expr,
 ) -> String raise SqlglotError {
   let this = self.sql_key(expression, "this")
-  let expression_sql = str_from(self.sql_key(expression, "expression"), 1)
+  let expression_sql = g_str_from(self.sql_key(expression, "expression"), 1)
   this + " WITHIN GROUP (" + expression_sql + ")"
 }
 
@@ -2102,14 +2102,14 @@ pub fn Generator::delete_sql(
   expression : Expr,
 ) -> String raise SqlglotError {
   let hint = self.sql_key(expression, "hint")
-  let this = pfx(" FROM ", self.sql_key(expression, "this"))
-  let using_ = pfx(" USING ", self.expressions(expression~, key="using"))
-  let cluster = pfx(" ", self.sql_key(expression, "cluster"))
+  let this = g_pfx(" FROM ", self.sql_key(expression, "this"))
+  let using_ = g_pfx(" USING ", self.expressions(expression~, key="using"))
+  let cluster = g_pfx(" ", self.sql_key(expression, "cluster"))
   let where_ = self.sql_key(expression, "where")
   let returning = self.sql_key(expression, "returning")
   let order = self.sql_key(expression, "order")
   let limit = self.sql_key(expression, "limit")
-  let tables = pfx(" ", self.expressions(expression~, key="tables"))
+  let tables = g_pfx(" ", self.expressions(expression~, key="tables"))
   let expression_sql = if self.cfg.returning_end {
     this + using_ + cluster + where_ + returning + order + limit
   } else {
@@ -2134,39 +2134,39 @@ pub fn Generator::insert_sql(
       }
     _ => if overwrite { self.cfg.insert_overwrite } else { " INTO" }
   }
-  let stored = pfx(" ", self.sql_key(expression, "stored"))
+  let stored = g_pfx(" ", self.sql_key(expression, "stored"))
   let alternative = match expression.get("alternative") {
     Some(v) if v.truthy() => " OR " + py_str_value(Some(v))
     _ => ""
   }
-  let ignore_ = when(expression.has("ignore"), " IGNORE")
+  let ignore_ = g_when(expression.has("ignore"), " IGNORE")
   if expression.has("is_function") {
     this = this + " FUNCTION"
   }
   this = this + " " + self.sql_key(expression, "this")
-  let exists = when(expression.has("exists"), " IF EXISTS")
-  let where_ = pfx(
+  let exists = g_when(expression.has("exists"), " IF EXISTS")
+  let where_ = g_pfx(
     self.sep() + "REPLACE WHERE ",
     self.sql_key(expression, "where"),
   )
-  let using_ = around(
+  let using_ = g_around(
     self.sep() + "REPLACE USING (",
     self.expressions(expression~, key="using", flat=true),
     ")",
   )
   let mut expression_sql = self.sep() + self.sql_key(expression, "expression")
-  let on_conflict = pfx(" ", self.sql_key(expression, "conflict"))
-  let by_name = when(expression.has("by_name"), " BY NAME")
-  let default_values = when(expression.has("default"), "DEFAULT VALUES")
+  let on_conflict = g_pfx(" ", self.sql_key(expression, "conflict"))
+  let by_name = g_when(expression.has("by_name"), " BY NAME")
+  let default_values = g_when(expression.has("default"), "DEFAULT VALUES")
   let returning = self.sql_key(expression, "returning")
   if self.cfg.returning_end {
     expression_sql = expression_sql + on_conflict + default_values + returning
   } else {
     expression_sql = returning + expression_sql + on_conflict
   }
-  let partition_by = pfx(" ", self.sql_key(expression, "partition"))
-  let settings = pfx(" ", self.sql_key(expression, "settings"))
-  let source = pfx("TABLE ", self.sql_key(expression, "source"))
+  let partition_by = g_pfx(" ", self.sql_key(expression, "partition"))
+  let settings = g_pfx(" ", self.sql_key(expression, "settings"))
+  let source = g_pfx("TABLE ", self.sql_key(expression, "source"))
   let sql = "INSERT" +
     hint +
     alternative +
@@ -2194,11 +2194,11 @@ pub fn Generator::onconflict_sql(
   } else {
     "ON CONFLICT"
   }
-  let constraint = pfx(
+  let constraint = g_pfx(
     " ON CONSTRAINT ",
     self.sql_key(expression, "constraint"),
   )
-  let conflict_keys = around(
+  let conflict_keys = g_around(
     "(",
     self.expressions(expression~, key="conflict_keys", flat=true),
     ")",
@@ -2208,7 +2208,7 @@ pub fn Generator::onconflict_sql(
   let action = self.sql_key(expression, "action")
   let mut expressions = self.expressions(expression~, flat=true)
   if expressions != "" {
-    let set_keyword = when(self.cfg.duplicate_key_update_with_set, "SET ")
+    let set_keyword = g_when(self.cfg.duplicate_key_update_with_set, "SET ")
     expressions = " " + set_keyword + expressions
   }
   let where_ = self.sql_key(expression, "where")
@@ -2233,11 +2233,11 @@ pub fn Generator::when_sql(
   } else {
     "NOT MATCHED"
   }
-  let source = when(
+  let source = g_when(
     self.cfg.matched_by_source && expression.has("source"),
     " BY SOURCE",
   )
-  let condition = pfx(" AND ", self.sql_key(expression, "condition"))
+  let condition = g_pfx(" AND ", self.sql_key(expression, "condition"))
   let then_expression = expression.arg("then")
   let mut then = match then_expression {
     Some(t) if t.kind.is_a(Insert) => {
@@ -2307,9 +2307,9 @@ pub fn Generator::merge_sql(
   let this = self.sql(Some(table))
   let using_ = "USING " + self.sql_key(expression, "using")
   let mut whens = self.sql_key(expression, "whens")
-  let mut on = pfx("ON ", self.sql_key(expression, "on"))
+  let mut on = g_pfx("ON ", self.sql_key(expression, "on"))
   if on == "" {
-    on = around("USING (", self.expressions(expression~, key="using_cond"), ")")
+    on = g_around("USING (", self.expressions(expression~, key="using_cond"), ")")
   }
   let returning = self.sql_key(expression, "returning")
   if returning != "" {

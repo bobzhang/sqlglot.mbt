@@ -134,7 +134,7 @@ pub fn GeneratorFns::copy(self : GeneratorFns) -> GeneratorFns {
 
 ///|
 /// Converts a given syntax tree to the corresponding SQL string.
-pub struct Generator {
+pub(all) struct Generator {
   dialect : Dialect
   cfg : GeneratorConfig
   fns : GeneratorFns
@@ -358,11 +358,11 @@ pub fn Generator::sanitize_comment(
 ) -> String {
   ignore(self)
   let mut comment = comment
-  match first_char(comment) {
+  match g_first_char(comment) {
     Some(c) if !is_space(c) => comment = " " + comment
     _ => ()
   }
-  match last_char(comment) {
+  match g_last_char(comment) {
     Some(c) if !is_space(c) => comment = comment + " "
     _ => ()
   }
@@ -415,7 +415,7 @@ pub fn Generator::maybe_comment(
     })
   if sep_comments {
     let comments_sql = comments_list.join(self.sep())
-    match first_char(sql) {
+    match g_first_char(sql) {
       None => self.sep() + comments_sql + sql
       Some(c) if is_space(c) => self.sep() + comments_sql + sql
       _ => comments_sql + self.sep() + sql
@@ -446,7 +446,7 @@ pub fn Generator::wrap_str(self : Generator, sql : String) -> String {
 }
 
 ///|
-fn Generator::wrap_sql(self : Generator, this_sql : String) -> String {
+pub fn Generator::wrap_sql(self : Generator, this_sql : String) -> String {
   if this_sql == "" {
     return "()"
   }

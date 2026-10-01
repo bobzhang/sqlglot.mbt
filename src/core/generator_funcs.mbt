@@ -84,7 +84,7 @@ pub fn Generator::anonymous_sql(
   }
   self.func(
     self.sql_key(expression, "this"),
-    fargs(expression.expressions()),
+    g_fargs(expression.expressions()),
     normalize=!is_qualified,
   )
 }
@@ -198,7 +198,7 @@ pub fn Generator::concat_sql(
   if !self.cfg.supports_single_arg_concat && expressions.length() == 1 {
     return self.sql(Some(expressions[0]))
   }
-  self.func("CONCAT", fargs(expressions))
+  self.func("CONCAT", g_fargs(expressions))
 }
 
 ///|
@@ -243,7 +243,7 @@ pub fn Generator::matchagainst_sql(
   expression : Expr,
 ) -> String raise SqlglotError {
   let expressions : Array[&SqlArg] = []
-  if str_truthy(self.cfg.match_against_table_prefix) {
+  if g_str_truthy(self.cfg.match_against_table_prefix) {
     for expr in expression.expressions() {
       if expr.kind.is_a(Table) {
         expressions.push("TABLE " + self.sql(Some(expr)))
@@ -332,7 +332,7 @@ pub fn Generator::jsonpathkey_sql(
   match this {
     Some(Node(w)) if w.kind.is_a(JSONPathWildcard) => {
       let s = self.json_path_part(this)
-      return pfx(".", s)
+      return g_pfx(".", s)
     }
     _ => ()
   }
@@ -365,7 +365,7 @@ pub fn Generator::jsonpathsubscript_sql(
   expression : Expr,
 ) -> String raise SqlglotError {
   let this = self.json_path_part(expression.get("this"))
-  around("[", this, "]")
+  g_around("[", this, "]")
 }
 
 ///|
@@ -402,8 +402,8 @@ pub fn Generator::jsonobject_sql(
       " " + (if v.truthy() { "WITH" } else { "WITHOUT" }) + " UNIQUE KEYS"
     None => ""
   }
-  let return_type = pfx(" RETURNING ", self.sql_key(expression, "return_type"))
-  let encoding = pfx(" ENCODING ", self.sql_key(expression, "encoding"))
+  let return_type = g_pfx(" RETURNING ", self.sql_key(expression, "return_type"))
+  let encoding = g_pfx(" ENCODING ", self.sql_key(expression, "encoding"))
   let name = if name == "" {
     if expression.kind.is_a(JSONObject) {
       "JSON_OBJECT"
@@ -415,7 +415,7 @@ pub fn Generator::jsonobject_sql(
   }
   self.func(
     name,
-    fargs(expression.expressions()),
+    g_fargs(expression.expressions()),
     suffix=null_handling + unique_keys + return_type + encoding + ")",
   )
 }
@@ -429,11 +429,11 @@ pub fn Generator::jsonarray_sql(
     Some(v) if v.truthy() => " " + py_str_value(Some(v))
     _ => ""
   }
-  let return_type = pfx(" RETURNING ", self.sql_key(expression, "return_type"))
-  let strict = when(expression.has("strict"), " STRICT")
+  let return_type = g_pfx(" RETURNING ", self.sql_key(expression, "return_type"))
+  let strict = g_when(expression.has("strict"), " STRICT")
   self.func(
     "JSON_ARRAY",
-    fargs(expression.expressions()),
+    g_fargs(expression.expressions()),
     suffix=null_handling + return_type + strict + ")",
   )
 }
@@ -449,8 +449,8 @@ pub fn Generator::jsonarrayagg_sql(
     Some(v) if v.truthy() => " " + py_str_value(Some(v))
     _ => ""
   }
-  let return_type = pfx(" RETURNING ", self.sql_key(expression, "return_type"))
-  let strict = when(expression.has("strict"), " STRICT")
+  let return_type = g_pfx(" RETURNING ", self.sql_key(expression, "return_type"))
+  let strict = g_when(expression.has("strict"), " STRICT")
   self.func(
     "JSON_ARRAYAGG",
     [this],
@@ -463,15 +463,15 @@ pub fn Generator::jsoncolumndef_sql(
   self : Generator,
   expression : Expr,
 ) -> String raise SqlglotError {
-  let path = pfx(" PATH ", self.sql_key(expression, "path"))
+  let path = g_pfx(" PATH ", self.sql_key(expression, "path"))
   let nested_schema = self.sql_key(expression, "nested_schema")
   if nested_schema != "" {
     return "NESTED" + path + " " + nested_schema
   }
   let this = self.sql_key(expression, "this")
-  let kind = pfx(" ", self.sql_key(expression, "kind"))
-  let format_json = when(expression.has("format_json"), " FORMAT JSON")
-  let ordinality = when(expression.has("ordinality"), " FOR ORDINALITY")
+  let kind = g_pfx(" ", self.sql_key(expression, "kind"))
+  let format_json = g_when(expression.has("format_json"), " FORMAT JSON")
+  let ordinality = g_when(expression.has("ordinality"), " FOR ORDINALITY")
   this + kind + format_json + path + ordinality
 }
 
@@ -480,7 +480,7 @@ pub fn Generator::jsonschema_sql(
   self : Generator,
   expression : Expr,
 ) -> String raise SqlglotError {
-  self.func("COLUMNS", fargs(expression.expressions()))
+  self.func("COLUMNS", g_fargs(expression.expressions()))
 }
 
 ///|
@@ -489,7 +489,7 @@ pub fn Generator::jsontable_sql(
   expression : Expr,
 ) -> String raise SqlglotError {
   let this = self.sql_key(expression, "this")
-  let path = pfx(", ", self.sql_key(expression, "path"))
+  let path = g_pfx(", ", self.sql_key(expression, "path"))
   let error_handling = match expression.get("error_handling") {
     Some(v) if v.truthy() => " " + py_str_value(Some(v))
     _ => ""
@@ -513,8 +513,8 @@ pub fn Generator::openjsoncolumndef_sql(
 ) -> String raise SqlglotError {
   let this = self.sql_key(expression, "this")
   let kind = self.sql_key(expression, "kind")
-  let path = pfx(" ", self.sql_key(expression, "path"))
-  let as_json = when(expression.has("as_json"), " AS JSON")
+  let path = g_pfx(" ", self.sql_key(expression, "path"))
+  let as_json = g_when(expression.has("as_json"), " AS JSON")
   this + " " + kind + path + as_json
 }
 
@@ -524,7 +524,7 @@ pub fn Generator::openjson_sql(
   expression : Expr,
 ) -> String raise SqlglotError {
   let this = self.sql_key(expression, "this")
-  let path = pfx(", ", self.sql_key(expression, "path"))
+  let path = g_pfx(", ", self.sql_key(expression, "path"))
   let expressions = self.expressions(expression~)
   let with_ = if expressions != "" {
     " WITH (" +
@@ -671,8 +671,8 @@ pub fn Generator::distinct_sql(
     }
     this = self.sql(Some(case_else(case_, maybe_parse_str("(" + this + ")"))))
   }
-  let this = pfx(" ", this)
-  let on = pfx(" ON ", self.sql_key(expression, "on"))
+  let this = g_pfx(" ", this)
+  let on = g_pfx(" ON ", self.sql_key(expression, "on"))
   "DISTINCT" + this + on
 }
 
@@ -850,9 +850,9 @@ pub fn Generator::comprehension_sql(
 ) -> String raise SqlglotError {
   let this = self.sql_key(expression, "this")
   let expr = self.sql_key(expression, "expression")
-  let position = pfx(", ", self.sql_key(expression, "position"))
+  let position = g_pfx(", ", self.sql_key(expression, "position"))
   let iterator = self.sql_key(expression, "iterator")
-  let condition = pfx(" IF ", self.sql_key(expression, "condition"))
+  let condition = g_pfx(" IF ", self.sql_key(expression, "condition"))
   this + " FOR " + expr + position + " IN " + iterator + condition
 }
 
@@ -979,7 +979,7 @@ pub fn Generator::mlforecast_sql(
 }
 
 ///|
-fn Generator::table_prefixed_sql(
+pub fn Generator::table_prefixed_sql(
   self : Generator,
   expression : Expr,
   key : String,
@@ -1094,7 +1094,7 @@ pub fn Generator::tsordstotime_sql(
 ) -> String raise SqlglotError {
   let this = expression.this_()
   let time_format = self.format_time(expression)
-  if str_truthy(time_format) {
+  if g_str_truthy(time_format) {
     return self.sql(
       Some(
         exp_cast(
@@ -1407,19 +1407,19 @@ pub fn Generator::querytransform_sql(
   self : Generator,
   expression : Expr,
 ) -> String raise SqlglotError {
-  let transform = self.func("TRANSFORM", fargs(expression.expressions()))
-  let row_format_before = pfx(
+  let transform = self.func("TRANSFORM", g_fargs(expression.expressions()))
+  let row_format_before = g_pfx(
     " ",
     self.sql_key(expression, "row_format_before"),
   )
-  let record_writer = pfx(
+  let record_writer = g_pfx(
     " RECORDWRITER ",
     self.sql_key(expression, "record_writer"),
   )
   let using_ = " USING " + self.sql_key(expression, "command_script")
-  let schema = pfx(" AS ", self.sql_key(expression, "schema"))
-  let row_format_after = pfx(" ", self.sql_key(expression, "row_format_after"))
-  let record_reader = pfx(
+  let schema = g_pfx(" AS ", self.sql_key(expression, "schema"))
+  let row_format_after = g_pfx(" ", self.sql_key(expression, "row_format_after"))
+  let record_reader = g_pfx(
     " RECORDREADER ",
     self.sql_key(expression, "record_reader"),
   )
@@ -1497,7 +1497,7 @@ pub fn Generator::scoperesolution_sql(
     Some(e) if e.kind.is_a(Func) =>
       self.sql_key(e, "this") +
       "(" +
-      self.format_args(fargs(e.expressions())) +
+      self.format_args(g_fargs(e.expressions())) +
       ")"
     _ => self.sql_key(expression, "expression")
   }
@@ -1542,8 +1542,8 @@ pub fn Generator::changes_sql(
   expression : Expr,
 ) -> String raise SqlglotError {
   let information = "INFORMATION => " + self.sql_key(expression, "information")
-  let at_before = pfx(self.seg(""), self.sql_key(expression, "at_before"))
-  let end = pfx(self.seg(""), self.sql_key(expression, "end"))
+  let at_before = g_pfx(self.seg(""), self.sql_key(expression, "at_before"))
+  let end = g_pfx(self.seg(""), self.sql_key(expression, "end"))
   "CHANGES (" + information + ")" + at_before + end
 }
 
@@ -1573,7 +1573,7 @@ pub fn Generator::summarize_sql(
   self : Generator,
   expression : Expr,
 ) -> String raise SqlglotError {
-  let table = when(expression.has("table"), " TABLE")
+  let table = g_when(expression.has("table"), " TABLE")
   "SUMMARIZE" + table + " " + self.sql(expression.this())
 }
 
@@ -1636,12 +1636,12 @@ pub fn Generator::json_sql(
   self : Generator,
   expression : Expr,
 ) -> String raise SqlglotError {
-  let this = pfx(" ", self.sql_key(expression, "this"))
+  let this = g_pfx(" ", self.sql_key(expression, "this"))
   let with_sql = match expression.get("with_") {
     None => ""
     Some(v) => if !v.truthy() { " WITHOUT" } else { " WITH" }
   }
-  let unique_sql = when(expression.has("unique"), " UNIQUE KEYS")
+  let unique_sql = g_when(expression.has("unique"), " UNIQUE KEYS")
   "JSON" + this + with_sql + unique_sql
 }
 
@@ -1651,8 +1651,8 @@ pub fn Generator::jsonvalue_sql(
   expression : Expr,
 ) -> String raise SqlglotError {
   let path = self.sql_key(expression, "path")
-  let returning = pfx(" RETURNING ", self.sql_key(expression, "returning"))
-  let on_condition = pfx(" ", self.sql_key(expression, "on_condition"))
+  let returning = g_pfx(" RETURNING ", self.sql_key(expression, "returning"))
+  let on_condition = g_pfx(" ", self.sql_key(expression, "on_condition"))
   self.func("JSON_VALUE", [
     expression.get("this"),
     Some(Str(path + returning + on_condition)),
@@ -1664,7 +1664,7 @@ pub fn Generator::skipjsoncolumn_sql(
   self : Generator,
   expression : Expr,
 ) -> String raise SqlglotError {
-  let regexp = when(expression.has("regexp"), " REGEXP")
+  let regexp = g_when(expression.has("regexp"), " REGEXP")
   "SKIP" + regexp + " " + self.sql(expression.expression())
 }
 
@@ -1673,14 +1673,14 @@ pub fn Generator::conditionalinsert_sql(
   self : Generator,
   expression : Expr,
 ) -> String raise SqlglotError {
-  let else_ = when(expression.has("else_"), "ELSE ")
+  let else_ = g_when(expression.has("else_"), "ELSE ")
   let condition = self.sql_key(expression, "expression")
   let condition = if condition != "" {
     "WHEN " + condition + " THEN "
   } else {
     else_
   }
-  let insert = py_strip(str_from(self.sql_key(expression, "this"), 6))
+  let insert = py_strip(g_str_from(self.sql_key(expression, "this"), 6))
   condition + insert
 }
 
@@ -1724,7 +1724,7 @@ pub fn Generator::jsonextractquote_sql(
   self : Generator,
   expression : Expr,
 ) -> String raise SqlglotError {
-  let scalar = when(expression.has("scalar"), " ON SCALAR STRING")
+  let scalar = g_when(expression.has("scalar"), " ON SCALAR STRING")
   self.sql_key(expression, "option") + " QUOTES" + scalar
 }
 
@@ -1735,8 +1735,8 @@ pub fn Generator::jsonexists_sql(
 ) -> String raise SqlglotError {
   let this = self.sql_key(expression, "this")
   let path = self.sql_key(expression, "path")
-  let passing = pfx(" PASSING ", self.expressions(expression~, key="passing"))
-  let on_condition = pfx(" ", self.sql_key(expression, "on_condition"))
+  let passing = g_pfx(" PASSING ", self.expressions(expression~, key="passing"))
+  let on_condition = g_pfx(" ", self.sql_key(expression, "on_condition"))
   let path = path + passing + on_condition
   self.func("JSON_EXISTS", [this, path])
 }
@@ -1830,7 +1830,7 @@ pub fn Generator::overlay_sql(
   let this = self.sql_key(expression, "this")
   let expr = self.sql_key(expression, "expression")
   let from_sql = self.sql_key(expression, "from_")
-  let for_sql = pfx(" FOR ", self.sql_key(expression, "for_"))
+  let for_sql = g_pfx(" FOR ", self.sql_key(expression, "for_"))
   "OVERLAY(" + this + " PLACING " + expr + " FROM " + from_sql + for_sql + ")"
 }
 
@@ -1896,7 +1896,7 @@ pub fn Generator::overflowtruncatebehavior_sql(
   self : Generator,
   expression : Expr,
 ) -> String raise SqlglotError {
-  let filler = pfx(" ", self.sql_key(expression, "this"))
+  let filler = g_pfx(" ", self.sql_key(expression, "this"))
   let with_count = if expression.has("with_count") {
     "WITH COUNT"
   } else {
@@ -1969,7 +1969,7 @@ pub fn Generator::xmlkeyvalueoption_sql(
   expression : Expr,
 ) -> String raise SqlglotError {
   let this = self.sql_key(expression, "this")
-  let expr = around("(", self.sql_key(expression, "expression"), ")")
+  let expr = g_around("(", self.sql_key(expression, "expression"), ")")
   this + expr
 }
 
@@ -1979,7 +1979,7 @@ pub fn Generator::xmltable_sql(
   expression : Expr,
 ) -> String raise SqlglotError {
   let this = self.sql_key(expression, "this")
-  let namespaces = around(
+  let namespaces = g_around(
     "XMLNAMESPACES(",
     self.expressions(expression~, key="namespaces"),
     "), ",
@@ -2025,7 +2025,7 @@ pub fn Generator::parameterizedagg_sql(
   expression : Expr,
 ) -> String raise SqlglotError {
   let params = self.expressions(expression~, key="params", flat=true)
-  self.func(expression.name(), fargs(expression.expressions())) +
+  self.func(expression.name(), g_fargs(expression.expressions())) +
   "(" +
   params +
   ")"
@@ -2036,7 +2036,7 @@ pub fn Generator::anonymousaggfunc_sql(
   self : Generator,
   expression : Expr,
 ) -> String raise SqlglotError {
-  self.func(expression.name(), fargs(expression.expressions()))
+  self.func(expression.name(), g_fargs(expression.expressions()))
 }
 
 ///|
@@ -2062,7 +2062,7 @@ pub fn Generator::translatecharacters_sql(
 ) -> String raise SqlglotError {
   let this = self.sql_key(expression, "this")
   let expr = self.sql_key(expression, "expression")
-  let with_error = when(expression.has("with_error"), " WITH ERROR")
+  let with_error = g_when(expression.has("with_error"), " WITH ERROR")
   "TRANSLATE(" + this + " USING " + expr + with_error + ")"
 }
 
@@ -2072,7 +2072,7 @@ pub fn Generator::decodecase_sql(
   expression : Expr,
 ) -> String raise SqlglotError {
   if self.cfg.supports_decode_case {
-    return self.func("DECODE", fargs(expression.expressions()))
+    return self.func("DECODE", g_fargs(expression.expressions()))
   }
   let all = expression.expressions()
   let decode_expr = all[0]
@@ -2316,8 +2316,8 @@ pub fn Generator::weekstart_name(
     Some(t) => py_upper(t.name())
     None => ""
   }
-  let dow_from_week_start_day = week_start_day_to_dow.get(this)
-  let dow_from_week_offset = week_offset_to_dow(self.dialect.cfg.week_offset)
+  let dow_from_week_start_day = gen_week_start_day_to_dow.get(this)
+  let dow_from_week_offset = gen_week_offset_to_dow(self.dialect.cfg.week_offset)
   if dow_from_week_start_day != Some(dow_from_week_offset) {
     self.unsupported(
       "WEEK(\{this}) is not supported; falling back to the default week start day",
@@ -2359,7 +2359,7 @@ pub fn Generator::chr_sql(
 ) -> String raise SqlglotError {
   let this = self.expressions(expression~)
   let charset = self.sql_key(expression, "charset")
-  let using_ = pfx(" USING ", charset)
+  let using_ = g_pfx(" USING ", charset)
   self.func(name, [this + using_])
 }
 
@@ -2369,7 +2369,7 @@ pub fn Generator::block_sql(
   expression : Expr,
 ) -> String raise SqlglotError {
   let expressions = self.expressions(expression~, sep="; ", flat=true)
-  let begin = when(expression.has("begin"), "BEGIN ")
+  let begin = g_when(expression.has("begin"), "BEGIN ")
   if expressions != "" {
     begin + expressions
   } else {
@@ -2378,7 +2378,7 @@ pub fn Generator::block_sql(
 }
 
 ///|
-fn Generator::unsupported_stmt(
+pub fn Generator::unsupported_stmt(
   self : Generator,
   message : String,
 ) -> String raise SqlglotError {
@@ -2519,7 +2519,7 @@ pub fn Generator::macrooverload_sql(
 ) -> String raise SqlglotError {
   let params = self.no_identify(() => self.expressions(expression~, flat=true))
   let body = self.sql_key(expression, "this")
-  let prefix = when(expression.has("is_table"), "TABLE ")
+  let prefix = g_when(expression.has("is_table"), "TABLE ")
   "(" + params + ") AS " + prefix + body
 }
 

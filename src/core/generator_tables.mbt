@@ -77,7 +77,7 @@ pub let tsql_convert_format_mapping : Map[String, String] = Map::from_array([
 
 ///|
 /// `sqlglot.dialects.dialect.WEEK_START_DAY_TO_DOW`.
-pub let week_start_day_to_dow : Map[String, Int] = Map::from_array([
+pub let gen_week_start_day_to_dow : Map[String, Int] = Map::from_array([
   ("MONDAY", 1),
   ("TUESDAY", 2),
   ("WEDNESDAY", 3),
@@ -89,7 +89,7 @@ pub let week_start_day_to_dow : Map[String, Int] = Map::from_array([
 
 ///|
 /// `sqlglot.dialects.dialect.week_offset_to_dow`.
-pub fn week_offset_to_dow(offset : Int) -> Int {
+pub fn gen_week_offset_to_dow(offset : Int) -> Int {
   let m = offset % 7
   (if m < 0 { m + 7 } else { m }) + 1
 }

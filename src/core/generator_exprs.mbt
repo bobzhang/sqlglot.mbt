@@ -99,7 +99,7 @@ pub fn gen_apply_index_offset(
   }
   match et {
     Some(d) if dtype_integer_types.contains(d) => {
-      log_info("Applying array index offset (\{offset})")
+      g_log_info("Applying array index offset (\{offset})")
       expression = gen_simplify(
         exp_add(expression, literal_int(offset)),
         dialect,
@@ -111,7 +111,7 @@ pub fn gen_apply_index_offset(
 }
 
 ///|
-fn log_info(msg : String) -> Unit {
+fn g_log_info(msg : String) -> Unit {
   ignore(msg)
 }
 
@@ -124,10 +124,10 @@ pub fn Generator::bitstring_sql(
   expression : Expr,
 ) -> String raise SqlglotError {
   let this = self.sql_key(expression, "this")
-  if str_truthy(self.dialect.cfg.bit_start) {
-    return opt_str(self.dialect.cfg.bit_start) +
+  if g_str_truthy(self.dialect.cfg.bit_start) {
+    return g_opt_str(self.dialect.cfg.bit_start) +
       this +
-      opt_str(self.dialect.cfg.bit_end)
+      g_opt_str(self.dialect.cfg.bit_end)
   }
   int_str_from_base(this, 2)
 }
@@ -153,20 +153,20 @@ pub fn Generator::hexstring_sql(
 ) -> String raise SqlglotError {
   let this = self.sql_key(expression, "this")
   let is_integer_type = expression.has("is_integer")
-  let has_repr = str_truthy(binary_function_repr)
+  let has_repr = g_str_truthy(binary_function_repr)
   if (is_integer_type && !self.dialect.cfg.hex_string_is_integer_type) ||
-    (!str_truthy(self.dialect.cfg.hex_start) && !has_repr) {
+    (!g_str_truthy(self.dialect.cfg.hex_start) && !has_repr) {
     return int_str_from_base(this, 16)
   }
   if !is_integer_type {
     if has_repr {
-      return self.func(opt_str(binary_function_repr), [literal_string(this)])
+      return self.func(g_opt_str(binary_function_repr), [literal_string(this)])
     }
     if self.dialect.cfg.hex_string_is_integer_type {
       self.unsupported("Unsupported transpilation from BINARY/BLOB hex string")
     }
   }
-  opt_str(self.dialect.cfg.hex_start) + this + opt_str(self.dialect.cfg.hex_end)
+  g_opt_str(self.dialect.cfg.hex_start) + this + g_opt_str(self.dialect.cfg.hex_end)
 }
 
 ///|
@@ -175,8 +175,8 @@ pub fn Generator::bytestring_sql(
   expression : Expr,
 ) -> String raise SqlglotError {
   let this = self.sql_key(expression, "this")
-  if str_truthy(self.dialect.cfg.byte_start) {
-    let byte_end = opt_str(self.dialect.cfg.byte_end)
+  if g_str_truthy(self.dialect.cfg.byte_start) {
+    let byte_end = g_opt_str(self.dialect.cfg.byte_end)
     let escaped_byte_string = self.escape_str(
       this,
       escape_backslash=false,
@@ -185,7 +185,7 @@ pub fn Generator::bytestring_sql(
       is_byte_string=true,
     )
     let is_bytes = expression.has("is_bytes")
-    let delimited_byte_string = opt_str(self.dialect.cfg.byte_start) +
+    let delimited_byte_string = g_opt_str(self.dialect.cfg.byte_start) +
       escaped_byte_string +
       byte_end
     if is_bytes && !self.dialect.cfg.byte_string_is_bytes_type {
@@ -223,7 +223,7 @@ pub fn Generator::bytestring_sql(
 
 ///|
 /// `re.sub(rf"{prefix}(\d+)", repl, text)` with a literal prefix.
-fn sub_escaped_digits(
+fn g_sub_escaped_digits(
   text : String,
   prefix : String,
   repl : (String) -> String,
@@ -269,7 +269,7 @@ pub fn Generator::unicodestring_sql(
   let mut this = self.sql_key(expression, "this")
   let escape = expression.arg("escape")
   let unicode_start = self.dialect.cfg.unicode_start
-  let has_unicode_start = str_truthy(unicode_start)
+  let has_unicode_start = g_str_truthy(unicode_start)
   let (escape_substitute, left_quote, right_quote) : (
     (String) -> String,
     String,
@@ -277,8 +277,8 @@ pub fn Generator::unicodestring_sql(
   ) = if has_unicode_start {
     (
       fn(g) { "\\" + g },
-      opt_str(unicode_start),
-      opt_str(self.dialect.cfg.unicode_end),
+      g_opt_str(unicode_start),
+      g_opt_str(self.dialect.cfg.unicode_end),
     )
   } else {
     (
@@ -304,7 +304,7 @@ pub fn Generator::unicodestring_sql(
       Some(f) => f
       None => escape_substitute
     }
-    this = sub_escaped_digits(this, escape_prefix, repl)
+    this = g_sub_escaped_digits(this, escape_prefix, repl)
   }
   if has_unicode_start {
     this = self.replace_line_breaks(this)
@@ -426,7 +426,7 @@ pub fn Generator::identifier_sql(
     self.cfg.reserved_keywords.contains(lower) ||
     (
       !self.dialect.cfg.identifiers_can_start_with_digit &&
-      (match first_char(text) {
+      (match g_first_char(text) {
         Some(c) => is_digit_char(c)
         None => false
       })
@@ -477,7 +477,7 @@ pub fn Generator::sessionparameter_sql(
   expression : Expr,
 ) -> String raise SqlglotError {
   let this = self.sql_key(expression, "this")
-  let kind = pfx("", expression.text("kind"))
+  let kind = g_pfx("", expression.text("kind"))
   let kind = if kind != "" { kind + "." } else { kind }
   "@@" + kind + this
 }
@@ -828,7 +828,7 @@ pub fn Generator::alias_sql(
   self : Generator,
   expression : Expr,
 ) -> String raise SqlglotError {
-  let alias_ = pfx(" AS ", self.sql_key(expression, "alias"))
+  let alias_ = g_pfx(" AS ", self.sql_key(expression, "alias"))
   self.sql_key(expression, "this") + alias_
 }
 
@@ -1031,15 +1031,15 @@ pub fn Generator::cast_sql(
   expression : Expr,
   safe_prefix? : String,
 ) -> String raise SqlglotError {
-  let format_sql = pfx(" FORMAT ", self.sql_key(expression, "format"))
-  let to_sql = pfx(" ", self.sql_key(expression, "to"))
-  let action = pfx(" ", self.sql_key(expression, "action"))
-  let default = around(
+  let format_sql = g_pfx(" FORMAT ", self.sql_key(expression, "format"))
+  let to_sql = g_pfx(" ", self.sql_key(expression, "to"))
+  let action = g_pfx(" ", self.sql_key(expression, "action"))
+  let default = g_around(
     " DEFAULT ",
     self.sql_key(expression, "default"),
     " ON CONVERSION ERROR",
   )
-  opt_str(safe_prefix) +
+  g_opt_str(safe_prefix) +
   "CAST(" +
   self.sql_key(expression, "this") +
   " AS" +
@@ -1446,7 +1446,7 @@ pub fn Generator::in_sql(
   self : Generator,
   expression : Expr,
 ) -> String raise SqlglotError {
-  let is_global = when(expression.has("is_global"), " GLOBAL")
+  let is_global = g_when(expression.has("is_global"), " GLOBAL")
   let in_sql = match
     (expression.arg("query"), expression.arg("unnest"), expression.arg("field")) {
     (Some(query), _, _) => self.sql(Some(query))
@@ -1508,14 +1508,14 @@ pub fn Generator::interval_sql(
       None => unit
     }
   }
-  let unit = pfx(" ", unit)
+  let unit = g_pfx(" ", unit)
   if self.cfg.single_string_interval {
     let this = match expression.this() {
       Some(t) => t.name()
       None => ""
     }
     if this != "" {
-      interval_keyword = pfx("", interval_keyword)
+      interval_keyword = g_pfx("", interval_keyword)
       if interval_keyword != "" {
         interval_keyword = interval_keyword + " "
       }

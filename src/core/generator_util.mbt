@@ -1,7 +1,7 @@
 // Small Python-compatible helpers used by the generator.
 
 ///|
-fn first_char(s : String) -> Char? {
+fn g_first_char(s : String) -> Char? {
   for c in s {
     return Some(c)
   }
@@ -9,7 +9,7 @@ fn first_char(s : String) -> Char? {
 }
 
 ///|
-fn last_char(s : String) -> Char? {
+fn g_last_char(s : String) -> Char? {
   let mut last : Char? = None
   for c in s.rev_iter() {
     last = Some(c)
@@ -56,7 +56,7 @@ pub fn lstrip_chars(s : String, chars : String) -> String {
 
 ///|
 /// Python `str[n:]` on code points.
-fn str_from(s : String, n : Int) -> String {
+fn g_str_from(s : String, n : Int) -> String {
   substr(s, n, py_len(s))
 }
 
@@ -84,15 +84,15 @@ pub fn int_str_from_base(
   let mut body = t
   if body.has_prefix("-") {
     negative = true
-    body = str_from(body, 1)
+    body = g_str_from(body, 1)
   } else if body.has_prefix("+") {
-    body = str_from(body, 1)
+    body = g_str_from(body, 1)
   }
   let lower = py_lower(body)
   if (base == 16 && lower.has_prefix("0x")) ||
     (base == 2 && lower.has_prefix("0b")) ||
     (base == 8 && lower.has_prefix("0o")) {
-    body = str_from(body, 2)
+    body = g_str_from(body, 2)
   }
   if body == "" {
     raise ValueError(
@@ -172,7 +172,7 @@ pub fn py_str_value(v : Value?) -> String raise SqlglotError {
 
 ///|
 /// The dialect's class name, used in some messages (Python `self.dialect.__class__.__name__`).
-fn Generator::dialect_class_name(self : Generator) -> String {
+pub fn Generator::dialect_class_name(self : Generator) -> String {
   dialect_class_name(self.dialect)
 }
 
@@ -228,7 +228,7 @@ pub fn dialect_class_name(d : Dialect) -> String {
 
 ///|
 /// `f"{prefix}{s}" if s else ""`.
-fn pfx(prefix : String, s : String) -> String {
+fn g_pfx(prefix : String, s : String) -> String {
   if s != "" {
     prefix + s
   } else {
@@ -238,7 +238,7 @@ fn pfx(prefix : String, s : String) -> String {
 
 ///|
 /// `f"{prefix}{s}{suffix}" if s else ""`.
-fn around(prefix : String, s : String, suffix : String) -> String {
+fn g_around(prefix : String, s : String, suffix : String) -> String {
   if s != "" {
     prefix + s + suffix
   } else {
@@ -248,7 +248,7 @@ fn around(prefix : String, s : String, suffix : String) -> String {
 
 ///|
 /// `s if cond else ""`.
-fn when(cond : Bool, s : String) -> String {
+fn g_when(cond : Bool, s : String) -> String {
   if cond {
     s
   } else {
@@ -258,7 +258,7 @@ fn when(cond : Bool, s : String) -> String {
 
 ///|
 /// Python truthiness of an optional string (`None` and `""` are falsy).
-fn str_truthy(s : String?) -> Bool {
+fn g_str_truthy(s : String?) -> Bool {
   match s {
     Some(x) => x != ""
     None => false
@@ -266,7 +266,7 @@ fn str_truthy(s : String?) -> Bool {
 }
 
 ///|
-fn opt_str(s : String?) -> String {
+fn g_opt_str(s : String?) -> String {
   match s {
     Some(x) => x
     None => ""
@@ -275,18 +275,18 @@ fn opt_str(s : String?) -> String {
 
 ///|
 /// Converts strings to argument values (for `expressions(sqls=...)`).
-fn strs(xs : Array[String]) -> Array[Value] {
+fn g_strs(xs : Array[String]) -> Array[Value] {
   xs.map(x => Str(x))
 }
 
 ///|
 /// Converts expressions to argument values (for `expressions(sqls=...)`).
-fn nodes(xs : Array[Expr]) -> Array[Value] {
+fn g_nodes(xs : Array[Expr]) -> Array[Value] {
   xs.map(x => Node(x))
 }
 
 ///|
 /// Converts expressions to `func` arguments.
-fn fargs(xs : Array[Expr]) -> Array[&SqlArg] {
+fn g_fargs(xs : Array[Expr]) -> Array[&SqlArg] {
   xs.map(x => (x : &SqlArg))
 }

@@ -6,7 +6,7 @@ pub fn Generator::uncache_sql(
   expression : Expr,
 ) -> String raise SqlglotError {
   let table = self.sql_key(expression, "this")
-  let exists_sql = when(expression.has("exists"), " IF EXISTS")
+  let exists_sql = g_when(expression.has("exists"), " IF EXISTS")
   "UNCACHE TABLE" + exists_sql + " " + table
 }
 
@@ -15,7 +15,7 @@ pub fn Generator::cache_sql(
   self : Generator,
   expression : Expr,
 ) -> String raise SqlglotError {
-  let lazy_ = when(expression.has("lazy"), " LAZY")
+  let lazy_ = g_when(expression.has("lazy"), " LAZY")
   let table = self.sql_key(expression, "this")
   let options = expression.raw_list("options")
   let options = if options.length() >= 2 {
@@ -28,7 +28,7 @@ pub fn Generator::cache_sql(
     ""
   }
   let sql = self.sql_key(expression, "expression")
-  let sql = pfx(" AS" + self.sep(), sql)
+  let sql = g_pfx(" AS" + self.sep(), sql)
   let sql = "CACHE" + lazy_ + " TABLE " + table + options + sql
   self.prepend_ctes(expression, sql)
 }
@@ -38,7 +38,7 @@ pub fn Generator::characterset_sql(
   self : Generator,
   expression : Expr,
 ) -> String raise SqlglotError {
-  let default = when(expression.has("default"), "DEFAULT ")
+  let default = g_when(expression.has("default"), "DEFAULT ")
   default + "CHARACTER SET=" + self.sql_key(expression, "this")
 }
 
@@ -78,7 +78,7 @@ pub fn Generator::column_sql(
   self : Generator,
   expression : Expr,
 ) -> String raise SqlglotError {
-  let mut join_mark = when(expression.has("join_mark"), " (+)")
+  let mut join_mark = g_when(expression.has("join_mark"), " (+)")
   if join_mark != "" && !self.dialect.cfg.supports_column_join_marks {
     join_mark = ""
     self.unsupported(
@@ -101,7 +101,7 @@ pub fn Generator::columnposition_sql(
   self : Generator,
   expression : Expr,
 ) -> String raise SqlglotError {
-  let this = pfx(" ", self.sql_key(expression, "this"))
+  let this = g_pfx(" ", self.sql_key(expression, "this"))
   let position = self.sql_key(expression, "position")
   position + this
 }
@@ -133,10 +133,10 @@ pub fn Generator::columndef_sql(
     sep=" ",
     flat=true,
   )
-  let exists = when(expression.has("exists"), "IF NOT EXISTS ")
-  let mut kind = pfx(sep, kind)
-  let constraints = pfx(" ", constraints)
-  let position = pfx(" ", self.sql_key(expression, "position"))
+  let exists = g_when(expression.has("exists"), "IF NOT EXISTS ")
+  let mut kind = g_pfx(sep, kind)
+  let constraints = g_pfx(" ", constraints)
+  let position = g_pfx(" ", self.sql_key(expression, "position"))
   if expression.find([ComputedColumnConstraint]) is Some(_) &&
     !self.cfg.computed_column_with_type {
     kind = ""
@@ -204,7 +204,7 @@ pub fn Generator::generatedasidentitycolumnconstraint_sql(
   let mut this = ""
   match expression.get("this") {
     Some(v) => {
-      let on_null = when(expression.has("on_null"), " ON NULL")
+      let on_null = g_when(expression.has("on_null"), " ON NULL")
       this = if v.truthy() { " ALWAYS" } else { " BY DEFAULT" + on_null }
     }
     None => ()
@@ -252,7 +252,7 @@ pub fn Generator::generatedasrowcolumnconstraint_sql(
 ) -> String {
   ignore(self)
   let start = if expression.has("start") { "START" } else { "END" }
-  let hidden = when(expression.has("hidden"), " HIDDEN")
+  let hidden = g_when(expression.has("hidden"), " HIDDEN")
   "GENERATED ALWAYS AS ROW " + start + hidden
 }
 
@@ -287,7 +287,7 @@ pub fn Generator::primarykeycolumnconstraint_sql(
       return "PRIMARY KEY" + (if desc.truthy() { " DESC" } else { " ASC" })
     None => ()
   }
-  let options = pfx(
+  let options = g_pfx(
     " ",
     self.expressions(expression~, key="options", flat=true, sep=" "),
   )
@@ -299,14 +299,14 @@ pub fn Generator::uniquecolumnconstraint_sql(
   self : Generator,
   expression : Expr,
 ) -> String raise SqlglotError {
-  let this = pfx(" ", self.sql_key(expression, "this"))
+  let this = g_pfx(" ", self.sql_key(expression, "this"))
   let index_type = match expression.get("index_type") {
     Some(v) if v.truthy() => " USING " + py_str_value(Some(v))
     _ => ""
   }
-  let on_conflict = pfx(" ", self.sql_key(expression, "on_conflict"))
-  let nulls_sql = when(expression.has("nulls"), " NULLS NOT DISTINCT")
-  let options = pfx(
+  let on_conflict = g_pfx(" ", self.sql_key(expression, "on_conflict"))
+  let nulls_sql = g_when(expression.has("nulls"), " NULLS NOT DISTINCT")
+  let options = g_pfx(
     " ",
     self.expressions(expression~, key="options", flat=true, sep=" "),
   )
@@ -359,7 +359,7 @@ pub fn Generator::createable_sql_base(
 }
 
 ///|
-fn locs_get(locs : PropLocs, loc : PropertiesLocation) -> Array[Expr] {
+fn g_locs_get(locs : PropLocs, loc : PropertiesLocation) -> Array[Expr] {
   match locs.get(loc) {
     Some(l) => l
     None => []
@@ -394,8 +394,8 @@ pub fn Generator::create_sql(
   }
   let this = self.createable_sql(expression, properties_locs)
   let mut properties_sql = ""
-  let post_schema = locs_get(properties_locs, PostSchema)
-  let post_with = locs_get(properties_locs, PostWith)
+  let post_schema = g_locs_get(properties_locs, PostSchema)
+  let post_with = g_locs_get(properties_locs, PostWith)
   if !post_schema.is_empty() || !post_with.is_empty() {
     let props_ast = mk(Properties, [("expressions", post_schema + post_with)])
     props_ast.parent = Some(expression)
@@ -406,7 +406,7 @@ pub fn Generator::create_sql(
       properties_sql = " " + properties_sql
     }
   }
-  let begin = when(expression.has("begin"), " BEGIN")
+  let begin = g_when(expression.has("begin"), " BEGIN")
   let mut expression_sql = self.sql_key(expression, "expression")
   if expression_sql != "" {
     expression_sql = begin + self.sep() + expression_sql
@@ -421,19 +421,19 @@ pub fn Generator::create_sql(
     }
     if !is_macro && (self.cfg.create_function_return_as || !is_return) {
       let mut postalias_props_sql = ""
-      let post_alias = locs_get(properties_locs, PostAlias)
+      let post_alias = g_locs_get(properties_locs, PostAlias)
       if !post_alias.is_empty() {
         postalias_props_sql = self.properties(
           mk(Properties, [("expressions", post_alias)]),
           wrapped=false,
         )
       }
-      let postalias_props_sql = pfx(" ", postalias_props_sql)
+      let postalias_props_sql = g_pfx(" ", postalias_props_sql)
       expression_sql = " AS" + postalias_props_sql + expression_sql
     }
   }
   let mut postindex_props_sql = ""
-  let post_index = locs_get(properties_locs, PostIndex)
+  let post_index = g_locs_get(properties_locs, PostIndex)
   if !post_index.is_empty() {
     postindex_props_sql = self.properties(
       mk(Properties, [("expressions", post_index)]),
@@ -441,14 +441,14 @@ pub fn Generator::create_sql(
       prefix=" ",
     )
   }
-  let indexes = pfx(
+  let indexes = g_pfx(
     " ",
     self.expressions(expression~, key="indexes", indent=false, sep=" "),
   )
   let index_sql = indexes + postindex_props_sql
-  let replace = when(expression.has("replace"), " OR REPLACE")
-  let refresh = when(expression.has("refresh"), " OR REFRESH")
-  let unique = when(expression.has("unique"), " UNIQUE")
+  let replace = g_when(expression.has("replace"), " OR REPLACE")
+  let refresh = g_when(expression.has("refresh"), " OR REFRESH")
+  let unique = g_when(expression.has("unique"), " UNIQUE")
   let clustered_sql = match expression.get("clustered") {
     None => ""
     Some(v) =>
@@ -459,7 +459,7 @@ pub fn Generator::create_sql(
       }
   }
   let mut postcreate_props_sql = ""
-  let post_create = locs_get(properties_locs, PostCreate)
+  let post_create = g_locs_get(properties_locs, PostCreate)
   if !post_create.is_empty() {
     postcreate_props_sql = self.properties(
       mk(Properties, [("expressions", post_create)]),
@@ -474,7 +474,7 @@ pub fn Generator::create_sql(
     unique +
     postcreate_props_sql
   let mut postexpression_props_sql = ""
-  let post_expression = locs_get(properties_locs, PostExpression)
+  let post_expression = g_locs_get(properties_locs, PostExpression)
   if !post_expression.is_empty() {
     postexpression_props_sql = self.properties(
       mk(Properties, [("expressions", post_expression)]),
@@ -483,13 +483,13 @@ pub fn Generator::create_sql(
       wrapped=false,
     )
   }
-  let concurrently = when(expression.has("concurrently"), " CONCURRENTLY")
-  let exists_sql = when(expression.has("exists"), " IF NOT EXISTS")
-  let no_schema_binding = when(
+  let concurrently = g_when(expression.has("concurrently"), " CONCURRENTLY")
+  let exists_sql = g_when(expression.has("exists"), " IF NOT EXISTS")
+  let no_schema_binding = g_when(
     expression.has("no_schema_binding"),
     " WITH NO SCHEMA BINDING",
   )
-  let clone = pfx(" ", self.sql_key(expression, "clone"))
+  let clone = g_pfx(" ", self.sql_key(expression, "clone"))
   let properties_expression = if self.cfg.expression_precedes_properties_creatables.contains(
       kind,
     ) {
@@ -518,17 +518,17 @@ pub fn Generator::sequenceproperties_sql(
   self : Generator,
   expression : Expr,
 ) -> String raise SqlglotError {
-  let start = pfx("START WITH ", self.sql_key(expression, "start"))
-  let increment = pfx(" INCREMENT BY ", self.sql_key(expression, "increment"))
-  let minvalue = pfx(" MINVALUE ", self.sql_key(expression, "minvalue"))
-  let maxvalue = pfx(" MAXVALUE ", self.sql_key(expression, "maxvalue"))
-  let owned = pfx(" OWNED BY ", self.sql_key(expression, "owned"))
+  let start = g_pfx("START WITH ", self.sql_key(expression, "start"))
+  let increment = g_pfx(" INCREMENT BY ", self.sql_key(expression, "increment"))
+  let minvalue = g_pfx(" MINVALUE ", self.sql_key(expression, "minvalue"))
+  let maxvalue = g_pfx(" MAXVALUE ", self.sql_key(expression, "maxvalue"))
+  let owned = g_pfx(" OWNED BY ", self.sql_key(expression, "owned"))
   let cache_str = match expression.get("cache") {
     None => ""
     Some(Bool(true)) => " CACHE"
     Some(v) => " CACHE " + py_str_value(Some(v))
   }
-  let options = pfx(
+  let options = g_pfx(
     " ",
     self.expressions(expression~, key="options", flat=true, sep=" "),
   )
@@ -624,7 +624,7 @@ pub fn Generator::clone_sql(
   expression : Expr,
 ) -> String raise SqlglotError {
   let this = self.sql_key(expression, "this")
-  let shallow = when(expression.has("shallow"), "SHALLOW ")
+  let shallow = g_when(expression.has("shallow"), "SHALLOW ")
   let keyword = if expression.has("copy") && self.cfg.supports_table_copy {
     "COPY"
   } else {
@@ -642,9 +642,9 @@ pub fn Generator::describe_sql(
     Some(v) if v.truthy() => " " + py_str_value(Some(v))
     _ => ""
   }
-  let partition = pfx(" ", self.sql_key(expression, "partition"))
-  let format = pfx(" ", self.sql_key(expression, "format"))
-  let as_json = when(expression.has("as_json"), " AS JSON")
+  let partition = g_pfx(" ", self.sql_key(expression, "partition"))
+  let format = g_pfx(" ", self.sql_key(expression, "format"))
+  let as_json = g_when(expression.has("as_json"), " AS JSON")
   "DESCRIBE" +
   style +
   format +
@@ -660,27 +660,27 @@ pub fn Generator::drop_sql(
   expression : Expr,
 ) -> String raise SqlglotError {
   let tables = self.expressions(expression~, key="tables", flat=true)
-  let expressions = around(" (", self.expressions(expression~, flat=true), ")")
+  let expressions = g_around(" (", self.expressions(expression~, flat=true), ")")
   let mut kind = py_str_value(expression.get("kind"))
   match self.dialect.cfg.inverse_creatable_kind_mapping.get(kind) {
     Some(k) if k != "" => kind = k
     _ => ()
   }
-  let iceberg = when(
+  let iceberg = g_when(
     expression.has("iceberg") && self.cfg.supports_drop_alter_iceberg_property,
     " ICEBERG",
   )
   let exists_sql = if expression.has("exists") { " IF EXISTS " } else { " " }
-  let concurrently_sql = when(expression.has("concurrently"), " CONCURRENTLY")
-  let on_cluster = pfx(" ", self.sql_key(expression, "cluster"))
-  let temporary = when(expression.has("temporary"), " TEMPORARY")
-  let materialized = when(expression.has("materialized"), " MATERIALIZED")
-  let cascade = when(expression.has("cascade"), " CASCADE")
-  let restrict = when(expression.has("restrict"), " RESTRICT")
-  let constraints = when(expression.has("constraints"), " CONSTRAINTS")
-  let purge = when(expression.has("purge"), " PURGE")
-  let sync = when(expression.has("sync"), " SYNC")
-  let force = when(expression.has("force"), " FORCE")
+  let concurrently_sql = g_when(expression.has("concurrently"), " CONCURRENTLY")
+  let on_cluster = g_pfx(" ", self.sql_key(expression, "cluster"))
+  let temporary = g_when(expression.has("temporary"), " TEMPORARY")
+  let materialized = g_when(expression.has("materialized"), " MATERIALIZED")
+  let cascade = g_when(expression.has("cascade"), " CASCADE")
+  let restrict = g_when(expression.has("restrict"), " RESTRICT")
+  let constraints = g_when(expression.has("constraints"), " CONSTRAINTS")
+  let purge = g_when(expression.has("purge"), " PURGE")
+  let sync = g_when(expression.has("sync"), " SYNC")
+  let force = g_when(expression.has("force"), " FORCE")
   "DROP" +
   temporary +
   materialized +
@@ -705,32 +705,32 @@ pub fn Generator::indexparameters_sql(
   self : Generator,
   expression : Expr,
 ) -> String raise SqlglotError {
-  let using_ = pfx(" USING ", self.sql_key(expression, "using"))
-  let columns = around(
+  let using_ = g_pfx(" USING ", self.sql_key(expression, "using"))
+  let columns = g_around(
     "(",
     self.expressions(expression~, key="columns", flat=true),
     ")",
   )
-  let partition_by = pfx(
+  let partition_by = g_pfx(
     " PARTITION BY ",
     self.expressions(expression~, key="partition_by", flat=true),
   )
   let where_ = self.sql_key(expression, "where")
-  let include_ = around(
+  let include_ = g_around(
     " INCLUDE (",
     self.expressions(expression~, key="include", flat=true),
     ")",
   )
-  let with_storage = around(
+  let with_storage = g_around(
     " WITH (",
     self.expressions(expression~, key="with_storage", flat=true),
     ")",
   )
-  let tablespace = pfx(
+  let tablespace = g_pfx(
     " USING INDEX TABLESPACE ",
     self.sql_key(expression, "tablespace"),
   )
-  let on = pfx(" ON ", self.sql_key(expression, "on"))
+  let on = g_pfx(" ON ", self.sql_key(expression, "on"))
   using_ +
   columns +
   include_ +
@@ -746,12 +746,12 @@ pub fn Generator::index_sql(
   self : Generator,
   expression : Expr,
 ) -> String raise SqlglotError {
-  let unique = when(expression.has("unique"), "UNIQUE ")
-  let primary = when(expression.has("primary"), "PRIMARY ")
-  let amp = when(expression.has("amp"), "AMP ")
+  let unique = g_when(expression.has("unique"), "UNIQUE ")
+  let primary = g_when(expression.has("primary"), "PRIMARY ")
+  let amp = g_when(expression.has("amp"), "AMP ")
   let name = self.sql_key(expression, "this")
   let name = if name != "" { name + " " } else { "" }
-  let table = pfx(self.cfg.index_on + " ", self.sql_key(expression, "table"))
+  let table = g_pfx(self.cfg.index_on + " ", self.sql_key(expression, "table"))
   let index = if table == "" { "INDEX " } else { "" }
   let params = self.sql_key(expression, "params")
   unique + primary + amp + index + name + table + params
@@ -762,11 +762,11 @@ pub fn Generator::inputoutputformat_sql(
   self : Generator,
   expression : Expr,
 ) -> String raise SqlglotError {
-  let input_format = pfx(
+  let input_format = g_pfx(
     "INPUTFORMAT ",
     self.sql_key(expression, "input_format"),
   )
-  let output_format = pfx(
+  let output_format = g_pfx(
     "OUTPUTFORMAT ",
     self.sql_key(expression, "output_format"),
   )
@@ -787,7 +787,7 @@ pub fn Generator::partition_sql(
 }
 
 ///|
-fn Generator::property_location(
+pub fn Generator::property_location(
   self : Generator,
   p : Expr,
 ) -> PropertiesLocation raise SqlglotError {
@@ -993,7 +993,7 @@ pub fn Generator::likeproperty_sql(
     for e in expression.expressions() {
       opts.push(e.name() + " " + self.sql_key(e, "value"))
     }
-    let options = pfx(" ", opts.join(" "))
+    let options = g_pfx(" ", opts.join(" "))
     let mut like = "LIKE " + self.sql_key(expression, "this") + options
     if self.cfg.like_property_inside_schema &&
       !(match expression.parent {
@@ -1018,8 +1018,8 @@ pub fn Generator::fallbackproperty_sql(
   expression : Expr,
 ) -> String {
   ignore(self)
-  let no = when(expression.has("no"), "NO ")
-  let protection = when(expression.has("protection"), " PROTECTION")
+  let no = g_when(expression.has("no"), "NO ")
+  let protection = g_when(expression.has("protection"), " PROTECTION")
   no + "FALLBACK" + protection
 }
 
@@ -1029,14 +1029,14 @@ pub fn Generator::journalproperty_sql(
   expression : Expr,
 ) -> String raise SqlglotError {
   ignore(self)
-  let no = when(expression.has("no"), "NO ")
+  let no = g_when(expression.has("no"), "NO ")
   let local_ = match expression.get("local") {
     Some(v) if v.truthy() => py_str_value(Some(v)) + " "
     _ => ""
   }
-  let dual = when(expression.has("dual"), "DUAL ")
-  let before = when(expression.has("before"), "BEFORE ")
-  let after = when(expression.has("after"), "AFTER ")
+  let dual = g_when(expression.has("dual"), "DUAL ")
+  let before = g_when(expression.has("before"), "BEFORE ")
+  let after = g_when(expression.has("after"), "AFTER ")
   no + local_ + dual + before + after + "JOURNAL"
 }
 
@@ -1046,7 +1046,7 @@ pub fn Generator::freespaceproperty_sql(
   expression : Expr,
 ) -> String raise SqlglotError {
   let freespace = self.sql_key(expression, "this")
-  let percent = when(expression.has("percent"), " PERCENT")
+  let percent = g_when(expression.has("percent"), " PERCENT")
   "FREESPACE=" + freespace + percent
 }
 
@@ -1077,7 +1077,7 @@ pub fn Generator::mergeblockratioproperty_sql(
   if expression.has("default") {
     return "DEFAULT MERGEBLOCKRATIO"
   }
-  let percent = when(expression.has("percent"), " PERCENT")
+  let percent = g_when(expression.has("percent"), " PERCENT")
   "MERGEBLOCKRATIO=" + self.sql_key(expression, "this") + percent
 }
 
@@ -1086,7 +1086,7 @@ pub fn Generator::moduleproperty_sql(
   self : Generator,
   expression : Expr,
 ) -> String raise SqlglotError {
-  let expressions = around("(", self.expressions(expression~, flat=true), ")")
+  let expressions = g_around("(", self.expressions(expression~, flat=true), ")")
   "USING " + self.sql_key(expression, "this") + expressions
 }
 
@@ -1145,9 +1145,9 @@ pub fn Generator::isolatedloadingproperty_sql(
   self : Generator,
   expression : Expr,
 ) -> String raise SqlglotError {
-  let no = when(expression.has("no"), " NO")
-  let concurrent = when(expression.has("concurrent"), " CONCURRENT")
-  let target = pfx(" ", self.sql_key(expression, "target"))
+  let no = g_when(expression.has("no"), " NO")
+  let concurrent = g_when(expression.has("concurrent"), " CONCURRENT")
+  let target = g_pfx(" ", self.sql_key(expression, "target"))
   "WITH" + no + concurrent + " ISOLATED LOADING" + target
 }
 
@@ -1209,7 +1209,7 @@ pub fn Generator::lockingproperty_sql(
     _ => ""
   }
   let lock_type = py_str_value(expression.get("lock_type"))
-  let override_ = when(expression.has("override"), " OVERRIDE")
+  let override_ = g_when(expression.has("override"), " OVERRIDE")
   "LOCKING " + kind + this + for_or_in + " " + lock_type + override_
 }
 
@@ -1219,7 +1219,7 @@ pub fn Generator::withdataproperty_sql(
   expression : Expr,
 ) -> String {
   ignore(self)
-  let data_sql = "WITH " + when(expression.has("no"), "NO ") + "DATA"
+  let data_sql = "WITH " + g_when(expression.has("no"), "NO ") + "DATA"
   let statistics_sql = match expression.get("statistics") {
     Some(v) => " AND " + (if !v.truthy() { "NO " } else { "" }) + "STATISTICS"
     None => ""
@@ -1232,7 +1232,7 @@ pub fn Generator::withsystemversioningproperty_sql(
   self : Generator,
   expression : Expr,
 ) -> String raise SqlglotError {
-  let this = pfx("HISTORY_TABLE=", self.sql_key(expression, "this"))
+  let this = g_pfx("HISTORY_TABLE=", self.sql_key(expression, "this"))
   let data_consistency = self.sql_key(expression, "data_consistency")
   let data_consistency : String? = if data_consistency != "" {
     Some("DATA_CONSISTENCY_CHECK=" + data_consistency)
@@ -1275,8 +1275,8 @@ pub fn Generator::kill_sql(
   self : Generator,
   expression : Expr,
 ) -> String raise SqlglotError {
-  let kind = pfx(" ", self.sql_key(expression, "kind"))
-  let this = pfx(" ", self.sql_key(expression, "this"))
+  let kind = g_pfx(" ", self.sql_key(expression, "kind"))
+  let this = g_pfx(" ", self.sql_key(expression, "this"))
   "KILL" + kind + this
 }
 
@@ -1285,18 +1285,18 @@ pub fn Generator::rowformatdelimitedproperty_sql(
   self : Generator,
   expression : Expr,
 ) -> String raise SqlglotError {
-  let fields = pfx(" FIELDS TERMINATED BY ", self.sql_key(expression, "fields"))
-  let escaped = pfx(" ESCAPED BY ", self.sql_key(expression, "escaped"))
-  let items = pfx(
+  let fields = g_pfx(" FIELDS TERMINATED BY ", self.sql_key(expression, "fields"))
+  let escaped = g_pfx(" ESCAPED BY ", self.sql_key(expression, "escaped"))
+  let items = g_pfx(
     " COLLECTION ITEMS TERMINATED BY ",
     self.sql_key(expression, "collection_items"),
   )
-  let keys = pfx(
+  let keys = g_pfx(
     " MAP KEYS TERMINATED BY ",
     self.sql_key(expression, "map_keys"),
   )
-  let lines = pfx(" LINES TERMINATED BY ", self.sql_key(expression, "lines"))
-  let null = pfx(" NULL DEFINED AS ", self.sql_key(expression, "null"))
+  let lines = g_pfx(" LINES TERMINATED BY ", self.sql_key(expression, "lines"))
+  let null = g_pfx(" NULL DEFINED AS ", self.sql_key(expression, "null"))
   "ROW FORMAT DELIMITED" + fields + escaped + items + keys + lines + null
 }
 
@@ -1314,7 +1314,7 @@ pub fn Generator::indextablehint_sql(
   expression : Expr,
 ) -> String raise SqlglotError {
   let this = self.sql_key(expression, "this") + " INDEX"
-  let target = pfx(" FOR ", self.sql_key(expression, "target"))
+  let target = g_pfx(" FOR ", self.sql_key(expression, "target"))
   this + target + " (" + self.expressions(expression~, flat=true) + ")"
 }
 
@@ -1334,8 +1334,8 @@ pub fn Generator::directory_sql(
   self : Generator,
   expression : Expr,
 ) -> String raise SqlglotError {
-  let local_ = when(expression.has("local"), "LOCAL ")
-  let row_format = pfx(" ", self.sql_key(expression, "row_format"))
+  let local_ = g_when(expression.has("local"), "LOCAL ")
+  let row_format = g_pfx(" ", self.sql_key(expression, "row_format"))
   local_ + "DIRECTORY " + self.sql_key(expression, "this") + row_format
 }
 
@@ -1352,11 +1352,11 @@ pub fn Generator::foreignkey_sql(
   self : Generator,
   expression : Expr,
 ) -> String raise SqlglotError {
-  let expressions = around(" (", self.expressions(expression~, flat=true), ")")
-  let reference = pfx(" ", self.sql_key(expression, "reference"))
-  let delete = pfx(" ON DELETE ", self.sql_key(expression, "delete"))
-  let update = pfx(" ON UPDATE ", self.sql_key(expression, "update"))
-  let options = pfx(
+  let expressions = g_around(" (", self.expressions(expression~, flat=true), ")")
+  let reference = g_pfx(" ", self.sql_key(expression, "reference"))
+  let delete = g_pfx(" ON DELETE ", self.sql_key(expression, "delete"))
+  let update = g_pfx(" ON UPDATE ", self.sql_key(expression, "update"))
+  let options = g_pfx(
     " ",
     self.expressions(expression~, key="options", flat=true, sep=" "),
   )
@@ -1368,10 +1368,10 @@ pub fn Generator::primarykey_sql(
   self : Generator,
   expression : Expr,
 ) -> String raise SqlglotError {
-  let this = pfx(" ", self.sql_key(expression, "this"))
+  let this = g_pfx(" ", self.sql_key(expression, "this"))
   let expressions = self.expressions(expression~, flat=true)
   let include_ = self.sql_key(expression, "include")
-  let options = pfx(
+  let options = g_pfx(
     " ",
     self.expressions(expression~, key="options", flat=true, sep=" "),
   )
@@ -1403,8 +1403,8 @@ pub fn Generator::reference_sql(
   expression : Expr,
 ) -> String raise SqlglotError {
   let this = self.sql_key(expression, "this")
-  let expressions = around("(", self.expressions(expression~, flat=true), ")")
-  let options = pfx(
+  let expressions = g_around("(", self.expressions(expression~, flat=true), ")")
+  let options = g_pfx(
     " ",
     self.expressions(expression~, key="options", flat=true, sep=" "),
   )
@@ -1418,7 +1418,7 @@ pub fn Generator::comment_sql(
 ) -> String raise SqlglotError {
   let this = self.sql_key(expression, "this")
   let kind = py_str_value(expression.get("kind"))
-  let materialized = when(expression.has("materialized"), " MATERIALIZED")
+  let materialized = g_when(expression.has("materialized"), " MATERIALIZED")
   let exists_sql = if expression.has("exists") { " IF EXISTS " } else { " " }
   let expression_sql = self.sql_key(expression, "expression")
   "COMMENT" +
@@ -1439,10 +1439,10 @@ pub fn Generator::mergetreettlaction_sql(
   expression : Expr,
 ) -> String raise SqlglotError {
   let this = self.sql_key(expression, "this")
-  let delete = when(expression.has("delete"), " DELETE")
-  let recompress = pfx(" RECOMPRESS ", self.sql_key(expression, "recompress"))
-  let to_disk = pfx(" TO DISK ", self.sql_key(expression, "to_disk"))
-  let to_volume = pfx(" TO VOLUME ", self.sql_key(expression, "to_volume"))
+  let delete = g_when(expression.has("delete"), " DELETE")
+  let recompress = g_pfx(" RECOMPRESS ", self.sql_key(expression, "recompress"))
+  let to_disk = g_pfx(" TO DISK ", self.sql_key(expression, "to_disk"))
+  let to_volume = g_pfx(" TO VOLUME ", self.sql_key(expression, "to_volume"))
   this + delete + recompress + to_disk + to_volume
 }
 
@@ -1473,7 +1473,7 @@ pub fn Generator::transaction_sql(
   self : Generator,
   expression : Expr,
 ) -> String raise SqlglotError {
-  let modes = pfx(" ", self.expressions(expression~, key="modes"))
+  let modes = g_pfx(" ", self.expressions(expression~, key="modes"))
   "BEGIN" + modes
 }
 
@@ -1518,9 +1518,9 @@ pub fn Generator::altercolumn_sql(
   }
   let dtype = self.sql_key(expression, "dtype")
   if dtype != "" {
-    let collate = pfx(" COLLATE ", self.sql_key(expression, "collate"))
-    let using_ = pfx(" USING ", self.sql_key(expression, "using"))
-    let alter_set_type = pfx("", self.cfg.alter_set_type)
+    let collate = g_pfx(" COLLATE ", self.sql_key(expression, "collate"))
+    let using_ = g_pfx(" USING ", self.sql_key(expression, "using"))
+    let alter_set_type = g_pfx("", self.cfg.alter_set_type)
     let alter_set_type = if alter_set_type != "" {
       alter_set_type + " "
     } else {
@@ -1647,9 +1647,9 @@ pub fn Generator::altersortkey_sql(
   self : Generator,
   expression : Expr,
 ) -> String raise SqlglotError {
-  let compound = when(expression.has("compound"), " COMPOUND")
+  let compound = g_when(expression.has("compound"), " COMPOUND")
   let this = self.sql_key(expression, "this")
-  let expressions = around("(", self.expressions(expression~, flat=true), ")")
+  let expressions = g_around("(", self.expressions(expression~, flat=true), ")")
   "ALTER" +
   compound +
   " SORTKEY " +
@@ -1696,7 +1696,7 @@ pub fn Generator::alterrename_sql(
     }
   }
   let this = self.sql_key(expression, "this")
-  let to_kw = when(include_to, " TO")
+  let to_kw = g_when(include_to, " TO")
   "RENAME" + to_kw + " " + this
 }
 
@@ -1705,7 +1705,7 @@ pub fn Generator::renamecolumn_sql(
   self : Generator,
   expression : Expr,
 ) -> String raise SqlglotError {
-  let exists = when(expression.has("exists"), " IF EXISTS")
+  let exists = g_when(expression.has("exists"), " IF EXISTS")
   let old_column = self.sql_key(expression, "this")
   let new_column = self.sql_key(expression, "to")
   "RENAME COLUMN" + exists + " " + old_column + " TO " + new_column
@@ -1748,22 +1748,22 @@ pub fn Generator::alter_sql(
     }
     lstrip_chars(self.format_args(actions_list), "\n")
   }
-  let iceberg = when(
+  let iceberg = g_when(
     expression.has("iceberg") && self.cfg.supports_drop_alter_iceberg_property,
     "ICEBERG ",
   )
-  let exists = when(expression.has("exists"), " IF EXISTS")
-  let on_cluster = pfx(" ", self.sql_key(expression, "cluster"))
-  let only = when(expression.has("only"), " ONLY")
-  let options = pfx(", ", self.expressions(expression~, key="options"))
+  let exists = g_when(expression.has("exists"), " IF EXISTS")
+  let on_cluster = g_pfx(" ", self.sql_key(expression, "cluster"))
+  let only = g_when(expression.has("only"), " ONLY")
+  let options = g_pfx(", ", self.expressions(expression~, key="options"))
   let kind = self.sql_key(expression, "kind")
-  let not_valid = when(expression.has("not_valid"), " NOT VALID")
-  let check = when(expression.has("check"), " WITH CHECK")
-  let cascade = when(
+  let not_valid = g_when(expression.has("not_valid"), " NOT VALID")
+  let check = g_when(expression.has("check"), " WITH CHECK")
+  let cascade = g_when(
     expression.has("cascade") && self.dialect.cfg.alter_table_supports_cascade,
     " CASCADE",
   )
-  let this = pfx(" ", self.sql_key(expression, "this"))
+  let this = g_pfx(" ", self.sql_key(expression, "this"))
   "ALTER " +
   iceberg +
   kind +
@@ -1850,8 +1850,8 @@ pub fn Generator::addpartition_sql(
   self : Generator,
   expression : Expr,
 ) -> String raise SqlglotError {
-  let exists = when(expression.has("exists"), "IF NOT EXISTS ")
-  let location = pfx(" ", self.sql_key(expression, "location"))
+  let exists = g_when(expression.has("exists"), "IF NOT EXISTS ")
+  let location = g_pfx(" ", self.sql_key(expression, "location"))
   "ADD " + exists + self.sql(expression.this()) + location
 }
 
@@ -1933,7 +1933,7 @@ pub fn Generator::distributedbyproperty_sql(
   }
   let buckets = self.sql_key(expression, "buckets")
   let kind = self.sql_key(expression, "kind")
-  let buckets = pfx(" BUCKETS ", buckets)
+  let buckets = g_pfx(" BUCKETS ", buckets)
   let order = self.sql_key(expression, "order")
   "DISTRIBUTED BY " + kind + expressions + buckets + order
 }
@@ -1950,7 +1950,7 @@ pub fn Generator::clusteredbyproperty_sql(
   expression : Expr,
 ) -> String raise SqlglotError {
   let expressions = self.expressions(expression~, key="expressions", flat=true)
-  let sorted_by = around(
+  let sorted_by = g_around(
     " SORTED BY (",
     self.expressions(expression~, key="sorted_by", flat=true),
     ")",
@@ -2007,7 +2007,7 @@ pub fn Generator::checkcolumnconstraint_sql(
   self : Generator,
   expression : Expr,
 ) -> String raise SqlglotError {
-  let enforced = when(expression.has("enforced"), " ENFORCED")
+  let enforced = g_when(expression.has("enforced"), " ENFORCED")
   "CHECK (" + self.sql_key(expression, "this") + ")" + enforced
 }
 
@@ -2018,10 +2018,10 @@ pub fn Generator::indexcolumnconstraint_sql(
 ) -> String raise SqlglotError {
   let kind = self.sql_key(expression, "kind")
   let kind = if kind != "" { kind + " INDEX" } else { "INDEX" }
-  let this = pfx(" ", self.sql_key(expression, "this"))
-  let index_type = pfx(" USING ", self.sql_key(expression, "index_type"))
-  let expressions = around(" (", self.expressions(expression~, flat=true), ")")
-  let options = pfx(" ", self.expressions(expression~, key="options", sep=" "))
+  let this = g_pfx(" ", self.sql_key(expression, "this"))
+  let index_type = g_pfx(" USING ", self.sql_key(expression, "index_type"))
+  let expressions = g_around(" (", self.expressions(expression~, flat=true), ")")
+  let options = g_pfx(" ", self.expressions(expression~, key="options", sep=" "))
   kind + this + index_type + expressions + options
 }
 
@@ -2032,11 +2032,11 @@ pub fn Generator::truncatetable_sql(
 ) -> String raise SqlglotError {
   let target = if expression.has("is_database") { "DATABASE" } else { "TABLE" }
   let tables = " " + self.expressions(expression~)
-  let exists = when(expression.has("exists"), " IF EXISTS")
-  let on_cluster = pfx(" ", self.sql_key(expression, "cluster"))
-  let identity = around(" ", self.sql_key(expression, "identity"), " IDENTITY")
-  let option = pfx(" ", self.sql_key(expression, "option"))
-  let partition = pfx(" ", self.sql_key(expression, "partition"))
+  let exists = g_when(expression.has("exists"), " IF EXISTS")
+  let on_cluster = g_pfx(" ", self.sql_key(expression, "cluster"))
+  let identity = g_around(" ", self.sql_key(expression, "identity"), " IDENTITY")
+  let option = g_pfx(" ", self.sql_key(expression, "option"))
+  let partition = g_pfx(" ", self.sql_key(expression, "partition"))
   "TRUNCATE " +
   target +
   exists +
@@ -2080,7 +2080,7 @@ pub fn Generator::credentials_sql(
   let cred_expr = expression.get("credentials")
   let credentials = match cred_expr {
     Some(Node(c)) if c.kind.is_a(Literal) =>
-      pfx("CREDENTIALS ", self.sql_key(expression, "credentials"))
+      g_pfx("CREDENTIALS ", self.sql_key(expression, "credentials"))
     _ => {
       let credentials = self.expressions(
         expression~,
@@ -2095,17 +2095,17 @@ pub fn Generator::credentials_sql(
       }
     }
   }
-  let storage = pfx(
+  let storage = g_pfx(
     "STORAGE_INTEGRATION = ",
     self.sql_key(expression, "storage"),
   )
-  let encryption = around(
+  let encryption = g_around(
     " ENCRYPTION = (",
     self.expressions(expression~, key="encryption", flat=true, sep=" "),
     ")",
   )
-  let iam_role = pfx("IAM_ROLE ", self.sql_key(expression, "iam_role"))
-  let region = pfx(" REGION ", self.sql_key(expression, "region"))
+  let iam_role = g_pfx("IAM_ROLE ", self.sql_key(expression, "iam_role"))
+  let region = g_pfx(" REGION ", self.sql_key(expression, "region"))
   credentials + storage + encryption + iam_role + region
 }
 
@@ -2178,7 +2178,7 @@ pub fn Generator::maskingpolicycolumnconstraint_sql(
   expression : Expr,
 ) -> String raise SqlglotError {
   let this = self.sql_key(expression, "this")
-  let expressions = around(
+  let expressions = g_around(
     " USING (",
     self.expressions(expression~, flat=true),
     ")",
@@ -2192,8 +2192,8 @@ pub fn Generator::attach_sql(
   expression : Expr,
 ) -> String raise SqlglotError {
   let this = self.sql_key(expression, "this")
-  let exists_sql = when(expression.has("exists"), " IF NOT EXISTS")
-  let expressions = around(" (", self.expressions(expression~), ")")
+  let exists_sql = g_when(expression.has("exists"), " IF NOT EXISTS")
+  let expressions = g_around(" (", self.expressions(expression~), ")")
   "ATTACH" + exists_sql + " " + this + expressions
 }
 
@@ -2202,15 +2202,15 @@ pub fn Generator::detach_sql(
   self : Generator,
   expression : Expr,
 ) -> String raise SqlglotError {
-  let mut kind = pfx(" ", self.sql_key(expression, "kind"))
-  let exists = when(expression.has("exists"), " IF EXISTS")
+  let mut kind = g_pfx(" ", self.sql_key(expression, "kind"))
+  let exists = g_when(expression.has("exists"), " IF EXISTS")
   if exists != "" && kind == "" {
     kind = " DATABASE"
   }
-  let this = pfx(" ", self.sql_key(expression, "this"))
-  let cluster = pfx(" ", self.sql_key(expression, "cluster"))
-  let permanent = when(expression.has("permanent"), " PERMANENTLY")
-  let sync = when(expression.has("sync"), " SYNC")
+  let this = g_pfx(" ", self.sql_key(expression, "this"))
+  let cluster = g_pfx(" ", self.sql_key(expression, "cluster"))
+  let permanent = g_when(expression.has("permanent"), " PERMANENTLY")
+  let sync = g_when(expression.has("sync"), " SYNC")
   "DETACH" + kind + exists + this + cluster + permanent + sync
 }
 
@@ -2220,7 +2220,7 @@ pub fn Generator::attachoption_sql(
   expression : Expr,
 ) -> String raise SqlglotError {
   let this = self.sql_key(expression, "this")
-  let value = pfx(" ", self.sql_key(expression, "expression"))
+  let value = g_pfx(" ", self.sql_key(expression, "expression"))
   this + value
 }
 
@@ -2331,9 +2331,9 @@ pub fn Generator::analyzestatistics_sql(
   expression : Expr,
 ) -> String raise SqlglotError {
   let kind = self.sql_key(expression, "kind")
-  let option = pfx(" ", self.sql_key(expression, "option"))
-  let this = pfx(" ", self.sql_key(expression, "this"))
-  let columns = pfx(" ", self.expressions(expression~))
+  let option = g_pfx(" ", self.sql_key(expression, "option"))
+  let this = g_pfx(" ", self.sql_key(expression, "this"))
+  let columns = g_pfx(" ", self.expressions(expression~))
   kind + option + " STATISTICS" + this + columns
 }
 
@@ -2344,8 +2344,8 @@ pub fn Generator::analyzehistogram_sql(
 ) -> String raise SqlglotError {
   let this = self.sql_key(expression, "this")
   let columns = self.expressions(expression~)
-  let inner_expression = pfx(" ", self.sql_key(expression, "expression"))
-  let update_options = around(
+  let inner_expression = g_pfx(" ", self.sql_key(expression, "expression"))
+  let update_options = g_around(
     " ",
     self.sql_key(expression, "update_options"),
     " UPDATE",
@@ -2358,7 +2358,7 @@ pub fn Generator::analyzedelete_sql(
   self : Generator,
   expression : Expr,
 ) -> String raise SqlglotError {
-  let kind = pfx(" ", self.sql_key(expression, "kind"))
+  let kind = g_pfx(" ", self.sql_key(expression, "kind"))
   "DELETE" + kind + " STATISTICS"
 }
 
@@ -2376,7 +2376,7 @@ pub fn Generator::analyzevalidate_sql(
   expression : Expr,
 ) -> String raise SqlglotError {
   let kind = self.sql_key(expression, "kind")
-  let this = pfx(" ", self.sql_key(expression, "this"))
+  let this = g_pfx(" ", self.sql_key(expression, "this"))
   let inner_expression = self.sql_key(expression, "expression")
   "VALIDATE " + kind + this + inner_expression
 }
@@ -2386,13 +2386,13 @@ pub fn Generator::analyze_sql(
   self : Generator,
   expression : Expr,
 ) -> String raise SqlglotError {
-  let options = pfx(" ", self.expressions(expression~, key="options", sep=" "))
-  let kind = pfx(" ", self.sql_key(expression, "kind"))
-  let tables = pfx(" ", self.expressions(expression~, key="tables", flat=true))
-  let mode = pfx(" ", self.sql_key(expression, "mode"))
-  let properties = pfx(" ", self.sql_key(expression, "properties"))
-  let partition = pfx(" ", self.sql_key(expression, "partition"))
-  let inner_expression = pfx(" ", self.sql_key(expression, "expression"))
+  let options = g_pfx(" ", self.expressions(expression~, key="options", sep=" "))
+  let kind = g_pfx(" ", self.sql_key(expression, "kind"))
+  let tables = g_pfx(" ", self.expressions(expression~, key="tables", flat=true))
+  let mode = g_pfx(" ", self.sql_key(expression, "mode"))
+  let properties = g_pfx(" ", self.sql_key(expression, "properties"))
+  let partition = g_pfx(" ", self.sql_key(expression, "partition"))
+  let inner_expression = g_pfx(" ", self.sql_key(expression, "expression"))
   "ANALYZE" +
   options +
   kind +
@@ -2408,7 +2408,7 @@ pub fn Generator::declare_sql(
   self : Generator,
   expression : Expr,
 ) -> String raise SqlglotError {
-  let replace = when(expression.has("replace"), "OR REPLACE ")
+  let replace = g_when(expression.has("replace"), "OR REPLACE ")
   "DECLARE " + replace + self.expressions(expression~, flat=true)
 }
 
@@ -2418,7 +2418,7 @@ pub fn Generator::declareitem_sql(
   expression : Expr,
 ) -> String raise SqlglotError {
   let variables = self.expressions(expression~, key="this")
-  let default = pfx(
+  let default = g_pfx(
     " " + self.cfg.declare_default_assignment + " ",
     self.sql_key(expression, "default"),
   )
@@ -2427,7 +2427,7 @@ pub fn Generator::declareitem_sql(
     Some(k) if k.kind.is_a(Schema) => kind = "TABLE " + kind
     _ => ()
   }
-  let kind = pfx(" ", kind)
+  let kind = g_pfx(" ", kind)
   variables + kind + default
 }
 
@@ -2439,7 +2439,7 @@ pub fn Generator::recursivewithsearch_sql(
   let kind = self.sql_key(expression, "kind")
   let this = self.sql_key(expression, "this")
   let set = self.sql_key(expression, "expression")
-  let using_ = pfx(" USING ", self.sql_key(expression, "using"))
+  let using_ = g_pfx(" USING ", self.sql_key(expression, "using"))
   let kind_sql = if kind == "CYCLE" {
     kind
   } else {
@@ -2507,7 +2507,7 @@ pub fn Generator::refreshtriggerproperty_sql(
   let every = self.sql_key(expression, "every")
   let unit = self.sql_key(expression, "unit")
   let every = if every != "" { " EVERY " + every + " " + unit } else { "" }
-  let starts = pfx(" STARTS ", self.sql_key(expression, "starts"))
+  let starts = g_pfx(" STARTS ", self.sql_key(expression, "starts"))
   "REFRESH " + method_ + " ON " + kind + every + starts
 }
 
@@ -2545,7 +2545,7 @@ pub fn Generator::export_sql(
   expression : Expr,
 ) -> String raise SqlglotError {
   let this = self.sql_key(expression, "this")
-  let connection = around(
+  let connection = g_around(
     "WITH CONNECTION ",
     self.sql_key(expression, "connection"),
     " ",
@@ -2559,14 +2559,14 @@ pub fn Generator::use_sql(
   self : Generator,
   expression : Expr,
 ) -> String raise SqlglotError {
-  let kind = pfx(" ", self.sql_key(expression, "kind"))
+  let kind = g_pfx(" ", self.sql_key(expression, "kind"))
   let this = self.sql_key(expression, "this")
   let this = if this != "" {
     this
   } else {
     self.expressions(expression~, flat=true)
   }
-  let this = pfx(" ", this)
+  let this = g_pfx(" ", this)
   "USE" + kind + this
 }
 
@@ -2586,7 +2586,7 @@ pub fn Generator::loaddata_sql(
   expression : Expr,
 ) -> String raise SqlglotError {
   let is_overwrite = expression.has("overwrite")
-  let overwrite = when(is_overwrite, " OVERWRITE")
+  let overwrite = g_when(is_overwrite, " OVERWRITE")
   let mut this = self.sql_key(expression, "this")
   match expression.arg("files") {
     Some(files) => {
@@ -2603,15 +2603,15 @@ pub fn Generator::loaddata_sql(
     }
     None => ()
   }
-  let local_ = when(expression.has("local"), " LOCAL")
+  let local_ = g_when(expression.has("local"), " LOCAL")
   let inpath = " INPATH " + self.sql_key(expression, "inpath")
   let this = " INTO TABLE " + this
-  let partition = pfx(" ", self.sql_key(expression, "partition"))
-  let input_format = pfx(
+  let partition = g_pfx(" ", self.sql_key(expression, "partition"))
+  let input_format = g_pfx(
     " INPUTFORMAT ",
     self.sql_key(expression, "input_format"),
   )
-  let serde = pfx(" SERDE ", self.sql_key(expression, "serde"))
+  let serde = g_pfx(" SERDE ", self.sql_key(expression, "serde"))
   "LOAD DATA" +
   local_ +
   inpath +
@@ -2645,8 +2645,8 @@ pub fn Generator::grant_or_revoke_sql(
     key="privileges",
     flat=true,
   )
-  let kind = pfx(" ", self.sql_key(expression, "kind"))
-  let securable = pfx(" ", self.sql_key(expression, "securable"))
+  let kind = g_pfx(" ", self.sql_key(expression, "kind"))
+  let securable = g_pfx(" ", self.sql_key(expression, "securable"))
   let principals = self.expressions(expression~, key="principals", flat=true)
   let (grant_option_prefix, grant_option_suffix) = if !expression.has(
       "grant_option",
@@ -2655,7 +2655,7 @@ pub fn Generator::grant_or_revoke_sql(
   } else {
     (grant_option_prefix, grant_option_suffix)
   }
-  let cascade = pfx(" ", self.sql_key(expression, "cascade"))
+  let cascade = g_pfx(" ", self.sql_key(expression, "cascade"))
   keyword +
   " " +
   grant_option_prefix +
@@ -2703,7 +2703,7 @@ pub fn Generator::grantprivilege_sql(
   expression : Expr,
 ) -> String raise SqlglotError {
   let this = self.sql_key(expression, "this")
-  let columns = around("(", self.expressions(expression~, flat=true), ")")
+  let columns = g_around("(", self.expressions(expression~, flat=true), ")")
   this + columns
 }
 
