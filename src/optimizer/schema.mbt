@@ -677,6 +677,31 @@ pub fn MappingSchema::get_udf_type(
 }
 
 ///|
+/// Get the return type of a UDF given as a string, e.g. `"db.my_func(x)"`, or UNKNOWN if
+/// not found.
+pub fn MappingSchema::get_udf_type_str(
+  self : MappingSchema,
+  udf : String,
+  dialect? : @core.Dialect,
+  normalize? : Bool,
+) -> @core.Expr raise @core.SqlglotError {
+  let d = match dialect {
+    Some(d) => d
+    None => self.dialect
+  }
+  let parsed = @core.maybe_parse_str(udf, dialect=d)
+  let udf_expr = if parsed.kind == Anonymous {
+    parsed
+  } else {
+    match parsed.expression() {
+      Some(e) if parsed.kind == Dot && e.kind == Anonymous => e
+      _ => raise @core.SchemaError("Unable to parse UDF from: \{@core.py_repr_str(udf)}")
+    }
+  }
+  self.get_udf_type(udf_expr, dialect?, normalize?)
+}
+
+///|
 fn MappingSchema::normalize_mapping(
   self : MappingSchema,
   schema : Map[String, SchemaNode],
