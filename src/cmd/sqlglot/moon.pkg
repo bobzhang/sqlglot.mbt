@@ -1,0 +1,12 @@
+import {
+  "hongbozhang/sqlglot/cli",
+  "moonbitlang/core/buffer",
+  "moonbitlang/core/env",
+  "moonbitlang/core/encoding/utf8",
+}
+
+supported_targets = "native"
+
+options(
+  "is-main": true,
+)

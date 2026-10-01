@@ -493,7 +493,7 @@ fn to_s_node(node : Expr, level : Int) -> String {
     items.push((k, to_s_value(v, level + 1, repr_str)))
   }
   if !node.kind.is_data_type() {
-    match node.type_ {
+    match node.get_type() {
       Some(t) => items.push(("_type", to_s_node(t, level + 1)))
       None => ()
     }

@@ -732,15 +732,40 @@ fn copy_value(v : Value) -> Value {
 }
 
 ///|
-/// Returns a deep copy of the expression.
+/// Returns a deep copy of the expression. Like Python's `Expr.__deepcopy__`, the
+/// tree is copied iteratively so that very deep trees don't exhaust the stack.
 pub fn Expr::copy(self : Expr) -> Expr {
-  let args : Map[_, _] = Map([], capacity=self.args.length())
-  for k, v in self.args {
-    args[k] = copy_value(v)
+  let root = self.copy_shell()
+  let stack : Array[(Expr, Expr)] = [(self, root)]
+  while stack.pop() is Some((node, copy)) {
+    fn convert(v : Value) -> Value {
+      match v {
+        Node(child) => {
+          let c = child.copy_shell()
+          stack.push((child, c))
+          Node(c)
+        }
+        List(l) => List(l.map(convert))
+        other => other
+      }
+    }
+
+    for k, v in node.args {
+      copy.args[k] = convert(v)
+    }
+    for k, v in copy.args {
+      copy.set_parent(k, v, None)
+    }
   }
-  let e = {
+  root
+}
+
+///|
+/// A copy of `self` without its arguments (comments, type and meta are copied).
+fn Expr::copy_shell(self : Expr) -> Expr {
+  {
     kind: self.kind,
-    args,
+    args: Map([], capacity=self.args.length()),
     parent: None,
     arg_key: None,
     index: None,
@@ -764,10 +789,6 @@ pub fn Expr::copy(self : Expr) -> Expr {
     },
     uid: next_expr_uid(),
   }
-  for k, v in args {
-    e.set_parent(k, v, None)
-  }
-  e
 }
 
 ///|
