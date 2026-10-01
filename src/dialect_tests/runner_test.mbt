@@ -37,7 +37,7 @@ fn run_case(
 }
 
 ///|
-fn run_dialect_cases(module : String, cases : Array[String]) -> Unit {
+fn run_dialect_cases(module : String, cases : Array[String]) -> Unit raise {
   let total = cases.length() / 5
   let mut failures = 0
   let mut errors = 0
@@ -79,4 +79,10 @@ fn run_dialect_cases(module : String, cases : Array[String]) -> Unit {
   println(
     "DIALECT \{module}: total=\{total} passed=\{passed} mismatches=\{failures} errors=\{errors}",
   )
+  if cases.length() % 5 != 0 {
+    fail("malformed fixture for \{module}: \{cases.length()} strings")
+  }
+  if failures + errors > 0 {
+    fail("\{module}: \{failures} mismatches, \{errors} errors")
+  }
 }

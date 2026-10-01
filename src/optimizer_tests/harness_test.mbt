@@ -51,7 +51,7 @@ fn run_fixtures(
   output? : (@core.Expr, Case) -> String raise,
   max_report? : Int = 15,
   report_dialects? : Bool = false,
-) -> Unit {
+) -> Unit raise {
   let mut total = 0
   let mut passed = 0
   let mut mismatches = 0
@@ -118,4 +118,5 @@ fn run_fixtures(
   println(
     "OPTIMIZER \{name}: total=\{total} passed=\{passed} mismatches=\{mismatches} errors=\{errors} (base dialect: total=\{base_total} passed=\{base_passed})",
   )
+  assert_eq(passed, total)
 }

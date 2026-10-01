@@ -44,4 +44,5 @@ test "optimizer dialect stress" {
     }
   }
   println("OPTIMIZER dialect_stress: total=\{total} passed=\{passed}")
+  assert_eq(passed, total)
 }

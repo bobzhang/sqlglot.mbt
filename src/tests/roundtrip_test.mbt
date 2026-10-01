@@ -27,4 +27,5 @@ test "base dialect round trips match python" {
     }
   }
   println("ROUNDTRIP: total=\{total} mismatches=\{failures} errors=\{errors}")
+  assert_eq(failures + errors, 0)
 }

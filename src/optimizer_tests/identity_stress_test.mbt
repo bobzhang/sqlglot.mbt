@@ -43,4 +43,7 @@ test "optimizer identity stress" {
   for mode, tp in totals {
     println("IDENTITY \{mode}: total=\{tp.0} passed=\{tp.1}")
   }
+  for _, tp in totals {
+    assert_eq(tp.1, tp.0)
+  }
 }

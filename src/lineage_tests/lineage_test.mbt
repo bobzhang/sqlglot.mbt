@@ -148,4 +148,5 @@ test "lineage fixtures" {
   println(
     "LINEAGE: total=\{total} passed=\{passed} (base dialect: total=\{base_total} passed=\{base_passed})",
   )
+  assert_eq(passed, total)
 }

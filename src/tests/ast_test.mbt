@@ -38,4 +38,5 @@ test "parser matches python AST on identity fixtures" {
     }
   }
   println("AST: total=\{total} mismatches=\{failures} errors=\{errors}")
+  assert_eq(failures + errors, 0)
 }

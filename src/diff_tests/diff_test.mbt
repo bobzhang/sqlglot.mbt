@@ -63,6 +63,7 @@ test "diff fixtures" {
     }
   }
   println("DIFF: total=\{total} passed=\{passed}")
+  assert_eq(passed, total)
 }
 
 ///|

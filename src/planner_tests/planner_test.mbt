@@ -78,4 +78,5 @@ test "planner fixtures" {
     }
   }
   println("PLANNER: total=\{total} passed=\{passed}")
+  assert_eq(passed, total)
 }
