@@ -9,6 +9,7 @@ options(
   targets: {
     "parser_ddl.mbt": ["js"],
     "parser_dml.mbt": ["js"],
+    "parser_select.mbt": ["js"],
     "parser_stubs.mbt": ["not", "js"],
   },
 )
