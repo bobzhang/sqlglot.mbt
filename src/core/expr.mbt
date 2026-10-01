@@ -127,6 +127,9 @@ pub fn Expr::new(kind : Kind, args : Map[String, Value]) -> Expr {
     type_: None,
     meta: None,
   }
+  if kind == DateTrunc {
+    normalize_date_trunc_args(args)
+  }
   for k, v in args {
     e.set_parent(k, v, None)
   }
@@ -194,30 +197,34 @@ fn is_var_like_unit(unit : Expr) -> Bool {
 }
 
 ///|
+/// `DateTrunc.__init__`: normalizes the unit before parents are attached.
+fn normalize_date_trunc_args(args : Map[String, Value]) -> Unit {
+  let unabbreviate = match args.get("unabbreviate") {
+    Some(Bool(b)) => b
+    _ => true
+  }
+  args.remove("unabbreviate")
+  match args.get("unit") {
+    Some(Node(unit)) =>
+      if unit.kind.is_any([Column, Literal, Var]) &&
+        !(unit.kind.is_a(Column) && unit.column_parts().length() != 1) {
+        let mut unit_name = py_upper(unit.name())
+        if unabbreviate {
+          match unabbreviated_unit_name.get(unit_name) {
+            Some(n) => unit_name = n
+            None => ()
+          }
+        }
+        args["unit"] = Node(literal_string(unit_name))
+      }
+    _ => ()
+  }
+}
+
+///|
 /// Emulates the custom `__init__` of some expression classes.
 fn Expr::post_init(self : Expr) -> Unit {
-  if self.kind == DateTrunc {
-    let unabbreviate = match self.args.get("unabbreviate") {
-      Some(Bool(b)) => b
-      _ => true
-    }
-    self.args.remove("unabbreviate")
-    match self.arg("unit") {
-      Some(unit) =>
-        if unit.kind.is_any([Column, Literal, Var]) &&
-          !(unit.kind.is_a(Column) && unit.column_parts().length() != 1) {
-          let mut unit_name = py_upper(unit.name())
-          if unabbreviate {
-            match unabbreviated_unit_name.get(unit_name) {
-              Some(n) => unit_name = n
-              None => ()
-            }
-          }
-          self.set("unit", literal_string(unit_name))
-        }
-      None => ()
-    }
-  } else if self.kind.is_a(TimeUnit) {
+  if self.kind.is_a(TimeUnit) {
     match self.arg("unit") {
       Some(unit) =>
         if is_var_like_unit(unit) {
@@ -733,7 +740,7 @@ pub fn Expr::copy(self : Expr) -> Expr {
       Some(m) => {
         let m2 : Map[_, _] = Map([])
         for k, v in m {
-          m2[k] = v
+          m2[k] = copy_value(v)
         }
         Some(m2)
       }
@@ -898,14 +905,33 @@ pub fn Expr::set_at(
     Some(List(l)) => l
     _ => return
   }
-  if index < 0 || index >= expressions.length() {
+  let n = expressions.length()
+  // Python: seq_get(expressions, index) is None -> return
+  if index >= n || index < -n {
     return
   }
+  let i = if index < 0 { n + index } else { index }
+  // Python slice/insert position semantics for a (possibly negative) index
+  fn pos(len : Int) -> Int {
+    if index < 0 {
+      let p = len + index
+      if p < 0 {
+        0
+      } else {
+        p
+      }
+    } else if index > len {
+      len
+    } else {
+      index
+    }
+  }
+
   match value.into_value() {
     None => {
-      expressions.remove(index) |> ignore
-      for i in index..<expressions.length() {
-        match expressions[i] {
+      expressions.remove(i) |> ignore
+      for j in pos(expressions.length())..<expressions.length() {
+        match expressions[j] {
           Node(e) =>
             e.index = match e.index {
               Some(x) => Some(x - 1)
@@ -917,16 +943,17 @@ pub fn Expr::set_at(
       return
     }
     Some(List(vs)) => {
-      expressions.remove(index) |> ignore
+      expressions.remove(i) |> ignore
+      let at = pos(expressions.length())
       for j, v in vs {
-        expressions.insert(index + j, v)
+        expressions.insert(at + j, v)
       }
     }
     Some(v) =>
       if overwrite {
-        expressions[index] = v
+        expressions[i] = v
       } else {
-        expressions.insert(index, v)
+        expressions.insert(pos(n), v)
       }
   }
   self.set_parent(arg_key, List(expressions), Some(index))
@@ -1443,6 +1470,7 @@ fn significant(v : Value, raw : Bool) -> Bool {
   } else {
     match v {
       Bool(false) => false
+      List(l) => !l.is_empty()
       _ => true
     }
   }

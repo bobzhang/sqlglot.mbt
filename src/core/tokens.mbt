@@ -320,8 +320,9 @@ pub struct Tokenizer {
 }
 
 ///|
-/// The "empty string" character used where Python uses `""`.
-let nul : Char = '\u{0}'
+/// The "empty string" character used where Python uses `""` (a noncharacter that
+/// never appears in SQL text).
+let nul : Char = '\u{10FFFF}'
 
 ///|
 pub fn Tokenizer::new(
