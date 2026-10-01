@@ -906,17 +906,15 @@ pub fn[T : @core.IntoPy] table_name(
   dialect? : String,
   identify? : Bool = false,
 ) -> String raise @core.SqlglotError {
-  let expr = @core.maybe_parse(table, into=[Table], dialect=dialect_opt(dialect))
+  let d = dialect_opt(dialect)
+  let expr = @core.maybe_parse(table, into=[Table], dialect=d)
   let parts = []
   for part in expr.parts() {
     parts.push(
       if identify || !@core.is_safe_identifier(part.name()) {
-        generate(
+        @core.Generator::new(d, identify="always", comments=false).generate(
           part,
-          dialect=dialect.unwrap_or(""),
-          identify=true,
           copy=false,
-          comments=false,
         )
       } else {
         part.name()

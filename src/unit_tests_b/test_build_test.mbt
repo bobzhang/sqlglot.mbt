@@ -320,7 +320,7 @@ test "TestBuild.test_build" {
       () =>
         @sqlglot.select(["x"])
         .from_("tbl")
-        .join_(@sqlglot.parse_one("left join x", into=[Join]), on=["a=b"]),
+        .join_(@sqlglot.maybe_parse("left join x", into=[Join]), on=["a=b"]),
       "SELECT x FROM tbl LEFT JOIN x ON a = b",
       "",
     ),
@@ -370,22 +370,22 @@ test "TestBuild.test_build" {
       "",
     ),
     (
-      () => @sqlglot.parse_one("JOIN x", into=[Join]).on(["y = 1", "z = 1"]),
+      () => @sqlglot.maybe_parse("JOIN x", into=[Join]).on(["y = 1", "z = 1"]),
       "JOIN x ON y = 1 AND z = 1",
       "",
     ),
     (
-      () => @sqlglot.parse_one("JOIN x", into=[Join]).on(["y = 1"]),
+      () => @sqlglot.maybe_parse("JOIN x", into=[Join]).on(["y = 1"]),
       "JOIN x ON y = 1",
       "",
     ),
     (
-      () => @sqlglot.parse_one("JOIN x", into=[Join]).using_(["bar", "bob"]),
+      () => @sqlglot.maybe_parse("JOIN x", into=[Join]).using_(["bar", "bob"]),
       "JOIN x USING (bar, bob)",
       "",
     ),
     (
-      () => @sqlglot.parse_one("JOIN x", into=[Join]).using_(["bar"]),
+      () => @sqlglot.maybe_parse("JOIN x", into=[Join]).using_(["bar"]),
       "JOIN x USING (bar)",
       "",
     ),

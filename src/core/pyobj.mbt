@@ -405,3 +405,10 @@ fn to_s_node(node : Expr, level : Int) -> String {
   let body = items.map(kv => "\{kv.0}=\{kv.1}").join(delim)
   "\{node.kind.name()}(\{indent}\{body})"
 }
+
+///|
+/// A `DType` converts to its `DataType` expression (Python accepts a `DType` wherever a
+/// `DATA_TYPE` is expected).
+pub impl IntoPy for DType with into_py(self) {
+  PyExpr(mk1(DataType, self))
+}

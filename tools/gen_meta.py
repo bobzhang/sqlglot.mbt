@@ -165,12 +165,14 @@ def gen_kinds():
         lines.append(f"let kind_owner_{prop} : FixedArray[Int] = [")
         vals = []
         for c in classes:
+            # Python attribute lookup: the first class in the MRO defining `prop`. The base
+            # implementations (on `Expr` / `Expression`) map to -1, but traits listed after
+            # `Expression` in the bases (e.g. `class Subquery(Expression, DerivedTable, Query)`)
+            # still take part in the lookup.
             owner = -1
             for a in c.__mro__:
-                if a in (exp.Expr, exp.Expression):
-                    break
                 if prop in a.__dict__:
-                    owner = idx.get(a, -1)
+                    owner = -1 if a in (exp.Expr, exp.Expression) else idx.get(a, -1)
                     break
             vals.append(owner)
         for i in range(0, len(vals), 16):

@@ -169,7 +169,7 @@ pub fn mk2(kind : Kind, this : &IntoValue, expression : &IntoValue) -> Expr {
 }
 
 ///|
-let unabbreviated_unit_name : Map[String, String] = {
+pub let unabbreviated_unit_name : Map[String, String] = {
   "D": "DAY",
   "H": "HOUR",
   "M": "MINUTE",
