@@ -988,6 +988,13 @@ pub fn Expr::set_kwargs(
 }
 
 ///|
+/// Sets the parent pointer without attaching the node to `parent`'s args
+/// (Python `node.parent = parent`).
+pub fn Expr::set_parent_ref(self : Expr, parent : Expr?) -> Unit {
+  self.parent = parent
+}
+
+///|
 /// Depth of this node in the tree.
 pub fn Expr::depth(self : Expr) -> Int {
   match self.parent {

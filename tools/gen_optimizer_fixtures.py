@@ -18,6 +18,11 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SG = os.path.join(ROOT, ".repos", "sqlglot")
 sys.path.insert(0, SG)
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+try:
+    import dateutil.relativedelta  # noqa: F401
+except ImportError:
+    # Fall back to a minimal relativedelta so that date simplifications are exercised
+    sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "pyshim"))
 warnings.filterwarnings("ignore")
 
 import logging  # noqa: E402
@@ -260,6 +265,8 @@ def gen_rule(name, file, func, pretty, kwargs):
         if dialect:
             func_kwargs["dialect"] = dialect
         actual = run_case(func, sql, dialect, pretty, **func_kwargs)
+        if os.environ.get("CHECK") and actual != _expected:
+            print(f"  [{name}] python output differs from fixture: {title!r}: {actual!r} != {_expected!r}")
         meta_out = {k: meta[k] for k in META_KEYS if k in meta}
         records.append((title, dialect or "", json.dumps(meta_out), sql, actual))
     write_fixtures(name, records)

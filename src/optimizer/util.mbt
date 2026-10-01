@@ -105,3 +105,22 @@ fn type_is(t : @core.Expr?, dtypes : Array[@core.DType]) -> Bool {
     None => false
   }
 }
+
+///|
+/// Python string ordering (lexicographic by code point); MoonBit's `compare` on
+/// strings orders by length first.
+fn py_str_cmp(a : String, b : String) -> Int {
+  let ai = a.iter()
+  let bi = b.iter()
+  for ;; {
+    match (ai.next(), bi.next()) {
+      (None, None) => return 0
+      (None, Some(_)) => return -1
+      (Some(_), None) => return 1
+      (Some(x), Some(y)) =>
+        if x != y {
+          return if x < y { -1 } else { 1 }
+        }
+    }
+  }
+}
