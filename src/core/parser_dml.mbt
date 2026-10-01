@@ -499,7 +499,7 @@ pub fn Parser::parse_delete(self : Parser) -> Expr? raise SqlglotError {
   }
   let returning = self.parse_returning()
   let this = self.andv(self.match_(FROM), () => self.parse_table(joins=true))
-  let using = self.andl(self.match_(USING), () => self.parse_csv(() => self.parse_table(
+  let using_ = self.andl(self.match_(USING), () => self.parse_csv(() => self.parse_table(
     joins=true,
   )))
   let cluster = self.andv(self.match_(ON), () => self.parse_on_property())
@@ -513,7 +513,7 @@ pub fn Parser::parse_delete(self : Parser) -> Expr? raise SqlglotError {
         ("hint", hint),
         ("tables", tables),
         ("this", this),
-        ("using", using),
+        ("using", using_),
         ("cluster", cluster),
         ("where", where_),
         ("returning", returning),

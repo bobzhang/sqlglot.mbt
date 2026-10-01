@@ -19,6 +19,8 @@ options(
     "parser_atoms.mbt": ["js"],
     "parser_stmts.mbt": ["js"],
     "parser_misc.mbt": ["js"],
+    "parser_tables.mbt": ["js"],
+    "parser_api.mbt": ["js"],
     "parser_stubs.mbt": ["not", "js"],
   },
 )

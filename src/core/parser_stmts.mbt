@@ -302,14 +302,14 @@ pub fn Parser::parse_alter_table_alter_base(self : Parser) -> Expr? raise Sqlglo
   self.match_text("TYPE") |> ignore
   let dtype = self.parse_types()
   let collate = self.andv(self.match_(COLLATE), () => self.parse_term())
-  let using = self.andv(self.match_(USING), () => self.parse_disjunction())
+  let using_ = self.andv(self.match_(USING), () => self.parse_disjunction())
   Some(
     self.expression(
       mk(AlterColumn, [
         ("this", column),
         ("dtype", dtype),
         ("collate", collate),
-        ("using", using),
+        ("using", using_),
         ("exists", exists),
       ]),
     ),
@@ -554,16 +554,16 @@ pub fn Parser::parse_analyze(self : Parser) -> Expr? raise SqlglotError {
   if self.match_(TABLE) {
     tables = self.parse_csv(() => self.parse_table_parts())
   } else if self.match_(INDEX) {
-    tables = self.parse_table_parts().to_array()
+    tables = self.parse_table_parts()|> opt_list
   } else if self.match_text("TABLES") {
     if self.match_any([FROM, IN]) {
       kind = Some("\{kind.unwrap_or("None")} \{self.prev_upper()}")
-      tables = self.parse_table(schema=true, is_db_reference=true).to_array()
+      tables = self.parse_table(schema=true, is_db_reference=true)|> opt_list
     }
   } else if self.match_text("DATABASE") {
-    tables = self.parse_table(schema=true, is_db_reference=true).to_array()
+    tables = self.parse_table(schema=true, is_db_reference=true)|> opt_list
   } else if self.match_text("CLUSTER") {
-    tables = self.parse_table().to_array()
+    tables = self.parse_table()|> opt_list
   } else if self.match_text_keys(self.fns.analyze_expression_parsers) {
     kind = None
     inner_expression = self.fns.analyze_expression_parsers[self.prev_upper()](self)
@@ -768,7 +768,7 @@ pub fn Parser::parse_merge(self : Parser) -> Expr? raise SqlglotError {
     _ => ()
   }
   self.match_(USING) |> ignore
-  let using = self.parse_table()
+  let using_ = self.parse_table()
   let on = self.andv(self.match_(ON), () => self.parse_disjunction())
   let using_cond = self.andl(self.match_(USING), () => self.parse_using_identifiers())
   let whens = self.parse_when_matched()
@@ -777,7 +777,7 @@ pub fn Parser::parse_merge(self : Parser) -> Expr? raise SqlglotError {
     self.expression(
       mk(Merge, [
         ("this", target),
-        ("using", using),
+        ("using", using_),
         ("on", on),
         ("using_cond", using_cond),
         ("whens", whens),

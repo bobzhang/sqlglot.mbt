@@ -197,14 +197,14 @@ pub fn Parser::parse_recursive_with_search(self : Parser) -> Expr? raise Sqlglot
   self.match_text_seq(["FIRST", "BY"]) |> ignore
   let this = self.parse_id_var()
   let expression = self.andv(self.match_text("SET"), () => self.parse_id_var())
-  let using = self.andv(self.match_text("USING"), () => self.parse_id_var())
+  let using_ = self.andv(self.match_text("USING"), () => self.parse_id_var())
   Some(
     self.expression(
       mk(RecursiveWithSearch, [
         ("kind", kind),
         ("this", this),
         ("expression", expression),
-        ("using", using),
+        ("using", using_),
       ]),
     ),
   )

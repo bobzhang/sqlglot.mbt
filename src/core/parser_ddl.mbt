@@ -1798,7 +1798,7 @@ pub fn Parser::parse_returns_base(self : Parser) -> Expr? raise SqlglotError {
         self.raise_error("Expecting >")
       }
     } else {
-      value = self.parse_schema(this=var_("TABLE"))
+      value = self.parse_schema(this=Some(var_("TABLE")))
     }
   } else if self.match_text_seq(["NULL", "ON", "NULL", "INPUT"]) {
     null = Some(true)

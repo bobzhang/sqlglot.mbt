@@ -7,6 +7,9 @@ pub struct Dialect {
   name : String
   cfg : DialectConfig
   tokenizer : TokenizerSettings
+  /// `JSONPathTokenizer` settings and its `VAR_TOKENS`.
+  jsonpath_tokenizer : TokenizerSettings
+  mut jsonpath_var_tokens : Array[TokenType]
   parser_cfg : ParserConfig
   parser_fns : ParserFns
   gen_cfg : GeneratorConfig
@@ -58,6 +61,7 @@ fn trie_of_keys(m : Map[String, String]) -> Trie {
 /// Recomputes derived tables after the configuration has been modified.
 pub fn Dialect::finalize(self : Dialect) -> Dialect {
   self.tokenizer.finalize() |> ignore
+  self.jsonpath_tokenizer.finalize() |> ignore
   self.parser_fns.finalize()
   self.time_trie = trie_of_keys(self.cfg.time_mapping)
   self.format_trie = if self.cfg.format_mapping.is_empty() {
@@ -78,6 +82,8 @@ pub fn Dialect::base() -> Dialect {
     name: "",
     cfg: base_dialect_config(),
     tokenizer: base_tokenizer_settings_raw(),
+    jsonpath_tokenizer: base_jsonpath_tokenizer_settings_raw(),
+    jsonpath_var_tokens: [VAR],
     parser_cfg: base_parser_config(),
     parser_fns: base_parser_fns(),
     gen_cfg: base_generator_config(),
@@ -106,6 +112,8 @@ pub fn Dialect::subclass(
     name,
     cfg: parent.cfg.copy(),
     tokenizer: parent.tokenizer.copy(),
+    jsonpath_tokenizer: parent.jsonpath_tokenizer.copy(),
+    jsonpath_var_tokens: parent.jsonpath_var_tokens.copy(),
     parser_cfg: parent.parser_cfg.copy(),
     parser_fns: parent.parser_fns.copy(),
     gen_cfg: parent.gen_cfg.copy(),

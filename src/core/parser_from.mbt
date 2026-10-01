@@ -414,7 +414,7 @@ pub fn Parser::parse_index_params(self : Parser) -> Expr? raise SqlglotError {
 
 ///|
 pub fn Parser::parse_index_params_base(self : Parser) -> Expr? raise SqlglotError {
-  let using = if self.match_(USING) {
+  let using_ = if self.match_(USING) {
     self.parse_var(any_token=true)
   } else {
     None
@@ -441,7 +441,7 @@ pub fn Parser::parse_index_params_base(self : Parser) -> Expr? raise SqlglotErro
   Some(
     self.expression(
       mk(IndexParameters, [
-        ("using", using),
+        ("using", using_),
         ("columns", columns),
         ("include", include),
         ("partition_by", partition_by),
@@ -1077,7 +1077,7 @@ pub fn Parser::parse_unnest_base(
         alias.set("this", null_arg)
       }
       let columns = alias.list("columns")
-      if offset == Some(Bool(true)) && expressions.length() < columns.length() {
+      if (offset is Some(Bool(true))) && expressions.length() < columns.length() {
         let last = columns[columns.length() - 1]
         let raw = alias.raw_list("columns")
         raw.pop() |> ignore
@@ -1279,7 +1279,7 @@ pub fn Parser::parse_simplified_pivot(
   let this = self.parse_table()
   let expressions = self.andl(self.match_(ON), () => self.parse_csv(parse_on))
   let into = self.parse_unpivot_columns()
-  let using = self.andl(self.match_(USING), () => self.parse_csv(() => self.parse_alias(
+  let using_ = self.andl(self.match_(USING), () => self.parse_csv(() => self.parse_alias(
     self.parse_column(),
   )))
   let group = self.parse_group()
@@ -1288,7 +1288,7 @@ pub fn Parser::parse_simplified_pivot(
       mk(Pivot, [
         ("this", this),
         ("expressions", expressions),
-        ("using", using),
+        ("using", using_),
         ("group", group),
         ("unpivot", is_unpivot),
         ("into", into),

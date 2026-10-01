@@ -390,7 +390,7 @@ pub fn Parser::parse(
   raw_tokens : Array[Token],
   sql : String,
 ) -> Array[Expr?] raise SqlglotError {
-  self.parse_with(p => p.parse_statement(), raw_tokens, sql)
+  self.parse_tokens_with(p => p.parse_statement(), raw_tokens, sql)
 }
 
 ///|
@@ -409,7 +409,7 @@ pub fn Parser::parse_into(
       None =>
         raise ValueError("No parser registered for \{expression_type.name()}")
     }
-    try self.parse_with(parser, raw_tokens, sql) catch {
+    try self.parse_tokens_with(parser, raw_tokens, sql) catch {
       ParseError(msg, infos) => {
         last_message = msg
         for i, info in infos {
@@ -518,7 +518,7 @@ fn Parser::parse_batch_statements(
 }
 
 ///|
-fn Parser::parse_with(
+fn Parser::parse_tokens_with(
   self : Parser,
   parse_method : (Parser) -> Expr? raise SqlglotError,
   raw_tokens : Array[Token],
