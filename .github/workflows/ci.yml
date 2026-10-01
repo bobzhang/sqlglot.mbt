@@ -1,0 +1,74 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: check (warnings, API summaries)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install MoonBit
+        run: |
+          curl -fsSL https://cli.moonbitlang.com/install/unix.sh | bash
+          echo "$HOME/.moon/bin" >> "$GITHUB_PATH"
+
+      - name: moon version
+        run: moon version --all
+
+      - name: moon check (no warnings allowed)
+        run: moon check --target all --deny-warn
+
+      - name: Public API summaries are up to date
+        run: |
+          moon info
+          git diff --exit-code -- '*.mbti'
+
+  test:
+    name: test (${{ matrix.os }}, ${{ matrix.target }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: wasm-gc
+          - os: ubuntu-latest
+            target: js
+          - os: ubuntu-latest
+            target: native
+          - os: macos-latest
+            target: native
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install MoonBit
+        run: |
+          curl -fsSL https://cli.moonbitlang.com/install/unix.sh | bash
+          echo "$HOME/.moon/bin" >> "$GITHUB_PATH"
+
+      - name: moon version
+        run: moon version --all
+
+      # Runs every conformance suite (base parser/generator, 34 dialects, optimizer,
+      # lineage, diff, planner, executor) and the ported unit tests. Each runner fails
+      # on any mismatch with the recorded Python sqlglot results.
+      - name: moon test
+        run: moon test --target ${{ matrix.target }}
+
+      - name: Build the CLI
+        if: matrix.target == 'native'
+        run: |
+          moon build --target native --release src/cmd/sqlglot
+          echo "SELECT EPOCH_MS(1618088028295)" | moon run --target native --release src/cmd/sqlglot -- - --read duckdb --write hive

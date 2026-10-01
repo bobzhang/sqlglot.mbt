@@ -1,5 +1,7 @@
 # sqlglot.mbt
 
+[![CI](https://github.com/bobzhang/sqlglot.mbt/actions/workflows/ci.yml/badge.svg)](https://github.com/bobzhang/sqlglot.mbt/actions/workflows/ci.yml)
+
 A MoonBit port of [sqlglot](https://github.com/tobymao/sqlglot), the SQL parser,
 transpiler and optimizer. The port aims to match the Python library's behaviour exactly.
 Its test suites are generated from the Python implementation and test-suite.
