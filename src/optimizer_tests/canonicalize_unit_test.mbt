@@ -203,7 +203,7 @@ test "canonicalize_internal_names: self-joined ctes" {
     ),
   )
   let scope = @optimizer.build_scope(canon_triple).unwrap()
-  let outer_table_aliases = scope.tables().map(t => t.alias())
+  let outer_table_aliases = scope.tables().map(t => t.alias_())
   assert_eq(sorted_set(outer_table_aliases).length(), 3)
   assert_eq(scope.selected_sources().length(), 3)
 }

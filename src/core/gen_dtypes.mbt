@@ -130,7 +130,7 @@ pub(all) enum DType {
   XML
   YEAR
   TDIGEST
-} derive(Eq, Hash, Compare)
+} derive(Eq, Hash, Compare, Debug)
 
 ///|
 pub fn DType::id(self : DType) -> Int {

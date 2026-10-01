@@ -11,7 +11,9 @@ test "qualify_tables: on_qualify" {
   )
   |> ignore
   tables.sort_by(py_cmp)
-  inspect(tables, content="[bar, baz]")
+  debug_inspect(tables, content=(
+    #|["bar", "baz"]
+  ))
 
   // Tables referenced by lateral sources (e.g. UNNEST) must only be qualified once
   let qualified : Array[String] = []
@@ -22,7 +24,9 @@ test "qualify_tables: on_qualify" {
     on_qualify=t => qualified.push(@core.expr_to_sql(t)) catch { _ => () },
   )
   |> ignore
-  inspect(qualified, content="[c.db.t AS t]")
+  debug_inspect(qualified, content=(
+    #|["c.db.t AS t"]
+  ))
 }
 
 ///|
@@ -208,7 +212,7 @@ test "qualify_columns: programmatic set operation with VALUES operand" {
     distinct=false,
   )
   union.set("side", "LEFT")
-  let expression = @core.select_star_from(Some(union.subquery(alias="s")))
+  let expression = @core.select_star_from(Some(union.subquery(alias_="s")))
   try @optimizer.qualify(expression) catch {
     @core.OptimizeError(_) => ()
     err => fail("expected OptimizeError, got \{err}")
@@ -570,10 +574,16 @@ test "annotate_types: multiple pivots" {
     "{\"t\": {\"id\": \"int\", \"jan\": \"int\", \"feb\": \"int\", \"north\": \"double\", \"south\": \"double\"}}",
     "snowflake",
   )
-  inspect(
+  debug_inspect(
     select_types(expression),
     content=(
-      #|[(ID, INT), (MONTH, VARCHAR), (REVENUE, INT), (REGION, VARCHAR), (HEADCOUNT, DOUBLE)]
+      #|[
+      #|  ("ID", "INT"),
+      #|  ("MONTH", "VARCHAR"),
+      #|  ("REVENUE", "INT"),
+      #|  ("REGION", "VARCHAR"),
+      #|  ("HEADCOUNT", "DOUBLE"),
+      #|]
     ),
   )
   let expression = qualify_annotate(
@@ -581,10 +591,16 @@ test "annotate_types: multiple pivots" {
     "{\"t\": {\"id\": \"int\", \"cat\": \"text\", \"val\": \"int\", \"kind\": \"text\", \"amt\": \"double\"}}",
     "snowflake",
   )
-  inspect(
+  debug_inspect(
     select_types(expression),
     content=(
-      #|[(ID, INT), (A, BIGINT), (B, BIGINT), (X, DOUBLE), (Y, DOUBLE)]
+      #|[
+      #|  ("ID", "INT"),
+      #|  ("A", "BIGINT"),
+      #|  ("B", "BIGINT"),
+      #|  ("X", "DOUBLE"),
+      #|  ("Y", "DOUBLE"),
+      #|]
     ),
   )
 }
@@ -596,10 +612,10 @@ test "annotate_types: unpivot of a cte" {
     "{\"t\": {\"id\": \"int\", \"jan\": \"int\", \"feb\": \"int\"}}",
     "duckdb",
   )
-  inspect(
+  debug_inspect(
     select_types(expression),
     content=(
-      #|[(id, INT), (m, VARCHAR), (v, INT)]
+      #|[("id", "INT"), ("m", "VARCHAR"), ("v", "INT")]
     ),
   )
 }
@@ -736,16 +752,16 @@ test "qualify_columns: struct star expansion types" {
     schema="{\"t\": {\"s\": \"STRUCT<x INT64, y STRING>\"}}",
   )
   let union = qualified.find([Union]).unwrap()
-  inspect(
+  debug_inspect(
     select_types(union, dialect="bigquery").map(p => p.1),
     content=(
-      #|[INT64, STRING]
+      #|["INT64", "STRING"]
     ),
   )
-  inspect(
+  debug_inspect(
     select_types(union.expression().unwrap(), dialect="bigquery").map(p => p.1),
     content=(
-      #|[INT64, STRING]
+      #|["INT64", "STRING"]
     ),
   )
   assert_eq(

@@ -1,6 +1,3 @@
 import {
   "bobzhang/sqlglot/core",
-  "moonbitlang/core/set",
 }
-
-warnings = "-79-15"

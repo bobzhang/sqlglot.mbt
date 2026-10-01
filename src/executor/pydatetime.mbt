@@ -8,12 +8,20 @@ pub(all) struct PyDate {
 } derive(Eq)
 
 ///|
+#deprecated
+pub extend PyDate with Eq::{not_equal, equal}
+
+///|
 pub(all) struct PyTime {
   hour : Int
   minute : Int
   second : Int
   microsecond : Int
 } derive(Eq)
+
+///|
+#deprecated
+pub extend PyTime with Eq::{not_equal, equal}
 
 ///|
 /// A `datetime.datetime`; `tz` is the UTC offset in seconds of an aware datetime (only
@@ -31,6 +39,10 @@ pub(all) struct PyTimeDelta {
   seconds : Int
   microseconds : Int
 } derive(Eq)
+
+///|
+#deprecated
+pub extend PyTimeDelta with Eq::{not_equal, equal}
 
 ///|
 let days_in_month_table : FixedArray[Int] = [
@@ -534,7 +546,7 @@ fn parse_iso_time(
         tz = Some(0)
       } else {
         let sign = if c == '-' { -1 } else { 1 }
-        let rest = chars[i + 1:].to_array()
+        let rest = chars[i + 1:].to_owned()
         let (t, _) = parse_time_fields(rest, 0, s)
         if t.microsecond != 0 {
           raise invalid_iso(s)
@@ -544,7 +556,7 @@ fn parse_iso_time(
       break
     }
   }
-  let body = chars[start:end].to_array()
+  let body = chars[start:end].to_owned()
   let (t, used) = parse_time_fields(body, 0, s)
   if used != body.length() {
     raise invalid_iso(s)
@@ -720,9 +732,10 @@ pub fn strftime(dt : PyDateTime, fmt : String) -> String {
       'S' => sb.write_string(pad(t.second, 2))
       'f' => sb.write_string(pad(t.microsecond, 6))
       'j' => sb.write_string(pad(yday, 3))
-      'b' | 'h' => sb.write_string(month_names[d.month - 1].substring(end=3))
+      'b' | 'h' =>
+        sb.write_string(month_names[d.month - 1].view(end_offset=3).to_owned())
       'B' => sb.write_string(month_names[d.month - 1])
-      'a' => sb.write_string(day_names[wday].substring(end=3))
+      'a' => sb.write_string(day_names[wday].view(end_offset=3).to_owned())
       'A' => sb.write_string(day_names[wday])
       'w' => sb.write_string(((wday + 1) % 7).to_string())
       'u' => sb.write_string((wday + 1).to_string())
@@ -796,10 +809,10 @@ pub fn strptime(s : String, fmt : String) -> PyDateTime raise PyException {
 
   fn name(names : Array[String], abbrev : Bool) -> Int raise PyException {
     for i, n in names {
-      let cand = if abbrev { n.substring(end=3) } else { n }
+      let cand = if abbrev { n.view(end_offset=3).to_owned() } else { n }
       let cl = cand.length()
       if pos + cl <= text.length() &&
-        @core.py_lower(String::from_array(text[pos:pos + cl].to_array())) ==
+        @core.py_lower(String::from_array(text[pos:pos + cl].to_owned())) ==
         @core.py_lower(cand) {
         pos += cl
         return i
@@ -839,7 +852,7 @@ pub fn strptime(s : String, fmt : String) -> PyDateTime raise PyException {
         }
         'j' => yday = Some(num(3))
         'p' => {
-          let rest = @core.py_lower(String::from_array(text[pos:].to_array()))
+          let rest = @core.py_lower(String::from_array(text[pos:].to_owned()))
           if rest.has_prefix("am") {
             pm = Some(false)
           } else if rest.has_prefix("pm") {
@@ -891,7 +904,7 @@ pub fn strptime(s : String, fmt : String) -> PyDateTime raise PyException {
   }
   if pos != text.length() {
     raise value_error(
-      "unconverted data remains: \{String::from_array(text[pos:].to_array())}",
+      "unconverted data remains: \{String::from_array(text[pos:].to_owned())}",
     )
   }
   match pm {

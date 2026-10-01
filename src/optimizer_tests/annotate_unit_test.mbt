@@ -58,7 +58,7 @@ fn type_equals(
 ///|
 test "annotate_types: set operation with a VALUES operand" {
   @optimizer.annotate_types(
-    @core.select_star_from(Some(select_1_union_values().subquery(alias="s"))),
+    @core.select_star_from(Some(select_1_union_values().subquery(alias_="s"))),
   )
   |> ignore
 }
@@ -99,7 +99,7 @@ test "annotate_types: json dot parts preserve meta" {
     identifier.meta_get("end") is Some(Int(end)) else {
     fail("missing token positions")
   }
-  assert_eq(sql[start.to_int():end.to_int() + 1].to_string(), "CaseSensitive")
+  assert_eq(sql[start.to_int():end.to_int() + 1].to_owned(), "CaseSensitive")
 }
 
 ///|

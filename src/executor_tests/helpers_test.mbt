@@ -8,7 +8,7 @@ fn date_ctor(args : Array[@executor.Value]) -> @executor.Value raise {
 }
 
 ///|
-fn time_ctor(args : Array[@executor.Value]) -> @executor.Value raise {
+fn time_ctor(args : Array[@executor.Value]) -> @executor.Value {
   let f = args.map(a => {
     match a {
       Int(i) => i.to_int()
@@ -24,7 +24,7 @@ fn time_ctor(args : Array[@executor.Value]) -> @executor.Value raise {
 }
 
 ///|
-fn datetime_ctor(args : Array[@executor.Value]) -> @executor.Value raise {
+fn datetime_ctor(args : Array[@executor.Value]) -> @executor.Value {
   let tz = match args.last() {
     Some(Str("utc")) => Some(0)
     _ => None
@@ -56,8 +56,8 @@ fn timedelta_ctor(args : Array[@executor.Value]) -> @executor.Value raise {
 ///|
 let literal_globals : Map[String, @executor.Value] = {
   "date": Func({ name: "date", call: date_ctor, }),
-  "time": Func({ name: "time", call: time_ctor, }),
-  "datetime": Func({ name: "datetime", call: datetime_ctor, }),
+  "time": Func({ name: "time", call: args => time_ctor(args), }),
+  "datetime": Func({ name: "datetime", call: args => datetime_ctor(args), }),
   "timedelta": Func({ name: "timedelta", call: timedelta_ctor, }),
 }
 
@@ -97,7 +97,7 @@ fn tables_of_value(
   v : @executor.Value,
 ) -> Map[String, @executor.TableData] raise {
   guard v is Dict(kvs) else { fail("not a dict") }
-  let out : Map[String, @executor.TableData] = {}
+  let out : Map[String, @executor.TableData] = Map([])
   for kv in kvs {
     guard kv.0 is Str(k) else { fail("bad key") }
     out[k] = records_of(kv.1)
@@ -115,7 +115,7 @@ fn mk_tables(src : String) -> Map[String, @executor.TableData] raise {
 fn schema_of_value(v : @executor.Value) -> @optimizer.SchemaNode raise {
   match v {
     Dict(kvs) => {
-      let out : Map[String, @optimizer.SchemaNode] = {}
+      let out : Map[String, @optimizer.SchemaNode] = Map([])
       for kv in kvs {
         guard kv.0 is Str(k) else { fail("bad key") }
         out[k] = schema_of_value(kv.1)
@@ -173,7 +173,7 @@ fn assert_rows_unordered(
   let a = sorted_reprs(rows_value(t))
   let e = sorted_reprs(py(expected))
   if a != e {
-    fail("rows differ:\n  actual:   \{a}\n  expected: \{e}", loc~)
+    fail("rows differ:\n  actual:   \{Repr(a)}\n  expected: \{Repr(e)}", loc~)
   }
 }
 
@@ -191,7 +191,10 @@ fn assert_set(
     @executor.Value::List(@executor.py_set(@executor.py_iter(py(expected)))),
   )
   if a != e {
-    fail("row sets differ:\n  actual:   \{a}\n  expected: \{e}", loc~)
+    fail(
+      "row sets differ:\n  actual:   \{Repr(a)}\n  expected: \{Repr(e)}",
+      loc~,
+    )
   }
 }
 
@@ -203,7 +206,7 @@ fn assert_columns(
   loc~ : SourceLoc,
 ) -> Unit raise {
   if t.columns != expected {
-    fail("columns differ: \{t.columns} != \{expected}", loc~)
+    fail("columns differ: \{Repr(t.columns)} != \{Repr(expected)}", loc~)
   }
 }
 
@@ -218,7 +221,7 @@ fn execute_error(
   try @executor.execute(sql, schema~, dialect~, tables~) catch {
     e => e
   } noraise {
-    t => fail("expected an error, got \{t.columns} \{rows_value(t)}")
+    t => fail("expected an error, got \{Repr(t.columns)} \{rows_value(t)}")
   }
 }
 

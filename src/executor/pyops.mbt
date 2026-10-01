@@ -483,7 +483,7 @@ fn py_strip_ws(s : String) -> String {
   while j > i && @core.is_space(chars[j - 1]) {
     j -= 1
   }
-  String::from_array(chars[i:j].to_array())
+  String::from_array(chars[i:j].to_owned())
 }
 
 ///|
@@ -513,9 +513,9 @@ fn parse_py_float_literal(s : String) -> Double? {
   let t = py_strip_ws(s)
   let lower = @core.py_lower(t)
   let (sign, body) = if lower.has_prefix("-") {
-    (-1.0, lower.substring(start=1))
+    (-1.0, lower.view(start_offset=1).to_owned())
   } else if lower.has_prefix("+") {
-    (1.0, lower.substring(start=1))
+    (1.0, lower.view(start_offset=1).to_owned())
   } else {
     (1.0, lower)
   }

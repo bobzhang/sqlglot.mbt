@@ -38,14 +38,14 @@ fn T::done(self : T) -> Unit raise {
 }
 
 ///|
-fn[X : Show] repr_of(x : X) -> String {
-  x.to_string().escape()
+fn[X : Debug] repr_of(x : X) -> String {
+  Repr(x).to_string().escape()
 }
 
 ///|
 /// Python `assertEqual(actual, expected)`.
 #callsite(autofill(loc))
-fn[X : Show + Eq] T::eq(
+fn[X : Debug + Eq] T::eq(
   self : T,
   actual : X,
   expected : X,
@@ -56,20 +56,6 @@ fn[X : Show + Eq] T::eq(
       "\n    actual:   \{repr_of(actual)}\n    expected: \{repr_of(expected)}",
       loc,
     )
-  }
-}
-
-///|
-/// Python `assertNotEqual(actual, expected)`.
-#callsite(autofill(loc))
-fn[X : Show + Eq] T::ne(
-  self : T,
-  actual : X,
-  expected : X,
-  loc~ : SourceLoc,
-) -> Unit {
-  if actual == expected {
-    self.fail("\n    both equal: \{repr_of(actual)}", loc)
   }
 }
 
@@ -185,7 +171,7 @@ fn[X] T::run(self : T, f : () -> X raise, loc~ : SourceLoc) -> X? {
 ///|
 /// Python `assertEqual(f(), expected)` where `f` may raise.
 #callsite(autofill(loc))
-fn[X : Show + Eq] T::eqf(
+fn[X : Debug + Eq] T::eqf(
   self : T,
   f : () -> X raise,
   expected : X,
@@ -357,22 +343,6 @@ fn T::validate_identity(
     identify=identify_of(identify),
   )
   self.eq(got, expected, loc~)
-  expression
-}
-
-///|
-/// `Validator.validate_transpile`: parses `sql` with the test's dialect and checks it
-/// generates `write_sql` in `write_dialect`; returns the parsed expression.
-#callsite(autofill(loc))
-fn T::validate_transpile(
-  self : T,
-  sql : String,
-  write_sql : String,
-  write_dialect? : String = "",
-  loc~ : SourceLoc,
-) -> @core.Expr raise {
-  let expression = self.parse_one(sql)
-  self.eq(@sqlglot.generate(expression, dialect=write_dialect), write_sql, loc~)
   expression
 }
 

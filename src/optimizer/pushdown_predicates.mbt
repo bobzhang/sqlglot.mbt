@@ -51,7 +51,7 @@ pub fn pushdown_predicates(
         let joins = select.list("joins")
         match select.arg("where") {
           Some(where_) => {
-            let join_index : Map[String, Int] = {}
+            let join_index : Map[String, Int] = Map([])
             for i, join in joins {
               join_index[join.alias_or_name()] = i
             }
@@ -63,7 +63,7 @@ pub fn pushdown_predicates(
               }
             }
             let mut pushdown_allowed = true
-            let reachable : Map[String, (@core.Expr, Source)] = {}
+            let reachable : Map[String, (@core.Expr, Source)] = Map([])
             for k, v in scope.selected_sources() {
               let (node, _) = v
               let position = match node.find_ancestor([Join, From]) {
@@ -100,7 +100,7 @@ pub fn pushdown_predicates(
           }
           match scope.selected_sources().get(name) {
             Some(v) => {
-              let sources : Map[String, (@core.Expr, Source)] = {}
+              let sources : Map[String, (@core.Expr, Source)] = Map([])
               sources[name] = v
               pushdown(join.arg("on"), sources, scope_ref_count, dialect, None)
             }
@@ -212,9 +212,9 @@ fn pushdown_dnf(
       }
     }
   }
-  let conditions : Map[String, @core.Expr] = {}
+  let conditions : Map[String, @core.Expr] = Map([])
   for table in sorted_strings(pushdown_tables) {
-    let mut nodes : Map[String, @core.Expr] = {}
+    let mut nodes : Map[String, @core.Expr] = Map([])
     for predicate in predicates {
       nodes = nodes_for_predicate(predicate, sources, scope_ref_count)
       if !nodes.contains(table) {
@@ -264,7 +264,7 @@ fn nodes_for_predicate(
   scope_ref_count : Map[Int, Int],
   clauses? : AncestorCache,
 ) -> Map[String, @core.Expr] raise @core.SqlglotError {
-  let nodes : Map[String, @core.Expr] = {}
+  let nodes : Map[String, @core.Expr] = Map([])
   let tables = @core.column_table_names(predicate)
   let clause = match clauses {
     Some(c) => c.find(predicate)
@@ -347,10 +347,10 @@ fn is_operator_expression(e : @core.Expr) -> Bool {
 
 ///|
 fn replace_aliases(source : @core.Expr, predicate : @core.Expr) -> @core.Expr {
-  let aliases : Map[String, @core.Expr] = {}
+  let aliases : Map[String, @core.Expr] = Map([])
   for select in source.selects() {
     if select.kind.is_a(Alias) {
-      aliases[select.alias()] = select.this_()
+      aliases[select.alias_()] = select.this_()
     } else {
       aliases[select.name()] = select
     }

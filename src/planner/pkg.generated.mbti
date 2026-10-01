@@ -64,6 +64,12 @@ pub(all) enum StepKind {
   Sort
   SetOperation
 } derive(Eq, @debug.Debug)
+#deprecated
+pub fn StepKind::equal(Self, Self) -> Bool
+#deprecated
+pub fn StepKind::not_equal(Self, Self) -> Bool
+#deprecated
+pub fn StepKind::to_repr(Self) -> @debug.Repr
 
 // Type aliases
 

@@ -1,5 +1,4 @@
 import {
   "bobzhang/sqlglot/core",
-}
+} for "test"
 
-warnings = "-79"

@@ -189,6 +189,13 @@ pub impl Show for Value with fn output(self, logger) {
 }
 
 ///|
+pub extend Value with Show::{to_string}
+
+///|
+#deprecated
+pub extend Value with Show::{output}
+
+///|
 /// Python `==` (never raises).
 pub fn py_eq(a : Value, b : Value) -> Bool {
   match (a, b) {
@@ -576,3 +583,7 @@ pub fn py_slice(
 pub impl Eq for Value with fn equal(self, other) {
   py_eq(self, other)
 }
+
+///|
+#deprecated
+pub extend Value with Eq::{not_equal, equal}

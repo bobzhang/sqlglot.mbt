@@ -298,10 +298,7 @@ pub fn Generator::preprocess(
 }
 
 ///|
-pub fn Generator::preprocess_base(
-  self : Generator,
-  expression : Expr,
-) -> Expr raise SqlglotError {
+pub fn Generator::preprocess_base(self : Generator, expression : Expr) -> Expr {
   let mut expression = self.move_ctes_to_top_level(expression)
   if self.cfg.ensure_bools {
     expression = ensure_bools(expression)
@@ -739,6 +736,10 @@ pub impl SqlArg for Expr with fn arg_sql(self, g) {
 }
 
 ///|
+#deprecated
+pub extend Expr with SqlArg::{arg_sql}
+
+///|
 pub impl SqlArg for String with fn arg_sql(self, _g) {
   Some(self)
 }
@@ -750,6 +751,10 @@ pub impl SqlArg for Value with fn arg_sql(self, g) {
     v => Some(g.sql_value(v))
   }
 }
+
+///|
+#deprecated
+pub extend Value with SqlArg::{arg_sql}
 
 ///|
 pub impl[T : SqlArg] SqlArg for T? with fn arg_sql(self, g) {

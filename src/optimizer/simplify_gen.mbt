@@ -34,7 +34,7 @@ pub fn gen(
   comments? : Bool = false,
 ) -> String raise @core.SqlglotError {
   let stack : Array[GenItem?] = [Some(GE(expression))]
-  let sqls = StringBuilder::new()
+  let sqls = StringBuilder()
   fn push(x : GenItem?) {
     stack.push(x)
   }

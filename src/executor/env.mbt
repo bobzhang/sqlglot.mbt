@@ -590,7 +590,7 @@ fn str_strip(this : Value, chars : Value) -> Value raise {
       while j > i && set.contains(a[j - 1]) {
         j -= 1
       }
-      Str(String::from_array(a[i:j].to_array()))
+      Str(String::from_array(a[i:j].to_owned()))
     }
     v => raise type_error("strip arg must be None or str, not \{v.type_name()}")
   }
@@ -619,7 +619,7 @@ fn attr_of(this : Value, name : String) -> Value raise {
 
 ///|
 fn build_env() -> Map[String, Value] {
-  let env : Map[String, Value] = {}
+  let env : Map[String, Value] = Map([])
   let set = fn(v : Value) {
     match v {
       Func(f) => env[f.name] = v
@@ -710,7 +710,7 @@ fn build_env() -> Map[String, Value] {
   )
   set(
     null_if_any("CONCATWS", 1, -1, args => {
-      str_join(args[0], args[1:].to_array())
+      str_join(args[0], args[1:].to_owned())
     }),
   )
   set(

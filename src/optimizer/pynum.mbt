@@ -79,7 +79,7 @@ fn parse_decimal(text : String) -> Dec? {
     neg = s[i] == '-'
     i += 1
   }
-  let digits = StringBuilder::new()
+  let digits = StringBuilder()
   let mut frac = 0
   let mut seen_digit = false
   while i < s.length() && s[i] >= '0' && s[i] <= '9' {

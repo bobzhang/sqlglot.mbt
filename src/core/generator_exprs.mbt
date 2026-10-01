@@ -344,10 +344,7 @@ pub fn Generator::unicodestring_sql(
 }
 
 ///|
-pub fn Generator::rawstring_sql(
-  self : Generator,
-  expression : Expr,
-) -> String raise SqlglotError {
+pub fn Generator::rawstring_sql(self : Generator, expression : Expr) -> String {
   let mut string = expression.text("this")
   if self.dialect.tokenizer.string_escapes.contains("\\") {
     string = string.replace_all(old="\\", new="\\\\")
@@ -431,10 +428,7 @@ pub fn Generator::national_sql(
 }
 
 ///|
-pub fn Generator::identifier_sql(
-  self : Generator,
-  expression : Expr,
-) -> String raise SqlglotError {
+pub fn Generator::identifier_sql(self : Generator, expression : Expr) -> String {
   let mut text = expression.name()
   let lower = py_lower(text)
   let quoted = expression.has("quoted")
@@ -512,7 +506,7 @@ pub fn Generator::sessionparameter_sql(
 pub fn Generator::placeholder_sql(
   self : Generator,
   expression : Expr,
-) -> String raise SqlglotError {
+) -> String {
   if expression.has("this") {
     self.cfg.named_placeholder_token + expression.name()
   } else {

@@ -20,7 +20,7 @@ pub fn canonicalize_internal_names(
   if !expression.kind.is_a(Query) {
     return expression
   }
-  let output_scope_exprs : @set.Set[Int] = @set.new()
+  let output_scope_exprs : @set.Set[Int] = @set.Set([])
   let stack = [expression]
   while stack.pop() is Some(node) {
     if node.kind.is_a(SetOperation) {
@@ -34,14 +34,14 @@ pub fn canonicalize_internal_names(
   }
   let next_table = @core.name_sequence("_t")
   let next_column = @core.name_sequence("_c")
-  let scope_table : Map[Int, String] = {}
-  let scope_outputs : Map[Int, Map[String, String]] = {}
-  let table_columns : Map[Int, Map[String, String]] = {}
-  let udtf_columns : Map[Int, Map[String, String]] = {}
+  let scope_table : Map[Int, String] = Map([])
+  let scope_outputs : Map[Int, Map[String, String]] = Map([])
+  let table_columns : Map[Int, Map[String, String]] = Map([])
+  let udtf_columns : Map[Int, Map[String, String]] = Map([])
   for scope in traverse_scope(expression) {
     let scope_expr = scope.expression
     let is_output_scope = output_scope_exprs.contains(scope_expr.uid)
-    let columns_by_source : Map[String, Array[@core.Expr]] = {}
+    let columns_by_source : Map[String, Array[@core.Expr]] = Map([])
     fn add_col(k : String, c : @core.Expr) {
       if !columns_by_source.contains(k) {
         columns_by_source[k] = []
@@ -60,15 +60,15 @@ pub fn canonicalize_internal_names(
         add_col(star.table_name(), star)
       }
     }
-    let table_map : Map[String, (String, String)] = {}
-    let ref_canon_taken : @set.Set[String] = @set.new()
+    let table_map : Map[String, (String, String)] = Map([])
+    let ref_canon_taken : @set.Set[String] = @set.Set([])
     for source_name, source in scope.sources {
       let source_cols = columns_by_source.get(source_name).unwrap_or([])
       let mut alias_holder : @core.Expr? = None
       let is_base_source = source is TableSource(_)
       let mut canon_t = ""
-      let mut child_output : Map[String, String] = {}
-      let mut name_map : Map[String, String] = {}
+      let mut child_output : Map[String, String] = Map([])
+      let mut name_map : Map[String, String] = Map([])
       match source {
         TableSource(t) => {
           canon_t = scope_table.get(expr_key(t)).unwrap_or("")
@@ -183,14 +183,14 @@ pub fn canonicalize_internal_names(
       match alias_holder {
         Some(holder) => {
           match holder.arg("alias") {
-            Some(alias) => {
-              match alias.this() {
+            Some(alias_) => {
+              match alias_.this() {
                 Some(t) if t.kind == Identifier => canon_ident(t, canon_t)
                 _ => ()
               }
-              let cols = alias.list("columns")
+              let cols = alias_.list("columns")
               if !cols.is_empty() {
-                alias.set(
+                alias_.set(
                   "columns",
                   cols.map(c => @core.to_identifier(
                     name_map.get(c.name()).unwrap_or(c.name()),
@@ -253,15 +253,15 @@ pub fn canonicalize_internal_names(
         _ => ()
       }
       match table.arg("alias") {
-        Some(alias) => {
-          match alias.this() {
+        Some(alias_) => {
+          match alias_.this() {
             Some(t) if t.kind == Identifier => canon_ident(t, ref_alias)
             _ => ()
           }
-          let cols = alias.list("columns")
+          let cols = alias_.list("columns")
           if !cols.is_empty() {
             let tc = table_columns.get(expr_key(table)).unwrap_or({})
-            alias.set(
+            alias_.set(
               "columns",
               cols.map(c => @core.to_identifier(
                 tc.get(c.name()).unwrap_or(c.name()),
@@ -273,11 +273,11 @@ pub fn canonicalize_internal_names(
         None => ()
       }
     }
-    let mut output_map : Map[String, String] = {}
+    let mut output_map : Map[String, String] = Map([])
     if scope_expr.kind.is_a(Select) {
       for sel in scope_expr.selects() {
-        if sel.kind.is_any([Alias, Subquery]) && sel.alias() != "" {
-          let old_alias = sel.alias()
+        if sel.kind.is_any([Alias, Subquery]) && sel.alias_() != "" {
+          let old_alias = sel.alias_()
           let new_name = if is_output_scope {
             old_alias
           } else {
@@ -321,7 +321,7 @@ pub fn canonicalize_internal_names(
       let right_scope = scope.set_operation_scopes[1]
       let left_out = scope_outputs.get(left_scope.expression.uid).unwrap_or({})
       let right_out = scope_outputs.get(right_scope.expression.uid).unwrap_or({})
-      let rename : Map[String, String] = {}
+      let rename : Map[String, String] = Map([])
       for orig_name, left_canon in left_out {
         match right_out.get(orig_name) {
           Some(right_canon) if right_canon != "" && right_canon != left_canon =>
@@ -355,7 +355,7 @@ pub fn canonicalize_internal_names(
             }
           }
         }
-        let new_right : Map[String, String] = {}
+        let new_right : Map[String, String] = Map([])
         for k, v in right_out {
           new_right[k] = rename.get(v).unwrap_or(v)
         }

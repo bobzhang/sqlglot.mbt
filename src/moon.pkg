@@ -5,4 +5,3 @@ import {
   "bobzhang/sqlglot/optimizer",
 }
 
-warnings = "-79"

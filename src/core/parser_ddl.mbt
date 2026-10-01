@@ -283,10 +283,7 @@ pub fn Parser::parse_drop(
 
 ///|
 /// `IF [NOT] EXISTS`. Returns None when `IF` isn't matched (Python `None`).
-pub fn Parser::parse_exists(
-  self : Parser,
-  not_? : Bool = false,
-) -> Bool? raise SqlglotError {
+pub fn Parser::parse_exists(self : Parser, not_? : Bool = false) -> Bool? {
   if !self.match_text("IF") {
     return Some(false)
   }
@@ -755,19 +752,19 @@ pub fn Parser::parse_trigger_referencing(
   let mut new_alias : Expr? = None
   while true {
     match self.parse_trigger_referencing_clause("OLD") {
-      Some(alias) => {
+      Some(alias_) => {
         if old_alias is Some(_) {
           self.raise_error("Duplicate OLD clause in REFERENCING")
         }
-        old_alias = Some(alias)
+        old_alias = Some(alias_)
       }
       None =>
         match self.parse_trigger_referencing_clause("NEW") {
-          Some(alias) => {
+          Some(alias_) => {
             if new_alias is Some(_) {
               self.raise_error("Duplicate NEW clause in REFERENCING")
             }
-            new_alias = Some(alias)
+            new_alias = Some(alias_)
           }
           None => break
         }
@@ -786,9 +783,7 @@ pub fn Parser::parse_trigger_referencing(
 }
 
 ///|
-pub fn Parser::parse_trigger_for_each(
-  self : Parser,
-) -> String? raise SqlglotError {
+pub fn Parser::parse_trigger_for_each(self : Parser) -> String? {
   if !self.match_text_seq(["FOR", "EACH"]) {
     return None
   }
@@ -831,7 +826,7 @@ pub fn Parser::parse_property_before_base(
   let dual = self.match_text("DUAL")
   let before = self.match_text("BEFORE")
   let default = self.match_text("DEFAULT")
-  let local = if self.match_text("LOCAL") {
+  let local_ = if self.match_text("LOCAL") {
     Some("LOCAL")
   } else if self.match_text_seq(["NOT", "LOCAL"]) {
     Some("NOT LOCAL")
@@ -853,7 +848,7 @@ pub fn Parser::parse_property_before_base(
   if default {
     kwargs["default"] = true
   }
-  match local {
+  match local_ {
     Some("LOCAL") => kwargs["local"] = true
     Some(_) => kwargs["not_local"] = true
     None => ()

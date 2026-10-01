@@ -24,7 +24,7 @@ pub fn CopyBudget::consume(
   self : CopyBudget,
   outer_scope : Scope,
   inner_scope : Scope,
-  alias : String,
+  alias_ : String,
 ) -> Bool {
   let factor = match self.max_copy_factor {
     Some(f) => f
@@ -35,9 +35,9 @@ pub fn CopyBudget::consume(
     self.remaining = Some(@core.max_int(factor * size, self.min_copy_budget))
   }
   let remaining = self.remaining.unwrap()
-  let references : Map[String, Int] = {}
+  let references : Map[String, Int] = Map([])
   for c in outer_scope.columns() {
-    if c.table_name() == alias {
+    if c.table_name() == alias_ {
       references[c.name()] = references.get_or_default(c.name(), 0) + 1
     }
   }
@@ -106,7 +106,7 @@ pub fn merge_ctes(
     Some(s) => s
     None => traverse_scope(expression)
   }
-  let cte_selections : Map[Int, Array[(Scope, Scope, @core.Expr)]] = {}
+  let cte_selections : Map[Int, Array[(Scope, Scope, @core.Expr)]] = Map([])
   for outer_scope in scopes {
     for _, v in outer_scope.selected_sources() {
       let (table, source) = v
@@ -134,12 +134,12 @@ pub fn merge_ctes(
       Some(f) if f.kind.is_any([From, Join]) => f
       _ => continue
     }
-    let alias = table.alias_or_name()
+    let alias_ = table.alias_or_name()
     if mergeable(outer_scope, inner_scope, leave_tables_isolated, from_or_join) &&
-      copy_budget.consume(outer_scope, inner_scope, alias) {
-      rename_inner_sources(outer_scope, inner_scope, alias)
-      merge_from(outer_scope, inner_scope, table, alias)
-      merge_expressions(outer_scope, inner_scope, alias)
+      copy_budget.consume(outer_scope, inner_scope, alias_) {
+      rename_inner_sources(outer_scope, inner_scope, alias_)
+      merge_from(outer_scope, inner_scope, table, alias_)
+      merge_expressions(outer_scope, inner_scope, alias_)
       merge_order(outer_scope, inner_scope)
       merge_joins(outer_scope, inner_scope, from_or_join)
       merge_where(outer_scope, inner_scope, from_or_join)
@@ -173,17 +173,17 @@ pub fn merge_derived_tables(
         Some(f) if f.kind.is_any([From, Join]) => f
         _ => continue
       }
-      let alias = subquery.alias_or_name()
-      let inner_scope = match outer_scope.sources.get(alias) {
+      let alias_ = subquery.alias_or_name()
+      let inner_scope = match outer_scope.sources.get(alias_) {
         Some(ScopeSource(s)) => s
         Some(_) => continue
-        None => raise @core.OptimizeError("KeyError: \{alias}")
+        None => raise @core.OptimizeError("KeyError: \{alias_}")
       }
       if mergeable(outer_scope, inner_scope, leave_tables_isolated, from_or_join) &&
-        copy_budget.consume(outer_scope, inner_scope, alias) {
-        rename_inner_sources(outer_scope, inner_scope, alias)
-        merge_from(outer_scope, inner_scope, subquery, alias)
-        merge_expressions(outer_scope, inner_scope, alias)
+        copy_budget.consume(outer_scope, inner_scope, alias_) {
+        rename_inner_sources(outer_scope, inner_scope, alias_)
+        merge_from(outer_scope, inner_scope, subquery, alias_)
+        merge_expressions(outer_scope, inner_scope, alias_)
         merge_order(outer_scope, inner_scope)
         merge_joins(outer_scope, inner_scope, from_or_join)
         merge_where(outer_scope, inner_scope, from_or_join)
@@ -234,7 +234,7 @@ fn mergeable(
   }
   let window_aliases = []
   let number_literal_aliases = []
-  let projections : Map[String, @core.Expr] = {}
+  let projections : Map[String, @core.Expr] = Map([])
   for s in inner_select.selects() {
     let name = s.alias_or_name()
     projections[name] = s
@@ -304,7 +304,7 @@ fn mergeable(
     Some(_) if number_literal_aliases.is_empty() => false
     Some(group) => {
       let grouped = []
-      let top_level_ids : @set.Set[Int] = @set.new()
+      let top_level_ids : @set.Set[Int] = @set.Set([])
       for e in group.expressions() {
         top_level_ids.add(e.unnest().uid)
       }
@@ -381,17 +381,17 @@ fn mergeable(
 fn rename_inner_sources(
   outer_scope : Scope,
   inner_scope : Scope,
-  alias : String,
+  alias_ : String,
 ) -> Unit raise @core.SqlglotError {
   let inner_taken = inner_scope.selected_sources().keys().collect()
   let outer_taken = outer_scope.selected_sources().keys().collect()
-  let conflicts = outer_taken.filter(n => inner_taken.contains(n) && n != alias)
+  let conflicts = outer_taken.filter(n => inner_taken.contains(n) && n != alias_)
   let taken = dedup_strings(outer_taken + inner_taken)
   for conflict in conflicts {
     let new_name = @core.find_new_name(n => taken.contains(n), conflict)
     let (source, _) = inner_scope.selected_sources()[conflict]
     let new_alias = @core.to_identifier(new_name)
-    if source.kind.is_a(Table) && source.alias() != "" {
+    if source.kind.is_a(Table) && source.alias_() != "" {
       source.set("alias", @core.mk1(TableAlias, new_alias))
     } else if source.kind.is_a(Table) {
       source.replace(Some(@core.alias_expr(source, Some(new_alias)))) |> ignore
@@ -410,7 +410,7 @@ fn merge_from(
   outer_scope : Scope,
   inner_scope : Scope,
   node_to_replace : @core.Expr,
-  alias : String,
+  alias_ : String,
 ) -> Unit raise @core.SqlglotError {
   let new_subquery = inner_scope.expression.arg("from_").unwrap().this_()
   new_subquery.set("joins", node_to_replace.get("joins"))
@@ -422,7 +422,7 @@ fn merge_from(
       }
     }
   }
-  outer_scope.remove_source(alias)
+  outer_scope.remove_source(alias_)
   match inner_scope.sources.get(new_subquery.alias_or_name()) {
     Some(s) => outer_scope.add_source(new_subquery.alias_or_name(), s)
     None =>
@@ -472,11 +472,11 @@ fn merge_joins(
 fn merge_expressions(
   outer_scope : Scope,
   inner_scope : Scope,
-  alias : String,
+  alias_ : String,
 ) -> Unit {
-  let outer_columns : Map[String, Array[@core.Expr]] = {}
+  let outer_columns : Map[String, Array[@core.Expr]] = Map([])
   for column in outer_scope.columns() {
-    if column.table_name() == alias {
+    if column.table_name() == alias_ {
       if !outer_columns.contains(column.name()) {
         outer_columns[column.name()] = []
       }
@@ -504,7 +504,7 @@ fn merge_expressions(
       for j, s in outer_scope.expression.selects() {
         let unaliased = s.unalias()
         if unaliased.kind.is_a(Column) &&
-          unaliased.table_name() == alias &&
+          unaliased.table_name() == alias_ &&
           unaliased.name() == projection_name {
           group_ordinal = j + 1
           break

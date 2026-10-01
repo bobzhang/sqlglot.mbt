@@ -286,7 +286,7 @@ pub fn[T : IntoPy] Expr::join_(
   join_alias? : String,
   side? : String,
   kind? : String,
-  method? : String,
+  method_? : String,
   dialect? : Dialect,
   copy? : Bool = true,
 ) -> Expr raise SqlglotError {
@@ -321,7 +321,7 @@ pub fn[T : IntoPy] Expr::join_(
     }
     _ => ()
   }
-  match method {
+  match method_ {
     Some(m) => join.set("method", m)
     None => ()
   }
@@ -392,7 +392,7 @@ pub fn[T : IntoPy] Expr::union_(
 /// `Query.with_(alias, as_, recursive=...)` (also `Insert.with_` / `Update.with_`)
 pub fn[A : IntoPy, B : IntoPy] Expr::with_(
   self : Expr,
-  alias : A,
+  alias_ : A,
   as_ : B,
   recursive? : Bool,
   materialized? : Bool,
@@ -401,7 +401,7 @@ pub fn[A : IntoPy, B : IntoPy] Expr::with_(
   copy? : Bool = true,
   scalar? : Bool,
 ) -> Expr raise SqlglotError {
-  let alias_expression = maybe_parse(alias, dialect?, into=[TableAlias])
+  let alias_expression = maybe_parse(alias_, dialect?, into=[TableAlias])
   let mut as_expression = maybe_parse(as_, dialect?, copy~)
   if scalar == Some(true) && as_expression.kind != Subquery {
     // scalar CTE must be wrapped in a subquery
@@ -463,7 +463,7 @@ pub fn func_(
     None => base_dialect()
   }
   match d.parser_fns.functions.get(py_upper(name)) {
-    Some(constructor) => constructor(args, Parser::new(d))
+    Some(constructor_) => constructor_(args, Parser::new(d))
     None => mk(Anonymous, [("this", name), ("expressions", args)])
   }
 }
@@ -511,7 +511,7 @@ pub fn[T : IntoPy] Expr::else_(
 /// `expr.as_(alias)`
 pub fn Expr::as_(
   self : Expr,
-  alias : String,
+  alias_name : String,
   quoted? : Bool,
   copy? : Bool = true,
   table? : Array[String],
@@ -519,14 +519,14 @@ pub fn Expr::as_(
   match table {
     Some(columns) => {
       let e = maybe_copy(self, copy)
-      let table_alias = mk1(TableAlias, to_identifier(alias, quoted?))
+      let table_alias = mk1(TableAlias, to_identifier(alias_name, quoted?))
       e.set("alias", table_alias)
       for c in columns {
         table_alias.append("columns", to_identifier(c, quoted?))
       }
       e
     }
-    None => alias_(self, alias, quoted?, copy~)
+    None => alias_(self, alias_name, quoted?, copy~)
   }
 }
 
@@ -634,7 +634,7 @@ pub fn column_table_names(
   expression : Expr,
   exclude? : String = "",
 ) -> Array[String] {
-  let out : @set.Set[String] = @set.Set::new()
+  let out : @set.Set[String] = @set.Set([])
   for c in expression.find_all([Column]) {
     let t = c.table_name()
     if !t.is_empty() && t != exclude {

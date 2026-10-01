@@ -354,8 +354,8 @@ pub fn base_tokenizer_settings_raw() -> TokenizerSettings {
     "VACUUM": COMMAND,
     "USER-DEFINED": USERDEFINED,
   }
-  let numeric_escapes : Map[String, NumericEscape] = {}
-  let numeric_literals : Map[String, String] = {}
+  let numeric_escapes : Map[String, NumericEscape] = Map([])
+  let numeric_literals : Map[String, String] = Map([])
   {
     single_tokens,
     bit_strings: [],
@@ -396,16 +396,16 @@ pub fn base_tokenizer_settings_raw() -> TokenizerSettings {
     command_prefix_tokens: [TokenType::BEGIN, TokenType::SEMICOLON],
     numeric_literals,
     numbers_can_have_decimals: true,
-    quotes_map: Map::new(),
-    identifiers_map: Map::new(),
-    identifier_chars: Map::new(),
-    format_strings: Map::new(),
-    string_escapes_set: Map::new(),
-    byte_string_escapes_set: Map::new(),
-    escape_follow_chars_set: Map::new(),
-    identifier_escapes_set: Map::new(),
-    comments_map: Map::new(),
-    commands_set: Map::new(),
+    quotes_map: Map([]),
+    identifiers_map: Map([]),
+    identifier_chars: Map([]),
+    format_strings: Map([]),
+    string_escapes_set: Map([]),
+    byte_string_escapes_set: Map([]),
+    escape_follow_chars_set: Map([]),
+    identifier_escapes_set: Map([]),
+    comments_map: Map([]),
+    commands_set: Map([]),
     keyword_trie: Trie::new(),
   }
 }
@@ -429,8 +429,8 @@ pub fn base_jsonpath_tokenizer_settings_raw() -> TokenizerSettings {
     '*': STAR,
   }
   let keywords : Map[String, TokenType] = { "..": DOT }
-  let numeric_escapes : Map[String, NumericEscape] = {}
-  let numeric_literals : Map[String, String] = {}
+  let numeric_escapes : Map[String, NumericEscape] = Map([])
+  let numeric_literals : Map[String, String] = Map([])
   {
     single_tokens,
     bit_strings: [],
@@ -471,16 +471,16 @@ pub fn base_jsonpath_tokenizer_settings_raw() -> TokenizerSettings {
     command_prefix_tokens: [TokenType::BEGIN, TokenType::SEMICOLON],
     numeric_literals,
     numbers_can_have_decimals: false,
-    quotes_map: Map::new(),
-    identifiers_map: Map::new(),
-    identifier_chars: Map::new(),
-    format_strings: Map::new(),
-    string_escapes_set: Map::new(),
-    byte_string_escapes_set: Map::new(),
-    escape_follow_chars_set: Map::new(),
-    identifier_escapes_set: Map::new(),
-    comments_map: Map::new(),
-    commands_set: Map::new(),
+    quotes_map: Map([]),
+    identifiers_map: Map([]),
+    identifier_chars: Map([]),
+    format_strings: Map([]),
+    string_escapes_set: Map([]),
+    byte_string_escapes_set: Map([]),
+    escape_follow_chars_set: Map([]),
+    identifier_escapes_set: Map([]),
+    comments_map: Map([]),
+    commands_set: Map([]),
     keyword_trie: Trie::new(),
   }
 }

@@ -455,8 +455,8 @@ fn configure_generator(d : @core.Dialect) -> Unit {
   m[CTE] = (g, e) => {
     if e.has("scalar") {
       let this = g.sql_key(e, "this")
-      let alias = g.sql_key(e, "alias")
-      return "\{this} AS \{alias}"
+      let alias_ = g.sql_key(e, "alias")
+      return "\{this} AS \{alias_}"
     }
     g.cte_sql(e)
   }
@@ -539,7 +539,7 @@ fn configure_generator(d : @core.Dialect) -> Unit {
     // If the VALUES clause contains tuples of expressions, we need to treat it
     // as a table since Clickhouse will automatically alias it as such.
     let values_as_table = match e.arg("alias") {
-      Some(alias) if alias.has("columns") && !e.expressions().is_empty() => {
+      Some(alias_) if alias_.has("columns") && !e.expressions().is_empty() => {
         let values = e.expressions()[0].expressions()
         values.iter().any(v => v.kind == Tuple)
       }

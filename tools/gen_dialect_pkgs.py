@@ -40,7 +40,16 @@ def main():
     for name in names:
         parent = parent_of(name)
         pkg_dir = os.path.join(DIALECTS, name)
-        imports = ['  "bobzhang/sqlglot/core",', '  "moonbitlang/core/set",']
+        imports = ['  "bobzhang/sqlglot/core",']
+        # Only import @set when the package's sources actually use it (an unused import
+        # is a warning).
+        uses_set = any(
+            "@set." in open(os.path.join(pkg_dir, f)).read()
+            for f in os.listdir(pkg_dir)
+            if f.endswith(".mbt")
+        )
+        if uses_set:
+            imports.append('  "moonbitlang/core/set",')
         if parent != "base":
             imports.append(f'  "bobzhang/sqlglot/dialects/{parent}",')
         # Keep any extra imports added by hand (e.g. spark importing hive for explicit
@@ -50,9 +59,11 @@ def main():
             existing = re.findall(r'^\s*"[^"]+",?\s*$', open(pkg_path).read(), re.M)
             for line in existing:
                 line = "  " + line.strip().rstrip(",") + ","
+                if line == '  "moonbitlang/core/set",':
+                    continue
                 if line not in imports:
                     imports.append(line)
-        write(pkg_path, "import {\n" + "\n".join(imports) + "\n}\n\nwarnings = \"-79-15\"\n")
+        write(pkg_path, "import {\n" + "\n".join(imports) + "\n}\n")
         parent_expr = "@core.base_dialect()" if parent == "base" else f"@{parent}.dialect()"
         write(
             os.path.join(pkg_dir, "dialect.mbt"),

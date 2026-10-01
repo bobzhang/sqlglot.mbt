@@ -20,7 +20,11 @@ test "TestDialect.test_enum" {
       msg="Dialect[\{dialect}] is None",
     )
     t.ok(
-      (try? @core.Dialect::get_or_raise(dialect)) is Ok(_),
+      try @core.Dialect::get_or_raise(dialect) catch {
+        _ => false
+      } noraise {
+        _ => true
+      },
       msg="get_or_raise(\{dialect}) failed",
     )
     // dialect in Dialect.classes
@@ -767,7 +771,7 @@ test "TestDialect.test_regexp_replace" {
 ///|
 test "TestDialect.test_initcap" {
   let t = t()
-  let delimiter_chars : Map[String, String] = {}
+  let delimiter_chars : Map[String, String] = Map([])
   for
     item in [
       ("", ""),

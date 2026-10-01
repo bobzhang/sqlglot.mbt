@@ -24,9 +24,7 @@ fn unqualify_pivot_columns(
 }
 
 ///|
-fn eliminate_dot_variant_lookup(
-  expression : @core.Expr,
-) -> @core.Expr raise @core.SqlglotError {
+fn eliminate_dot_variant_lookup(expression : @core.Expr) -> @core.Expr {
   if expression.kind == Select {
     // This transformation is used to facilitate transpilation of BigQuery `UNNEST` operations
     // to Snowflake. It should not affect roundtrip because `Unnest` nodes cannot be produced

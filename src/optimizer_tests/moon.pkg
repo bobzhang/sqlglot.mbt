@@ -3,6 +3,5 @@ import {
   "bobzhang/sqlglot/core",
   "bobzhang/sqlglot/optimizer",
   "moonbitlang/core/json",
-}
+} for "test"
 
-warnings = "-79-20-1-29"

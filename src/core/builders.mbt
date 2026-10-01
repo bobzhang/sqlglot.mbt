@@ -100,9 +100,9 @@ pub fn Expr::to_column(self : Expr, copy? : Bool = true) -> Expr {
   let parts = self.parts()
   let last_part = parts[parts.length() - 1]
   let mut col = if last_part.kind == Identifier {
-    let first4 = parts[0:min_int(4, parts.length())].to_array()
+    let first4 = parts[0:min_int(4, parts.length())].to_owned()
     first4.rev_in_place()
-    let fields = parts[min_int(4, parts.length()):].to_array()
+    let fields = parts[min_int(4, parts.length()):].to_owned()
     let m = fn(e : Expr) { if copy { e.copy() } else { e } }
     column_from_parts(
       m(first4[0]),
@@ -115,7 +115,7 @@ pub fn Expr::to_column(self : Expr, copy? : Bool = true) -> Expr {
     last_part
   }
   match self.arg("alias") {
-    Some(alias) => col = alias_expr(col, alias.this(), copy~)
+    Some(alias_) => col = alias_expr(col, alias_.this(), copy~)
     None => ()
   }
   col
@@ -123,17 +123,17 @@ pub fn Expr::to_column(self : Expr, copy? : Bool = true) -> Expr {
 
 ///|
 /// `exp.alias_(expression, alias)` with an identifier alias expression.
-pub fn alias_expr(e : Expr, alias : Expr?, copy? : Bool = true) -> Expr {
+pub fn alias_expr(e : Expr, alias_ : Expr?, copy? : Bool = true) -> Expr {
   let e = maybe_copy(e, copy)
-  let alias = match alias {
+  let alias_ = match alias_ {
     Some(a) => Some(if copy { a.copy() } else { a })
     None => None
   }
   if e.kind.has_arg("alias") && e.kind != Window {
-    e.set("alias", alias)
+    e.set("alias", alias_)
     return e
   }
-  mk(Alias, [("this", e), ("alias", alias)])
+  mk(Alias, [("this", e), ("alias", alias_)])
 }
 
 ///|
@@ -168,15 +168,15 @@ pub fn alias_table(
 /// `Query.subquery(alias, copy)`
 pub fn Expr::subquery(
   self : Expr,
-  alias? : String,
+  alias_? : String,
   copy? : Bool = true,
 ) -> Expr {
   let instance = maybe_copy(self, copy)
-  let alias = match alias {
+  let alias_ = match alias_ {
     Some(a) if !a.is_empty() => Some(mk1(TableAlias, to_identifier(a)))
     _ => None
   }
-  mk(Subquery, [("this", instance), ("alias", alias)])
+  mk(Subquery, [("this", instance), ("alias", alias_)])
 }
 
 ///|

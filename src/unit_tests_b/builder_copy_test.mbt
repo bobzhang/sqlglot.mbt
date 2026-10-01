@@ -32,7 +32,7 @@ fn check_tree_integrity(e : @core.Expr) -> Unit raise {
 
 ///|
 fn node_uids(e : @core.Expr) -> @set.Set[Int] {
-  let out = @set.Set::new()
+  let out = @set.Set([])
   for n in e.walk() {
     out.add(n.uid)
   }
@@ -91,7 +91,7 @@ test "builders: deriving queries from one base leaves the base untouched" {
       "SELECT a, b FROM t EXCEPT SELECT c, d FROM u",
     ),
     (base.ctas("t2"), "CREATE TABLE t2 AS SELECT a, b FROM t"),
-    (base.subquery(alias="s"), "(SELECT a, b FROM t) AS s"),
+    (base.subquery(alias_="s"), "(SELECT a, b FROM t) AS s"),
   ]
   let locked = base.lock()
   assert_eq(

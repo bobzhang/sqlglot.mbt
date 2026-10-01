@@ -2,6 +2,5 @@ import {
   "bobzhang/sqlglot",
   "bobzhang/sqlglot/core",
   "moonbitlang/core/json",
-}
+} for "test"
 
-warnings = "-79"

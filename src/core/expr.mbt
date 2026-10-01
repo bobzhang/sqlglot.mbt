@@ -52,6 +52,10 @@ pub impl IntoValue for Expr with fn into_value(self) {
 }
 
 ///|
+#deprecated
+pub extend Expr with IntoValue::{into_value}
+
+///|
 pub impl IntoValue for String with fn into_value(self) {
   Some(Str(self))
 }
@@ -77,9 +81,17 @@ pub impl IntoValue for DType with fn into_value(self) {
 }
 
 ///|
+#deprecated
+pub extend DType with IntoValue::{into_value}
+
+///|
 pub impl IntoValue for Value with fn into_value(self) {
   Some(self)
 }
+
+///|
+#deprecated
+pub extend Value with IntoValue::{into_value}
 
 ///|
 pub impl[T : IntoValue] IntoValue for T? with fn into_value(self) {
@@ -91,7 +103,7 @@ pub impl[T : IntoValue] IntoValue for T? with fn into_value(self) {
 
 ///|
 pub impl[T : IntoValue] IntoValue for Array[T] with fn into_value(self) {
-  let out = Array::new(capacity=self.length())
+  let out = Array::Array(capacity=self.length())
   for x in self {
     match x.into_value() {
       Some(v) => out.push(v)
@@ -337,7 +349,7 @@ pub fn Expr::arg(self : Expr, key : String) -> Expr? {
 pub fn Expr::list(self : Expr, key : String) -> Array[Expr] {
   match self.args.get(key) {
     Some(List(l)) => {
-      let out = Array::new(capacity=l.length())
+      let out = Array::Array(capacity=l.length())
       for v in l {
         match v {
           Node(e) => out.push(e)
@@ -510,7 +522,7 @@ fn is_star_query(expression : Expr) -> Bool {
 
 ///|
 /// The alias of the expression, or an empty string if it's not aliased.
-pub fn Expr::alias(self : Expr) -> String {
+pub fn Expr::alias_(self : Expr) -> String {
   match self.args.get("alias") {
     Some(Node(a)) => a.name()
     _ => self.text("alias")
@@ -579,7 +591,7 @@ pub fn Expr::alias_or_name(self : Expr) -> String {
         None => ""
       }
     _ => {
-      let a = self.alias()
+      let a = self.alias_()
       if a.is_empty() {
         self.name()
       } else {
@@ -594,8 +606,8 @@ pub fn Expr::alias_or_name(self : Expr) -> String {
 pub fn Expr::output_name(self : Expr) -> String {
   match self.kind.owner_output_name() {
     None => ""
-    Some(Alias) => self.alias()
-    Some(Subquery) => self.alias()
+    Some(Alias) => self.alias_()
+    Some(Subquery) => self.alias_()
     Some(Bracket) => {
       let exprs = self.expressions()
       if exprs.length() == 1 {
@@ -675,7 +687,7 @@ pub fn Expr::parts(self : Expr) -> Array[Expr] {
     Some(Dot) => {
       let flat = self.flatten().collect()
       let this = flat[0]
-      let parts = flat[1:].to_array()
+      let parts = flat[1:].to_owned()
       parts.rev_in_place()
       for arg in ["this", "table", "db", "catalog"] {
         match this.args.get(arg) {
@@ -868,7 +880,7 @@ pub fn Expr::add_comments(
       for comment in comments {
         let parts = py_split(comment, sqlglot_meta)
         if parts.length() > 1 {
-          let meta = parts[1:].to_array().join("")
+          let meta = parts[1:].to_owned().join("")
           for kv in py_split(meta, ",") {
             let kvs = py_split(kv, "=")
             let k = py_strip(kvs[0])
@@ -1138,7 +1150,7 @@ pub fn Expr::dfs(self : Expr, prune? : (Expr) -> Bool) -> Iter[Expr] {
 ///|
 /// Iterates the tree in BFS order.
 pub fn Expr::bfs(self : Expr, prune? : (Expr) -> Bool) -> Iter[Expr] {
-  let queue = @deque.Deque::new()
+  let queue = @deque.Deque([])
   queue.push_back(self)
   let mut pending : Expr? = None
   Iter::new(fn() {
@@ -1203,7 +1215,7 @@ pub fn Expr::find_all(
   kinds : ArrayView[Kind],
   bfs? : Bool = true,
 ) -> Iter[Expr] {
-  let kinds = kinds.to_array()
+  let kinds = kinds.to_owned()
   self.walk(bfs~).filter(e => e.kind.is_any(kinds))
 }
 
@@ -1685,6 +1697,14 @@ pub impl Eq for Expr with fn equal(self, other) {
 }
 
 ///|
+/// `expr.equal(other)` mirrors Python `expression == other` (structural equality).
+pub extend Expr with Eq::{equal}
+
+///|
+#deprecated
+pub extend Expr with Eq::{not_equal}
+
+///|
 /// Hashes an argument value; nested expressions are pushed on `pending` and hashed into
 /// the same hasher afterwards (in a fixed order).
 fn hash_value_shallow(
@@ -1734,6 +1754,14 @@ pub impl Hash for Expr with fn hash_combine(self, hasher) {
     }
   }
 }
+
+///|
+/// `expr.hash()` mirrors Python `hash(expression)`.
+pub extend Expr with Hash::{hash}
+
+///|
+#deprecated
+pub extend Expr with Hash::{hash_combine}
 
 // ---------------------------------------------------------------------------
 // Selectable / Query properties

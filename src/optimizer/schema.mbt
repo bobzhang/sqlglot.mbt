@@ -32,7 +32,7 @@ pub fn SchemaNode::from_json(json : Json) -> SchemaNode raise @core.SqlglotError
           _ => ()
         }
       }
-      let out : Map[String, SchemaNode] = {}
+      let out : Map[String, SchemaNode] = Map([])
       for k, v in m {
         out[k] = SchemaNode::from_json(v)
       }
@@ -62,14 +62,6 @@ pub fn schema_from_json_string(
   match SchemaNode::from_json(json) {
     Dict(m) => m
     _ => raise @core.SchemaError("Invalid JSON schema")
-  }
-}
-
-///|
-fn SchemaNode::as_dict(self : SchemaNode) -> Map[String, SchemaNode]? {
-  match self {
-    Dict(m) => Some(m)
-    _ => None
   }
 }
 
@@ -163,7 +155,7 @@ fn nested_set(
       Some(Dict(m)) => m
       Some(_) => return
       None => {
-        let m : Map[String, SchemaNode] = {}
+        let m : Map[String, SchemaNode] = Map([])
         subd[key] = Dict(m)
         m
       }
@@ -385,7 +377,7 @@ pub fn MappingSchema::supported_table_args(
     if depth == 0 {
       self.supported_table_args_ = []
     } else if depth >= 1 && depth <= 3 {
-      self.supported_table_args_ = table_parts_names[0:depth].to_array()
+      self.supported_table_args_ = table_parts_names[0:depth].to_owned()
     } else {
       raise @core.SchemaError("Invalid mapping shape. Depth: \{depth}")
     }
@@ -408,7 +400,7 @@ fn MappingSchema::udf_parts(self : MappingSchema, udf : @core.Expr) -> Array[Str
   }
   parts.rev_in_place()
   let n = @core.min_int(self.udf_depth(), parts.length())
-  parts[0:n].to_array()
+  parts[0:n].to_owned()
 }
 
 ///|
@@ -483,7 +475,7 @@ fn MappingSchema::find_uncached(
 ) -> Map[String, SchemaNode]? raise @core.SqlglotError {
   let n = self.supported_table_args().length()
   let all_parts = table_parts(table)
-  let parts = all_parts[0:@core.min_int(n, all_parts.length())].to_array()
+  let parts = all_parts[0:@core.min_int(n, all_parts.length())].to_owned()
   match find_in_part_trie(parts, self.mapping_trie, raise_on_missing) {
     None => None
     Some(resolved) =>
@@ -516,7 +508,7 @@ fn MappingSchema::find_column_types_uncached(
 ) -> Map[String, @core.Expr?]? raise @core.SqlglotError {
   match self.find_uncached(table, raise_on_missing=false) {
     Some(cols) => {
-      let out : Map[String, @core.Expr?] = {}
+      let out : Map[String, @core.Expr?] = Map([])
       for col, dtype in cols {
         out[col] = match dtype {
           Type(s) => Some(self.to_data_type(s))
@@ -549,7 +541,7 @@ pub fn MappingSchema::add_table(
       "Table \{gen.generate(normalized_table)} must match the schema's nesting level: \{self.depth()}.",
     )
   }
-  let normalized_column_mapping : Map[String, SchemaNode] = {}
+  let normalized_column_mapping : Map[String, SchemaNode] = Map([])
   for key, value in column_mapping {
     normalized_column_mapping[self.normalize_name(key, dialect?, normalize?)] = value
   }
@@ -753,7 +745,7 @@ fn MappingSchema::normalize_mapping(
   self : MappingSchema,
   schema : Map[String, SchemaNode],
 ) -> Map[String, SchemaNode] raise @core.SqlglotError {
-  let normalized_mapping : Map[String, SchemaNode] = {}
+  let normalized_mapping : Map[String, SchemaNode] = Map([])
   let flattened_schema = flatten_schema(schema)
   for keys in flattened_schema {
     let columns = nested_get(schema, keys.map(k => (k, k)))
@@ -761,14 +753,14 @@ fn MappingSchema::normalize_mapping(
     let columns = match columns {
       Some(Dict(c)) => c
       _ => {
-        let t = keys[0:keys.length() - 1].to_array().join(".")
+        let t = keys[0:keys.length() - 1].to_owned().join(".")
         raise @core.SchemaError(
           "Table \{t} must match the schema's nesting level: \{nesting}.",
         )
       }
     }
     if columns.is_empty() {
-      let t = keys[0:keys.length() - 1].to_array().join(".")
+      let t = keys[0:keys.length() - 1].to_owned().join(".")
       raise @core.SchemaError("Table \{t} must have at least one column")
     }
     match columns.values().next() {
@@ -797,7 +789,7 @@ fn MappingSchema::normalize_udfs(
   self : MappingSchema,
   udfs : Map[String, SchemaNode],
 ) -> Map[String, SchemaNode] raise @core.SqlglotError {
-  let normalized_mapping : Map[String, SchemaNode] = {}
+  let normalized_mapping : Map[String, SchemaNode] = Map([])
   for keys in flatten_schema(udfs, depth=map_depth(udfs)) {
     match nested_get(udfs, keys.map(k => (k, k))) {
       Some(udf_type) => {

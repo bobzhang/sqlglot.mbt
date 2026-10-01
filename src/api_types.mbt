@@ -44,6 +44,14 @@ pub(all) enum Identify {
 } derive(Eq, Debug)
 
 ///|
+#deprecated
+pub extend Identify with Eq::{not_equal, equal}
+
+///|
+#deprecated
+pub extend Identify with Debug::{to_repr}
+
+///|
 /// The generator's `identify` option for an `Identify` mode.
 fn Identify::to_option(self : Identify) -> String {
   match self {
@@ -64,6 +72,14 @@ pub(all) enum NormalizeFunctions {
   /// Keep names as written (Python `False`).
   Keep
 } derive(Eq, Debug)
+
+///|
+#deprecated
+pub extend NormalizeFunctions with Eq::{not_equal, equal}
+
+///|
+#deprecated
+pub extend NormalizeFunctions with Debug::{to_repr}
 
 ///|
 /// The generator's `normalize_functions` option for a `NormalizeFunctions` mode.

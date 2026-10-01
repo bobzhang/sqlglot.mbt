@@ -73,7 +73,7 @@ pub fn qualify_tables(
 
   if (db_ident is Some(_) || catalog_ident is Some(_)) &&
     !expression.kind.is_a(Query) {
-    let cte_names : @set.Set[String] = @set.new()
+    let cte_names : @set.Set[String] = @set.Set([])
     match expression.arg("with_") {
       Some(w) => for cte in w.expressions() { cte_names.add(cte.alias_or_name()) }
       None => ()
@@ -92,14 +92,14 @@ pub fn qualify_tables(
     normalize : Bool,
     columns : Array[@core.Expr]?,
   ) -> Unit {
-    let alias = match expression.arg("alias") {
+    let alias_ = match expression.arg("alias") {
       Some(a) => a
       None => @core.mk0(TableAlias)
     }
     let new_alias_name = if canonicalize_table_aliases {
       let n = next_alias_name()
-      let key = if alias.name() != "" {
-        alias.name()
+      let key = if alias_.name() != "" {
+        alias_.name()
       } else {
         match target_alias {
           Some(t) => t
@@ -108,7 +108,7 @@ pub fn qualify_tables(
       }
       canonical_aliases[key] = n
       n
-    } else if alias.name() == "" {
+    } else if alias_.name() == "" {
       match target_alias {
         Some(t) if t != "" =>
           if normalize {
@@ -121,12 +121,12 @@ pub fn qualify_tables(
     } else {
       return
     }
-    alias.set("this", @core.to_identifier(new_alias_name))
+    alias_.set("this", @core.to_identifier(new_alias_name))
     match columns {
-      Some(cols) if !cols.is_empty() => alias.set("columns", cols)
+      Some(cols) if !cols.is_empty() => alias_.set("columns", cols)
       _ => ()
     }
-    expression.set("alias", alias)
+    expression.set("alias", alias_)
     match scope {
       Some(s) => s.rename_source(None, new_alias_name)
       None => ()
@@ -136,7 +136,7 @@ pub fn qualify_tables(
   for scope in traverse_scope(expression) {
     let parent = scope.parent
     let local_columns = scope.local_columns()
-    let canonical_aliases : Map[String, String] = {}
+    let canonical_aliases : Map[String, String] = Map([])
     let queries = scope.subqueries().copy()
     if scope.is_root() && scope.expression.kind.is_a(Subquery) {
       queries.push(scope.expression.unnest())
@@ -180,7 +180,7 @@ pub fn qualify_tables(
         None => ()
       }
     }
-    let table_aliases : Map[String, @core.Expr] = {}
+    let table_aliases : Map[String, @core.Expr] = Map([])
     for name, source in scope.sources.copy() {
       match parent {
         Some(p) =>
@@ -257,7 +257,7 @@ pub fn qualify_tables(
           match pivot {
             Some(pivot) => {
               let target_alias = if pivot.has("unpivot") {
-                Some(source.alias())
+                Some(source.alias_())
               } else {
                 None
               }
@@ -305,7 +305,7 @@ pub fn qualify_tables(
       }
     }
     for table in scope.tables() {
-      if table.alias() == "" && parent_is(table, [From, Join]) {
+      if table.alias_() == "" && parent_is(table, [From, Join]) {
         set_alias(
           table,
           canonical_aliases,
@@ -321,7 +321,7 @@ pub fn qualify_tables(
       if column.db() != "" {
         let parts = column.parts()
         let key = parts[0:parts.length() - 1]
-          .to_array()
+          .to_owned()
           .map(p => p.name())
           .join(".")
         match table_aliases.get(key) {

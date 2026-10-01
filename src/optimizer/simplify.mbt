@@ -727,7 +727,7 @@ pub fn Simplifier::uniq_sort(
       }
     } else {
       // dict {gen(e): e}: first position, last value
-      let positions : Map[String, Int] = {}
+      let positions : Map[String, Int] = Map([])
       for e in flattened {
         let key = gen(e)
         match positions.get(key) {
@@ -815,7 +815,7 @@ pub fn Simplifier::absorb_and_eliminate(
     let pairs : Map[
       Int,
       Array[(@core.Expr, @core.Expr, Array[(@core.Expr, @core.Expr)])],
-    ] = {}
+    ] = Map([])
     fn pair_hash(a : @core.Expr, b : @core.Expr) -> Int {
       let ha = a.hash()
       let hb = b.hash()
@@ -925,9 +925,7 @@ pub fn Simplifier::simplify_equality(
   self : Simplifier,
   expression : @core.Expr,
 ) -> @core.Expr raise @core.SqlglotError {
-  let result = self.simplify_equality_impl(expression) catch {
-    UnsupportedUnit => expression
-  }
+  let result = self.simplify_equality_impl(expression)
   self.changed(expression, result)
 }
 
@@ -935,7 +933,7 @@ pub fn Simplifier::simplify_equality(
 fn Simplifier::simplify_equality_impl(
   self : Simplifier,
   expression : @core.Expr,
-) -> @core.Expr raise UnsupportedUnit {
+) -> @core.Expr {
   ignore(self)
   if !is_comparison(expression) {
     return expression
@@ -1239,7 +1237,7 @@ fn Simplifier::simplify_coalesce_impl(
     return expression
   }
   let arg = exprs[arg_index]
-  coalesce.set("expressions", exprs[0:arg_index].to_array())
+  coalesce.set("expressions", exprs[0:arg_index].to_owned())
   let this = if !coalesce.expressions().is_empty() {
     coalesce
   } else {
@@ -1288,7 +1286,7 @@ fn simplify_concat_impl(expression : @core.Expr) -> @core.Expr {
   }
   let (sep_expr, expressions, sep) = if is_ws {
     let all = expression.expressions()
-    (Some(all[0]), all[1:].to_array(), all[0].name())
+    (Some(all[0]), all[1:].to_owned(), all[0].name())
   } else {
     (None, expression.expressions(), "")
   }

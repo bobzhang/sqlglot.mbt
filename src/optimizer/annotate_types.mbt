@@ -38,14 +38,6 @@ fn TType::this(self : TType) -> @core.DType? {
 }
 
 ///|
-fn TType::to_expr(self : TType) -> @core.Expr {
-  match self {
-    D(d) => @core.datatype_of(d)
-    T(e) => e
-  }
-}
-
-///|
 /// The type of an expression as a `TType`.
 fn type_of(e : @core.Expr) -> TType? {
   e.get_type().map(t => T(t))
@@ -97,9 +89,9 @@ fn build_default_coerces_to() -> Map[@core.DType, @set.Set[@core.DType]] {
   let timelike_precedence : Array[@core.DType] = [
     TIMESTAMPLTZ, TIMESTAMPTZ, TIMESTAMP, DATETIME, DATE,
   ]
-  let result : Map[@core.DType, @set.Set[@core.DType]] = {}
+  let result : Map[@core.DType, @set.Set[@core.DType]] = Map([])
   for type_precedence in [text_precedence, numeric_precedence, timelike_precedence] {
-    let coerces_to : @set.Set[@core.DType] = @set.new()
+    let coerces_to : @set.Set[@core.DType] = @set.Set([])
     for data_type in type_precedence {
       result[data_type] = coerces_to.copy()
       coerces_to.add(data_type)
@@ -117,7 +109,7 @@ pub let default_coerces_to : Map[@core.DType, @set.Set[@core.DType]] = build_def
 pub fn copy_coerces_to(
   m : Map[@core.DType, @set.Set[@core.DType]],
 ) -> Map[@core.DType, @set.Set[@core.DType]] {
-  let out : Map[@core.DType, @set.Set[@core.DType]] = {}
+  let out : Map[@core.DType, @set.Set[@core.DType]] = Map([])
   for k, v in m {
     out[k] = v.copy()
   }
@@ -141,7 +133,7 @@ fn swap_all(
 
 ///|
 fn build_binary_coercions() -> Map[(@core.DType, @core.DType), BinaryCoercion] {
-  let out : Map[(@core.DType, @core.DType), BinaryCoercion] = {}
+  let out : Map[(@core.DType, @core.DType), BinaryCoercion] = Map([])
   swap_all(
     @core.dtype_text_types.map(t => (
       (t, @core.DType::INTERVAL),
@@ -239,7 +231,7 @@ pub fn TypeAnnotator::new(
       Some(b) if !b.is_empty() => b
       _ => default_binary_coercions
     },
-    visited: @set.new(),
+    visited: @set.Set([]),
     null_expressions: {},
     supports_null_type: dialect.cfg.supports_null_type,
     setop_column_types: {},
@@ -366,7 +358,7 @@ fn TypeAnnotator::get_scope_source_selects(
     Some(s) => return s
     None => ()
   }
-  let mut selects : Map[String, TType?] = {}
+  let mut selects : Map[String, TType?] = Map([])
   let source = scope.sources.get(source_name)
   match source {
     Some(ScopeSource(s)) => selects = self.get_source_scope_selects(s)
@@ -391,7 +383,7 @@ fn TypeAnnotator::get_scope_source_selects(
         let mut src_types : Map[String, TType?] = match (parent_source, parent) {
           (Some(ScopeSource(ps)), _) => self.get_source_scope_selects(ps)
           (_, Some(p)) if p.kind.is_a(Table) => {
-            let m : Map[String, TType?] = {}
+            let m : Map[String, TType?] = Map([])
             match self.schema.find_column_types(p) {
               Some(cols) =>
                 for k, v in cols {
@@ -422,7 +414,7 @@ fn TypeAnnotator::get_scope_source_selects(
 fn TypeAnnotator::get_source_scope_selects(
   self : TypeAnnotator,
   source : Scope,
-) -> Map[String, TType?] raise @core.SqlglotError {
+) -> Map[String, TType?] {
   let expression = source.expression
   if expression.kind.is_a(UDTF) {
     let values = if expression.kind.is_a(Lateral) {
@@ -457,7 +449,7 @@ fn TypeAnnotator::get_source_scope_selects(
     }
     match exp_type {
       Some(st) if st.is_type([STRUCT]) => {
-        let out : Map[String, TType?] = {}
+        let out : Map[String, TType?] = Map([])
         for col_def in st.expressions() {
           if col_def.kind.is_a(ColumnDef) {
             match col_def.arg("kind") {
@@ -470,7 +462,7 @@ fn TypeAnnotator::get_source_scope_selects(
       }
       _ => ()
     }
-    let out : Map[String, TType?] = {}
+    let out : Map[String, TType?] = Map([])
     for i in 0..<@core.min_int(alias_column_names.length(), values.length()) {
       out[alias_column_names[i]] = type_of(values[i])
     }
@@ -480,14 +472,14 @@ fn TypeAnnotator::get_source_scope_selects(
     (expression.has("by_name") ||
     selects_of(expression.this_()).length() ==
     selects_of(expression.expression_()).length()) {
-    let out : Map[String, TType?] = {}
+    let out : Map[String, TType?] = Map([])
     for kv in self.get_setop_column_types(expression) {
       out[kv.0] = Some(kv.1)
     }
     return out
   }
   if expression.kind.is_a(Selectable) {
-    let out : Map[String, TType?] = {}
+    let out : Map[String, TType?] = Map([])
     for s in selects_of(expression) {
       match s.get_type() {
         Some(t) => out[s.alias_or_name()] = Some(T(t))
@@ -720,11 +712,11 @@ fn TypeAnnotator::fixup_order_by_aliases(
     Some(o) => o
     None => return
   }
-  let alias_types : Map[String, @core.Expr] = {}
+  let alias_types : Map[String, @core.Expr] = Map([])
   for sel in selects_of(query) {
     if sel.kind.is_a(Alias) {
       match sel.this_().get_type() {
-        Some(t) if !sel.this_().is_type([UNKNOWN]) => alias_types[sel.alias()] = t
+        Some(t) if !sel.this_().is_type([UNKNOWN]) => alias_types[sel.alias_()] = t
         _ => ()
       }
     }
@@ -953,7 +945,7 @@ fn TypeAnnotator::get_unpivot_column_types(
   src_types : Map[String, TType?],
 ) -> Map[String, TType?] {
   ignore(self)
-  let new_types : Map[String, TType?] = {}
+  let new_types : Map[String, TType?] = Map([])
   for field in pivot.list("fields") {
     let field_col = field.this_()
     let first = field.expressions().get(0)
@@ -995,7 +987,7 @@ fn TypeAnnotator::get_unpivot_column_types(
       new_types[val_col.output_name()] = in_type
     }
   }
-  let out : Map[String, TType?] = {}
+  let out : Map[String, TType?] = Map([])
   let src_names = src_types.keys().collect()
   for kv in pivot_output_columns(pivot, src_names) {
     let name = kv.0
@@ -1042,7 +1034,7 @@ fn TypeAnnotator::get_pivot_column_types(
       "Negative pivot column offset: \{agg_cols_offset}",
     )
   }
-  let new_types : Map[String, TType?] = {}
+  let new_types : Map[String, TType?] = Map([])
   for i in 0..<agg_cols_offset {
     let (name, src) = output_to_src[i]
     match src_types.get(src) {

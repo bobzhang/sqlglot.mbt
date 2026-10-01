@@ -90,7 +90,7 @@ fn tokenize(src : String) -> Array[Tok] raise PyException {
       j += 1
     }
     if j < n && (chars[j] == '\'' || chars[j] == '"') {
-      let prefix = String::from_array(chars[i:j].to_array())
+      let prefix = String::from_array(chars[i:j].to_owned())
       if @core.py_lower(prefix).contains("b") ||
         @core.py_lower(prefix).contains("f") {
         raise syntax_error("unsupported string prefix \{prefix}")
@@ -105,7 +105,7 @@ fn tokenize(src : String) -> Array[Tok] raise PyException {
       while j < n && (is_name_start(chars[j]) || is_digit(chars[j])) {
         j += 1
       }
-      toks.push(TName(String::from_array(chars[i:j].to_array())))
+      toks.push(TName(String::from_array(chars[i:j].to_owned())))
       i = j
       continue
     }
@@ -116,12 +116,12 @@ fn tokenize(src : String) -> Array[Tok] raise PyException {
       continue
     }
     let rest3 = if i + 3 <= n {
-      String::from_array(chars[i:i + 3].to_array())
+      String::from_array(chars[i:i + 3].to_owned())
     } else {
       ""
     }
     let rest2 = if i + 2 <= n {
-      String::from_array(chars[i:i + 2].to_array())
+      String::from_array(chars[i:i + 2].to_owned())
     } else {
       ""
     }
@@ -826,7 +826,7 @@ fn eval_in(
               "<lambda>() takes \{params.length()} positional arguments but \{args.length()} were given",
             )
           }
-          let locals : Map[String, Value] = {}
+          let locals : Map[String, Value] = Map([])
           for i, p in params {
             locals[p] = args[i]
           }

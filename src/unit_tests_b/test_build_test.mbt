@@ -296,7 +296,7 @@ test "TestBuild.test_build" {
         @sqlglot.select(["x"])
         .from_("tbl")
         .join_(
-          @sqlglot.select(["y"]).from_("tbl2").subquery(alias="aliased"),
+          @sqlglot.select(["y"]).from_("tbl2").subquery(alias_="aliased"),
           join_type="left outer",
         )
       },
@@ -688,7 +688,7 @@ test "TestBuild.test_build" {
       "",
     ),
     (
-      () => @sqlglot.select(["x"]).from_("tbl").subquery(alias="y"),
+      () => @sqlglot.select(["x"]).from_("tbl").subquery(alias_="y"),
       "(SELECT x FROM tbl) AS y",
       "",
     ),
@@ -807,7 +807,7 @@ test "TestBuild.test_build" {
     ),
     (
       () => {
-        @sqlglot.subquery("select x from tbl", alias="foo")
+        @sqlglot.subquery("select x from tbl", alias_="foo")
         .select_(["x"])
         .where_(["x > 0"])
       },
@@ -818,7 +818,7 @@ test "TestBuild.test_build" {
       () => {
         @sqlglot.subquery(
           "select x from tbl UNION select x from bar",
-          alias="unioned",
+          alias_="unioned",
         ).select_(["x"])
       },
       "SELECT x FROM (SELECT x FROM tbl UNION SELECT x FROM bar) AS unioned",
@@ -843,7 +843,7 @@ test "TestBuild.test_build" {
     ),
     (() => @sqlglot.parse_one("(SELECT 1)").subquery(), "((SELECT 1))", ""),
     (
-      () => @sqlglot.parse_one("(SELECT 1)").subquery(alias="alias"),
+      () => @sqlglot.parse_one("(SELECT 1)").subquery(alias_="alias"),
       "((SELECT 1)) AS alias",
       "",
     ),
@@ -1020,7 +1020,7 @@ test "TestBuild.test_build" {
       () => {
         @sqlglot.values(
           [@core.PyTuple([@core.PyStr("1"), @core.PyInt(2)])],
-          alias="alias",
+          alias_="alias",
         )
       },
       "(VALUES ('1', 2)) AS alias",
@@ -1043,7 +1043,7 @@ test "TestBuild.test_build" {
             @core.PyTuple([@core.PyStr("1"), @core.PyInt(2), @core.PyNone]),
             @core.PyTuple([@core.PyStr("2"), @core.PyInt(3), @core.PyNone]),
           ],
-          alias="alias",
+          alias_="alias",
           columns=["col1", "col2", "col3"],
         )
       },

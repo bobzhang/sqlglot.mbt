@@ -3,5 +3,3 @@ import {
   "moonbitlang/core/set",
   "bobzhang/sqlglot/dialects/postgres",
 }
-
-warnings = "-79-15"

@@ -1,10 +1,7 @@
 // Port of sqlglot/parsers/sqlite.py
 
 ///|
-fn build_strftime(
-  args : Array[@core.Expr],
-  _p : @core.Parser,
-) -> @core.Expr raise @core.SqlglotError {
+fn build_strftime(args : Array[@core.Expr], _p : @core.Parser) -> @core.Expr {
   let args = args.copy()
   if args.length() == 1 {
     args.push(@core.mk0(CurrentTimestamp))
@@ -89,7 +86,7 @@ fn configure_parser(d : @core.Dialect) -> Unit {
   fns.functions["JSON_GROUP_OBJECT"] = (args, _) => {
     @core.mk(JSONObjectAgg, [("expressions", args)])
   }
-  fns.functions["STRFTIME"] = build_strftime
+  fns.functions["STRFTIME"] = (args, p) => build_strftime(args, p)
   fns.functions["SQLITE_VERSION"] = @core.from_arg_list_builder(CurrentVersion)
   fns.functions["TIME"] = anonymous_builder("TIME")
   fns.function_parsers["GROUP_CONCAT"] = p => p.parse_string_agg()

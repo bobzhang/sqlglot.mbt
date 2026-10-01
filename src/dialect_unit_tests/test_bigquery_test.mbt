@@ -699,15 +699,13 @@ test "TestBigQuery.test_override_normalization_strategy" {
   let bigquery = @core.get_dialect("bigquery").unwrap()
   let saved = bigquery.cfg.normalization_strategy
   bigquery.cfg.normalization_strategy = Uppercase
+  errdefer {
+    bigquery.cfg.normalization_strategy = saved
+  }
   let qualified = @optimizer.qualify(
     ast.copy(),
     dialect=@sqlglot.dialect("bigquery,normalization_strategy=uppercase"),
-  ) catch {
-    e => {
-      bigquery.cfg.normalization_strategy = saved
-      raise e
-    }
-  }
+  )
   bigquery.cfg.normalization_strategy = saved
   t.eq(sql(qualified, dialect="bigquery"), "SELECT * FROM `P`.`D`.`T` AS `T`")
   t.done()

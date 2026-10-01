@@ -8,8 +8,8 @@ fn configure_parser(d : @core.Dialect) -> Unit {
       let hive = athena_hive_dialect()
       let hp = engine_parser(p, hive)
       return match hive.parser_fns.hooks.parse {
-        Some(f) => f(hp, raw_tokens[1:].to_array(), sql)
-        None => hp.parse(raw_tokens[1:].to_array(), sql)
+        Some(f) => f(hp, raw_tokens[1:].to_owned(), sql)
+        None => hp.parse(raw_tokens[1:].to_owned(), sql)
       }
     }
     let trino = athena_trino_dialect()
@@ -24,8 +24,8 @@ fn configure_parser(d : @core.Dialect) -> Unit {
       let hive = athena_hive_dialect()
       let hp = engine_parser(p, hive)
       return match hive.parser_fns.hooks.parse_into {
-        Some(f) => f(hp, expression_types, raw_tokens[1:].to_array(), sql)
-        None => hp.parse_into(expression_types, raw_tokens[1:].to_array(), sql~)
+        Some(f) => f(hp, expression_types, raw_tokens[1:].to_owned(), sql)
+        None => hp.parse_into(expression_types, raw_tokens[1:].to_owned(), sql~)
       }
     }
     let trino = athena_trino_dialect()

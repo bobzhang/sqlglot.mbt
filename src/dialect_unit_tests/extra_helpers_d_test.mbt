@@ -25,7 +25,7 @@ let d_python_dialects : Array[String] = [
 ///|
 /// `expression.meta` restricted to its integer entries (positions), as a map.
 fn d_meta(e : @core.Expr) -> Map[String, Int64] {
-  let m : Map[String, Int64] = {}
+  let m : Map[String, Int64] = Map([])
   for k, v in e.get_meta() {
     if v is Int(i) {
       m[k] = i

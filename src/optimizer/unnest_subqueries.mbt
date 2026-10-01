@@ -149,12 +149,12 @@ fn unnest(
       ]),
     )
   }
-  let alias = next_alias_name()
+  let alias_ = next_alias_name()
   let clause = predicate.find_ancestor([Having, Where, Join])
   if !predicate.kind.is_any([In, Any]) {
     let mut column = column_with_table(
       select.selects()[0].alias_or_name(),
-      table=alias,
+      table=alias_,
     )
     let clause_parent_select = match clause {
       Some(c) => c.parent_select()
@@ -183,7 +183,7 @@ fn unnest(
       on_clause = [@core.true_()]
     }
     replace_with_condition(select.parent.unwrap(), column) |> ignore
-    select_join(parent_select, select, on_clause, join_type, alias)
+    select_join(parent_select, select, on_clause, join_type, alias_)
     return
   }
   if find_in_scope(select, [Limit, Offset]) is Some(_) {
@@ -203,7 +203,7 @@ fn unnest(
     None => return
   }
   let value = select.selects()[0]
-  let join_key = column_with_table(value.alias(), table=alias)
+  let join_key = column_with_table(value.alias_(), table=alias_)
   let join_key_not_null = @core.exp_not(@core.exp_is(join_key, @core.null_()))
   match clause {
     Some(c) if c.kind.is_a(Join) => {
@@ -218,12 +218,12 @@ fn unnest(
       let value_this = value.this()
       let same = gexprs.length() == 1 && Some(gexprs[0]) == value_this
       if !same {
-        let sub = select.subquery(alias="_q", copy=false)
+        let sub = select.subquery(alias_="_q", copy=false)
         select = @core.select_([
-            @core.alias_(column_with_table(value.alias(), table="_q"), value.alias()),
+            @core.alias_(column_with_table(value.alias_(), table="_q"), value.alias_()),
           ])
           .from_(sub, copy=false)
-          .group_by([column_with_table(value.alias(), table="_q")], copy=false)
+          .group_by([column_with_table(value.alias_(), table="_q")], copy=false)
       }
     }
     None =>
@@ -240,7 +240,7 @@ fn unnest(
     select,
     [@core.exp_eq(column, join_key)],
     "LEFT",
-    alias,
+    alias_,
   )
 }
 
@@ -330,7 +330,7 @@ fn decorrelate(
   let table_alias = next_alias_name()
   let keys : Array[(@core.Expr, @core.Expr, @core.Expr)] = []
   let mut eq_count = 0
-  let external_ids : @set.Set[Int] = @set.new()
+  let external_ids : @set.Set[Int] = @set.Set([])
   for column in external_columns {
     match column.find_ancestor([Where]) {
       Some(w) if physical_equal(w, where_) => ()
@@ -403,13 +403,13 @@ fn decorrelate(
       let mut found = false
       for i, kv in key_aliases {
         if kv.0 == key {
-          key_aliases[i] = (kv.0, value.alias())
+          key_aliases[i] = (kv.0, value.alias_())
           found = true
           break
         }
       }
       if !found {
-        key_aliases.push((key, value.alias()))
+        key_aliases.push((key, value.alias_()))
       }
       group_by.push(key)
     } else {
@@ -433,7 +433,7 @@ fn decorrelate(
     !group_by_has_value(group_by) {
     let agg = @core.mk1(if is_subquery_projection { Max } else { ArrayAgg }, value_this)
     select.select_(
-      [@core.alias_(agg, value.alias(), quoted=false, copy=true)],
+      [@core.alias_(agg, value.alias_(), quoted=false, copy=true)],
       append=false,
       copy=false,
     )
@@ -483,7 +483,7 @@ fn decorrelate(
     )
     |> ignore
   }
-  let mut alias = column_with_table(value.alias(), table=table_alias)
+  let mut alias_ = column_with_table(value.alias_(), table=table_alias)
   let other = other_operand(parent_predicate)
   let op_type = match parent_predicate {
     Some(pp) =>
@@ -500,9 +500,9 @@ fn decorrelate(
         first_alias = assoc_get(key_aliases, key).unwrap()
         break
       }
-      alias = column_with_table(first_alias, table=table_alias)
+      alias_ = column_with_table(first_alias, table=table_alias)
       parent_predicate = Some(
-        replace_with_sql(pp, "NOT \{expr_sql(alias)} IS NULL"),
+        replace_with_sql(pp, "NOT \{expr_sql(alias_)} IS NULL"),
       )
     }
     Some(pp) if pp.kind.is_a(All) => {
@@ -514,13 +514,13 @@ fn decorrelate(
       parent_predicate = Some(
         replace_with_sql(
           pp.parent.unwrap(),
-          "ARRAY_ALL(\{expr_sql(alias)}, _x -> \{expr_sql(predicate)})",
+          "ARRAY_ALL(\{expr_sql(alias_)}, _x -> \{expr_sql(predicate)})",
         ),
       )
     }
     Some(pp) if pp.kind.is_a(Any) =>
       if group_by_has_value(group_by) {
-        let predicate = @core.mk2(op_type.unwrap(), other, alias)
+        let predicate = @core.mk2(op_type.unwrap(), other, alias_)
         parent_predicate = Some(replace_with_condition(pp.parent.unwrap(), predicate))
       } else {
         let predicate = @core.mk2(
@@ -531,7 +531,7 @@ fn decorrelate(
         parent_predicate = Some(
           replace_with_sql(
             pp,
-            "ARRAY_ANY(\{expr_sql(alias)}, _x -> \{expr_sql(predicate)})",
+            "ARRAY_ANY(\{expr_sql(alias_)}, _x -> \{expr_sql(predicate)})",
           ),
         )
       }
@@ -540,23 +540,23 @@ fn decorrelate(
         parent_predicate = Some(
           replace_with_sql(
             pp,
-            "\{expr_sql(other.unwrap())} = \{expr_sql(alias)}",
+            "\{expr_sql(other.unwrap())} = \{expr_sql(alias_)}",
           ),
         )
       } else {
         parent_predicate = Some(
           replace_with_sql(
             pp,
-            "ARRAY_ANY(\{expr_sql(alias)}, _x -> _x = \{expr_sql(pp.this_())})",
+            "ARRAY_ANY(\{expr_sql(alias_)}, _x -> _x = \{expr_sql(pp.this_())})",
           ),
         )
       }
     _ => {
-      let mut replacement = alias
+      let mut replacement = alias_
       if is_subquery_projection {
         match select.parent {
-          Some(p) if p.alias() != "" =>
-            replacement = @core.alias_(replacement, p.alias())
+          Some(p) if p.alias_() != "" =>
+            replacement = @core.alias_(replacement, p.alias_())
           _ => ()
         }
       }

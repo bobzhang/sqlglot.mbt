@@ -11,6 +11,14 @@ pub(all) enum ScopeType {
 } derive(Eq, Debug)
 
 ///|
+#deprecated
+pub extend ScopeType with Eq::{not_equal, equal}
+
+///|
+#deprecated
+pub extend ScopeType with Debug::{to_repr}
+
+///|
 /// A source of a scope: either a table or another scope.
 pub enum Source {
   TableSource(@core.Expr)
@@ -21,7 +29,7 @@ pub enum Source {
 /// Selection scope.
 pub struct Scope {
   id : Int
-  mut expression : @core.Expr
+  expression : @core.Expr
   sources : Map[String, Source]
   lateral_sources : Map[String, Source]
   cte_sources : Map[String, Source]
@@ -125,7 +133,7 @@ pub fn Scope::new(
     // (the common case of a branched scope: a copy of the CTE sources)
     None if lateral_sources.is_empty() => cte_sources.copy()
     None => {
-      let s = {}
+      let s = Map([])
       for k, v in lateral_sources {
         s[k] = v
       }
@@ -163,8 +171,8 @@ pub fn Scope::new(
     ctes_: [],
     subqueries_: [],
     join_hints_: [],
-    semi_anti_join_tables_: @set.new(),
-    column_index_: @set.new(),
+    semi_anti_join_tables_: @set.Set([]),
+    column_index_: @set.Set([]),
     selected_sources_: None,
     columns_: None,
     external_columns_: None,
@@ -195,8 +203,8 @@ pub fn Scope::clear_cache(self : Scope) -> Unit {
   self.ctes_ = []
   self.subqueries_ = []
   self.join_hints_ = []
-  self.semi_anti_join_tables_ = @set.new()
-  self.column_index_ = @set.new()
+  self.semi_anti_join_tables_ = @set.Set([])
+  self.column_index_ = @set.Set([])
   self.selected_sources_ = None
   self.columns_ = None
   self.external_columns_ = None
@@ -258,8 +266,8 @@ fn Scope::collect(self : Scope) -> Unit {
   self.table_columns_ = []
   self.stars_ = []
   self.join_hints_ = []
-  self.semi_anti_join_tables_ = @set.new()
-  self.column_index_ = @set.new()
+  self.semi_anti_join_tables_ = @set.Set([])
+  self.column_index_ = @set.Set([])
   let inner_query = if self.expression.kind.is_a(Subquery) {
     Some(self.expression.unnest())
   } else {
@@ -445,7 +453,7 @@ pub fn Scope::columns(self : Scope) -> Array[@core.Expr] {
         let s : @set.Set[String] = if expr.kind.is_a(Query) {
           @set.from_array(expr.named_selects())
         } else {
-          @set.new()
+          @set.Set([])
         }
         named_selects_ = Some(s)
         s
@@ -499,7 +507,7 @@ pub fn Scope::selected_sources(
     Some(s) => return s
     None => ()
   }
-  let result : Map[String, (@core.Expr, Source)] = {}
+  let result : Map[String, (@core.Expr, Source)] = Map([])
   for r in self.references() {
     let (name, node) = r
     if self.semi_anti_join_tables_.contains(name) {
@@ -566,7 +574,7 @@ pub fn Scope::external_columns(self : Scope) -> Array[@core.Expr] {
     let right = self.set_operation_scopes[1]
     left.external_columns() + right.external_columns()
   } else {
-    let local_source_names : @set.Set[String] = @set.new()
+    let local_source_names : @set.Set[String] = @set.Set([])
     for r in self.references() {
       local_source_names.add(r.0)
     }
@@ -589,7 +597,7 @@ pub fn Scope::local_columns(self : Scope) -> Array[@core.Expr] {
     Some(c) => return c
     None => ()
   }
-  let ids : @set.Set[Int] = @set.new()
+  let ids : @set.Set[Int] = @set.Set([])
   for c in self.external_columns() {
     ids.add(c.uid)
   }
@@ -730,7 +738,7 @@ pub fn Scope::key(self : Scope) -> Int {
 /// Count the number of times each source in this tree is referenced
 /// (keyed by `Source::key`).
 pub fn Scope::ref_count(self : Scope) -> Map[Int, Int] {
-  let counts : Map[Int, Int] = {}
+  let counts : Map[Int, Int] = Map([])
   fn bump(s : Source) {
     let k = s.key()
     counts[k] = counts.get_or_default(k, 0) + 1
@@ -922,9 +930,9 @@ fn traverse_set_operation(
 
 ///|
 fn traverse_ctes(scope : Scope, out : Array[Scope]) -> Unit raise @core.SqlglotError {
-  let sources : Map[String, Source] = {}
+  let sources : Map[String, Source] = Map([])
   for cte in scope.ctes() {
-    let cte_name = cte.alias()
+    let cte_name = cte.alias_()
     match scope.expression.arg("with_") {
       Some(w) if w.has("recursive") =>
         match cte.this() {
@@ -962,7 +970,7 @@ fn traverse_ctes(scope : Scope, out : Array[Scope]) -> Unit raise @core.SqlglotE
 /// We represent (tbl1 JOIN tbl2) as a Subquery, but it's not really a "derived table".
 fn is_derived_table(expression : @core.Expr) -> Bool {
   expression.kind.is_a(Subquery) &&
-  (expression.alias() != "" ||
+  (expression.alias_() != "" ||
   (match expression.this() {
     Some(t) => is_unwrapped_query(t)
     None => false
@@ -984,7 +992,7 @@ fn is_from_or_join(expression : @core.Expr) -> Bool {
 
 ///|
 fn traverse_tables(scope : Scope, out : Array[Scope]) -> Unit raise @core.SqlglotError {
-  let sources : Map[String, Source] = {}
+  let sources : Map[String, Source] = Map([])
   let expressions : Array[@core.Expr] = []
   match scope.expression.arg("from_") {
     Some(f) =>
@@ -1017,7 +1025,7 @@ fn traverse_tables(scope : Scope, out : Array[Scope]) -> Unit raise @core.Sqlglo
       if scope.sources.contains(table_name) && expression.db() == "" {
         let pivots = expression.list("pivots")
         if !pivots.is_empty() {
-          sources[pivots[pivots.length() - 1].alias()] = TableSource(expression)
+          sources[pivots[pivots.length() - 1].alias_()] = TableSource(expression)
         } else {
           sources[source_name] = scope.sources[table_name]
         }
@@ -1103,7 +1111,7 @@ fn traverse_udtfs(scope : Scope, out : Array[Scope]) -> Unit raise @core.Sqlglot
   } else {
     []
   }
-  let sources : Map[String, Source] = {}
+  let sources : Map[String, Source] = Map([])
   for expression in udtf_expressions {
     if expression.kind.is_a(Subquery) {
       let child_out = []
@@ -1219,7 +1227,7 @@ pub fn find_in_scope(
 
 ///|
 fn get_source_alias(expression : @core.Expr) -> String {
-  let alias_name = expression.alias()
+  let alias_name = expression.alias_()
   if alias_name == "" {
     match expression.arg("alias") {
       Some(a) if a.kind.is_a(TableAlias) && a.list("columns").length() == 1 =>

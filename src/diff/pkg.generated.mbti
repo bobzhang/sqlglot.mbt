@@ -27,6 +27,10 @@ pub(all) enum Edit {
   Update(source~ : @core.Expr, target~ : @core.Expr)
   Keep(source~ : @core.Expr, target~ : @core.Expr)
 }
+#deprecated
+pub fn Edit::equal(Self, Self) -> Bool
+#deprecated
+pub fn Edit::not_equal(Self, Self) -> Bool
 pub fn Edit::to_string(Self) -> String
 pub impl Eq for Edit
 

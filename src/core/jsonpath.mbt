@@ -256,7 +256,7 @@ pub fn Dialect::to_json_path_base(
         // Python only catches ParseError and TokenError here
         e if !(e is (ParseError(_) | TokenError(_))) => raise e
         e => {
-          let stripped = path_text.trim_start().to_string()
+          let stripped = path_text.trim_start().to_owned()
           if self.cfg.strict_json_path_syntax &&
             !(stripped.has_prefix("lax") || stripped.has_prefix("strict")) {
             log_warning("Invalid JSON path syntax. \{e.message()}")

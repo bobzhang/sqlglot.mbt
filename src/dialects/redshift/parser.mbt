@@ -123,7 +123,7 @@ fn configure_parser(d : @core.Dialect) -> Unit {
     }
     if !exclude.is_empty() && projections.length() > 0 {
       let expr = projections[projections.length() - 1]
-      if expr.kind.is_a(Alias) && @core.py_upper(expr.alias()) == "EXCLUDE" {
+      if expr.kind.is_a(Alias) && @core.py_upper(expr.alias_()) == "EXCLUDE" {
         projections[projections.length() - 1] = expr.this().unwrap().pop()
       }
     }

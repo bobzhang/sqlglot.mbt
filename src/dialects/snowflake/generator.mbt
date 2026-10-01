@@ -256,7 +256,7 @@ fn configure_generator(d : @core.Dialect) -> Unit {
   t[Select] = @core.preprocess([
     @core.eliminate_window_clause, @core.eliminate_distinct_on, @optimizer.explode_projection_to_unnest(),
     @core.eliminate_semi_and_anti_joins, transform_generate_date_array, qualify_unnested_columns,
-    eliminate_dot_variant_lookup,
+    e => eliminate_dot_variant_lookup(e),
   ])
   t[SHA] = r("SHA1")
   t[SHA1Digest] = r("SHA1_BINARY")

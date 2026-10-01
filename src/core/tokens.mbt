@@ -47,10 +47,18 @@ pub fn Token::var_(s : String) -> Token {
 
 ///|
 pub impl Show for Token with fn output(self, logger) {
+  let comments = "[" + self.comments.map(c => c.escape()).join(", ") + "]"
   logger.write_string(
-    "<Token token_type: TokenType.\{self.token_type.name()}, text: \{self.text}, line: \{self.line}, col: \{self.col}, start: \{self.start}, end: \{self.end}, comments: \{self.comments}>",
+    "<Token token_type: TokenType.\{self.token_type.name()}, text: \{self.text}, line: \{self.line}, col: \{self.col}, start: \{self.start}, end: \{self.end}, comments: \{comments}>",
   )
 }
+
+///|
+pub extend Token with Show::{to_string}
+
+///|
+#deprecated
+pub extend Token with Show::{output}
 
 ///|
 /// A quote specification: either a symmetric delimiter or a (start, end) pair.

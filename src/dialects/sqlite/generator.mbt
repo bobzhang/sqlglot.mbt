@@ -12,9 +12,7 @@ fn remove_node(list : Array[@core.Value], node : @core.Expr) -> Unit {
 
 ///|
 /// Move primary key to a column and place auto_increment after it.
-fn transform_create(
-  expression : @core.Expr,
-) -> @core.Expr raise @core.SqlglotError {
+fn transform_create(expression : @core.Expr) -> @core.Expr {
   guard expression.kind == Create &&
     expression.this() is Some(schema) &&
     schema.kind == Schema else {
@@ -68,9 +66,7 @@ fn transform_create(
 }
 
 ///|
-fn generated_to_auto_increment(
-  expression : @core.Expr,
-) -> @core.Expr raise @core.SqlglotError {
+fn generated_to_auto_increment(expression : @core.Expr) -> @core.Expr {
   guard expression.kind == ColumnDef else { return expression }
   // Only rewrite true identity columns. Expression-bearing forms are computed
   // columns (GENERATED ALWAYS AS (expr)) and must keep their expression.
@@ -131,12 +127,12 @@ fn configure_generator(d : @core.Dialect) -> Unit {
   t[AnyValue] = @core.any_value_to_max_sql
   t[Chr] = @core.rename_func("CHAR")
   t[CountIf] = @core.count_if_to_sum
-  t[Create] = @core.preprocess([transform_create])
+  t[Create] = @core.preprocess([e => transform_create(e)])
   t[CurrentDate] = (_, _) => "CURRENT_DATE"
   t[CurrentTime] = (_, _) => "CURRENT_TIME"
   t[CurrentTimestamp] = (_, _) => "CURRENT_TIMESTAMP"
   t[CurrentVersion] = (_, _) => "SQLITE_VERSION()"
-  t[ColumnDef] = @core.preprocess([generated_to_auto_increment])
+  t[ColumnDef] = @core.preprocess([e => generated_to_auto_increment(e)])
   t[DateStrToDate] = (g, e) => g.sql_key(e, "this")
   t[If] = @core.rename_func("IIF")
   t[ILike] = @core.no_ilike_sql
@@ -331,11 +327,11 @@ fn generateseries_sql(
   g : @core.Generator,
   e : @core.Expr,
 ) -> String raise @core.SqlglotError {
-  let alias = match e.parent {
+  let alias_ = match e.parent {
     Some(p) => p.arg("alias")
     None => None
   }
-  match alias {
+  match alias_ {
     Some(a) if a.kind == TableAlias && !a.list("columns").is_empty() => {
       let column_alias = a.list("columns")[0]
       a.set("columns", (None : @core.Expr?))
@@ -429,7 +425,7 @@ fn greatest_least_sql(
     coalesces.push(
       @core.mk(Coalesce, [
         ("this", rotated[0]),
-        ("expressions", rotated[1:].to_array()),
+        ("expressions", rotated[1:].to_owned()),
       ]),
     )
   }

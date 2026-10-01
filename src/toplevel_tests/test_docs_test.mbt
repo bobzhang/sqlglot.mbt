@@ -124,7 +124,7 @@ test "doctest expressions.builders" {
     "SELECT col1, col2 FROM tbl",
   )
   assert_eq(
-    doc_sql(@sqlglot.subquery("select x from tbl", alias="bar").select_(["x"])),
+    doc_sql(@sqlglot.subquery("select x from tbl", alias_="bar").select_(["x"])),
     "SELECT x FROM (SELECT x FROM tbl) AS bar",
   )
   assert_eq(

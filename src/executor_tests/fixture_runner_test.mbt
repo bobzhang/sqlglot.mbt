@@ -65,7 +65,9 @@ fn check_outcome(
     let actual = sorted_reprs(rows_value(result))
     let expected = sorted_reprs(py(y))
     if actual != expected {
-      fail("rows (unordered):\n  actual:   \{actual}\n  expected: \{expected}")
+      fail(
+        "rows (unordered):\n  actual:   \{Repr(actual)}\n  expected: \{Repr(expected)}",
+      )
     }
   }
 }
@@ -143,13 +145,13 @@ fn typed_field(code : Char, v : String) -> @executor.Value raise {
 
 ///|
 fn tpcds_data() -> Map[String, @executor.Table] raise {
-  let out : Map[String, @executor.Table] = {}
+  let out : Map[String, @executor.Table] = Map([])
   for entry in tpcds_tables {
     let (name, columns, codes, text) = entry
     let codes = codes.to_array()
     let rows = []
     for line in text.split("\n") {
-      let line = line.to_string()
+      let line = line.to_owned()
       if line == "" && columns.length() > 0 {
         continue
       }
@@ -170,7 +172,7 @@ test "fixture: tpc-ds" {
     let (number, sql, kind, x, y, ordered) = case
     s.check("tpc-ds \{number}", () => {
       let expression = @sqlglot.parse_one(sql)
-      let tables : Map[String, @executor.TableData] = {}
+      let tables : Map[String, @executor.TableData] = Map([])
       for t in @core.find_tables(expression) {
         match data.get(t.name()) {
           Some(table) => tables[t.name()] = Tbl(table)

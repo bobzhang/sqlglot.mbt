@@ -3,7 +3,7 @@
 
 ///|
 test "optimizer identity stress" {
-  let totals : Map[String, (Int, Int)] = {}
+  let totals : Map[String, (Int, Int)] = Map([])
   let mut reported = 0
   let mut i = 0
   while i + 4 < identity_stress_fixtures.length() {

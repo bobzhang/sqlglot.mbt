@@ -1,7 +1,5 @@
 import {
   "bobzhang/sqlglot/core",
-  "bobzhang/sqlglot/optimizer",
   "moonbitlang/core/set",
+  "bobzhang/sqlglot/optimizer",
 }
-
-warnings = "-79-15"

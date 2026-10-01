@@ -110,7 +110,7 @@ fn is_iso_date(text : String) -> Bool {
 /// UTC offset, returning whether the whole slice was consumed.
 fn is_iso_time(chars : ArrayView[Char]) -> Bool {
   let n = chars.length()
-  let arr = chars.to_array()
+  let arr = chars.to_owned()
   let hh = match digits_at(arr, 0, 2) {
     Some(h) if h <= 23 => h
     _ => return false

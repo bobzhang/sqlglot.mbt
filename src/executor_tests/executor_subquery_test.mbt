@@ -435,7 +435,7 @@ test "correlated_exists_over_scalar_aggregate" {
       let actual = first_column_sorted(@executor.execute(sql, tables~, schema~))
       let expected = sorted_strs(expected)
       if actual != expected {
-        fail("\{actual} != \{expected}")
+        fail("\{Repr(actual)} != \{Repr(expected)}")
       }
     })
   }
@@ -482,7 +482,7 @@ test "correlated_exists_over_scalar_aggregate" {
       let actual = first_column_sorted(@executor.execute(sql, tables~, schema~))
       let expected = sorted_strs(expected)
       if actual != expected {
-        fail("\{actual} != \{expected}")
+        fail("\{Repr(actual)} != \{Repr(expected)}")
       }
     })
   }

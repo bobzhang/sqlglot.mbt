@@ -281,13 +281,13 @@ fn explode_to_unnest_sql(
       let exploded_type = explode.this_().get_type()
       // This attempts a best-effort transpilation of LATERAL VIEW EXPLODE on a struct array
       match (e.arg("alias"), exploded_type) {
-        (Some(alias), Some(et)) if alias.kind.is_a(TableAlias) &&
+        (Some(alias_), Some(et)) if alias_.kind.is_a(TableAlias) &&
           et.kind.is_a(DataType) &&
           et.is_type([ARRAY]) &&
           !et.expressions().is_empty() &&
           et.expressions()[0].is_type([STRUCT]) =>
           // When unnesting a ROW in Presto, it produces N columns, so we need to fix the alias
-          alias.set(
+          alias_.set(
             "columns",
             et.expressions()[0].expressions().map(c => c.this_().copy()),
           )
@@ -304,23 +304,24 @@ fn explode_to_unnest_sql(
 
 ///|
 /// Amends LATERAL VIEW EXPLODE column references (only when types were inferred).
+#warnings("-unused_error_type")
 pub fn amend_exploded_column_table(
   expression : @core.Expr,
 ) -> @core.Expr raise @core.SqlglotError {
   // We check for expression.type because the columns can be amended only if types were inferred
   if expression.kind.is_a(Select) && expression.get_type() is Some(_) {
     for lateral in expression.list("laterals") {
-      let alias = lateral.arg("alias")
+      let alias_ = lateral.arg("alias")
       guard lateral.this() is Some(lt) && lt.kind.is_a(Explode) else {
         continue
       }
-      guard alias is Some(alias) &&
-        alias.kind.is_a(TableAlias) &&
-        alias.list("columns").length() == 1 else {
+      guard alias_ is Some(alias_) &&
+        alias_.kind.is_a(TableAlias) &&
+        alias_.list("columns").length() == 1 else {
         continue
       }
-      let new_table = alias.this_()
-      let old_table = @core.py_lower(alias.list("columns")[0].name())
+      let new_table = alias_.this_()
+      let old_table = @core.py_lower(alias_.list("columns")[0].name())
       // When transpiling a LATERAL VIEW EXPLODE Spark query, the exploded fields may be qualified
       // with the struct column, resulting in invalid Presto references that need to be amended
       for column in @core.find_all_in_scope(expression, [Column]) {

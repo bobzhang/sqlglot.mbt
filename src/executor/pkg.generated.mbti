@@ -156,7 +156,11 @@ pub(all) struct PyDate {
   month : Int
   day : Int
 } derive(Eq)
+#deprecated
+pub fn PyDate::equal(Self, Self) -> Bool
 pub fn PyDate::isoformat(Self) -> String
+#deprecated
+pub fn PyDate::not_equal(Self, Self) -> Bool
 pub fn PyDate::repr(Self) -> String
 pub fn PyDate::toordinal(Self) -> Int64
 pub fn PyDate::weekday(Self) -> Int
@@ -180,7 +184,11 @@ pub(all) struct PyTime {
   second : Int
   microsecond : Int
 } derive(Eq)
+#deprecated
+pub fn PyTime::equal(Self, Self) -> Bool
 pub fn PyTime::isoformat(Self) -> String
+#deprecated
+pub fn PyTime::not_equal(Self, Self) -> Bool
 pub fn PyTime::repr(Self) -> String
 
 pub(all) struct PyTimeDelta {
@@ -188,7 +196,11 @@ pub(all) struct PyTimeDelta {
   seconds : Int
   microseconds : Int
 } derive(Eq)
+#deprecated
+pub fn PyTimeDelta::equal(Self, Self) -> Bool
 pub fn PyTimeDelta::from_us(Int64) -> Self
+#deprecated
+pub fn PyTimeDelta::not_equal(Self, Self) -> Bool
 pub fn PyTimeDelta::py_str(Self) -> String
 pub fn PyTimeDelta::repr(Self) -> String
 pub fn PyTimeDelta::total_us(Self) -> Int64
@@ -237,6 +249,8 @@ pub fn Table::append(Self, Array[Value]) -> Unit raise PyException
 pub fn Table::get_row(Self, Int) -> RowReader raise PyException
 pub fn Table::length(Self) -> Int
 pub fn Table::new(columns? : Array[String], rows? : Array[Array[Value]], column_range? : (Int, Int)) -> Self
+#deprecated
+pub fn Table::output(Self, &Logger) -> Unit
 pub fn Table::pop(Self) -> Unit
 pub fn Table::to_pylist(Self) -> Array[Array[(String, Value)]]
 pub fn Table::to_string(Self) -> String
@@ -286,9 +300,16 @@ pub(all) enum Value {
   ReaderV(Reader)
   RevKey(Value)
 }
+#deprecated
+pub fn Value::equal(Self, Self) -> Bool
 pub fn Value::is_null(Self) -> Bool
+#deprecated
+pub fn Value::not_equal(Self, Self) -> Bool
+#deprecated
+pub fn Value::output(Self, &Logger) -> Unit
 pub fn Value::py_str(Self) -> String
 pub fn Value::repr(Self) -> String
+pub fn Value::to_string(Self) -> String
 pub fn Value::truthy(Self) -> Bool
 pub fn Value::type_name(Self) -> String
 pub impl Eq for Value

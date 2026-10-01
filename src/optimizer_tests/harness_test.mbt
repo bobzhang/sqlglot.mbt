@@ -35,8 +35,8 @@ fn Case::schema(
 
 ///|
 fn parse_meta(s : String) -> Map[String, Json] {
-  match (try? @json.parse(s)) {
-    Ok(Object(m)) => m
+  match (@json.parse(s) catch { _ => Json::null() }) {
+    Object(m) => m
     _ => {}
   }
 }
@@ -178,7 +178,7 @@ fn parent_link_error(root : @core.Expr) -> String? {
         }
         if !parent_ok || e.arg_key != Some(key) || (index is Some(_) && e.index != index) {
           return Some(
-            "PARENT LINK: \{e.kind} under \{node.kind}.\{key}\{to_repr(index)}: arg_key=\{to_repr(e.arg_key)} index=\{to_repr(e.index)} parent ok=\{parent_ok}",
+            "PARENT LINK: \{e.kind} under \{node.kind}.\{key}\{Repr(index)}: arg_key=\{Repr(e.arg_key)} index=\{Repr(e.index)} parent ok=\{parent_ok}",
           )
         }
       }

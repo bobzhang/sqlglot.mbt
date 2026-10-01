@@ -64,11 +64,11 @@ pub fn explode_projection_to_unnest(
 ) -> @core.Transform {
   fn(expression : @core.Expr) raise @core.SqlglotError {
     if expression.kind == Select {
-      let taken_select_names : @set.Set[String] = @set.Set::new()
+      let taken_select_names : @set.Set[String] = @set.Set([])
       for name in expression.named_selects() {
         taken_select_names.add(name)
       }
-      let taken_source_names : @set.Set[String] = @set.Set::new()
+      let taken_source_names : @set.Set[String] = @set.Set([])
       for reference in Scope::new(expression).references() {
         taken_source_names.add(reference.0)
       }
@@ -298,7 +298,7 @@ pub fn explode_projection_to_unnest(
       if !arrays.is_empty() {
         let mut end = @core.mk(Greatest, [
           ("this", arrays[0]),
-          ("expressions", arrays[1:].to_array()),
+          ("expressions", arrays[1:].to_owned()),
         ])
         if index_offset != 1 {
           end = @core.exp_binop(Sub, end, @core.literal_int(1 - index_offset))
@@ -364,7 +364,7 @@ pub fn eliminate_join_marks(
     let where_ = normalize(where_.this_())
     transforms_assert(normalized(where_), "Cannot normalize JOIN predicates")
     // {name: list of join AND conditions}, in insertion order
-    let joins_ons : Map[String, Array[@core.Expr]] = {}
+    let joins_ons : Map[String, Array[@core.Expr]] = Map([])
     let conds = if where_.kind.is_a(And) {
       where_.flatten().collect()
     } else {
@@ -397,11 +397,11 @@ pub fn eliminate_join_marks(
         None => joins_ons[left_join_table[0]] = [cond]
       }
     }
-    let old_joins : Map[String, @core.Expr] = {}
+    let old_joins : Map[String, @core.Expr] = Map([])
     for join in joins {
       old_joins[join.alias_or_name()] = join
     }
-    let new_joins : Map[String, @core.Expr] = {}
+    let new_joins : Map[String, @core.Expr] = Map([])
     let query_from = match query.arg("from_") {
       Some(f) => f
       None => raise @core.ValueError("KeyError: 'from_'")

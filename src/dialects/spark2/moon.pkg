@@ -1,7 +1,4 @@
 import {
   "bobzhang/sqlglot/core",
-  "moonbitlang/core/set",
   "bobzhang/sqlglot/dialects/hive",
 }
-
-warnings = "-79-15"

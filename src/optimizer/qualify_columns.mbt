@@ -17,7 +17,7 @@ pub fn qualify_columns(
   }
   let dialect = schema.dialect
   let pseudocolumns = dialect.cfg.pseudocolumns
-  let ancestry : Map[Int, (Scope?, Bool?)] = {}
+  let ancestry : Map[Int, (Scope?, Bool?)] = Map([])
   for scope in traverse_scope(expression) {
     if dialect.cfg.prefer_cte_alias_column {
       pushdown_cte_alias_columns(scope)
@@ -186,7 +186,7 @@ fn expand_using(
   scope : Scope,
   resolver : Resolver,
 ) -> ColumnTables raise @core.SqlglotError {
-  let columns : Map[String, String] = {}
+  let columns : Map[String, String] = Map([])
   fn update_source_columns(source_name : String) raise @core.SqlglotError {
     for column_name in resolver.get_source_columns(source_name) {
       if !columns.contains(column_name) {
@@ -200,7 +200,7 @@ fn expand_using(
   if joins.is_empty() {
     return column_tables
   }
-  let names : @set.Set[String] = @set.new()
+  let names : @set.Set[String] = @set.Set([])
   for join in joins {
     names.add(join.alias_or_name())
   }
@@ -262,7 +262,7 @@ fn expand_using(
     let is_semi_or_anti = is_semi_or_anti_join(join)
     for identifier in using_ {
       let identifier = identifier.name()
-      let mut table = columns.get(identifier)
+      let table = columns.get(identifier)
       let missing = match table {
         Some(t) => t == ""
         None => true
@@ -365,7 +365,7 @@ fn scope_ancestry(
       }
       None => ()
     }
-    let local = match ps.parent {
+    let local_ = match ps.parent {
       Some(pps) if pps.expression.kind.is_a(Union) =>
         Some(
           match pps.expression.expression() {
@@ -375,7 +375,7 @@ fn scope_ancestry(
         )
       _ => None
     }
-    path.push((ps, local))
+    path.push((ps, local_))
     match ps.parent {
       None => {
         tail = (None, None)
@@ -392,9 +392,9 @@ fn scope_ancestry(
   let (top, top_flag) = tail
   let mut flag = top_flag
   for i = path.length() - 1; i >= 0; i = i - 1 {
-    let (p, local) = path[i]
+    let (p, local_) = path[i]
     if flag is None {
-      flag = local
+      flag = local_
     }
     memo[p.expression.uid] = (top, flag)
   }
@@ -414,8 +414,8 @@ fn expand_alias_refs_impl(
   if !expression.kind.is_a(Select) || dialect.cfg.disables_alias_ref_expansion {
     return
   }
-  let alias_to_expression : Map[String, (@core.Expr, Int)] = {}
-  let projections : @set.Set[String] = @set.new()
+  let alias_to_expression : Map[String, (@core.Expr, Int)] = Map([])
+  let projections : @set.Set[String] = @set.Set([])
   for s in expression.selects() {
     projections.add(s.alias_or_name())
   }
@@ -513,7 +513,7 @@ fn expand_alias_refs_impl(
   for i, projection in expression.selects() {
     replace_columns(Some(projection), false, false)
     if projection.kind.is_a(Alias) {
-      alias_to_expression[projection.alias()] = (projection.this_(), i + 1)
+      alias_to_expression[projection.alias_()] = (projection.this_(), i + 1)
     }
   }
   let (parent_scope, on_right_sub_tree) = scope_ancestry(scope, ancestry)
@@ -610,11 +610,11 @@ fn expand_order_by_and_distinct_on(
     match alias_names_ {
       Some(a) => a
       None => {
-        let counts : Map[String, Int] = {}
+        let counts : Map[String, Int] = Map([])
         for n in expression.named_selects() {
           counts[n] = counts.get_or_default(n, 0) + 1
         }
-        let a : @set.Set[String] = @set.new()
+        let a : @set.Set[String] = @set.Set([])
         for n, c in counts {
           if c == 1 {
             a.add(n)
@@ -709,7 +709,7 @@ fn expand_positional_references(
       match alias_names {
         Some(names) =>
           new_nodes.push(
-            if names.contains(select.alias()) {
+            if names.contains(select.alias_()) {
               @core.mk1(Column, select.arg("alias").unwrap().copy())
             } else {
               node
@@ -721,7 +721,7 @@ fn expand_positional_references(
             let ap = match ambiguous_projections {
               Some(a) => a
               None => {
-                let a : @set.Set[String] = @set.new()
+                let a : @set.Set[String] = @set.Set([])
                 let selected = scope.selected_sources()
                 for s in expression.selects() {
                   if selected.contains(s.alias_or_name()) {
@@ -831,7 +831,7 @@ fn convert_columns_to_dots(
       !scope.is_correlated_subquery()) {
       let all_parts = column.parts()
       let mut root = all_parts[0]
-      let mut parts = all_parts[1:].to_array()
+      let mut parts = all_parts[1:].to_owned()
       let mut was_qualified = false
       // column_table starts as the column's table name (a string in Python)
       let mut table_str : String? = Some(column_table_name)
@@ -854,7 +854,7 @@ fn convert_columns_to_dots(
           table_str = None
           column_table = Some(root)
           root = parts[0]
-          parts = parts[1:].to_array()
+          parts = parts[1:].to_owned()
           was_qualified = true
           break
         }
@@ -883,7 +883,7 @@ fn convert_columns_to_dots(
           if !dot_parts.is_empty() {
             let skip = if was_qualified { 2 } else { 1 }
             let rest = if skip <= dot_parts.length() {
-              dot_parts[skip:].to_array()
+              dot_parts[skip:].to_owned()
             } else {
               []
             }
@@ -901,9 +901,9 @@ fn convert_columns_to_dots(
 }
 
 ///|
-fn find_pivot_by_alias(pivots : Array[@core.Expr], alias : String) -> @core.Expr? {
+fn find_pivot_by_alias(pivots : Array[@core.Expr], alias_ : String) -> @core.Expr? {
   for p in pivots {
-    if p.alias() == alias {
+    if p.alias_() == alias_ {
       return Some(p)
     }
   }
@@ -952,7 +952,7 @@ fn qualify_positional_column(
     source_columns.is_empty() ||
     source_columns.contains("*") {
     match scope_pivot {
-      Some(p) => column.set("table", @core.to_identifier(p.alias()))
+      Some(p) => column.set("table", @core.to_identifier(p.alias_()))
       None => ()
     }
     return true
@@ -1057,7 +1057,7 @@ fn qualify_columns_impl(
         let pivots = scope.pivots()
         column.set(
           "table",
-          @core.to_identifier(pivots[pivots.length() - 1].alias()),
+          @core.to_identifier(pivots[pivots.length() - 1].alias_()),
         )
         continue
       }
@@ -1090,9 +1090,9 @@ fn qualify_columns_impl(
       (None, None) => true
       _ => false
     })
-  let produced : @set.Set[String] = @set.new()
+  let produced : @set.Set[String] = @set.Set([])
   let pivoted_source = if single_chain {
-    pivots[pivots.length() - 1].alias()
+    pivots[pivots.length() - 1].alias_()
   } else {
     ""
   }
@@ -1130,7 +1130,7 @@ pub fn pivot_output_columns(
   pivot : @core.Expr,
   pre_pivot_columns : Array[String],
 ) -> Array[(String, String)] {
-  let excluded : @set.Set[String] = @set.new()
+  let excluded : @set.Set[String] = @set.Set([])
   let outputs = if pivot.has("unpivot") {
     let name_columns = []
     for field in pivot.list("fields") {
@@ -1185,7 +1185,7 @@ pub fn pivot_output_columns(
   let post_rename = if !renames.is_empty() {
     let rename_names = renames.map(r => r.name())
     if rename_names.length() < pre_rename.length() {
-      rename_names + pre_rename[rename_names.length():].to_array()
+      rename_names + pre_rename[rename_names.length():].to_owned()
     } else {
       rename_names
     }
@@ -1194,7 +1194,7 @@ pub fn pivot_output_columns(
   }
   // dict(zip(post_rename, pre_rename))
   let keys = []
-  let values : Map[String, String] = {}
+  let values : Map[String, String] = Map([])
   for i in 0..<@core.min_int(post_rename.length(), pre_rename.length()) {
     let k = post_rename[i]
     if !values.contains(k) {
@@ -1323,12 +1323,12 @@ pub fn pushdown_cte_alias_columns(scope : Scope) -> Unit {
         let aliases = cte.arg("alias").unwrap().list("columns")
         let projections = sel.expressions()
         for i in 0..<@core.min_int(aliases.length(), projections.length()) {
-          let alias = aliases[i]
+          let alias_ = aliases[i]
           let mut projection = projections[i]
           if projection.kind.is_a(Alias) {
-            projection.set("alias", alias.copy())
+            projection.set("alias", alias_.copy())
           } else {
-            projection = @core.alias_expr(projection, Some(alias.copy()))
+            projection = @core.alias_expr(projection, Some(alias_.copy()))
           }
           new_expressions.push(projection)
         }

@@ -79,13 +79,13 @@ pub fn Parser::parse_match_recognize(self : Parser) -> Expr? raise SqlglotError 
   } else {
     None
   }
-  let define = if self.match_text("DEFINE") {
+  let define_ = if self.match_text("DEFINE") {
     Some(self.parse_csv(() => self.parse_name_as_expression()))
   } else {
     None
   }
   self.match_r_paren()
-  let alias = self.parse_table_alias()
+  let alias_ = self.parse_table_alias()
   Some(
     self.expression(
       mk(MatchRecognize, [
@@ -95,8 +95,8 @@ pub fn Parser::parse_match_recognize(self : Parser) -> Expr? raise SqlglotError 
         ("rows", rows),
         ("after", after),
         ("pattern", pattern),
-        ("define", define),
-        ("alias", alias),
+        ("define", define_),
+        ("alias", alias_),
       ]),
     ),
   )
@@ -156,7 +156,7 @@ pub fn Parser::parse_lateral_base(self : Parser) -> Expr? raise SqlglotError {
     )
   } else {
     match this {
-      Some(t) if t.kind.is_any([Subquery, Unnest]) && !t.alias().is_empty() =>
+      Some(t) if t.kind.is_any([Subquery, Unnest]) && !t.alias_().is_empty() =>
         table_alias = Some(t.arg("alias").unwrap().pop())
       _ => {
         ordinality = Some(self.match_pair(WITH, ORDINALITY))
@@ -203,7 +203,7 @@ pub fn Parser::parse_join_parts(
 
 ///|
 pub fn Parser::parse_join_parts_base(self : Parser) -> (Token?, Token?, Token?) {
-  let method = if self.match_set(self.cfg.join_methods) {
+  let method_ = if self.match_set(self.cfg.join_methods) {
     Some(self.prev)
   } else {
     None
@@ -218,7 +218,7 @@ pub fn Parser::parse_join_parts_base(self : Parser) -> (Token?, Token?, Token?) 
   } else {
     None
   }
-  (method, side, kind)
+  (method_, side, kind)
 }
 
 ///|
@@ -272,7 +272,7 @@ pub fn Parser::parse_join_base(
   }
   let index = self.index
   let (method0, side0, kind0) = self.parse_join_parts()
-  let mut method = method0
+  let mut method_ = method0
   let mut side = side0
   let mut kind = kind0
   let directed = self.match_text("DIRECTED")
@@ -290,7 +290,7 @@ pub fn Parser::parse_join_base(
   if !skip_join_token && !join {
     self.retreat(index)
     kind = None
-    method = None
+    method_ = None
     side = None
   }
   let outer_apply = self.match_pair(OUTER, APPLY, advance=false)
@@ -308,7 +308,7 @@ pub fn Parser::parse_join_base(
       )
     _ => ()
   }
-  match method {
+  match method_ {
     Some(m) => j.set("method", py_upper(m.text))
     None => ()
   }
@@ -331,7 +331,7 @@ pub fn Parser::parse_join_base(
     j.set("on", self.parse_disjunction())
   } else if self.match_(USING) {
     j.set("using", self.parse_using_identifiers())
-  } else if method is None &&
+  } else if method_ is None &&
     !(outer_apply || cross_apply) &&
     !(match this {
       Some(t) => t.kind.is_a(Unnest)
@@ -369,7 +369,7 @@ pub fn Parser::parse_join_base(
   }
   j.set("pivots", self.parse_pivots())
   let comments = join_comments.copy()
-  for token in [method, side, kind] {
+  for token in [method_, side, kind] {
     match token {
       Some(t) => comments.append(t.comments)
       None => ()
@@ -430,7 +430,7 @@ pub fn Parser::parse_index_params_base(
   } else {
     None
   }
-  let include = if self.match_text("INCLUDE") {
+  let include_ = if self.match_text("INCLUDE") {
     Some(self.parse_wrapped_id_vars())
   } else {
     None
@@ -451,7 +451,7 @@ pub fn Parser::parse_index_params_base(
       mk(IndexParameters, [
         ("using", using_),
         ("columns", columns),
-        ("include", include),
+        ("include", include_),
         ("partition_by", partition_by),
         ("where", where_),
         ("with_storage", with_storage),
@@ -836,7 +836,7 @@ pub fn Parser::parse_table_base(
         if !postfix_tokens.contains(curr_tt) &&
           !postfix_tokens.contains(next_tt) {
           match self.parse_table_alias(alias_tokens=tokens) {
-            Some(alias) => table.set("alias", alias)
+            Some(alias_) => table.set("alias", alias_)
             None => ()
           }
           if fast_terminators.contains(self.curr.token_type) {
@@ -927,8 +927,8 @@ pub fn Parser::parse_table_base(
     this.set("sample", self.parse_table_sample())
   }
   match self.parse_table_alias(alias_tokens=tokens) {
-    Some(alias) => {
-      this.set("alias", alias)
+    Some(alias_) => {
+      this.set("alias", alias_)
       if this.kind == Table && !this.has("when") {
         this.set("when", self.parse_historical_data())
       }
@@ -1110,20 +1110,20 @@ pub fn Parser::parse_unnest_base(
   self.advance()
   let expressions = self.parse_wrapped_csv(() => self.parse_equality())
   let mut offset : Value? = Some(Bool(self.match_pair(WITH, ORDINALITY)))
-  let alias = if with_alias { self.parse_table_alias() } else { None }
-  match alias {
-    Some(alias) => {
+  let alias_ = if with_alias { self.parse_table_alias() } else { None }
+  match alias_ {
+    Some(alias_) => {
       if self.dialect.cfg.unnest_column_only {
-        if alias.has("columns") {
+        if alias_.has("columns") {
           self.raise_error("Unexpected extra column alias in unnest.")
         }
-        alias.set("columns", [alias.this()].filter_map(x => x))
-        alias.set("this", null_arg)
+        alias_.set("columns", [alias_.this()].filter_map(x => x))
+        alias_.set("this", null_arg)
       }
-      let columns = alias.list("columns")
+      let columns = alias_.list("columns")
       if offset is Some(Bool(true)) && expressions.length() < columns.length() {
         let last = columns[columns.length() - 1]
-        let raw = alias.raw_list("columns")
+        let raw = alias_.raw_list("columns")
         raw.pop() |> ignore
         offset = Some(Node(last))
       }
@@ -1149,7 +1149,7 @@ pub fn Parser::parse_unnest_base(
     self.expression(
       mk(Unnest, [
         ("expressions", expressions),
-        ("alias", alias),
+        ("alias", alias_),
         ("offset", offset),
       ]),
     ),
@@ -1169,14 +1169,14 @@ pub fn Parser::parse_derived_table_values(
     return None
   }
   let expressions = self.parse_csv(() => self.parse_value())
-  let alias = self.parse_table_alias()
+  let alias_ = self.parse_table_alias()
   if is_derived {
     self.match_r_paren()
   }
-  let alias = expr_or(alias, () => self.parse_table_alias())
+  let alias_ = expr_or(alias_, () => self.parse_table_alias())
   Some(
     self.expression(
-      mk(Values, [("expressions", expressions), ("alias", alias)]),
+      mk(Values, [("expressions", expressions), ("alias", alias_)]),
     ),
   )
 }
@@ -1207,7 +1207,7 @@ pub fn Parser::parse_table_sample_base(
   let mut percent : Expr? = None
   let mut size : Expr? = None
   let mut seed : Value? = None
-  let mut method = self.parse_var(tokens=TokenSet::new([ROW]), upper=true)
+  let mut method_ = self.parse_var(tokens=TokenSet::new([ROW]), upper=true)
   let matched_l_paren = self.match_(L_PAREN)
   let mut num : Expr? = None
   let mut expressions : Array[Expr]? = None
@@ -1237,15 +1237,15 @@ pub fn Parser::parse_table_sample_base(
     self.match_r_paren()
   }
   if self.match_(L_PAREN) {
-    method = self.parse_var(upper=true)
+    method_ = self.parse_var(upper=true)
     seed = self.andv(self.match_(COMMA), () => self.parse_number())
     self.match_r_paren()
   } else if self.match_texts(["SEED", "REPEATABLE"]) {
     seed = self.parse_wrapped(() => self.parse_number()).map(x => Node(x))
   }
-  if method is None {
+  if method_ is None {
     match self.cfg.default_sampling_method {
-      Some(m) if !m.is_empty() => method = Some(var_(m))
+      Some(m) if !m.is_empty() => method_ = Some(var_(m))
       _ => ()
     }
   }
@@ -1253,7 +1253,7 @@ pub fn Parser::parse_table_sample_base(
     self.expression(
       mk(TableSample, [
         ("expressions", expressions),
-        ("method", method),
+        ("method", method_),
         ("bucket_numerator", bucket_numerator),
         ("bucket_denominator", bucket_denominator),
         ("bucket_field", bucket_field),
@@ -1351,8 +1351,8 @@ pub fn Parser::parse_pivot_in(self : Parser) -> Expr? raise SqlglotError {
   fn parse_aliased_expression() -> Expr? raise SqlglotError {
     let this = self.parse_select_or_expression()
     self.match_(ALIAS) |> ignore
-    let alias = self.parse_bitwise()
-    match alias {
+    let alias_ = self.parse_bitwise()
+    match alias_ {
       Some(a) => {
         let a = if a.kind.is_a(Column) && a.db().is_empty() {
           match a.this() {
@@ -1562,7 +1562,7 @@ pub fn Parser::pivot_column_names(
     None => {
       let out = []
       for agg in aggregations {
-        let a = agg.alias()
+        let a = agg.alias_()
         if !a.is_empty() {
           out.push(a)
         }

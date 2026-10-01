@@ -82,9 +82,7 @@ fn create_sql(
 ///|
 /// https://issuetracker.google.com/issues/162294746
 /// workaround for bigquery bug when grouping by an expression and then ordering
-fn alias_ordered_group(
-  expression : @core.Expr,
-) -> @core.Expr raise @core.SqlglotError {
+fn alias_ordered_group(expression : @core.Expr) -> @core.Expr {
   if expression.kind == Select {
     match (expression.arg("group"), expression.arg("order")) {
       (Some(group), Some(_)) => {
@@ -123,9 +121,7 @@ fn alias_ordered_group(
 
 ///|
 /// BigQuery doesn't allow column names when defining a CTE, so we try to push them down.
-fn pushdown_cte_column_names(
-  expression : @core.Expr,
-) -> @core.Expr raise @core.SqlglotError {
+fn pushdown_cte_column_names(expression : @core.Expr) -> @core.Expr {
   if expression.kind == CTE && !expression.alias_column_names().is_empty() {
     let cte_query = expression.this().unwrap()
     if cte_query.is_star() {
@@ -368,7 +364,7 @@ fn configure_generator(d : @core.Dialect) -> Unit {
   t[Commit] = (_, _) => "COMMIT TRANSACTION"
   t[CountIf] = @core.rename_func("COUNTIF")
   t[Create] = create_sql
-  t[CTE] = @core.preprocess([pushdown_cte_column_names])
+  t[CTE] = @core.preprocess([e => pushdown_cte_column_names(e)])
   t[DateAdd] = @core.date_add_interval_sql("DATE", "ADD")
   t[DateDiff] = (g, e) => {
     g.func("DATE_DIFF", [e.this(), e.expression(), @core.unit_to_var(e)])
@@ -450,7 +446,7 @@ fn configure_generator(d : @core.Dialect) -> Unit {
     @optimizer.explode_projection_to_unnest(index_offset=0),
     @core.unqualify_unnest,
     @core.eliminate_distinct_on,
-    alias_ordered_group,
+    e => alias_ordered_group(e),
     @core.eliminate_semi_and_anti_joins,
   ])
   t[SHA] = @core.rename_func("SHA1")

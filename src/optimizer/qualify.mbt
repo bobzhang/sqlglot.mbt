@@ -85,16 +85,16 @@ pub fn isolate_table_selects(
         }) {
         continue
       }
-      if source.alias() == "" {
+      if source.alias_() == "" {
         raise @core.OptimizeError(
           "Tables require an alias. Run qualify_tables optimization.",
         )
       }
-      let alias = source.alias()
+      let alias_ = source.alias_()
       let aliased = @core.alias_table(source, source.alias_or_name())
       let wrapped = @core.select_([@core.mk0(Star)])
         .from_(aliased, copy=false)
-        .subquery(alias~, copy=false)
+        .subquery(alias_~, copy=false)
       source.replace(Some(wrapped)) |> ignore
     }
   }

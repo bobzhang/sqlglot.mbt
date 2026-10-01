@@ -28,7 +28,7 @@ fn dump(
   let lines = []
   for c in children {
     for line in c.split("\n") {
-      lines.push("  " + line.to_string())
+      lines.push("  " + line.to_owned())
     }
   }
   head + "\n" + lines.join("\n")
@@ -72,7 +72,7 @@ fn run_call(key : String) -> String raise {
   }
   let sources = match call.get("sources") {
     Some(Object(m)) => {
-      let out : Map[String, @core.Expr] = {}
+      let out : Map[String, @core.Expr] = Map([])
       for k, v in m {
         match v {
           String(s) => out[k] = @core.parse_one(s, dialect?)

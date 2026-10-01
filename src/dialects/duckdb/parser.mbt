@@ -307,7 +307,7 @@ fn parse_lambda(
 ) -> @core.Expr? raise @core.SqlglotError {
   let index = p.index
   if !p.match_text_seq(["LAMBDA"]) {
-    return p.parse_lambda_base(alias=alias_)
+    return p.parse_lambda_base(alias_=alias_)
   }
   let expressions = p.parse_csv(() => p.parse_lambda_arg())
   if !p.match_(COLON) {
@@ -434,7 +434,7 @@ fn pivot_column_names(
   if aggregations.length() == 1 {
     let out = []
     for agg in aggregations {
-      let a = agg.alias()
+      let a = agg.alias_()
       if !a.is_empty() {
         out.push(a)
       }

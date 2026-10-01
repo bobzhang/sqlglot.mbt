@@ -335,7 +335,7 @@ fn bigquery_coerces_to() -> Map[@core.DType, @set.Set[@core.DType]] {
     let set = match m.get(key) {
       Some(x) => x
       None => {
-        let x = @set.new()
+        let x = @set.Set([])
         m[key] = x
         x
       }

@@ -3,5 +3,3 @@ import {
   "moonbitlang/core/set",
   "moonbitlang/core/cmp",
 }
-
-warnings = "-79-15"

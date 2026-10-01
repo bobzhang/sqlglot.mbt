@@ -11,7 +11,7 @@ fn rest(args : Array[Expr], from : Int) -> Array[Expr] {
   if from >= args.length() {
     []
   } else {
-    args[from:].to_array()
+    args[from:].to_owned()
   }
 }
 
@@ -52,7 +52,7 @@ pub fn binary_range_parser(
   kind : Kind,
   reverse_args? : Bool = false,
 ) -> ParseFn1 {
-  fn(p, this) {
+  (p, this) => {
     let expression = p.parse_bitwise()
     let (a, b) = if reverse_args {
       (expression, this)
@@ -108,7 +108,7 @@ pub fn build_upper(args : Array[Expr]) -> Expr {
 
 ///|
 pub fn build_extract_json_with_path(kind : Kind) -> FuncBuilder {
-  fn(args, p) {
+  (args, p) => {
     let expression = mk(kind, [
       ("this", arg(args, 0)),
       ("expression", p.dialect.to_json_path(arg(args, 1))),
@@ -421,7 +421,7 @@ fn base_functions() -> Map[String, FuncBuilder] {
   f["JSON_EXTRACT"] = build_extract_json_with_path(JSONExtract)
   f["JSON_EXTRACT_SCALAR"] = build_extract_json_with_path(JSONExtractScalar)
   f["JSON_EXTRACT_PATH_TEXT"] = build_extract_json_with_path(JSONExtractScalar)
-  f["JSON_KEYS"] = fn(args, p) {
+  f["JSON_KEYS"] = (args, p) => {
     mk(JSONKeys, [
       ("this", arg(args, 0)),
       ("expression", p.dialect.to_json_path(arg(args, 1))),
@@ -502,7 +502,7 @@ fn base_property_parsers() -> Map[String, PropertyFn] {
   let m : Map[String, PropertyFn] = Map([])
   let node = fn(e : Expr) -> Value? { Some(Node(e)) }
   let opt = fn(e : Expr?) -> Value? { e.map(x => Node(x)) }
-  m["ALLOWED_VALUES"] = fn(p, _) {
+  m["ALLOWED_VALUES"] = (p, _) => {
     node(
       p.expression(
         mk(AllowedValuesProperty, [
@@ -511,37 +511,37 @@ fn base_property_parsers() -> Map[String, PropertyFn] {
       ),
     )
   }
-  m["ALGORITHM"] = fn(p, _) {
+  m["ALGORITHM"] = (p, _) => {
     node(p.parse_property_assignment(AlgorithmProperty))
   }
-  m["AUTO"] = fn(p, _) { opt(p.parse_auto_property()) }
-  m["AUTO_INCREMENT"] = fn(p, _) {
+  m["AUTO"] = (p, _) => opt(p.parse_auto_property())
+  m["AUTO_INCREMENT"] = (p, _) => {
     node(p.parse_property_assignment(AutoIncrementProperty))
   }
-  m["BACKUP"] = fn(p, _) {
+  m["BACKUP"] = (p, _) => {
     node(p.expression(mk1(BackupProperty, p.parse_var(any_token=true))))
   }
-  m["BLOCKCOMPRESSION"] = fn(p, _) { node(p.parse_blockcompression()) }
-  m["CALLED"] = fn(p, _) { opt(p.parse_called_on_null_input_property()) }
-  m["CHARSET"] = fn(p, kw) {
+  m["BLOCKCOMPRESSION"] = (p, _) => node(p.parse_blockcompression())
+  m["CALLED"] = (p, _) => opt(p.parse_called_on_null_input_property())
+  m["CHARSET"] = (p, kw) => {
     node(p.parse_character_set(default=kw.get("default").unwrap_or(false)))
   }
-  m["CHECKSUM"] = fn(p, _) { node(p.parse_checksum()) }
-  m["CLUSTER BY"] = fn(p, _) { opt(p.parse_cluster_property()) }
-  m["CLUSTERED"] = fn(p, _) { node(p.parse_clustered_by()) }
-  m["COLLATE"] = fn(p, kw) {
+  m["CHECKSUM"] = (p, _) => node(p.parse_checksum())
+  m["CLUSTER BY"] = (p, _) => opt(p.parse_cluster_property())
+  m["CLUSTERED"] = (p, _) => node(p.parse_clustered_by())
+  m["COLLATE"] = (p, kw) => {
     let kwargs : Array[(String, &IntoValue)] = []
     for k, v in kw {
       kwargs.push((k, v))
     }
     node(p.parse_property_assignment(CollateProperty, kwargs~))
   }
-  m["COMMENT"] = fn(p, _) {
+  m["COMMENT"] = (p, _) => {
     node(p.parse_property_assignment(SchemaCommentProperty))
   }
-  m["CONTAINS"] = fn(p, _) { opt(p.parse_contains_property()) }
-  m["COPY"] = fn(p, _) { opt(p.parse_copy_property()) }
-  m["DATABLOCKSIZE"] = fn(p, kw) {
+  m["CONTAINS"] = (p, _) => opt(p.parse_contains_property())
+  m["COPY"] = (p, _) => opt(p.parse_copy_property())
+  m["DATABLOCKSIZE"] = (p, kw) => {
     node(
       p.parse_datablocksize(
         default?=kw.get("default"),
@@ -550,23 +550,23 @@ fn base_property_parsers() -> Map[String, PropertyFn] {
       ),
     )
   }
-  m["DATA_DELETION"] = fn(p, _) { node(p.parse_data_deletion_property()) }
-  m["DEFINER"] = fn(p, _) { opt(p.parse_definer()) }
-  m["DETERMINISTIC"] = fn(p, _) {
+  m["DATA_DELETION"] = (p, _) => node(p.parse_data_deletion_property())
+  m["DEFINER"] = (p, _) => opt(p.parse_definer())
+  m["DETERMINISTIC"] = (p, _) => {
     node(p.expression(mk1(StabilityProperty, literal_string("IMMUTABLE"))))
   }
-  m["DISTRIBUTED"] = fn(p, _) { node(p.parse_distributed_property()) }
-  m["DUPLICATE"] = fn(p, _) {
+  m["DISTRIBUTED"] = (p, _) => node(p.parse_distributed_property())
+  m["DUPLICATE"] = (p, _) => {
     node(p.parse_composite_key_property(DuplicateKeyProperty))
   }
-  m["DYNAMIC"] = fn(p, _) { node(p.expression(mk0(DynamicProperty))) }
-  m["DISTKEY"] = fn(p, _) { node(p.parse_distkey()) }
-  m["DISTSTYLE"] = fn(p, _) {
+  m["DYNAMIC"] = (p, _) => node(p.expression(mk0(DynamicProperty)))
+  m["DISTKEY"] = (p, _) => node(p.parse_distkey())
+  m["DISTSTYLE"] = (p, _) => {
     node(p.parse_property_assignment(DistStyleProperty))
   }
-  m["EMPTY"] = fn(p, _) { node(p.expression(mk0(EmptyProperty))) }
-  m["ENGINE"] = fn(p, _) { node(p.parse_property_assignment(EngineProperty)) }
-  m["ENVIRONMENT"] = fn(p, _) {
+  m["EMPTY"] = (p, _) => node(p.expression(mk0(EmptyProperty)))
+  m["ENGINE"] = (p, _) => node(p.parse_property_assignment(EngineProperty))
+  m["ENVIRONMENT"] = (p, _) => {
     node(
       p.expression(
         mk(EnviromentProperty, [
@@ -575,25 +575,25 @@ fn base_property_parsers() -> Map[String, PropertyFn] {
       ),
     )
   }
-  m["HANDLER"] = fn(p, _) { node(p.parse_property_assignment(HandlerProperty)) }
-  m["EXECUTE"] = fn(p, _) {
+  m["HANDLER"] = (p, _) => node(p.parse_property_assignment(HandlerProperty))
+  m["EXECUTE"] = (p, _) => {
     node(p.parse_property_assignment(ExecuteAsProperty))
   }
-  m["EXTERNAL"] = fn(p, _) { node(p.expression(mk0(ExternalProperty))) }
-  m["FALLBACK"] = fn(p, kw) {
+  m["EXTERNAL"] = (p, _) => node(p.expression(mk0(ExternalProperty)))
+  m["FALLBACK"] = (p, kw) => {
     node(p.parse_fallback(no=kw.get("no").unwrap_or(false)))
   }
-  m["FORMAT"] = fn(p, _) {
+  m["FORMAT"] = (p, _) => {
     node(p.parse_property_assignment(FileFormatProperty))
   }
-  m["FREESPACE"] = fn(p, _) { node(p.parse_freespace()) }
-  m["GLOBAL"] = fn(p, _) { node(p.expression(mk0(GlobalProperty))) }
-  m["HEAP"] = fn(p, _) { node(p.expression(mk0(HeapProperty))) }
-  m["ICEBERG"] = fn(p, _) { node(p.expression(mk0(IcebergProperty))) }
-  m["IMMUTABLE"] = fn(p, _) {
+  m["FREESPACE"] = (p, _) => node(p.parse_freespace())
+  m["GLOBAL"] = (p, _) => node(p.expression(mk0(GlobalProperty)))
+  m["HEAP"] = (p, _) => node(p.expression(mk0(HeapProperty)))
+  m["ICEBERG"] = (p, _) => node(p.expression(mk0(IcebergProperty)))
+  m["IMMUTABLE"] = (p, _) => {
     node(p.expression(mk1(StabilityProperty, literal_string("IMMUTABLE"))))
   }
-  m["INHERITS"] = fn(p, _) {
+  m["INHERITS"] = (p, _) => {
     node(
       p.expression(
         mk(InheritsProperty, [
@@ -602,24 +602,24 @@ fn base_property_parsers() -> Map[String, PropertyFn] {
       ),
     )
   }
-  m["INPUT"] = fn(p, _) {
+  m["INPUT"] = (p, _) => {
     node(p.expression(mk1(InputModelProperty, p.parse_schema())))
   }
-  m["JOURNAL"] = fn(p, kw) { node(p.parse_journal(kw)) }
-  m["LANGUAGE"] = fn(p, _) {
+  m["JOURNAL"] = (p, kw) => node(p.parse_journal(kw))
+  m["LANGUAGE"] = (p, _) => {
     node(p.parse_property_assignment(LanguageProperty))
   }
-  m["LAYOUT"] = fn(p, _) { opt(p.parse_dict_property("LAYOUT")) }
-  m["LIFETIME"] = fn(p, _) { opt(p.parse_dict_range("LIFETIME")) }
-  m["LIKE"] = fn(p, _) { opt(p.parse_create_like()) }
-  m["LOCATION"] = fn(p, _) {
+  m["LAYOUT"] = (p, _) => opt(p.parse_dict_property("LAYOUT"))
+  m["LIFETIME"] = (p, _) => opt(p.parse_dict_range("LIFETIME"))
+  m["LIKE"] = (p, _) => opt(p.parse_create_like())
+  m["LOCATION"] = (p, _) => {
     node(p.parse_property_assignment(LocationProperty))
   }
-  m["LOCK"] = fn(p, _) { node(p.parse_locking()) }
-  m["LOCKING"] = fn(p, _) { node(p.parse_locking()) }
-  m["LOG"] = fn(p, kw) { node(p.parse_log(no=kw.get("no").unwrap_or(false))) }
-  m["MATERIALIZED"] = fn(p, _) { node(p.expression(mk0(MaterializedProperty))) }
-  m["MERGEBLOCKRATIO"] = fn(p, kw) {
+  m["LOCK"] = (p, _) => node(p.parse_locking())
+  m["LOCKING"] = (p, _) => node(p.parse_locking())
+  m["LOG"] = (p, kw) => node(p.parse_log(no=kw.get("no").unwrap_or(false)))
+  m["MATERIALIZED"] = (p, _) => node(p.expression(mk0(MaterializedProperty)))
+  m["MERGEBLOCKRATIO"] = (p, kw) => {
     node(
       p.parse_mergeblockratio(
         no=kw.get("no").unwrap_or(false),
@@ -627,60 +627,60 @@ fn base_property_parsers() -> Map[String, PropertyFn] {
       ),
     )
   }
-  m["MODIFIES"] = fn(p, _) { opt(p.parse_modifies_property()) }
-  m["MULTISET"] = fn(p, _) {
+  m["MODIFIES"] = (p, _) => opt(p.parse_modifies_property())
+  m["MULTISET"] = (p, _) => {
     node(p.expression(mk(SetProperty, [("multi", true)])))
   }
-  m["NO"] = fn(p, _) { opt(p.parse_no_property()) }
-  m["ON"] = fn(p, _) { opt(p.parse_on_property()) }
-  m["ORDER BY"] = fn(p, _) { opt(p.parse_order(skip_order_token=true)) }
-  m["OUTPUT"] = fn(p, _) {
+  m["NO"] = (p, _) => opt(p.parse_no_property())
+  m["ON"] = (p, _) => opt(p.parse_on_property())
+  m["ORDER BY"] = (p, _) => opt(p.parse_order(skip_order_token=true))
+  m["OUTPUT"] = (p, _) => {
     node(p.expression(mk1(OutputModelProperty, p.parse_schema())))
   }
-  m["PARTITION"] = fn(p, _) { opt(p.parse_partitioned_of()) }
-  m["PARTITION BY"] = fn(p, _) { opt(p.parse_partitioned_by()) }
-  m["PARTITIONED BY"] = fn(p, _) { opt(p.parse_partitioned_by()) }
-  m["PARTITIONED_BY"] = fn(p, _) { opt(p.parse_partitioned_by()) }
-  m["PRIMARY KEY"] = fn(p, _) { opt(p.parse_primary_key(in_props=true)) }
-  m["RANGE"] = fn(p, _) { opt(p.parse_dict_range("RANGE")) }
-  m["READS"] = fn(p, _) { opt(p.parse_reads_property()) }
-  m["REMOTE"] = fn(p, _) { node(p.parse_remote_with_connection()) }
-  m["RETURNS"] = fn(p, _) { opt(p.parse_returns()) }
-  m["STRICT"] = fn(p, _) { node(p.expression(mk0(StrictProperty))) }
-  m["STREAMING"] = fn(p, _) { node(p.expression(mk0(StreamingTableProperty))) }
-  m["ROW"] = fn(p, _) { opt(p.parse_row()) }
-  m["ROW_FORMAT"] = fn(p, _) {
+  m["PARTITION"] = (p, _) => opt(p.parse_partitioned_of())
+  m["PARTITION BY"] = (p, _) => opt(p.parse_partitioned_by())
+  m["PARTITIONED BY"] = (p, _) => opt(p.parse_partitioned_by())
+  m["PARTITIONED_BY"] = (p, _) => opt(p.parse_partitioned_by())
+  m["PRIMARY KEY"] = (p, _) => opt(p.parse_primary_key(in_props=true))
+  m["RANGE"] = (p, _) => opt(p.parse_dict_range("RANGE"))
+  m["READS"] = (p, _) => opt(p.parse_reads_property())
+  m["REMOTE"] = (p, _) => node(p.parse_remote_with_connection())
+  m["RETURNS"] = (p, _) => opt(p.parse_returns())
+  m["STRICT"] = (p, _) => node(p.expression(mk0(StrictProperty)))
+  m["STREAMING"] = (p, _) => node(p.expression(mk0(StreamingTableProperty)))
+  m["ROW"] = (p, _) => opt(p.parse_row())
+  m["ROW_FORMAT"] = (p, _) => {
     node(p.parse_property_assignment(RowFormatProperty))
   }
-  m["SAMPLE"] = fn(p, _) {
+  m["SAMPLE"] = (p, _) => {
     let this = p.andv(p.match_text("BY"), () => p.parse_bitwise())
     node(p.expression(mk1(SampleProperty, this)))
   }
-  m["SECURE"] = fn(p, _) { node(p.expression(mk0(SecureProperty))) }
-  m["SECURITY"] = fn(p, _) { node(p.parse_sql_security()) }
-  m["SQL SECURITY"] = fn(p, _) { node(p.parse_sql_security()) }
-  m["SET"] = fn(p, _) {
+  m["SECURE"] = (p, _) => node(p.expression(mk0(SecureProperty)))
+  m["SECURITY"] = (p, _) => node(p.parse_sql_security())
+  m["SQL SECURITY"] = (p, _) => node(p.parse_sql_security())
+  m["SET"] = (p, _) => {
     node(p.expression(mk(SetProperty, [("multi", false)])))
   }
-  m["SETTINGS"] = fn(p, _) { node(p.parse_settings_property()) }
-  m["SHARING"] = fn(p, _) { node(p.parse_property_assignment(SharingProperty)) }
-  m["SORTKEY"] = fn(p, _) { node(p.parse_sortkey()) }
-  m["SOURCE"] = fn(p, _) { opt(p.parse_dict_property("SOURCE")) }
-  m["STABLE"] = fn(p, _) {
+  m["SETTINGS"] = (p, _) => node(p.parse_settings_property())
+  m["SHARING"] = (p, _) => node(p.parse_property_assignment(SharingProperty))
+  m["SORTKEY"] = (p, _) => node(p.parse_sortkey())
+  m["SOURCE"] = (p, _) => opt(p.parse_dict_property("SOURCE"))
+  m["STABLE"] = (p, _) => {
     node(p.expression(mk1(StabilityProperty, literal_string("STABLE"))))
   }
-  m["STORED"] = fn(p, _) { node(p.parse_stored()) }
-  m["SYSTEM_VERSIONING"] = fn(p, _) {
+  m["STORED"] = (p, _) => node(p.parse_stored())
+  m["SYSTEM_VERSIONING"] = (p, _) => {
     node(p.parse_system_versioning_property())
   }
-  m["TBLPROPERTIES"] = fn(p, _) {
+  m["TBLPROPERTIES"] = (p, _) => {
     Some(List(p.parse_wrapped_properties().map(x => Node(x))))
   }
-  m["TEMP"] = fn(p, _) { node(p.expression(mk0(TemporaryProperty))) }
-  m["TEMPORARY"] = fn(p, _) { node(p.expression(mk0(TemporaryProperty))) }
-  m["TO"] = fn(p, _) { opt(p.parse_to_table()) }
-  m["TRANSIENT"] = fn(p, _) { node(p.expression(mk0(TransientProperty))) }
-  m["TRANSFORM"] = fn(p, _) {
+  m["TEMP"] = (p, _) => node(p.expression(mk0(TemporaryProperty)))
+  m["TEMPORARY"] = (p, _) => node(p.expression(mk0(TemporaryProperty)))
+  m["TO"] = (p, _) => opt(p.parse_to_table())
+  m["TRANSIENT"] = (p, _) => node(p.expression(mk0(TransientProperty)))
+  m["TRANSFORM"] = (p, _) => {
     node(
       p.expression(
         mk(TransformModelProperty, [
@@ -689,13 +689,13 @@ fn base_property_parsers() -> Map[String, PropertyFn] {
       ),
     )
   }
-  m["TTL"] = fn(p, _) { opt(p.parse_ttl()) }
-  m["USING"] = fn(p, _) {
+  m["TTL"] = (p, _) => opt(p.parse_ttl())
+  m["USING"] = (p, _) => {
     node(p.parse_property_assignment(FileFormatProperty))
   }
-  m["UNLOGGED"] = fn(p, _) { node(p.expression(mk0(UnloggedProperty))) }
-  m["VOLATILE"] = fn(p, _) { node(p.parse_volatile_property()) }
-  m["WITH"] = fn(p, _) { p.parse_with_property() }
+  m["UNLOGGED"] = (p, _) => node(p.expression(mk0(UnloggedProperty)))
+  m["VOLATILE"] = (p, _) => node(p.parse_volatile_property())
+  m["WITH"] = (p, _) => p.parse_with_property()
   m
 }
 
@@ -1173,7 +1173,7 @@ pub fn base_parser_fns() -> ParserFns {
     key : String,
     f : (Parser) -> Expr? raise SqlglotError,
   ) -> (Parser) -> (String, Value?) raise SqlglotError {
-    fn(p) { (key, f(p).map(x => Node(x))) }
+    (p) => (key, f(p).map(x => Node(x)))
   }
   let query_modifier_parsers : Map[
     TokenType,
@@ -1237,8 +1237,8 @@ pub fn base_parser_fns() -> ParserFns {
   let pipe : Map[String, (Parser, Expr) -> Expr? raise SqlglotError] = {
     "AGGREGATE": (p, q) => p.parse_pipe_syntax_aggregate(q),
     "AS": (p, q) => {
-      let alias = p.parse_table_alias()
-      Some(p.build_pipe_cte(q, [mk0(Star)], alias_cte?=alias))
+      let alias_ = p.parse_table_alias()
+      Some(p.build_pipe_cte(q, [mk0(Star)], alias_cte?=alias_))
     },
     "DISTINCT": (p, q) => {
       p.advance()

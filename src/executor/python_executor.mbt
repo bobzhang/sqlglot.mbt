@@ -15,7 +15,7 @@ pub fn error_message(e : Error) -> String {
     PyException(_, m) => m
     ExecuteError(m, ..) => m
     @core.SqlglotError::ParseError(m, _) => m
-    @core.SqlglotError::TokenError(m)
+    @core.SqlglotError::TokenError(m, ..)
     | @core.SqlglotError::UnsupportedError(m)
     | @core.SqlglotError::OptimizeError(m)
     | @core.SqlglotError::SchemaError(m)
@@ -50,7 +50,7 @@ pub fn PythonExecutor::new(
   env? : Map[String, Value] = {},
   tables? : Tables,
 ) -> PythonExecutor raise @core.SqlglotError {
-  let all_env : Map[String, Value] = {}
+  let all_env : Map[String, Value] = Map([])
   for k, v in default_env {
     all_env[k] = v
   }
@@ -124,7 +124,7 @@ fn PythonExecutor::execute_plan(
 ) -> Table raise {
   let finished : Array[@planner.Step] = []
   let queue = plan.leaves()
-  let contexts : Map[Int, Context] = {}
+  let contexts : Map[Int, Context] = Map([])
   while queue.pop() is Some(node) {
     try {
       let tables : Array[(String?, Table)] = []
@@ -179,7 +179,7 @@ fn slice_rows(rows : Array[Row], start : Int, end : Int?) -> Array[Row] {
     Some(e) => if e > n { n } else if e < s { s } else { e }
     None => n
   }
-  rows[s:e].to_array()
+  rows[s:e].to_owned()
 }
 
 ///|
@@ -377,7 +377,7 @@ fn PythonExecutor::subquery_exists(
   self : PythonExecutor,
   args : Array[Value],
 ) -> Value raise {
-  let table = self.subquery_table(args[0], args[1], args[2:].to_array())
+  let table = self.subquery_table(args[0], args[1], args[2:].to_owned())
   Bool(!table.rows.is_empty())
 }
 
@@ -386,7 +386,7 @@ fn PythonExecutor::subquery_scalar(
   self : PythonExecutor,
   args : Array[Value],
 ) -> Value raise {
-  let rows = self.subquery_table(args[0], args[1], args[2:].to_array()).rows
+  let rows = self.subquery_table(args[0], args[1], args[2:].to_owned()).rows
   if rows.length() > 1 {
     raise ExecuteError(
       "More than one row returned by a subquery used as an expression",
@@ -416,7 +416,7 @@ fn PythonExecutor::subquery_comparison(
   }
   let is_any = args[4] is Str("ANY")
   let mut saw_null = false
-  for row in self.subquery_table(args[1], args[2], args[5:].to_array()).rows {
+  for row in self.subquery_table(args[1], args[2], args[5:].to_owned()).rows {
     let result = call_value(compare, [value, row[0]])
     if result is Null {
       saw_null = true
@@ -460,7 +460,7 @@ fn PythonExecutor::scan(
   let source : String? = match step.source {
     Some(s) => {
       let n = s.name()
-      Some(if n != "" { n } else { s.alias() })
+      Some(if n != "" { n } else { s.alias_() })
     }
     None => None
   }
@@ -713,8 +713,8 @@ fn PythonExecutor::nested_loop_join(
   )
   let source_rows = source_context.table().rows
   let join_rows = join_context.table().rows
-  let matched_source : Map[Int, Unit] = {}
-  let matched_join : Map[Int, Unit] = {}
+  let matched_source : Map[Int, Unit] = Map([])
+  let matched_join : Map[Int, Unit] = Map([])
   for source_index, source_row in source_rows {
     for join_index, join_row in join_rows {
       let row = source_row + join_row
@@ -742,7 +742,7 @@ fn PythonExecutor::hash_join(
 ) -> Table raise {
   let source_key = self.generate_tuple(join.source_key)
   let join_key = self.generate_tuple(join.join_key)
-  let groups : Map[String, Int] = {}
+  let groups : Map[String, Int] = Map([])
   let results : Array[(Array[(Int, Row)], Array[(Int, Row)])] = []
   fn group_of(key : Array[Value]) -> Int raise {
     let k = hash_key(Tuple(key))
@@ -776,8 +776,8 @@ fn PythonExecutor::hash_join(
   let table = Table::new(
     columns=source_context.columns() + join_context.columns(),
   )
-  let matched_source : Map[Int, Unit] = {}
-  let matched_join : Map[Int, Unit] = {}
+  let matched_source : Map[Int, Unit] = Map([])
+  let matched_join : Map[Int, Unit] = Map([])
   for group in results {
     let (source_group, join_group) = group
     for s in source_group {
@@ -994,7 +994,7 @@ fn slice_values(row : Row, start : Int, end : Int) -> Row {
   let n = row.length()
   let s = @cmp.minimum(start, n)
   let e = @cmp.maximum(s, @cmp.minimum(end, n))
-  row[s:e].to_array()
+  row[s:e].to_owned()
 }
 
 ///|
@@ -1008,12 +1008,12 @@ fn PythonExecutor::set_operation(
   let sink = Table::new(columns=left.columns)
   let op = step.op.unwrap()
   if op.is_a(Intersect) || op.is_a(Except) {
-    let right_counts : Map[String, Int] = {}
+    let right_counts : Map[String, Int] = Map([])
     for row in right.rows {
       let k = hash_key(Tuple(row))
       right_counts[k] = right_counts.get(k).unwrap_or(0) + 1
     }
-    let seen : Map[String, Unit] = {}
+    let seen : Map[String, Unit] = Map([])
     for row in left.rows {
       let k = hash_key(Tuple(row))
       let count = right_counts.get(k).unwrap_or(0)

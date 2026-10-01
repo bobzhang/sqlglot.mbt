@@ -177,9 +177,20 @@ pub impl Eq for Dialect with fn equal(self, other) {
 }
 
 ///|
+#deprecated
+pub extend Dialect with Eq::{not_equal, equal}
+
+///|
 pub impl Show for Dialect with fn output(self, logger) {
   logger.write_string(if self.name.is_empty() { "sqlglot" } else { self.name })
 }
+
+///|
+pub extend Dialect with Show::{to_string}
+
+///|
+#deprecated
+pub extend Dialect with Show::{output}
 
 // ---------------------------------------------------------------------------
 // Registry
@@ -191,7 +202,7 @@ let dialect_registry : Map[String, () -> Dialect] = Map([])
 let dialect_cache : Map[String, Dialect] = Map([])
 
 ///|
-let base_dialect_cell : Ref[Dialect?] = Ref::new(None)
+let base_dialect_cell : Ref[Dialect?] = Ref(None)
 
 ///|
 /// Registers a dialect constructor under `name`.

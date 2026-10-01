@@ -10,6 +10,14 @@ pub(all) enum StepKind {
 } derive(Eq, Debug)
 
 ///|
+#deprecated
+pub extend StepKind with Eq::{not_equal, equal}
+
+///|
+#deprecated
+pub extend StepKind with Debug::{to_repr}
+
+///|
 /// The join information of a Join step.
 pub struct JoinInfo {
   side : String
@@ -309,8 +317,8 @@ pub fn step_from_expression(
       ctes = ctes.copy()
       for cte in with_.expressions() {
         let step = step_from_expression(cte.this_(), ctes)
-        step.name = Some(cte.alias())
-        ctes[cte.alias()] = step
+        step.name = Some(cte.alias_())
+        ctes[cte.alias_()] = step
       }
     }
     None => ()
@@ -422,7 +430,7 @@ pub fn step_from_expression(
     }
     agg.group = group_exprs.mapi((i, e) => ("_g\{i}", e))
     let intermediate_exprs : Array[(@core.Expr, String)] = []
-    let intermediate_names : Map[String, String] = {}
+    let intermediate_names : Map[String, String] = Map([])
     for kv in agg.group {
       let (k, v) = kv
       intermediate_exprs.push((v, k))
@@ -604,14 +612,14 @@ fn scan_from_expression(
   expression : @core.Expr,
   ctes : Map[String, Step],
 ) -> Step raise @core.SqlglotError {
-  let alias = expression.alias_or_name()
+  let alias_ = expression.alias_or_name()
   if expression.kind.is_a(Subquery) {
     let step = step_from_expression(expression.this_(), ctes)
-    step.name = Some(alias)
+    step.name = Some(alias_)
     return step
   }
   let step = Step::new(Scan)
-  step.name = Some(alias)
+  step.name = Some(alias_)
   step.source = Some(expression)
   match ctes.get(expression.name()) {
     Some(cte) => step.add_dependency(cte)

@@ -3,4 +3,3 @@ import {
   "bobzhang/sqlglot/optimizer",
 }
 
-warnings = "-79-15-20-82-29"

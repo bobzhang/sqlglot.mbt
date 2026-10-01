@@ -236,7 +236,7 @@ fn pydt_eq(a : PyDT, b : PyDT) -> Bool {
   if a.is_datetime != b.is_datetime {
     return false
   }
-  if a.tz is Some(_) != (b.tz is Some(_)) {
+  if (a.tz is Some(_)) != (b.tz is Some(_)) {
     return false
   }
   a.instant() == b.instant()
@@ -248,7 +248,7 @@ fn pydt_cmp(a : PyDT, b : PyDT) -> Int raise @core.SqlglotError {
   if a.is_datetime != b.is_datetime {
     raise @core.ValueError("TypeError: can't compare datetime.datetime to datetime.date")
   }
-  if a.tz is Some(_) != (b.tz is Some(_)) {
+  if (a.tz is Some(_)) != (b.tz is Some(_)) {
     raise @core.ValueError(
       "TypeError: can't compare offset-naive and offset-aware datetimes",
     )
@@ -271,7 +271,7 @@ fn parse_py_datetime(text : String) -> PyDT? {
   if n + 1 >= chars.length() {
     return None
   }
-  parse_iso_time_parts(chars[n + 1:].to_array()).map(t => {
+  parse_iso_time_parts(chars[n + 1:].to_owned()).map(t => {
     ..base,
     h: t.0,
     mi: t.1,

@@ -232,7 +232,7 @@ def gen_dtypes():
     lines.append("pub(all) enum DType {")
     for n in names:
         lines.append(f"  {n}")
-    lines.append("} derive(Eq, Hash, Compare)")
+    lines.append("} derive(Eq, Hash, Compare, Debug)")
     lines.append("")
     lines.append("///|")
     lines.append("pub fn DType::id(self : DType) -> Int {")
@@ -317,16 +317,23 @@ def tokenizer_settings_full(cls, fn_name, pub=True):
     for k, v in cls.KEYWORDS.items():
         L.append(f"    {mbt_str(k)}: {v.name},")
     L.append("  }")
-    L.append("  let numeric_escapes : Map[String, NumericEscape] = {")
-    for k, v in cls.NUMERIC_ESCAPES.items():
-        L.append(
-            f"    {mbt_str(k)}: {{ base: {v[0]}, min_digits: {v[1]}, max_digits: {v[2]}, max_value: {v[3]} }},"
-        )
-    L.append("  }")
-    L.append("  let numeric_literals : Map[String, String] = {")
-    for k, v in cls.NUMERIC_LITERALS.items():
-        L.append(f"    {mbt_str(k)}: {mbt_str(v)},")
-    L.append("  }")
+    # An empty `{}` literal is ambiguous (warning 82), so empty maps are written `Map([])`.
+    if cls.NUMERIC_ESCAPES:
+        L.append("  let numeric_escapes : Map[String, NumericEscape] = {")
+        for k, v in cls.NUMERIC_ESCAPES.items():
+            L.append(
+                f"    {mbt_str(k)}: {{ base: {v[0]}, min_digits: {v[1]}, max_digits: {v[2]}, max_value: {v[3]} }},"
+            )
+        L.append("  }")
+    else:
+        L.append("  let numeric_escapes : Map[String, NumericEscape] = Map([])")
+    if cls.NUMERIC_LITERALS:
+        L.append("  let numeric_literals : Map[String, String] = {")
+        for k, v in cls.NUMERIC_LITERALS.items():
+            L.append(f"    {mbt_str(k)}: {mbt_str(v)},")
+        L.append("  }")
+    else:
+        L.append("  let numeric_literals : Map[String, String] = Map([])")
     bse = cls.__dict__.get("BYTE_STRING_ESCAPES")
     L.append("  {")
     L.append("    single_tokens,")
@@ -351,7 +358,7 @@ def tokenizer_settings_full(cls, fn_name, pub=True):
     L.append("    numeric_literals,")
     L.append(f"    numbers_can_have_decimals: {str(cls.NUMBERS_CAN_HAVE_DECIMALS).lower()},")
     for d in ["quotes_map", "identifiers_map", "identifier_chars", "format_strings", "string_escapes_set", "byte_string_escapes_set", "escape_follow_chars_set", "identifier_escapes_set", "comments_map", "commands_set"]:
-        L.append(f"    {d}: Map::new(),")
+        L.append(f"    {d}: Map([]),")
     L.append("    keyword_trie: Trie::new(),")
     L.append("  }")
     L.append("}")

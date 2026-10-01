@@ -432,7 +432,7 @@ test "TestParser.test_command" {
   let output = logged("WARNING")
   t.ok(
     output.length() > 0 && output[0].contains("'ADD JAR s3://a'"),
-    msg="\{output}",
+    msg="\{Repr(output)}",
   )
   t.done()
 }
@@ -511,9 +511,9 @@ test "TestParser.test_identify" {
   let exprs = expression.expressions()
   assert_eq(exprs[0].name(), "a")
   assert_eq(exprs[1].name(), "b")
-  assert_eq(exprs[2].alias(), "c")
-  assert_eq(exprs[3].alias(), "D")
-  assert_eq(exprs[4].alias(), "y|z'")
+  assert_eq(exprs[2].alias_(), "c")
+  assert_eq(exprs[3].alias_(), "D")
+  assert_eq(exprs[4].alias_(), "y|z'")
   let table = expression.arg("from_").unwrap().this().unwrap()
   assert_eq(table.name(), "z")
   assert_eq(table.arg("db").unwrap().name(), "y")
@@ -983,7 +983,7 @@ test "TestParser.test_set_expression" {
   let output = logged("WARNING")
   t.ok(
     output.length() > 0 && output[0].contains("'SET DEFAULT ROLE ALL TO USER'"),
-    msg="\{output}",
+    msg="\{Repr(output)}",
   )
   t.eqf(() => gen(set_as_command), "SET DEFAULT ROLE ALL TO USER")
   t.ok(isa(Some(set_as_command), Command))
