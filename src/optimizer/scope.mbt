@@ -679,14 +679,28 @@ pub fn Scope::traverse(self : Scope) -> Array[Scope] {
 }
 
 ///|
-/// Count the number of times each scope in this tree is referenced (keyed by scope id).
+/// Identity key of a source (Python `id(source)`).
+pub fn Source::key(self : Source) -> Int {
+  match self {
+    TableSource(t) => t.uid * 2
+    ScopeSource(s) => s.id * 2 + 1
+  }
+}
+
+///|
+/// Identity key of a scope as a source (`Source::key` of `ScopeSource(scope)`).
+pub fn Scope::key(self : Scope) -> Int {
+  self.id * 2 + 1
+}
+
+///|
+/// Count the number of times each source in this tree is referenced
+/// (keyed by `Source::key`).
 pub fn Scope::ref_count(self : Scope) -> Map[Int, Int] {
   let counts : Map[Int, Int] = {}
   fn bump(s : Source) {
-    match s {
-      ScopeSource(sc) => counts[sc.id] = counts.get_or_default(sc.id, 0) + 1
-      TableSource(_) => ()
-    }
+    let k = s.key()
+    counts[k] = counts.get_or_default(k, 0) + 1
   }
 
   for scope in self.traverse() {
