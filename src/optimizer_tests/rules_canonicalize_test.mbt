@@ -1,6 +1,31 @@
 // Fixture drivers for canonicalize.
 
 ///|
+test "optimizer canonicalize_internal_names" {
+  run_fixtures(
+    "canonicalize_internal_names",
+    canonicalize_internal_names_fixtures,
+    pretty=false,
+    (e, c) => {
+      let e = @optimizer.qualify(
+        e,
+        schema=c.schema(canon_names_schema_json),
+        catalog="c",
+        db="db",
+        dialect?=c.dialect,
+        validate_qualify_columns=c.meta_bool("validate_qualify_columns").unwrap_or(
+          true,
+        ),
+        canonicalize_table_aliases=c.meta_bool("canonicalize_table_aliases").unwrap_or(
+          false,
+        ),
+      )
+      @optimizer.canonicalize_internal_names(e)
+    },
+  )
+}
+
+///|
 test "optimizer canonicalize" {
   run_fixtures("canonicalize", canonicalize_fixtures, pretty=false, (e, c) => {
     let schema = c.schema(test_schema_json)
