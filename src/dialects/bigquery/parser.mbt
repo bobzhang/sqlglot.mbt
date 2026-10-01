@@ -881,27 +881,16 @@ fn parse_unnest(
   guard unnest is Some(u) else { return None }
   match u.expressions().get(0) {
     Some(unnest_expr) => {
-      let unnest_expr = @core.gen_annotate_types(unnest_expr, p.dialect)
+      let unnest_expr = @optimizer.annotate_types(unnest_expr, dialect=p.dialect)
       // Unnesting a nested array (i.e array of structs) explodes the top-level struct fields,
       // in contrast to other dialects such as DuckDB which flattens only the array by default
-      if unnest_expr.is_type([ARRAY]) {
-        let elems = match unnest_expr.get_type() {
-          Some(t) => t.expressions()
-          None => []
-        }
-        // Until the optimizer's annotate_types is available, the element type of an
-        // array literal is approximated by its first non-NULL element.
-        let first_elem = unnest_expr
-          .expressions()
-          .iter()
-          .find_first(x => x.kind != Null)
-        let literal_struct_elems = unnest_expr.kind == Array &&
-          first_elem is Some(first) &&
-          first.kind == Struct
-        if elems.iter().any(elem => elem.is_type([STRUCT])) ||
-          (elems.is_empty() && literal_struct_elems) {
-          u.set("explode_array", true)
-        }
+      let elems = match unnest_expr.get_type() {
+        Some(t) => t.expressions()
+        None => []
+      }
+      if unnest_expr.is_type([ARRAY]) &&
+        elems.iter().any(elem => elem.is_type([STRUCT])) {
+        u.set("explode_array", true)
       }
     }
     None => ()
