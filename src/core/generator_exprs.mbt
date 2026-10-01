@@ -748,7 +748,7 @@ pub fn Generator::bracket_offset_expressions(
     _ => self.dialect.cfg.index_offset
   }
   let offset = match expression.get("offset") {
-    Some(Int(i)) => i
+    Some(Int(i)) => i.to_int()
     Some(Bool(b)) => if b { 1 } else { 0 }
     Some(Node(n)) =>
       match n.to_py_int() {

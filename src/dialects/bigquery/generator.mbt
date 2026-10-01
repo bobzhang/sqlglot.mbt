@@ -680,10 +680,10 @@ fn bracket_sql(
   }
   let mut expressions_sql = g.expressions(expression=e, flat=true)
   // Python compares with `==`, so booleans compare equal to 0 / 1
-  let offset : Int? = match e.get("offset") {
+  let offset : Int64? = match e.get("offset") {
     Some(Int(i)) => Some(i)
     Some(Bool(b)) => Some(if b { 1 } else { 0 })
-    Some(Node(n)) if n.is_int() => n.to_py_int().map(x => x.to_int())
+    Some(Node(n)) if n.is_int() => n.to_py_int()
     Some(_) => Some(-1)
     None => None
   }

@@ -75,24 +75,32 @@ pub fn unnest_generate_date_array_using_recursive_cte(
         _ => continue
       }
       let alias = unnest.arg("alias")
-      let column_name = match alias {
-        Some(a) if a.kind == TableAlias =>
-          match a.list("columns").get(0) {
-            Some(c) => c.name()
-            None => "date_value"
-          }
-        _ => "date_value"
+      // Python: `alias.columns[0]` is an Identifier (keeping its quoting) that is reused
+      // as-is below; the "date_value" fallback is a plain string.
+      let column_ident = match alias {
+        Some(a) if a.kind == TableAlias => a.list("columns").get(0)
+        _ => None
+      }
+      // `maybe_parse(column_name)`: the identifier itself, or the parsed column
+      let column_expr = () => match column_ident {
+        Some(c) => c.copy()
+        None => column_of("date_value")
       }
       let start = cast_(start, DType::DATE)
       let date_add = func_("date_add", [
-        column_of(column_name),
+        column_expr(),
         literal_number(step.name()),
         step.arg("unit").unwrap_or(var_("DAY")),
       ])
       let cast_date_add = cast_(date_add, DType::DATE)
       let cte_name = "_generated_dates" +
         (if count > 0 { "_\{count}" } else { "" })
-      let base_query = select_([start.as_(column_name)])
+      let base_query = select_([
+        match column_ident {
+          Some(c) => mk(Alias, [("this", start), ("alias", c.copy())])
+          None => start.as_("date_value")
+        },
+      ])
       let recursive_query = select_([cast_date_add])
         .from_(table_of(cte_name))
         .where_([
@@ -102,16 +110,22 @@ pub fn unnest_generate_date_array_using_recursive_cte(
           ]),
         ])
       let cte_query = base_query.union_(recursive_query, distinct=false)
-      let generate_dates_query = select_([column_of(column_name)]).from_(
+      let generate_dates_query = select_([column_expr()]).from_(
         table_of(cte_name),
       )
       unnest.replace(
         Some(generate_dates_query.subquery(alias=cte_name, copy=false)),
       )
       |> ignore
-      recursive_ctes.push(
-        alias_table(mk1(CTE, cte_query), cte_name, columns=[column_name]),
-      )
+      let cte = alias_table(mk1(CTE, cte_query), cte_name)
+      cte
+      .arg("alias")
+      .unwrap()
+      .append("columns", match column_ident {
+        Some(c) => c.copy()
+        None => to_identifier("date_value")
+      })
+      recursive_ctes.push(cte)
       count += 1
     }
     if !recursive_ctes.is_empty() {

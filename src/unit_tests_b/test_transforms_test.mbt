@@ -180,9 +180,116 @@ test "TestTransforms.test_remove_unique_constraints" {
   )
 }
 
-// SKIP: TestTransforms.test_eliminate_join_marks (38 assertions over oracle/redshift):
-// `transforms.eliminate_join_marks` needs the optimizer (scope.traverse_scope,
-// normalize.normalize) which is not ported yet.
+///|
+test "TestTransforms.test_eliminate_join_marks" {
+  let t = @optimizer.eliminate_join_marks
+  for dialect in ["oracle", "redshift"] {
+    // No join marks => query remains unaffected
+    validate_transform(
+      t, "SELECT a.f1, b.f2 FROM a JOIN b ON a.id = b.id WHERE a.blabla = 'a'", "SELECT a.f1, b.f2 FROM a JOIN b ON a.id = b.id WHERE a.blabla = 'a'",
+      dialect~,
+    )
+    validate_transform(
+      t, "SELECT T1.d, T2.c FROM T1, T2 WHERE T1.x = T2.x (+) and T2.y (+) > 5", "SELECT T1.d, T2.c FROM T1 LEFT JOIN T2 ON T1.x = T2.x AND T2.y > 5",
+      dialect~,
+    )
+    validate_transform(
+      t, "SELECT T1.d, T2.c FROM T1, T2 WHERE T1.x (+) = T2.x and T2.y > 5", "SELECT T1.d, T2.c FROM T2 LEFT JOIN T1 ON T1.x = T2.x WHERE T2.y > 5",
+      dialect~,
+    )
+    validate_transform(
+      t, "SELECT T1.d, T2.c FROM T1, T2 WHERE T1.x = T2.x (+) and T2.y (+) IS NULL", "SELECT T1.d, T2.c FROM T1 LEFT JOIN T2 ON T1.x = T2.x AND T2.y IS NULL",
+      dialect~,
+    )
+    validate_transform(
+      t, "SELECT T1.d, T2.c FROM T1, T2 WHERE T1.x = T2.x (+) and T2.y IS NULL", "SELECT T1.d, T2.c FROM T1 LEFT JOIN T2 ON T1.x = T2.x WHERE T2.y IS NULL",
+      dialect~,
+    )
+    validate_transform(
+      t, "SELECT T1.d, T2.c FROM T1, T2 WHERE T1.x = T2.x (+) and T1.Z > 4", "SELECT T1.d, T2.c FROM T1 LEFT JOIN T2 ON T1.x = T2.x WHERE T1.Z > 4",
+      dialect~,
+    )
+    validate_transform(
+      t, "SELECT * FROM table1, table2 WHERE table1.col = table2.col(+)", "SELECT * FROM table1 LEFT JOIN table2 ON table1.col = table2.col",
+      dialect~,
+    )
+    validate_transform(
+      t, "SELECT * FROM table1, table2, table3, table4 WHERE table1.col = table2.col(+) and table2.col >= table3.col(+) and table1.col = table4.col(+)",
+      "SELECT * FROM table1 LEFT JOIN table2 ON table1.col = table2.col LEFT JOIN table3 ON table2.col >= table3.col LEFT JOIN table4 ON table1.col = table4.col",
+      dialect~,
+    )
+    validate_transform(
+      t, "SELECT * FROM table1, table2, table3 WHERE table1.col = table2.col(+) and table2.col >= table3.col(+)",
+      "SELECT * FROM table1 LEFT JOIN table2 ON table1.col = table2.col LEFT JOIN table3 ON table2.col >= table3.col",
+      dialect~,
+    )
+    // 2 join marks on one side of predicate
+    validate_transform(
+      t, "SELECT * FROM table1, table2 WHERE table1.col = table2.col1(+) + table2.col2(+)", "SELECT * FROM table1 LEFT JOIN table2 ON table1.col = table2.col1 + table2.col2",
+      dialect~,
+    )
+    // join mark and expression
+    validate_transform(
+      t, "SELECT * FROM table1, table2 WHERE table1.col = table2.col1(+) + 25", "SELECT * FROM table1 LEFT JOIN table2 ON table1.col = table2.col1 + 25",
+      dialect~,
+    )
+    // eliminate join mark while preserving non-participating joins
+    validate_transform(
+      t, "SELECT * FROM a, b, c WHERE a.id = b.id AND b.id(+) = c.id", "SELECT * FROM a LEFT JOIN b ON b.id = c.id CROSS JOIN c WHERE a.id = b.id",
+      dialect~,
+    )
+    let alias = if dialect != "oracle" { "AS " } else { "" }
+    validate_transform(
+      t, "SELECT table1.id, table2.cloumn1, table3.id FROM table1, table2, (SELECT tableInner1.id FROM tableInner1, tableInner2 WHERE tableInner1.id = tableInner2.id(+)) AS table3 WHERE table1.id = table2.id(+) and table1.id = table3.id(+)",
+      "SELECT table1.id, table2.cloumn1, table3.id FROM table1 LEFT JOIN table2 ON table1.id = table2.id LEFT JOIN (SELECT tableInner1.id FROM tableInner1 LEFT JOIN tableInner2 ON tableInner1.id = tableInner2.id) \{alias}table3 ON table1.id = table3.id",
+      dialect~,
+    )
+    // if multiple conditions, we check that after transformations the tree remains consistent
+    let s = "select a.id from a, b where a.id = b.id (+) AND b.d (+) = const"
+    let tree = t(@sqlglot.parse_one(s, read=dialect))
+    assert_true(
+      tree
+      .find_all([Table])
+      .all(table => table.parent_select() is Some(p) && p.kind == Select),
+    )
+    assert_eq(
+      @sqlglot.generate(tree, dialect~),
+      "SELECT a.id FROM a LEFT JOIN b ON a.id = b.id AND b.d = const",
+    )
+    // validate parens
+    validate_transform(
+      t, "select t1.a, t2.b from t1, t2 where (1 = 1) and (t1.id = t2.id1 (+))", "SELECT t1.a, t2.b FROM t1 LEFT JOIN t2 ON t1.id = t2.id1 WHERE (1 = 1)",
+      dialect~,
+    )
+    // validate a CASE
+    validate_transform(
+      t, "select t1.a, t2.b from t1, t2 where t1.id = case when t2.id (+) = 'n/a' then null else t2.id (+) end",
+      "SELECT t1.a, t2.b FROM t1 LEFT JOIN t2 ON t1.id = CASE WHEN t2.id = 'n/a' THEN NULL ELSE t2.id END",
+      dialect~,
+    )
+    // validate OR
+    validate_transform(
+      t, "select t1.a, t2.b from t1, t2 where t1.id = t2.id1 (+) or t1.id = t2.id2 (+)", "SELECT t1.a, t2.b FROM t1 LEFT JOIN t2 ON t1.id = t2.id1 OR t1.id = t2.id2",
+      dialect~,
+    )
+    // validate knockout
+    let script =
+      #|
+      #|                    SELECT c.customer_name,
+      #|                            (SELECT MAX(o.order_date)
+      #|                            FROM orders o
+      #|                            WHERE o.customer_id(+) = c.customer_id) AS latest_order_date
+      #|                    FROM customers c
+      #|                    
+    // self.assertRaises(AssertionError, eliminate_join_marks, parse_one(script, dialect=dialect))
+    try t(@sqlglot.parse_one(script, read=dialect)) catch {
+      @core.ValueError(msg) => assert_true(msg.has_prefix("AssertionError"), msg~)
+      e => fail("expected AssertionError, got \{e}")
+    } noraise {
+      _ => fail("expected AssertionError")
+    }
+  }
+}
 
 ///|
 test "TestTransforms.test_eliminate_semi_and_anti_joins" {

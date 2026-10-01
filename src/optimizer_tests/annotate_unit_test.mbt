@@ -99,7 +99,7 @@ test "annotate_types: json dot parts preserve meta" {
     identifier.meta_get("end") is Some(Int(end)) else {
     fail("missing token positions")
   }
-  assert_eq(sql[start:end + 1].to_string(), "CaseSensitive")
+  assert_eq(sql[start.to_int():end.to_int() + 1].to_string(), "CaseSensitive")
 }
 
 ///|
@@ -247,11 +247,18 @@ test "annotate_types: bracket" {
     "SELECT ARRAY[ARRAY[1], ARRAY[2], ARRAY[3]][1:2]",
   ).expressions()[0]
   assert_eq(tsql(expression), "ARRAY<ARRAY<INT>>")
+  let expression = annotate_sql("MAP(1.0, 2, '2', 3.0)['2']", read="spark")
+  assert_eq(tthis(expression), "DOUBLE")
+  let expression = annotate_sql("MAP(1.0, 2, x, 3.0)[2]", read="spark")
+  assert_eq(tthis(expression), "UNKNOWN")
   let expression = annotate_sql("MAP(ARRAY(1.0, x), ARRAY(2, 3.0))[x]")
   assert_eq(tthis(expression), "DOUBLE")
-  // SKIPPED (unported dialect feature): the Spark asserts on `MAP(1.0, 2, '2', 3.0)['2']`,
-  //   `MAP(1.0, 2, x, 3.0)[2]` and `MAP(1.0, 2, 2, t.y)[2]` need Spark's variadic MAP
-  //   (VarMap) parsing, which src/dialects/spark doesn't port yet.
+  let expression = annotate_sql(
+    "SELECT MAP(1.0, 2, 2, t.y)[2] FROM t",
+    read="spark",
+    schema="{\"t\": {\"y\": \"int\"}}",
+  ).expressions()[0]
+  assert_eq(tthis(expression), "INT")
 }
 
 ///|
@@ -364,8 +371,7 @@ test "annotate_types: functions" {
   assert_eq(tthis(case_ifs_expr), "VARCHAR")
   assert_eq(tthis(case_ifs_expr.arg("true").unwrap()), "VARCHAR")
   assert_eq(tthis(annotate_sql("TIMESTAMP(x)")), "TIMESTAMP")
-  // SKIPPED (unported dialect feature): BigQuery's `TIMESTAMP(x)` is TIMESTAMPTZ because its
-  //   parser sets `with_tz`, which src/dialects/bigquery doesn't port yet.
+  assert_eq(tthis(annotate_sql("TIMESTAMP(x)", read="bigquery")), "TIMESTAMPTZ")
 }
 
 ///|

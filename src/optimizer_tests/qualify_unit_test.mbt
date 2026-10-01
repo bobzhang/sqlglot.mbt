@@ -143,13 +143,39 @@ test "qualify_columns: struct field and source alias" {
   )
 }
 
-// SKIPPED (unported dialect features), from test_qualify_columns:
-//   - `SELECT Teams.Name, count(*) FROM raw.TeamMemberships ...` (bigquery): needs BigQuery's
-//     case-sensitive `normalize_identifier` override (not in src/dialects/bigquery).
-//   - "SELECT `my_db.my_table`.`my_column` FROM `my_db.my_table`" (bigquery): needs BigQuery's
-//     splitting of quoted dotted table names in the parser.
-//   - `... CROSS JOIN a.b.INFORMATION_SCHEMA.COLUMNS` (bigquery): INFORMATION_SCHEMA parsing.
-//   - "CREATE FUNCTION udfs.`myTest`(...)" (bigquery): case-sensitive UDF names.
+///|
+test "qualify_columns: bigquery identifiers" {
+  assert_eq(
+    qualify_sql(
+      "SELECT Teams.Name, count(*) FROM raw.TeamMemberships as TeamMemberships join raw.Teams on Teams.Id = TeamMemberships.TeamId GROUP BY 1",
+      dialect="bigquery",
+      schema="{\"raw\": {\"TeamMemberships\": {\"Id\": \"INTEGER\", \"UserId\": \"INTEGER\", \"TeamId\": \"INTEGER\"}, \"Teams\": {\"Id\": \"INTEGER\", \"Name\": \"STRING\"}}}",
+    ),
+    "SELECT `teams`.`name` AS `name`, count(*) AS `_col_1` FROM `raw`.`TeamMemberships` AS `teammemberships` JOIN `raw`.`Teams` AS `teams` ON `teams`.`id` = `teammemberships`.`teamid` GROUP BY `teams`.`name`",
+  )
+  assert_eq(
+    qualify_sql(
+      "SELECT `my_db.my_table`.`my_column` FROM `my_db.my_table`",
+      dialect="bigquery",
+    ),
+    "SELECT `my_table`.`my_column` AS `my_column` FROM `my_db.my_table` AS `my_table`",
+  )
+  assert_eq(
+    qualify_sql(
+      "WITH X AS (SELECT Y.A FROM DB.y CROSS JOIN a.b.INFORMATION_SCHEMA.COLUMNS) SELECT `A` FROM X",
+      dialect="bigquery",
+      out_dialect="",
+    ),
+    "WITH \"x\" AS (SELECT \"y\".\"a\" AS \"a\" FROM \"DB\".\"y\" AS \"y\" CROSS JOIN \"a\".\"b\".\"INFORMATION_SCHEMA.COLUMNS\" AS \"columns\") SELECT \"x\".\"a\" AS \"a\" FROM \"x\" AS \"x\"",
+  )
+  assert_eq(
+    qualify_sql(
+      "CREATE FUNCTION udfs.`myTest`(`x` FLOAT64) AS (1)",
+      dialect="bigquery",
+    ),
+    "CREATE FUNCTION `udfs`.`myTest`(`x` FLOAT64) AS (1)",
+  )
+}
 
 ///|
 test "qualify_columns: values set operation and recursive ctes" {
@@ -412,36 +438,29 @@ test "qualify_columns: postgres laterals and USING" {
 
 ///|
 test "qualify_columns: bigquery correlated UNNEST" {
-  // The Python asserts compare BigQuery output, whose generator unqualifies columns of
-  // UNNEST sources (`transforms.unqualify_unnest`, not ported in src/dialects/bigquery).
-  // The qualified ASTs are checked through the base dialect instead, with the expected
-  // strings taken from the Python reference (`qualify(...).sql()`).
   assert_eq(
     qualify_sql(
       "SELECT (SELECT SUM(c.amount) FROM UNNEST(credits) AS c WHERE type != 'promotion') as total FROM billing",
       dialect="bigquery",
       schema="{\"billing\": {\"credits\": \"ARRAY<STRUCT<amount FLOAT64, type STRING>>\"}}",
-      out_dialect="",
     ),
-    "SELECT (SELECT SUM(\"_0\".\"c\".\"amount\") AS \"_col_0\" FROM UNNEST(\"billing\".\"credits\") AS \"_0\"(\"c\") WHERE \"_0\".\"type\" <> 'promotion') AS \"total\" FROM \"billing\" AS \"billing\"",
+    "SELECT (SELECT SUM(`c`.`amount`) AS `_col_0` FROM UNNEST(`billing`.`credits`) AS `c` WHERE `type` <> 'promotion') AS `total` FROM `billing` AS `billing`",
   )
   assert_eq(
     qualify_sql(
       "WITH cte AS (SELECT * FROM base_table) SELECT (SELECT SUM(item.price) FROM UNNEST(items) AS item WHERE category = 'electronics') as electronics_total FROM cte",
       dialect="bigquery",
       schema="{\"base_table\": {\"id\": \"INT64\", \"items\": \"ARRAY<STRUCT<price FLOAT64, category STRING>>\"}}",
-      out_dialect="",
     ),
-    "WITH \"cte\" AS (SELECT \"base_table\".\"id\" AS \"id\", \"base_table\".\"items\" AS \"items\" FROM \"base_table\" AS \"base_table\") SELECT (SELECT SUM(\"_0\".\"item\".\"price\") AS \"_col_0\" FROM UNNEST(\"cte\".\"items\") AS \"_0\"(\"item\") WHERE \"_0\".\"category\" = 'electronics') AS \"electronics_total\" FROM \"cte\" AS \"cte\"",
+    "WITH `cte` AS (SELECT `base_table`.`id` AS `id`, `base_table`.`items` AS `items` FROM `base_table` AS `base_table`) SELECT (SELECT SUM(`item`.`price`) AS `_col_0` FROM UNNEST(`cte`.`items`) AS `item` WHERE `category` = 'electronics') AS `electronics_total` FROM `cte` AS `cte`",
   )
   assert_eq(
     qualify_sql(
       "SELECT (SELECT col_st.value FROM UNNEST(col_st) AS col_st) AS vcol1 FROM t AS b",
       dialect="bigquery",
       schema="{\"t\": {\"col_st\": \"ARRAY<STRUCT<key STRING, value INT>>\"}}",
-      out_dialect="",
     ),
-    "SELECT (SELECT \"_0\".\"col_st\".\"value\" AS \"value\" FROM UNNEST(\"b\".\"col_st\") AS \"_0\"(\"col_st\")) AS \"vcol1\" FROM \"t\" AS \"b\"",
+    "SELECT (SELECT `col_st`.`value` AS `value` FROM UNNEST(`b`.`col_st`) AS `col_st`) AS `vcol1` FROM `t` AS `b`",
   )
 }
 
@@ -489,33 +508,26 @@ test "qualify_columns: bigquery unpivot" {
 
 ///|
 test "qualify: unpivot with unknown schema (snowflake)" {
-  // The Python asserts compare Snowflake output, whose generator unqualifies the UNPIVOT
-  // IN-list columns (`_unqualify_pivot_columns`, not ported in src/dialects/snowflake).
-  // The qualified ASTs are checked through the base dialect instead, with the expected
-  // strings taken from the Python reference (`qualify(...).sql()`).
   assert_eq(
     qualify_sql(
       "SELECT i.other_col FROM my_table AS i UNPIVOT(v FOR k IN (a, b))",
       dialect="snowflake",
-      out_dialect="",
     ),
-    "SELECT \"I\".\"OTHER_COL\" AS \"OTHER_COL\" FROM \"MY_TABLE\" AS \"I\" UNPIVOT(\"V\" FOR \"K\" IN (\"I\".\"A\", \"I\".\"B\")) AS \"I\"",
+    "SELECT \"I\".\"OTHER_COL\" AS \"OTHER_COL\" FROM \"MY_TABLE\" AS \"I\" UNPIVOT(\"V\" FOR \"K\" IN (\"A\", \"B\")) AS \"I\"",
   )
   assert_eq(
     qualify_sql(
       "SELECT i.a FROM my_table AS i UNPIVOT(v FOR k IN (a, b))",
       dialect="snowflake",
-      out_dialect="",
     ),
-    "SELECT \"I\".\"A\" AS \"A\" FROM \"MY_TABLE\" AS \"I\" UNPIVOT(\"V\" FOR \"K\" IN (\"I\".\"A\", \"I\".\"B\")) AS \"I\"",
+    "SELECT \"I\".\"A\" AS \"A\" FROM \"MY_TABLE\" AS \"I\" UNPIVOT(\"V\" FOR \"K\" IN (\"A\", \"B\")) AS \"I\"",
   )
   assert_eq(
     qualify_sql(
       "SELECT i.z FROM my_table AS i UNPIVOT(v FOR k IN (a, b)) AS i(w, x, y, z)",
       dialect="snowflake",
-      out_dialect="",
     ),
-    "SELECT \"I\".\"Z\" AS \"Z\" FROM \"MY_TABLE\" AS \"I\" UNPIVOT(\"V\" FOR \"K\" IN (\"I\".\"A\", \"I\".\"B\")) AS \"I\"(\"W\", \"X\", \"Y\", \"Z\")",
+    "SELECT \"I\".\"Z\" AS \"Z\" FROM \"MY_TABLE\" AS \"I\" UNPIVOT(\"V\" FOR \"K\" IN (\"A\", \"B\")) AS \"I\"(\"W\", \"X\", \"Y\", \"Z\")",
   )
 }
 

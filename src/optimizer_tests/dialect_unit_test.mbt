@@ -69,19 +69,13 @@ test "qualify: GROUP BY conflict (bigquery)" {
 
 ///|
 test "qualify: UNNEST alias shadowing (bigquery)" {
-  // Python compares BigQuery output, whose generator unqualifies UNNEST columns
-  // (`transforms.unqualify_unnest`, not in src/dialects/bigquery):
-  //   SELECT `timeline_date` AS `timeline_date` FROM UNNEST(...) AS `timeline_date` LEFT JOIN
-  //   `production_tier` AS `production_tier` ON `production_tier`.`timeline_date` = `timeline_date`
-  // so the AST is checked through the base dialect (expected from the Python reference).
   assert_eq(
     qualify_sql(
       "SELECT timeline_date FROM UNNEST(GENERATE_DATE_ARRAY('2020-01-01', '2020-01-03')) AS timeline_date LEFT JOIN production_tier ON production_tier.timeline_date = timeline_date",
       dialect="bigquery",
       schema="{\"production_tier\": {\"timeline_date\": \"DATE\", \"id\": \"INT\"}}",
-      out_dialect="",
     ),
-    "SELECT \"_0\".\"timeline_date\" AS \"timeline_date\" FROM UNNEST(GENERATE_DATE_ARRAY('2020-01-01', '2020-01-03', INTERVAL '1' DAY)) AS \"_0\"(\"timeline_date\") LEFT JOIN \"production_tier\" AS \"production_tier\" ON \"production_tier\".\"timeline_date\" = \"_0\".\"timeline_date\"",
+    "SELECT `timeline_date` AS `timeline_date` FROM UNNEST(GENERATE_DATE_ARRAY('2020-01-01', '2020-01-03', INTERVAL '1' DAY)) AS `timeline_date` LEFT JOIN `production_tier` AS `production_tier` ON `production_tier`.`timeline_date` = `timeline_date`",
   )
 }
 
@@ -115,9 +109,11 @@ test "optimize: case sensitive JSON dot access" {
     optimize_in("SELECT col.A.a, col.a.A FROM t", "clickhouse", schema),
     "SELECT \"t\".\"col\".\"A\".\"a\" AS \"a\", \"t\".\"col\".\"a\".\"A\" AS \"A\" FROM \"t\" AS \"t\"",
   )
-  // SKIPPED (unported dialect feature): Databricks' `SELECT col:A.a, col:a.A FROM t` is
-  //   expected as "SELECT `t`.`col`:A.a AS `a`, ..." but src/dialects/databricks renders the
-  //   JSON extraction as JSON_EXTRACT(...).
+  // Databricks
+  assert_eq(
+    optimize_in("SELECT col:A.a, col:a.A FROM t", "databricks", schema),
+    "SELECT `t`.`col`:A.a AS `a`, `t`.`col`:a.A AS `a` FROM `t` AS `t`",
+  )
   // BigQuery: STRUCT field accesses are still normalized
   assert_eq(
     optimize_in(
@@ -138,8 +134,11 @@ test "optimize: case sensitive JSON dot access" {
       "SELECT \{normalized} AS `col` FROM `t` AS `t`",
     )
   }
-  // SKIPPED (unported dialect feature): Snowflake's `SELECT col:A.a, col:a.A FROM t` is
-  //   expected with GET_PATH(...), but src/dialects/snowflake renders JSON_EXTRACT(...).
+  // Snowflake
+  assert_eq(
+    optimize_in("SELECT col:A.a, col:a.A FROM t", "snowflake", schema),
+    "SELECT GET_PATH(\"T\".\"COL\", 'A.a') AS \"A\", GET_PATH(\"T\".\"COL\", 'a.A') AS \"A\" FROM \"T\" AS \"T\"",
+  )
 }
 
 ///|
@@ -155,8 +154,8 @@ test "optimize: JSON_VALUE over an UNNEST (bigquery)" {
   for i in optimized.find_all([Identifier]) {
     assert_false(i.this() is Some(_))
   }
-  // SKIPPED (unported dialect feature): the expected BigQuery output
-  //   SELECT JSON_VALUE(`item`.`id`, '$') AS `_col_0` FROM UNNEST(JSON_QUERY_ARRAY(...), '$')) AS `item`
-  //   needs BigQuery's JSON_VALUE / JSON_QUERY_ARRAY parsing (default '$' paths) and its
-  //   UNNEST unqualification, neither ported in src/dialects/bigquery yet.
+  assert_eq(
+    gen_sql(optimized, dialect="bigquery"),
+    "SELECT JSON_VALUE(`item`.`id`, '$') AS `_col_0` FROM UNNEST(JSON_QUERY_ARRAY(PARSE_JSON('[{\"id\": 1}]'), '$')) AS `item`",
+  )
 }

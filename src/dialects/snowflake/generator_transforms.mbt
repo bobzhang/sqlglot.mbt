@@ -35,7 +35,7 @@ fn eliminate_dot_variant_lookup(
     // Additionally, at the time of writing this, BigQuery is the only dialect that produces a
     // `TableAlias` node that only fills `columns` and not `this`, due to `UNNEST_COLUMN_ONLY`.
     let unnest_aliases : Array[String] = []
-    for unnest in @core.gen_find_all_in_scope(expression, [Unnest]) {
+    for unnest in @optimizer.find_all_in_scope(expression, [Unnest]) {
       match unnest.arg("alias") {
         Some(unnest_alias) if unnest_alias.kind == TableAlias &&
           !unnest_alias.has("this") &&
@@ -49,7 +49,7 @@ fn eliminate_dot_variant_lookup(
       }
     }
     if !unnest_aliases.is_empty() {
-      for c in @core.gen_find_all_in_scope(expression, [Column]) {
+      for c in @optimizer.find_all_in_scope(expression, [Column]) {
         if unnest_aliases.contains(c.text("table")) {
           let bracket_lhs = c.arg("table")
           let bracket_rhs = @core.literal_string(c.name())

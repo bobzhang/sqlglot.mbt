@@ -116,15 +116,11 @@ test "TestJsonpath.test_cts_file" {
     if cts_fixtures[i + 2] == "1" {
       // invalid selector: may raise ParseError/TokenError, or parse
       try jsonpath(selector) catch {
-        @core.ParseError(_, _) | @core.TokenError(_) => ()
+        @core.ParseError(_, _) | @core.TokenError(_, ..) => ()
         e => t.ok(false, msg="\{selector} /* \{name} */: unexpected error \{e}")
       } noraise {
         _ => ()
       }
-    } else if selector.contains("113667776004") {
-      // SKIP (6 selectors): JSONPath indices are stored as 32-bit `Value::Int`
-      // (Python ints are unbounded), so 113667776004 overflows.
-      continue
     } else {
       let expected = overrides
         .get(selector)

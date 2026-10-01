@@ -131,11 +131,12 @@ test "TestTokens.test_command" {
 test "TestTokens.test_error_msg" {
   let sql = "select /*"
   try tokenize(sql) catch {
-    @core.TokenError(msg) =>
+    @core.TokenError(msg, start~, end~) => {
       // assertRaisesRegex(TokenError, "Error tokenizing 'select /'")
       assert_true(msg.contains("Error tokenizing 'select /'"))
-    // SKIP: `sql[e.start:e.end] == "select /"` -- the port's TokenError carries
-    // only the message (no structured start/end offsets).
+      // The quoted context snippet is also exposed through structured offsets
+      assert_eq(sql[start.unwrap():end.unwrap()].to_string(), "select /")
+    }
     e => fail("expected TokenError, got \{e}")
   } noraise {
     _ => fail("expected TokenError")
@@ -200,7 +201,7 @@ test "TestTokens.test_partial_token_list" {
   let tokenizer = base_tokenizer()
   // This is expected to fail due to the unbalanced string quotes
   try tokenizer.tokenize("foo 'bar") catch {
-    @core.TokenError(msg) =>
+    @core.TokenError(msg, ..) =>
       assert_true(msg.contains("Error tokenizing 'foo 'ba'"), msg~)
     e => fail("expected TokenError, got \{e}")
   } noraise {

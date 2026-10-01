@@ -46,7 +46,7 @@ pub fn bracket_to_element_at_sql(
   e : Expr,
 ) -> String raise SqlglotError {
   let offset = match e.get("offset") {
-    Some(Int(i)) => i
+    Some(Int(i)) => i.to_int()
     _ => 0
   }
   let index = gen_apply_index_offset(

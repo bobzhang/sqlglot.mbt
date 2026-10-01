@@ -1239,7 +1239,7 @@ pub fn Generator::arrayinsert_sql(
   let this = expression.this_()
   let mut position = expression.arg("position")
   let stored_offset = match expression.get("offset") {
-    Some(Int(i)) => i
+    Some(Int(i)) => i.to_int()
     Some(Bool(b)) => if b { 1 } else { 0 }
     Some(Node(n)) =>
       match n.to_py_int() {

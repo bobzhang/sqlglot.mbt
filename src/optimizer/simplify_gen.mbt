@@ -29,7 +29,10 @@ fn opt_item(e : @core.Expr?) -> GenItem? {
 /// Simple pseudo sql generator for quickly generating sortable and uniq strings.
 ///
 /// `comments` controls whether the expressions' comments are included.
-pub fn gen(expression : @core.Expr, comments? : Bool = false) -> String {
+pub fn gen(
+  expression : @core.Expr,
+  comments? : Bool = false,
+) -> String raise @core.SqlglotError {
   let stack : Array[GenItem?] = [Some(GE(expression))]
   let sqls = StringBuilder::new()
   fn push(x : GenItem?) {
@@ -119,7 +122,23 @@ pub fn gen(expression : @core.Expr, comments? : Bool = false) -> String {
                   @core.py_upper(n)
                 }
               }
-              _ => ""
+              Some(v) => {
+                let type_name = match v {
+                  Node(n) => n.kind.name()
+                  List(_) => "list"
+                  Str(_) => "str"
+                  Bool(_) => "bool"
+                  Int(_) => "int"
+                  DT(_) => "Type"
+                }
+                raise @core.ValueError(
+                  "Anonymous.this expects a str or an Identifier, got '\{type_name}'.",
+                )
+              }
+              None =>
+                raise @core.ValueError(
+                  "Anonymous.this expects a str or an Identifier, got 'NoneType'.",
+                )
             }
             s(")")
             push(Some(GL(e.expressions().map(x => Some(GE(x))))))

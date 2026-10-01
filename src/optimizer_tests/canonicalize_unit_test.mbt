@@ -210,9 +210,6 @@ test "canonicalize_internal_names: self-joined ctes" {
 
 ///|
 test "canonicalize_internal_names: unresolved UNNEST element type (duckdb)" {
-  // Python compares DuckDB output, whose generator renders the comma-joined UNNEST as
-  // `JOIN UNNEST("_t0"."arr") AS "_t1"("_c0") ON TRUE` (not in src/dialects/duckdb yet), so
-  // the AST is checked through the base dialect (expected from the Python reference).
   let e = canon_expr(
     qualify_expr(
       "SELECT v FROM t, UNNEST(t.arr) AS v(v)",
@@ -221,8 +218,8 @@ test "canonicalize_internal_names: unresolved UNNEST element type (duckdb)" {
     ),
   )
   assert_eq(
-    gen_sql(e),
-    "SELECT \"_t1\".\"_c0\" AS \"v\" FROM \"_t0\" AS \"_t0\", UNNEST(\"_t0\".\"arr\") AS \"_t1\"(\"_c0\")",
+    gen_sql(e, dialect="duckdb"),
+    "SELECT \"_t1\".\"_c0\" AS \"v\" FROM \"_t0\" AS \"_t0\" JOIN UNNEST(\"_t0\".\"arr\") AS \"_t1\"(\"_c0\") ON TRUE",
   )
 }
 

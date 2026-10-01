@@ -14,6 +14,12 @@ pub fn TypeAnnotator::annotate_binary(
 ) -> Unit raise @core.SqlglotError {
   let (left, right) = match (expression.this(), expression.expression()) {
     (Some(l), Some(r)) => (l, r)
+    // Python's `Binary.left` is `self.args["this"]`, which raises a KeyError when the
+    // node was built without a `this` key at all (e.g. Exasol's
+    // `exp.JSONExtract(expressions=args)`). The port can't tell an absent key from an
+    // explicit `None`, so a binary node missing both operands stands for the former
+    // (one built through `exp.Binary(this=..., expression=...)` always has both keys).
+    (None, None) => raise @core.OptimizeError("KeyError: 'this'")
     _ => {
       self.set_type(expression, None)
       return

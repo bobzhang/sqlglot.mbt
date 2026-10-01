@@ -217,40 +217,10 @@ fn is_bare_star(e : @core.Expr) -> Bool {
 }
 
 ///|
-/// Approximation of `build_scope(select).selected_sources`: the FROM and (non
-/// semi/anti) JOIN sources by alias or name.
-fn selected_sources(select : @core.Expr) -> Array[(String, @core.Expr)] {
-  let out : Array[(String, @core.Expr)] = []
-  let seen : Map[String, Bool] = Map([])
-  let push = fn(node : @core.Expr?) {
-    match node {
-      Some(n) => {
-        let name = n.alias_or_name()
-        if !seen.contains(name) {
-          seen[name] = true
-          out.push((name, n))
-        }
-      }
-      None => ()
-    }
-  }
-  match select.arg("from_") {
-    Some(f) => push(f.this())
-    None => ()
-  }
-  for join in select.list("joins") {
-    let kind = @core.py_upper(join.text("kind"))
-    if kind == "SEMI" || kind == "ANTI" {
-      continue
-    }
-    push(join.this())
-  }
-  out
-}
-
-///|
 /// Exasol doesn't support a bare * alongside other select items, so we rewrite it
-fn qualify_unscoped_star(expression : @core.Expr) -> @core.Expr {
+fn qualify_unscoped_star(
+  expression : @core.Expr,
+) -> @core.Expr raise @core.SqlglotError {
   if expression.kind != Select {
     return expression
   }
@@ -271,13 +241,13 @@ fn qualify_unscoped_star(expression : @core.Expr) -> @core.Expr {
   guard bare_star_expr is Some(star) && has_other_expression else {
     return expression
   }
-  let sources = selected_sources(expression)
-  if sources.is_empty() {
+  let scope = @optimizer.build_scope(expression)
+  guard scope is Some(scope) && !scope.selected_sources().is_empty() else {
     return expression
   }
   let table_identifiers : Array[@core.Expr] = []
-  for src in sources {
-    let (source_name, source_expr) = src
+  for source_name, src in scope.selected_sources() {
+    let (source_expr, _) = src
     let ident = match source_expr.this() {
       Some(t) if source_expr.kind == Table && t.kind == Identifier => t.copy()
       _ => @core.to_identifier(source_name)
@@ -330,8 +300,9 @@ fn add_date_sql(
 }
 
 ///|
+/// `find_in_scope(proj, exp.AggFunc)` is truthy
 fn has_agg_in_scope(proj : @core.Expr) -> Bool {
-  !@core.gen_find_all_in_scope(proj, [AggFunc]).is_empty()
+  @optimizer.find_in_scope(proj, [AggFunc]) is Some(_)
 }
 
 ///|
