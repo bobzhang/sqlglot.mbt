@@ -6,6 +6,12 @@
 let dialect_cell : Ref[@core.Dialect?] = Ref(None)
 
 ///|
+/// Importing this package registers the dialect under its name.
+fn init {
+  @core.register_dialect("athena", dialect)
+}
+
+///|
 /// The `athena` dialect (a subclass of `trino`).
 pub fn dialect() -> @core.Dialect {
   match dialect_cell.val {

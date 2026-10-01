@@ -55,6 +55,12 @@ def main():
 let dialect_cell : Ref[@core.Dialect?] = Ref(None)
 
 ///|
+/// Importing this package registers the dialect under its name.
+fn init {{
+  @core.register_dialect("{name}", dialect)
+}}
+
+///|
 /// The `{name}` dialect (a subclass of `{parent}`).
 pub fn dialect() -> @core.Dialect {{
   match dialect_cell.val {{

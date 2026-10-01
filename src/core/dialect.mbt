@@ -18,6 +18,8 @@ pub struct Dialect {
   mut normalization_strategy : NormalizationStrategy
   mut version : (Int, Int, Int)
   settings : Map[String, String]
+  /// `SUPPORTED_SETTINGS`
+  mut supported_settings : Array[String]
   mut time_trie : Trie
   mut format_trie : Trie
   mut inverse_time_trie : Trie
@@ -98,6 +100,7 @@ pub fn Dialect::base() -> Dialect {
     normalization_strategy: Lowercase,
     version: (2147483647, 0, 0),
     settings: Map([]),
+    supported_settings: ["normalization_strategy", "version"],
     time_trie: Trie::new(),
     format_trie: Trie::new(),
     inverse_time_trie: Trie::new(),
@@ -128,6 +131,7 @@ pub fn Dialect::subclass(
     normalization_strategy: parent.normalization_strategy,
     version: parent.version,
     settings: Map([]),
+    supported_settings: parent.supported_settings.copy(),
     time_trie: parent.time_trie,
     format_trie: parent.format_trie,
     inverse_time_trie: parent.inverse_time_trie,
@@ -221,16 +225,30 @@ pub fn Dialect::get_or_raise(spec : String) -> Dialect raise SqlglotError {
   let name = py_strip(parts[0])
   let d = match get_dialect(name) {
     Some(d) => d
-    None => raise ValueError("Unknown dialect '\{name}'.")
+    None => {
+      let names = dialect_names()
+      names.push("")
+      suggest_closest_match_and_fail("dialect", name, names)
+    }
   }
-  if parts.length() == 1 {
-    return d
-  }
+  // Python constructs a fresh instance for every string lookup.
   let inst = d.instance()
   for i in 1..<parts.length() {
     let kv = py_split(parts[i], "=")
     let key = py_strip(kv[0])
-    let value = if kv.length() == 1 { "true" } else { py_strip(kv[1]) }
+    let value = match kv.length() {
+      1 => "true"
+      2 =>
+        match py_lower(py_strip(kv[1])) {
+          "true" | "1" => "true"
+          "false" | "0" => "false"
+          _ => py_strip(kv[1])
+        }
+      _ =>
+        raise ValueError(
+          "Invalid dialect format: '\{spec}'. Please use the correct format: 'dialect [, k1 = v2 [, ...]]'.",
+        )
+    }
     if key == "normalization_strategy" {
       inst.normalization_strategy = match py_upper(value) {
         "LOWERCASE" => Lowercase
@@ -238,16 +256,23 @@ pub fn Dialect::get_or_raise(spec : String) -> Dialect raise SqlglotError {
         "CASE_SENSITIVE" => CaseSensitive
         "CASE_INSENSITIVE" => CaseInsensitive
         "CASE_INSENSITIVE_UPPERCASE" => CaseInsensitiveUppercase
-        _ => raise ValueError("Invalid normalization strategy '\{value}'")
+        _ =>
+          raise ValueError(
+            "'\{py_upper(value)}' is not a valid NormalizationStrategy",
+          )
       }
     } else if key == "version" {
       let vs = py_split(value, ".")
-      let nums = vs.map(v => {
-        match parse_int_str(v) {
-          Some(n) => n.to_int()
-          None => 0
+      let nums = []
+      for v in vs {
+        match parse_int_str(py_strip(v)) {
+          Some(n) => nums.push(n.to_int())
+          None =>
+            raise ValueError(
+              "invalid literal for int() with base 10: '\{v}'",
+            )
         }
-      })
+      }
       while nums.length() < 3 {
         nums.push(0)
       }
@@ -255,8 +280,61 @@ pub fn Dialect::get_or_raise(spec : String) -> Dialect raise SqlglotError {
     } else {
       inst.settings[key] = value
     }
+    if !d.supported_settings.contains(key) {
+      suggest_closest_match_and_fail("setting", key, d.supported_settings)
+    }
   }
   inst
+}
+
+///|
+/// Python `suggest_closest_match_and_fail`: raises a ValueError naming the closest
+/// candidate (similarity >= 0.6, approximating difflib.get_close_matches).
+pub fn[T] suggest_closest_match_and_fail(
+  kind : String,
+  word : String,
+  possibilities : Array[String],
+) -> T raise SqlglotError {
+  let mut best = ""
+  let mut best_score = 0.6
+  for p in possibilities {
+    let score = similarity_ratio(word, p)
+    if score >= best_score && (best.is_empty() || score > best_score) {
+      best = p
+      best_score = score
+    }
+  }
+  let similar = if best.is_empty() { "" } else { " Did you mean \{best}?" }
+  raise ValueError("Unknown \{kind} '\{word}'.\{similar}")
+}
+
+///|
+/// difflib.SequenceMatcher-style ratio: 2 * matches / total length, where matches are
+/// counted via longest common subsequence.
+fn similarity_ratio(a : String, b : String) -> Double {
+  let a = a.to_array()
+  let b = b.to_array()
+  let total = a.length() + b.length()
+  if total == 0 {
+    return 1.0
+  }
+  let prev = Array::make(b.length() + 1, 0)
+  for i in 0..<a.length() {
+    let cur = Array::make(b.length() + 1, 0)
+    for j in 0..<b.length() {
+      cur[j + 1] = if a[i] == b[j] {
+        prev[j] + 1
+      } else if prev[j + 1] > cur[j] {
+        prev[j + 1]
+      } else {
+        cur[j]
+      }
+    }
+    for j in 0..=b.length() {
+      prev[j] = cur[j]
+    }
+  }
+  2.0 * prev[b.length()].to_double() / total.to_double()
 }
 
 // ---------------------------------------------------------------------------
