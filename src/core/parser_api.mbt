@@ -120,3 +120,38 @@ pub fn datatype_from_str(
   }
 }
 
+
+///|
+/// Parses `sql` with `read` and generates it with `write` (Python `sqlglot.transpile`).
+pub fn transpile(
+  sql : String,
+  read? : Dialect,
+  write? : Dialect,
+  pretty? : Bool = false,
+  identify? : String = "",
+  error_level? : ErrorLevel = Immediate,
+  unsupported_level? : ErrorLevel = Warn,
+) -> Array[String] raise SqlglotError {
+  let r = match read {
+    Some(d) => d
+    None => base_dialect()
+  }
+  let w = match write {
+    Some(d) => d
+    None => r
+  }
+  let out = []
+  for e in r.parse(sql, error_level~) {
+    match e {
+      Some(expr) =>
+        out.push(
+          Generator::new(w, pretty~, identify~, unsupported_level~).generate(
+            expr,
+            copy=false,
+          ),
+        )
+      None => out.push("")
+    }
+  }
+  out
+}
