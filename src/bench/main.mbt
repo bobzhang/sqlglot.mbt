@@ -37,8 +37,59 @@ fn run_op(op : String, sql : String, parsed : @core.Expr) -> Unit raise {
     "copy" => ignore(parsed.copy())
     "simplify" => ignore(@optimizer.simplify(parsed.copy()))
     "optimize" => ignore(@optimizer.optimize(parsed.copy()))
+    "qualify" => ignore(@optimizer.qualify(parsed.copy()))
     _ => fail("unknown op \{op}")
   }
+}
+
+///|
+let rule_names : Array[String] = [
+  "qualify", "pushdown_projections", "normalize", "unnest_subqueries", "pushdown_predicates",
+  "optimize_joins", "eliminate_subqueries", "merge_subqueries", "eliminate_joins",
+  "eliminate_ctes", "quote_identifiers", "annotate_types", "canonicalize", "simplify",
+]
+
+///|
+/// Times each default optimizer rule on `parsed` (applied in sequence, one run each).
+fn time_rules(name : String, n : Int, parsed : @core.Expr) -> Unit raise {
+  let mut prefix = 0.0
+  for i in 0..<@optimizer.rules.length() {
+    let rules = @optimizer.rules[:i + 1].to_array()
+    let t = @bench.monotonic_clock_start()
+    ignore(@optimizer.optimize(parsed.copy(), rules~))
+    let total = @bench.monotonic_clock_end(t)
+    println(
+      "\{name}\trule:\{rule_names[i]}\t\{n}\t\{fmt_ms(total - prefix)}\t-",
+    )
+    prefix = total
+  }
+}
+
+///|
+/// Times the steps of `qualify` on `parsed` (one run each).
+fn time_qualify_steps(
+  name : String,
+  n : Int,
+  parsed : @core.Expr,
+) -> Unit raise {
+  let schema = @optimizer.MappingSchema::new()
+  let mut e = parsed.copy()
+  let step = (label : String, f : () -> @core.Expr raise) => {
+    let t = @bench.monotonic_clock_start()
+    e = f()
+    println(
+      "\{name}\tqualify:\{label}\t\{n}\t\{fmt_ms(@bench.monotonic_clock_end(t))}\t-",
+    )
+  }
+  step("traverse_scope", () => {
+    ignore(@optimizer.traverse_scope(e))
+    e
+  })
+  step("normalize_identifiers", () => @optimizer.normalize_identifiers(e))
+  step("qualify_tables", () => @optimizer.qualify_tables(e))
+  step("qualify_columns", () => @optimizer.qualify_columns(e, schema))
+  step("quote_identifiers", () => @optimizer.quote_identifiers(e))
+  step("validate", () => @optimizer.validate_qualify_columns(e))
 }
 
 ///|
@@ -81,7 +132,12 @@ fn main {
     if case_filter != "" && c.name != case_filter {
       continue
     }
-    for op in c.ops {
+    for
+      op in (if op_filter is ("rules" | "qualify" | "qualify_steps") {
+        [op_filter]
+      } else {
+        c.ops
+      }) {
       if op_filter != "" && op != op_filter {
         continue
       }
@@ -94,6 +150,18 @@ fn main {
             println("\{c.name}\t\{op}\t\{n}\terror\t\{e}")
             break
           }
+        }
+        if op == "qualify_steps" {
+          time_qualify_steps(c.name, n, parsed) catch {
+            e => println("\{c.name}\tqualify_steps\t\{n}\terror\t\{e}")
+          }
+          continue
+        }
+        if op == "rules" {
+          time_rules(c.name, n, parsed) catch {
+            e => println("\{c.name}\trules\t\{n}\terror\t\{e}")
+          }
+          continue
         }
         let us = time_op(() => run_op(op, sql, parsed)) catch {
           e => {

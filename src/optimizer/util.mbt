@@ -160,3 +160,49 @@ fn req(e : @core.Expr?, what : String) -> @core.Expr raise @core.SqlglotError {
       )
   }
 }
+
+///|
+/// `node.find_ancestor(kinds)` for many nodes of an unchanging tree in amortized O(1):
+/// the ancestor found for every node visited on the way up is remembered. (Upward walks
+/// otherwise cost O(depth) per node, e.g. for the columns of a long AND chain.)
+priv struct AncestorCache {
+  kinds : Array[@core.Kind]
+  memo : Map[Int, @core.Expr?]
+}
+
+///|
+fn AncestorCache::new(kinds : Array[@core.Kind]) -> AncestorCache {
+  { kinds, memo: {}, }
+}
+
+///|
+fn AncestorCache::find(self : AncestorCache, node : @core.Expr) -> @core.Expr? {
+  let visited = []
+  let mut ancestor = node.parent
+  let mut result : @core.Expr? = None
+  for ;; {
+    match ancestor {
+      None => break
+      Some(a) => {
+        if a.kind.is_any(self.kinds) {
+          result = Some(a)
+          break
+        }
+        match self.memo.get(a.uid) {
+          Some(r) => {
+            result = r
+            break
+          }
+          None => ()
+        }
+        visited.push(a)
+        ancestor = a.parent
+      }
+    }
+  }
+  // the nearest matching ancestor of a non-matching node is that of its parent
+  for v in visited {
+    self.memo[v.uid] = result
+  }
+  result
+}

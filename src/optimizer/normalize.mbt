@@ -73,10 +73,11 @@ pub fn normalized(expression : @core.Expr, dnf? : Bool = false) -> Bool {
   } else {
     (Or, And)
   }
-  !find_all_in_scope(expression, [root]).any(connector => connector.find_ancestor([
-      ancestor,
-    ])
-    is Some(_))
+  // (one memoized upward search for all the connectors of a long chain)
+  let ancestors = AncestorCache::new([ancestor])
+  !find_all_in_scope(expression, [root]).any(connector => {
+    ancestors.find(connector) is Some(_)
+  })
 }
 
 ///|

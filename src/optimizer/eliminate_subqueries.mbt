@@ -2,18 +2,35 @@
 
 ///|
 priv struct CteState {
-  existing_ctes : Array[(@core.Expr, String)]
+  /// `existing_ctes`: a dict keyed by expression (hashed when inserted, like Python's)
+  existing_keys : ExprSet
+  existing_names : Array[String]
   taken : Map[String, Bool]
 }
 
 ///|
 fn CteState::existing_get(self : CteState, e : @core.Expr) -> String? {
-  for kv in self.existing_ctes {
-    if kv.0 == e {
-      return Some(kv.1)
-    }
+  let i = self.existing_keys.find(e, e.hash())
+  if i >= 0 {
+    Some(self.existing_names[i])
+  } else {
+    None
   }
-  None
+}
+
+///|
+/// `existing_ctes[e] = name`
+fn CteState::existing_set(
+  self : CteState,
+  e : @core.Expr,
+  name : String,
+) -> Unit {
+  let i = self.existing_keys.add(e)
+  if i == self.existing_names.length() {
+    self.existing_names.push(name)
+  } else {
+    self.existing_names[i] = name
+  }
 }
 
 ///|
@@ -37,7 +54,11 @@ pub fn eliminate_subqueries(
     Some(r) => r
     None => return expression
   }
-  let state : CteState = { existing_ctes: [], taken: {} }
+  let state : CteState = {
+    existing_keys: ExprSet::new(),
+    existing_names: [],
+    taken: {},
+  }
   for scope in root.cte_scopes {
     match scope.expression.parent {
       Some(p) => state.taken[p.alias()] = true
@@ -57,18 +78,7 @@ pub fn eliminate_subqueries(
     Some(with_) => {
       recursive = with_.get("recursive")
       for cte in with_.expressions() {
-        let this = cte.this_()
-        let mut found = false
-        for i, kv in state.existing_ctes {
-          if kv.0 == this {
-            state.existing_ctes[i] = (kv.0, cte.alias())
-            found = true
-            break
-          }
-        }
-        if !found {
-          state.existing_ctes.push((this, cte.alias()))
-        }
+        state.existing_set(cte.this_(), cte.alias())
       }
     }
     None => ()
@@ -211,7 +221,7 @@ fn new_cte(scope : Scope, state : CteState) -> (String, @core.Expr?) {
   match duplicate_cte_alias {
     Some(d) if d != "" => (name, None)
     _ => {
-      state.existing_ctes.push((scope.expression, name))
+      state.existing_set(scope.expression, name)
       let cte = @core.mk(CTE, [
         ("this", scope.expression),
         ("alias", @core.mk1(TableAlias, @core.to_identifier(name))),
