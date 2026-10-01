@@ -9,7 +9,7 @@ pub struct Token {
   col : Int
   start : Int
   end : Int
-  mut comments : Array[String]
+  comments : Array[String]
 }
 
 ///|
@@ -41,7 +41,7 @@ pub fn Token::identifier(s : String) -> Token {
 }
 
 ///|
-pub fn Token::var(s : String) -> Token {
+pub fn Token::var_(s : String) -> Token {
   Token::new(VAR, s)
 }
 
@@ -1025,7 +1025,7 @@ fn Tokenizer::scan_numeric_escape(self : Tokenizer) -> String {
   let key = if is_octal { "0" } else { peek.to_string() }
   match self.settings.numeric_escapes.get(key) {
     Some(spec) => {
-      let (mut value, mut end) = self.read_numeric_escape(
+      let (value0, end0) = self.read_numeric_escape(
         if is_octal {
           start
         } else {
@@ -1033,6 +1033,8 @@ fn Tokenizer::scan_numeric_escape(self : Tokenizer) -> String {
         },
         spec,
       )
+      let mut value = value0
+      let mut end = end0
       if value >= 0xD800 && value <= 0xDFFF {
         let mut low = -1
         let mut low_end = end
