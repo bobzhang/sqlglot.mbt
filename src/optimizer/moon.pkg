@@ -6,4 +6,3 @@ import {
   "moonbitlang/core/bigint",
 }
 
-warnings = "-79-15-20-82-29"

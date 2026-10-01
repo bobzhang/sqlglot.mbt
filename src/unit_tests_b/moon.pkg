@@ -4,6 +4,5 @@ import {
   "bobzhang/sqlglot/optimizer",
   "moonbitlang/core/set",
   "moonbitlang/core/double",
-}
+} for "test"
 
-warnings = "-79"

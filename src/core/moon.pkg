@@ -1,7 +1,9 @@
 import {
   "moonbitlang/core/bigint",
+  "moonbitlang/core/cmp",
+  "moonbitlang/core/double",
+  "moonbitlang/core/string",
   "moonbitlang/core/deque",
   "moonbitlang/core/set",
 }
 
-warnings = "-79-15"

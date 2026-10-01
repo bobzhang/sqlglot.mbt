@@ -262,7 +262,7 @@ fn expand_using(
     let is_semi_or_anti = is_semi_or_anti_join(join)
     for identifier in using_ {
       let identifier = identifier.name()
-      let mut table = columns.get(identifier)
+      let table = columns.get(identifier)
       let missing = match table {
         Some(t) => t == ""
         None => true

@@ -11,4 +11,3 @@ import {
   "moonbitlang/core/cmp",
 }
 
-warnings = "-79-15-20-82-29"

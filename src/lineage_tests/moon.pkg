@@ -4,6 +4,5 @@ import {
   "bobzhang/sqlglot/optimizer",
   "bobzhang/sqlglot/lineage",
   "moonbitlang/core/json",
-}
+} for "test"
 
-warnings = "-79-20-1-29"

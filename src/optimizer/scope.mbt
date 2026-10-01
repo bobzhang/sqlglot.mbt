@@ -21,7 +21,7 @@ pub enum Source {
 /// Selection scope.
 pub struct Scope {
   id : Int
-  mut expression : @core.Expr
+  expression : @core.Expr
   sources : Map[String, Source]
   lateral_sources : Map[String, Source]
   cte_sources : Map[String, Source]
