@@ -4,8 +4,8 @@
 ///|
 /// Installs the real `annotate_types` and `simplify` implementations into core.
 pub fn install() -> Unit {
-  @core.annotate_types_hook.val = Some(fn(e, d) { annotate_types(e, dialect=d) })
-  @core.simplify_hook.val = Some(fn(e, d) { simplify(e, dialect=d) })
+  @core.annotate_types_hook.val = Some((e, d) => annotate_types(e, dialect=d))
+  @core.simplify_hook.val = Some((e, d) => simplify(e, dialect=d))
 }
 
 ///|
