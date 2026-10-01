@@ -29,13 +29,13 @@ pub fn[T : IntoPy] Expr::select_(
   let inst = maybe_copy(self, copy)
   if inst.kind.is_a(SetOperation) {
     match inst.this() {
-      Some(t) => t.unnest().select_(expressions, append~, dialect?, copy=false)
-        |> ignore
+      Some(t) =>
+        t.unnest().select_(expressions, append~, dialect?, copy=false) |> ignore
       None => ()
     }
     match inst.expression() {
-      Some(t) => t.unnest().select_(expressions, append~, dialect?, copy=false)
-        |> ignore
+      Some(t) =>
+        t.unnest().select_(expressions, append~, dialect?, copy=false) |> ignore
       None => ()
     }
     return inst

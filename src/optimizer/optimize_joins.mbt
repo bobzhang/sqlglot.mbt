@@ -87,7 +87,11 @@ pub fn optimize_joins(
               predicate.replace(Some(@core.true_())) |> ignore
               let combined = match join.arg("on") {
                 Some(existing) =>
-                  @core.combine_conditions([existing, predicate], And, copy=false)
+                  @core.combine_conditions(
+                    [existing, predicate],
+                    And,
+                    copy=false,
+                  )
                 None => predicate
               }
               join.set("on", combined)

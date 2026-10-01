@@ -273,23 +273,23 @@ pub fn explode_projection_to_unnest(
         }
         expression.where_(
           [
-          @core.exp_or([
-            @core.exp_eq(
-              transforms_column(Str(series_alias), series_table_alias),
-              transforms_column(pos_alias, Str(unnest_source_alias)),
-            ),
-            @core.exp_and([
-              @core.exp_binop(
-                GT,
-                transforms_column(Str(series_alias), series_table_alias),
-                size,
-              ),
+            @core.exp_or([
               @core.exp_eq(
+                transforms_column(Str(series_alias), series_table_alias),
                 transforms_column(pos_alias, Str(unnest_source_alias)),
-                size,
               ),
+              @core.exp_and([
+                @core.exp_binop(
+                  GT,
+                  transforms_column(Str(series_alias), series_table_alias),
+                  size,
+                ),
+                @core.exp_eq(
+                  transforms_column(pos_alias, Str(unnest_source_alias)),
+                  size,
+                ),
+              ]),
             ]),
-          ]),
           ],
           copy=false,
         )

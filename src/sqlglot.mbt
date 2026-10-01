@@ -1,24 +1,28 @@
-// Public facade of the sqlglot port: registers all dialects (see registry.mbt) and
-// exposes the main entry points taking dialect names.
+// Public facade of the sqlglot port: all built-in dialects are registered (through the
+// `hongbozhang/sqlglot/dialects` registry) and the main entry points take dialect names.
 
 ///|
 /// Parses `sql` (possibly several statements) in dialect `read` and generates it in
 /// dialect `write` (Python `sqlglot.transpile`). When `identity` is true (the default)
 /// and `write` is omitted, `write` defaults to `read`; otherwise to the base dialect.
-/// The remaining options are the generator options (see `generate`).
+/// `error_level`, `error_message_context`, `max_errors` and `max_nodes` are the parser
+/// options (see `parse`); the remaining options are the generator options (see
+/// `generate`).
 pub fn transpile(
   sql : String,
   read? : String = "",
   write? : String,
   identity? : Bool = true,
   error_level? : @core.ErrorLevel = Immediate,
+  error_message_context? : Int = 100,
+  max_errors? : Int = 3,
+  max_nodes? : Int = -1,
   pretty? : Bool,
-  identify? : Bool = false,
-  identify_mode? : String,
+  identify? : Identify = Never,
   normalize? : Bool = false,
   pad? : Int = 2,
   indent? : Int = 2,
-  normalize_functions? : String,
+  normalize_functions? : NormalizeFunctions,
   unsupported_level? : @core.ErrorLevel = Warn,
   max_unsupported? : Int = 3,
   leading_comma? : Bool = false,
@@ -31,18 +35,25 @@ pub fn transpile(
     None => if identity { r } else { @core.Dialect::get_or_raise("") }
   }
   let out = []
-  for e in r.parse(sql, error_level~) {
+  let expressions = r.parse(
+    sql,
+    error_level~,
+    error_message_context~,
+    max_errors~,
+    max_nodes~,
+  )
+  for e in expressions {
     match e {
       Some(expr) =>
         out.push(
           @core.Generator::new(
             w,
             pretty?,
-            identify=identify_value(identify, identify_mode),
+            identify=identify.to_option(),
             normalize~,
             pad~,
             indent~,
-            normalize_functions?,
+            normalize_functions?=normalize_functions.map(n => n.to_option()),
             unsupported_level~,
             max_unsupported~,
             leading_comma~,
@@ -54,16 +65,6 @@ pub fn transpile(
     }
   }
   out
-}
-
-///|
-/// Python `identify`: `identify=true` means "always"; `identify_mode` ("always",
-/// "safe", ...) takes precedence when given.
-fn identify_value(identify : Bool, identify_mode : String?) -> String {
-  match identify_mode {
-    Some(m) => m
-    None => if identify { "always" } else { "" }
-  }
 }
 
 ///|
@@ -119,17 +120,24 @@ pub fn parse(
 
 ///|
 /// Generates SQL for `expression` in dialect `dialect` (Python `Expr.sql`).
+///
+/// - `pretty`: whether to format the produced SQL (default: `@core.default_pretty`).
+/// - `identify`: when to quote identifiers (default: `Never`).
+/// - `normalize`: whether to normalize identifiers to lowercase.
+/// - `pad`, `indent`: indentation sizes of the pretty output.
+/// - `normalize_functions`: how to normalize function names (default: the dialect's).
+/// - `unsupported_level`, `max_unsupported`: how unsupported expressions are reported.
+/// - `leading_comma`, `max_text_width`, `comments`: further formatting options.
 pub fn generate(
   expression : @core.Expr,
   dialect? : String = "",
   copy? : Bool = true,
   pretty? : Bool,
-  identify? : Bool = false,
-  identify_mode? : String,
+  identify? : Identify = Never,
   normalize? : Bool = false,
   pad? : Int = 2,
   indent? : Int = 2,
-  normalize_functions? : String,
+  normalize_functions? : NormalizeFunctions,
   unsupported_level? : @core.ErrorLevel = Warn,
   max_unsupported? : Int = 3,
   leading_comma? : Bool = false,
@@ -139,11 +147,11 @@ pub fn generate(
   @core.Generator::new(
     @core.Dialect::get_or_raise(dialect),
     pretty?,
-    identify=identify_value(identify, identify_mode),
+    identify=identify.to_option(),
     normalize~,
     pad~,
     indent~,
-    normalize_functions?,
+    normalize_functions?=normalize_functions.map(n => n.to_option()),
     unsupported_level~,
     max_unsupported~,
     leading_comma~,

@@ -3,6 +3,9 @@ package "hongbozhang/sqlglot"
 
 import {
   "hongbozhang/sqlglot/core",
+  "hongbozhang/sqlglot/executor",
+  "hongbozhang/sqlglot/optimizer",
+  "moonbitlang/core/debug",
 }
 
 // Values
@@ -32,13 +35,15 @@ pub let dialect_names : Array[String]
 
 pub fn[T : @core.IntoPy] except_(Array[T], distinct? : Bool, dialect? : String, copy? : Bool) -> @core.Expr raise @core.SqlglotError
 
+pub fn[T : @core.IntoPy] execute(T, schema? : Map[String, @optimizer.SchemaNode], mapping_schema? : @optimizer.MappingSchema, read? : String, dialect? : String, tables? : Map[String, @executor.TableData]) -> @executor.Table raise
+
 pub fn expand(@core.Expr, Map[String, () -> @core.Expr raise @core.SqlglotError], dialect? : String, copy? : Bool) -> @core.Expr raise @core.SqlglotError
 
 pub fn[T : @core.IntoPy] from_(T, dialect? : String, copy? : Bool) -> @core.Expr raise @core.SqlglotError
 
 pub fn func(String, args? : Array[&@core.IntoPy], kwargs? : Map[String, &@core.IntoPy], copy? : Bool, dialect? : String) -> @core.Expr raise @core.SqlglotError
 
-pub fn generate(@core.Expr, dialect? : String, copy? : Bool, pretty? : Bool, identify? : Bool, identify_mode? : String, normalize? : Bool, pad? : Int, indent? : Int, normalize_functions? : String, unsupported_level? : @core.ErrorLevel, max_unsupported? : Int, leading_comma? : Bool, max_text_width? : Int, comments? : Bool) -> String raise @core.SqlglotError
+pub fn generate(@core.Expr, dialect? : String, copy? : Bool, pretty? : Bool, identify? : Identify, normalize? : Bool, pad? : Int, indent? : Int, normalize_functions? : NormalizeFunctions, unsupported_level? : @core.ErrorLevel, max_unsupported? : Int, leading_comma? : Bool, max_text_width? : Int, comments? : Bool) -> String raise @core.SqlglotError
 
 pub fn[T : @core.IntoPy, I : @core.IntoPy] insert(T, I, columns? : Array[String], overwrite? : Bool, returning? : &@core.IntoPy, dialect? : String, copy? : Bool) -> @core.Expr raise @core.SqlglotError
 
@@ -53,6 +58,8 @@ pub fn[I : @core.IntoPy, U : @core.IntoPy, O : @core.IntoPy] merge(Array[&@core.
 pub fn[T : @core.IntoPy] normalize_table_name(T, dialect? : String, copy? : Bool) -> String raise @core.SqlglotError
 
 pub fn[T : @core.IntoPy] not_(T, dialect? : String, copy? : Bool) -> @core.Expr raise @core.SqlglotError
+
+pub fn[T : @core.IntoPy] optimize(T, schema? : Map[String, @optimizer.SchemaNode], mapping_schema? : @optimizer.MappingSchema, db? : String, catalog? : String, dialect? : String, infer_schema? : Bool, identify? : Bool, leave_tables_isolated? : Bool, validate_qualify_columns? : Bool, expand_stars? : Bool) -> @core.Expr raise @core.SqlglotError
 
 pub fn[T : @core.IntoPy] or_(Array[T], dialect? : String, copy? : Bool, wrap? : Bool) -> @core.Expr raise @core.SqlglotError
 
@@ -90,7 +97,7 @@ pub fn[T : @core.IntoPy] to_interval(T) -> @core.Expr raise @core.SqlglotError
 
 pub fn[T : @core.IntoPy] to_table(T, dialect? : String, copy? : Bool, kwargs? : Map[String, @core.Value]) -> @core.Expr raise @core.SqlglotError
 
-pub fn transpile(String, read? : String, write? : String, identity? : Bool, error_level? : @core.ErrorLevel, pretty? : Bool, identify? : Bool, identify_mode? : String, normalize? : Bool, pad? : Int, indent? : Int, normalize_functions? : String, unsupported_level? : @core.ErrorLevel, max_unsupported? : Int, leading_comma? : Bool, max_text_width? : Int, comments? : Bool) -> Array[String] raise @core.SqlglotError
+pub fn transpile(String, read? : String, write? : String, identity? : Bool, error_level? : @core.ErrorLevel, error_message_context? : Int, max_errors? : Int, max_nodes? : Int, pretty? : Bool, identify? : Identify, normalize? : Bool, pad? : Int, indent? : Int, normalize_functions? : NormalizeFunctions, unsupported_level? : @core.ErrorLevel, max_unsupported? : Int, leading_comma? : Bool, max_text_width? : Int, comments? : Bool) -> Array[String] raise @core.SqlglotError
 
 pub fn[T : @core.IntoPy] tuple_(Array[T], copy? : Bool, dialect? : String) -> @core.Expr raise @core.SqlglotError
 
@@ -107,7 +114,52 @@ pub fn[T : @core.IntoPy] xor(Array[T], dialect? : String, copy? : Bool, wrap? : 
 // Errors
 
 // Types and methods
+pub(all) enum Identify {
+  Never
+  Always
+  Safe
+  Unsafe
+} derive(Eq, @debug.Debug)
+
+pub(all) enum NormalizeFunctions {
+  Upper
+  Lower
+  Keep
+} derive(Eq, @debug.Debug)
 
 // Type aliases
+pub using @core {type DType}
+
+pub using @core {type Dialect}
+
+pub using @core {type ErrorLevel}
+
+pub using @executor {type ExecuteError}
+
+pub using @executor {type Value as ExecutorValue}
+
+pub using @core {type Expr}
+
+pub using @core {type Generator}
+
+pub using @core {type Kind}
+
+pub using @optimizer {type MappingSchema}
+
+pub using @core {type ParseErrorInfo}
+
+pub using @core {type PyObj}
+
+pub using @optimizer {type SchemaNode}
+
+pub using @core {type SqlglotError}
+
+pub using @executor {type Table}
+
+pub using @executor {type TableData}
+
+pub using @core {type Value}
+
+pub using @core {trait IntoPy}
 
 // Traits

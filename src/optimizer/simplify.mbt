@@ -267,10 +267,13 @@ pub fn Simplifier::rewrite_between(
     return expression
   }
   let negate = parent_is(expression, [Not])
-  let mut result = @core.and_([
-    @core.mk2(GTE, expression.this_().copy(), expression.arg("low")),
-    @core.mk2(LTE, expression.this_().copy(), expression.arg("high")),
-  ], copy=false)
+  let mut result = @core.and_(
+    [
+      @core.mk2(GTE, expression.this_().copy(), expression.arg("low")),
+      @core.mk2(LTE, expression.this_().copy(), expression.arg("high")),
+    ],
+    copy=false,
+  )
   if negate {
     result = @core.paren(result, copy=false)
   }
@@ -322,19 +325,25 @@ fn Simplifier::simplify_not_impl(
     let condition = this.unnest()
     if condition.kind.is_a(And) {
       return @core.paren(
-        @core.or_([
-          @core.not_(condition.this_(), copy=false),
-          @core.not_(condition.expression_(), copy=false),
-        ], copy=false),
+        @core.or_(
+          [
+            @core.not_(condition.this_(), copy=false),
+            @core.not_(condition.expression_(), copy=false),
+          ],
+          copy=false,
+        ),
         copy=false,
       )
     }
     if condition.kind.is_a(Or) {
       return @core.paren(
-        @core.and_([
-          @core.not_(condition.this_(), copy=false),
-          @core.not_(condition.expression_(), copy=false),
-        ], copy=false),
+        @core.and_(
+          [
+            @core.not_(condition.this_(), copy=false),
+            @core.not_(condition.expression_(), copy=false),
+          ],
+          copy=false,
+        ),
         copy=false,
       )
     }
@@ -1148,13 +1157,19 @@ fn Simplifier::simplify_coalesce_impl(
     arg.copy(),
   )
   @core.paren(
-    @core.or_([
-      @core.and_([
-        @core.not_(binop(Is, this, @core.null_()), copy=false),
-        expression.copy(),
-      ], copy=false),
-      @core.and_([binop(Is, this, @core.null_()), substituted], copy=false),
-    ], copy=false),
+    @core.or_(
+      [
+        @core.and_(
+          [
+            @core.not_(binop(Is, this, @core.null_()), copy=false),
+            expression.copy(),
+          ],
+          copy=false,
+        ),
+        @core.and_([binop(Is, this, @core.null_()), substituted], copy=false),
+      ],
+      copy=false,
+    ),
     copy=false,
   )
 }
@@ -1404,10 +1419,15 @@ fn Simplifier::simplify_datetrunc_impl(
           trunc_arg, dr, target_type,
         ))
       NEQ =>
-        datetrunc_range(date, unit, dialect).map(dr => @core.or_([
-          lt_(trunc_arg, date_literal(dr.0, target_type)),
-          ge_(trunc_arg, date_literal(dr.1, target_type)),
-        ], copy=false))
+        datetrunc_range(date, unit, dialect).map(dr => {
+          @core.or_(
+            [
+              lt_(trunc_arg, date_literal(dr.0, target_type)),
+              ge_(trunc_arg, date_literal(dr.1, target_type)),
+            ],
+            copy=false,
+          )
+        })
       _ => None
     }
     return match simplified {

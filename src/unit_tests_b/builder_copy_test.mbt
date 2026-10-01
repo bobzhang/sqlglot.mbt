@@ -78,7 +78,10 @@ test "builders: deriving queries from one base leaves the base untouched" {
       base.window(["w AS (PARTITION BY a)"]),
       "SELECT a, b FROM t WINDOW w AS (PARTITION BY a)",
     ),
-    (base.union_("SELECT c, d FROM u"), "SELECT a, b FROM t UNION SELECT c, d FROM u"),
+    (
+      base.union_("SELECT c, d FROM u"),
+      "SELECT a, b FROM t UNION SELECT c, d FROM u",
+    ),
     (
       base.intersect_("SELECT c, d FROM u"),
       "SELECT a, b FROM t INTERSECT SELECT c, d FROM u",

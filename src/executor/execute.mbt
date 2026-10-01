@@ -85,7 +85,7 @@ pub fn[T : @core.IntoPy] execute(
   dialect? : String = "",
   tables? : Map[String, TableData] = {},
 ) -> Table raise {
-  let d = @sqlglot.dialect(read.unwrap_or(dialect))
+  let d = @dialects.dialect(read.unwrap_or(dialect))
   let tables_ = ensure_tables(Some(tables), dialect=d)
   let schema = if mapping_schema is Some(_) || !schema.is_empty() {
     schema
