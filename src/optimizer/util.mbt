@@ -72,33 +72,6 @@ fn get_dialect(dialect : @core.Dialect?) -> @core.Dialect {
 }
 
 ///|
-/// Python `id(node)` set.
-priv struct IdSet {
-  ids : @set.Set[Int]
-}
-
-///|
-fn IdSet::new() -> IdSet {
-  { ids: @set.Set([]) }
-}
-
-///|
-fn IdSet::add(self : IdSet, e : @core.Expr) -> Unit {
-  self.ids.add(e.uid)
-}
-
-///|
-fn IdSet::contains(self : IdSet, e : @core.Expr) -> Bool {
-  self.ids.contains(e.uid)
-}
-
-///|
-/// Python `seq_get(seq, -1)`.
-fn[T] last_of(xs : Array[T]) -> T? {
-  xs.last()
-}
-
-///|
 /// `exp.column(name, table=table)` with string parts.
 fn column_with_table(name : String, table? : String, quoted? : Bool) -> @core.Expr {
   let col = @core.mk1(Column, @core.to_identifier(name, quoted?))

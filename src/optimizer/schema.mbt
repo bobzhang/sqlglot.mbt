@@ -66,14 +66,6 @@ pub fn schema_from_json_string(
 }
 
 ///|
-fn SchemaNode::as_dict(self : SchemaNode) -> Map[String, SchemaNode]? {
-  match self {
-    Dict(m) => Some(m)
-    _ => None
-  }
-}
-
-///|
 /// Python `dict_depth`.
 fn dict_depth(d : SchemaNode) -> Int {
   match d {

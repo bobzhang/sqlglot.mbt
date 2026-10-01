@@ -133,21 +133,6 @@ fn T::raises_parse(
 }
 
 ///|
-/// The message of a sqlglot error (Python `str(exception)`).
-fn err_msg(e : Error) -> String {
-  match e {
-    @core.TokenError(m, ..)
-    | @core.ParseError(m, _)
-    | @core.UnsupportedError(m)
-    | @core.OptimizeError(m)
-    | @core.SchemaError(m)
-    | @core.ExecuteError(m)
-    | @core.ValueError(m) => m
-    e => e.to_string()
-  }
-}
-
-///|
 /// `str(ctx.exception)` for a caught sqlglot error ("" when nothing was raised).
 fn msg_of(e : @core.SqlglotError?) -> String {
   match e {

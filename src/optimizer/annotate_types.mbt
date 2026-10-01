@@ -38,14 +38,6 @@ fn TType::this(self : TType) -> @core.DType? {
 }
 
 ///|
-fn TType::to_expr(self : TType) -> @core.Expr {
-  match self {
-    D(d) => @core.datatype_of(d)
-    T(e) => e
-  }
-}
-
-///|
 /// The type of an expression as a `TType`.
 fn type_of(e : @core.Expr) -> TType? {
   e.get_type().map(t => T(t))

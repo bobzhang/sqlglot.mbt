@@ -60,20 +60,6 @@ fn[X : Debug + Eq] T::eq(
 }
 
 ///|
-/// Python `assertNotEqual(actual, expected)`.
-#callsite(autofill(loc))
-fn[X : Debug + Eq] T::ne(
-  self : T,
-  actual : X,
-  expected : X,
-  loc~ : SourceLoc,
-) -> Unit {
-  if actual == expected {
-    self.fail("\n    both equal: \{repr_of(actual)}", loc)
-  }
-}
-
-///|
 /// Python `assertEqual(expr1, expr2)` for expressions (structural equality).
 #callsite(autofill(loc))
 fn T::eq_expr(
@@ -357,22 +343,6 @@ fn T::validate_identity(
     identify=identify_of(identify),
   )
   self.eq(got, expected, loc~)
-  expression
-}
-
-///|
-/// `Validator.validate_transpile`: parses `sql` with the test's dialect and checks it
-/// generates `write_sql` in `write_dialect`; returns the parsed expression.
-#callsite(autofill(loc))
-fn T::validate_transpile(
-  self : T,
-  sql : String,
-  write_sql : String,
-  write_dialect? : String = "",
-  loc~ : SourceLoc,
-) -> @core.Expr raise {
-  let expression = self.parse_one(sql)
-  self.eq(@sqlglot.generate(expression, dialect=write_dialect), write_sql, loc~)
   expression
 }
 

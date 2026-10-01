@@ -34,18 +34,6 @@ pub fn Parser::andl(
 }
 
 ///|
-/// Python `a or b` for values.
-fn value_or(
-  a : Value?,
-  b : () -> Value? raise SqlglotError,
-) -> Value? raise SqlglotError {
-  match a {
-    Some(v) if v.truthy() => a
-    _ => b()
-  }
-}
-
-///|
 /// Python `a or b` for optional expressions.
 pub fn expr_or(
   a : Expr?,

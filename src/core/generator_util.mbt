@@ -280,12 +280,6 @@ fn g_strs(xs : Array[String]) -> Array[Value] {
 }
 
 ///|
-/// Converts expressions to argument values (for `expressions(sqls=...)`).
-fn g_nodes(xs : Array[Expr]) -> Array[Value] {
-  xs.map(x => Node(x))
-}
-
-///|
 /// Converts expressions to `func` arguments.
 fn g_fargs(xs : Array[Expr]) -> Array[&SqlArg] {
   xs.map(x => (x : &SqlArg))

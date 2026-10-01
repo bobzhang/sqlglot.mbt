@@ -183,12 +183,8 @@ pub fn Parser::parse_connect_with_prior_base(
   self.fns.no_paren_function_parsers["PRIOR"] = p => {
     Some(p.expression(mk1(Prior, p.parse_bitwise())))
   }
-  let connect = self.parse_disjunction() catch {
-    e => {
-      self.fns.no_paren_function_parsers.remove("PRIOR")
-      raise e
-    }
-  }
+  errdefer self.fns.no_paren_function_parsers.remove("PRIOR")
+  let connect = self.parse_disjunction()
   self.fns.no_paren_function_parsers.remove("PRIOR")
   connect
 }

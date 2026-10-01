@@ -15,7 +15,7 @@ pub fn error_message(e : Error) -> String {
     PyException(_, m) => m
     ExecuteError(m, ..) => m
     @core.SqlglotError::ParseError(m, _) => m
-    @core.SqlglotError::TokenError(m)
+    @core.SqlglotError::TokenError(m, ..)
     | @core.SqlglotError::UnsupportedError(m)
     | @core.SqlglotError::OptimizeError(m)
     | @core.SqlglotError::SchemaError(m)

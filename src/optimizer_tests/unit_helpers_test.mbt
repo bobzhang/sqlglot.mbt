@@ -128,15 +128,6 @@ fn assert_raises_with(
 }
 
 ///|
-/// Sorts strings lexicographically, like Python's `sorted` (MoonBit's `String` ordering
-/// compares lengths first).
-fn py_sorted(xs : Array[String]) -> Array[String] {
-  let ys = xs.copy()
-  ys.sort_by(py_cmp)
-  ys
-}
-
-///|
 /// Lexicographic string comparison.
 fn py_cmp(a : String, b : String) -> Int {
   let n = @core.min_int(a.length(), b.length())
