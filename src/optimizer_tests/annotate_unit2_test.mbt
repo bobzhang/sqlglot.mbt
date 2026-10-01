@@ -94,21 +94,17 @@ test "annotate_types: unnest struct fields (bigquery)" {
 
 ///|
 test "annotate_types: maps" {
-  // SKIPPED (unported dialect feature): DuckDB's `SELECT MAP {'x': 1}` (ToMap) is parsed as a
-  //   STRUCT literal by src/dialects/duckdb.
+  // ToMap annotation
+  let expression = annotate_sql("SELECT MAP {'x': 1}", read="duckdb")
+  assert_true(type_equals(expression.selects()[0], "MAP(VARCHAR, INT)"))
   // Map annotation
   let expression = annotate_sql(
     "SELECT MAP(['key1', 'key2', 'key3'], [10, 20, 30])",
     read="duckdb",
   )
   assert_true(type_equals(expression.selects()[0], "MAP(VARCHAR, INT)"))
-  // VarMap annotation. Spark's variadic `MAP('a', 'b')` isn't parsed into a VarMap by
-  // src/dialects/spark yet, so the VarMap is built directly.
-  let var_map = @core.build_var_map([
-    @core.literal_string("a"),
-    @core.literal_string("b"),
-  ])
-  let expression = @optimizer.annotate_types(@core.select_([var_map]))
+  // VarMap annotation
+  let expression = annotate_sql("SELECT MAP('a', 'b')", read="spark")
   assert_true(type_equals(expression.selects()[0], "MAP(VARCHAR, VARCHAR)"))
 }
 
@@ -249,8 +245,18 @@ test "annotate_types: struct field case sensitivity" {
   }
 }
 
-// SKIPPED (unported dialect feature): test_annotate_object_construct needs Snowflake's
-//   OBJECT_CONSTRUCT parsing (src/dialects/snowflake parses it as an anonymous function).
+///|
+test "annotate_types: OBJECT_CONSTRUCT (snowflake)" {
+  let annotated = annotate_sql(
+    "SELECT OBJECT_CONSTRUCT('foo', 'bar', 'a b', 'c d') AS c",
+    read="snowflake",
+    dialect="snowflake",
+  )
+  assert_eq(
+    annotated.selects()[0].get_type().unwrap() |> gen_sql(dialect="snowflake"),
+    "OBJECT(\"foo\" VARCHAR, \"a b\" VARCHAR)",
+  )
+}
 
 ///|
 /// `expression.meta.get("nonnull")`
@@ -307,20 +313,16 @@ test "annotate_types: nonnull" {
   let ch_schema = "{\"t\": {\"c1\": \"Int32\", \"c2\": \"Nullable(Int32)\"}}"
   let s = mapping_schema(ch_schema, dialect="clickhouse")
   let clickhouse = dialect_of(Some("clickhouse"))
-  let qualified_query = @optimizer.qualify(
+  let qualified_query = @optimizer.qualify_columns(
     parse_sql("select c1, c2 from t"),
-    schema=s,
-    dialect?=clickhouse,
-    infer_schema=true,
-    identify=false,
+    s,
   )
   let annotated = @optimizer.annotate_types(
     qualified_query,
     schema=s,
     dialect?=clickhouse,
   )
-  // SKIPPED (unported dialect feature): Python expects `Some(true)` for `c1`, since ClickHouse
-  //   builds non-Nullable types with `nullable=False`; src/dialects/clickhouse doesn't yet.
+  assert_eq(nonnull(annotated.selects()[0]), Some(true))
   assert_eq(nonnull(annotated.selects()[1]), None)
 }
 
@@ -365,14 +367,9 @@ test "annotate_types: correlated subqueries" {
     dialect="bigquery",
     schema="{\"d_t\": {\"d_x\": \"STRING\"}}",
   )
-  // Python compares BigQuery output, whose generator unqualifies UNNEST columns
-  // (`transforms.unqualify_unnest`, not in src/dialects/bigquery):
-  //   SELECT (SELECT MAX(`u_x`) AS `_col_0` FROM UNNEST([1, `d_t`.`d_x`]) AS `u_x`
-  //   WHERE `u_x` < `d_t`.`d_z`) AS `c_i` FROM (...) AS `d_t`
-  // so the AST is checked through the base dialect (expected from the Python reference).
   assert_eq(
-    gen_sql(annotated),
-    "SELECT (SELECT MAX(\"_0\".\"u_x\") AS \"_col_0\" FROM UNNEST(ARRAY(1, \"d_t\".\"d_x\")) AS \"_0\"(\"u_x\") WHERE \"_0\".\"u_x\" < \"d_t\".\"d_z\") AS \"c_i\" FROM (SELECT CAST(20 AS BIGDECIMAL) AS \"d_x\", 30 AS \"d_z\") AS \"d_t\"",
+    gen_sql(annotated, dialect="bigquery"),
+    "SELECT (SELECT MAX(`u_x`) AS `_col_0` FROM UNNEST([1, `d_t`.`d_x`]) AS `u_x` WHERE `u_x` < `d_t`.`d_z`) AS `c_i` FROM (SELECT CAST(20 AS BIGNUMERIC) AS `d_x`, 30 AS `d_z`) AS `d_t`",
   )
   assert_true(type_equals(annotated.selects()[0], "BIGNUMERIC", dialect="bigquery"))
   let annotated = qualify_and_annotate(

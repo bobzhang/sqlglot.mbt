@@ -1110,14 +1110,17 @@ test "TestTranspile.test_index_offset" {
   t.validate("x[0]", "x[1]", write="presto", identity=false)
   t.validate("x[1]", "x[0]", read="presto", identity=false)
   t.validate("x[x - 1]", "x[x - 1]", write="presto", identity=false)
-  // SKIP: needs the optimizer (annotate_types + simplify) to type/fold the index:
-  // self.validate("x[array_size(y) - 1]", "x[(CARDINALITY(y) - 1) + 1]", write="presto", identity=False)
-  // self.validate("x[3 - 1]", "x[3]", write="presto", identity=False)
+  t.validate(
+    "x[array_size(y) - 1]",
+    "x[(CARDINALITY(y) - 1) + 1]",
+    write="presto",
+    identity=false,
+  )
+  t.validate("x[3 - 1]", "x[3]", write="presto", identity=false)
   t.validate("MAP(a, b)[0]", "MAP(a, b)[0]", write="presto", identity=false)
-  // SKIP: the expected log lists 4 "Applying array index offset" entries, 2 of which
-  // come from the skipped (optimizer-dependent) cases above; check the first two.
   t.eq(logged("INFO").map(m => "INFO:sqlglot:" + m), [
     "INFO:sqlglot:Applying array index offset (1)", "INFO:sqlglot:Applying array index offset (-1)",
+    "INFO:sqlglot:Applying array index offset (1)", "INFO:sqlglot:Applying array index offset (1)",
   ])
   t.done()
 }

@@ -1,7 +1,6 @@
 // Tests for the optimizer-dependent transforms (port of the relevant cases of
 // tests/test_transforms.py and tests/dialects/test_spark.py). Expected values were
-// produced by the Python implementation. Join-mark cases parsed as Oracle are generated
-// with the base dialect because the Oracle generator port lacks its Subquery override.
+// produced by the Python implementation.
 
 ///|
 fn explode_sql(
@@ -54,10 +53,7 @@ fn join_marks_sql(
   match error.val {
     Some(err) => raise err
     None =>
-      @sqlglot.generate(
-        result,
-        dialect=if dialect == "oracle" { "" } else { dialect },
-      )
+      @sqlglot.generate(result, dialect~)
   }
 }
 
@@ -404,7 +400,7 @@ test "transforms eliminate_join_marks oracle" {
       "SELECT table1.id, table2.cloumn1, table3.id FROM table1, table2, (SELECT tableInner1.id FROM tableInner1, tableInner2 WHERE tableInner1.id = tableInner2.id(+)) AS table3 WHERE table1.id = table2.id(+) and table1.id = table3.id(+)",
       "oracle",
     ),
-    content="SELECT table1.id, table2.cloumn1, table3.id FROM table1 LEFT JOIN table2 ON table1.id = table2.id LEFT JOIN (SELECT tableInner1.id FROM tableInner1 LEFT JOIN tableInner2 ON tableInner1.id = tableInner2.id) AS table3 ON table1.id = table3.id",
+    content="SELECT table1.id, table2.cloumn1, table3.id FROM table1 LEFT JOIN table2 ON table1.id = table2.id LEFT JOIN (SELECT tableInner1.id FROM tableInner1 LEFT JOIN tableInner2 ON tableInner1.id = tableInner2.id) table3 ON table1.id = table3.id",
   )
   inspect(
     join_marks_or_error(

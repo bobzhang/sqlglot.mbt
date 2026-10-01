@@ -34,19 +34,17 @@ test "normalize: inline asserts" {
     gen_sql(@optimizer.normalize(parse_sql("x AND (y OR z)"))),
     "x AND (y OR z)",
   )
-  // Python parses Snowflake's `(a AND b) OR BOOLXOR(x, y)` into a Xor connector carrying a
-  // `round_input` arg, and expects `((BOOLXOR(x, y)) OR a) AND ((BOOLXOR(x, y)) OR b)`.
-  // src/dialects/snowflake doesn't parse BOOLXOR yet, so the same tree is built directly
-  // and checked through the base dialect (expected string from the Python reference).
-  let xor = @core.mk(Xor, [
-    ("this", @core.column_of("x")),
-    ("expression", @core.column_of("y")),
-    ("round_input", true),
-  ])
-  let e = @core.mk(Or, [("this", parse_sql("(a AND b)")), ("expression", xor)])
+  // Snowflake's BOOLXOR builds a Xor connector carrying a `round_input` arg, so unpacking
+  // via args.values() yields 3 values. The enclosing predicate isn't normalized, which forces
+  // _predicate_lengths to recurse into the Xor node.
   assert_eq(
-    gen_sql(@optimizer.normalize(e)),
-    "((x XOR y) OR a) AND ((x XOR y) OR b)",
+    gen_sql(
+      @optimizer.normalize(
+        parse_sql("(a AND b) OR BOOLXOR(x, y)", read="snowflake"),
+      ),
+      dialect="snowflake",
+    ),
+    "((BOOLXOR(x, y)) OR a) AND ((BOOLXOR(x, y)) OR b)",
   )
 }
 
