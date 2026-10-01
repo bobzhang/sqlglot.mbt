@@ -134,7 +134,7 @@ pub fn unnest_generate_date_array_using_recursive_cte(
 /// Unnests GENERATE_SERIES or SEQUENCE table references.
 pub fn unnest_generate_series(expression : Expr) -> Expr raise SqlglotError {
   match expression.this() {
-    Some(this) if expression.kind == Table && this.kind == GenerateSeries => {
+    Some(this) if expression.kind == Table && this.kind.is_a(GenerateSeries) => {
       let unnest = mk(Unnest, [("expressions", [this])])
       let alias = expression.alias()
       if !alias.is_empty() {

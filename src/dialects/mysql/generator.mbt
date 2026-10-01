@@ -137,10 +137,7 @@ fn unix_to_time_sql(
             ("this", timestamp),
             (
               "expression",
-              @core.mk(Anonymous, [
-                ("this", "POW"),
-                ("expressions", [@core.literal_number("10"), s]),
-              ]),
+              @core.func_("POW", [@core.literal_number("10"), s]),
             ),
           ]),
         ),

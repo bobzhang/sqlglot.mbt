@@ -124,9 +124,10 @@ fn configure_generator(d : @core.Dialect) -> Unit {
   m[Uniform] = (g, e) => {
     let gen = e.arg("gen")
     // From Snowflake UNIFORM(min, max, gen) as RANDOM(), RANDOM(seed), or constant value -> Extract seed
-    let seed = match gen {
-      Some(gn) => gn.this()
-      None => e.arg("seed")
+    // Python `gen.this` may be a raw string (e.g. the literal's text)
+    let seed : @core.Value? = match gen {
+      Some(gn) => gn.get("this")
+      None => e.get("seed")
     }
     g.func("UNIFORM", [e.this(), e.expression(), seed])
   }
