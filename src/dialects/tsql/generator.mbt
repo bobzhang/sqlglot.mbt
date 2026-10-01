@@ -52,7 +52,7 @@ fn string_agg_sql(
   e : @core.Expr,
 ) -> String raise @core.SqlglotError {
   let mut this = e.this()
-  match @core.gen_find_all_in_scope(e, [Distinct]).get(0) {
+  match @optimizer.find_in_scope(e, [Distinct]) {
     Some(distinct) => {
       // exp.Distinct can appear below an exp.Order or an exp.GroupConcat expression
       g.unsupported("T-SQL STRING_AGG doesn't support DISTINCT.")
@@ -81,63 +81,6 @@ fn string_agg_sql(
 }
 
 ///|
-/// `qualify_outputs` (optimizer/qualify_columns.py) for a root scope: ensure all
-/// output columns are aliased.
-fn qualify_outputs(
-  expression : @core.Expr,
-  dialect : @core.Dialect,
-) -> Unit raise @core.SqlglotError {
-  guard expression.kind.is_a(Selectable) else { return }
-  let new_selections : Array[@core.Expr] = []
-  for i, selection in expression.selects() {
-    if selection.kind == QueryTransform {
-      break
-    }
-    let mut selection = selection
-    if selection.kind == Subquery {
-      if selection.output_name() == "" {
-        let alias_identifier = @core.to_identifier("_col_\{i}")
-        dialect.normalize_identifier(alias_identifier) |> ignore
-        selection.set("alias", @core.mk1(TableAlias, alias_identifier))
-      }
-    } else if !selection.kind.is_any([Alias, Aliases]) && !selection.is_star() {
-      let unwrapped = selection.unnest()
-      let source_identifier = if unwrapped.kind.is_a(Column) {
-        unwrapped.this()
-      } else if unwrapped.kind == Dot {
-        unwrapped.expression()
-      } else {
-        None
-      }
-      let name = selection.output_name()
-      selection = @core.alias_(
-        selection,
-        if name == "" {
-          "_col_\{i}"
-        } else {
-          name
-        },
-        copy=false,
-      )
-      match source_identifier {
-        Some(si) if si.kind == Identifier =>
-          // The alias copies the exact spelling of an existing identifier
-          if si.has("quoted") {
-            selection.arg("alias").unwrap().set("quoted", true)
-          }
-        _ =>
-          dialect.normalize_identifier(selection.arg("alias").unwrap())
-          |> ignore
-      }
-    }
-    new_selections.push(selection)
-  }
-  if !new_selections.is_empty() && expression.kind == Select {
-    expression.set("expressions", new_selections)
-  }
-}
-
-///|
 /// Ensures all (unnamed) output columns are aliased for CTEs and Subqueries.
 pub fn qualify_derived_table_outputs(
   expression : @core.Expr,
@@ -157,7 +100,7 @@ pub fn qualify_derived_table_outputs(
           unaliased_column_indexes.push(i)
         }
       }
-      qualify_outputs(query, dialect())
+      @optimizer.qualify_outputs(query, dialect())
       // Preserve the quoting information of columns for newly added Alias nodes
       let query_selects = query.selects()
       for select_index in unaliased_column_indexes {
