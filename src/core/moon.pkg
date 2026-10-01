@@ -8,6 +8,7 @@ warnings = "-79-15"
 options(
   targets: {
     "parser_ddl.mbt": ["js"],
+    "parser_dml.mbt": ["js"],
     "parser_stubs.mbt": ["not", "js"],
   },
 )
