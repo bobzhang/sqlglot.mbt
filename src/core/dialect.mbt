@@ -31,12 +31,19 @@ pub struct Dialect {
 pub(all) struct DialectHooks {
   mut normalize_identifier : ((Dialect, Expr) -> Expr)?
   mut generate_values_aliases : ((Dialect, Expr) -> Array[Expr])?
+  /// `Dialect.to_json_path` override (e.g. DuckDB's JSON pointer passthrough).
+  mut to_json_path : ((Dialect, Expr?) -> Expr?)?
   mut extra : Map[String, (Dialect, Expr) -> Expr?]
 }
 
 ///|
 pub fn DialectHooks::new() -> DialectHooks {
-  { normalize_identifier: None, generate_values_aliases: None, extra: Map([]), }
+  {
+    normalize_identifier: None,
+    generate_values_aliases: None,
+    to_json_path: None,
+    extra: Map([]),
+  }
 }
 
 ///|
@@ -44,6 +51,7 @@ pub fn DialectHooks::copy(self : DialectHooks) -> DialectHooks {
   {
     normalize_identifier: self.normalize_identifier,
     generate_values_aliases: self.generate_values_aliases,
+    to_json_path: self.to_json_path,
     extra: Map::from_iter(self.extra.iter()),
   }
 }

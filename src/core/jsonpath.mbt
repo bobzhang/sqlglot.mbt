@@ -227,6 +227,15 @@ pub fn parse_json_path(
 ///|
 /// `Dialect.to_json_path(path)`: parses string/number literals into JSONPath expressions.
 pub fn Dialect::to_json_path(self : Dialect, path : Expr?) -> Expr? {
+  match self.hooks.to_json_path {
+    Some(f) => f(self, path)
+    None => self.to_json_path_base(path)
+  }
+}
+
+///|
+/// The base `Dialect.to_json_path` implementation.
+pub fn Dialect::to_json_path_base(self : Dialect, path : Expr?) -> Expr? {
   match path {
     Some(p) if p.kind == Literal => {
       let mut path_text = p.name()
