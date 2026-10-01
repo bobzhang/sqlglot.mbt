@@ -1,6 +1,10 @@
-// Generator overrides for the solr dialect.
+// Port of sqlglot/generators/solr.py
 
 ///|
 fn configure_generator(d : @core.Dialect) -> Unit {
-  ignore(d)
+  // AFTER_HAVING_MODIFIER_TRANSFORMS = generator.AFTER_HAVING_MODIFIER_TRANSFORMS
+  d.gen_fns.after_having_modifier_transforms = d.gen_fns.after_having_modifier_transforms.filter(x => {
+      x.0 == "windows" || x.0 == "qualify"
+    },
+  )
 }
