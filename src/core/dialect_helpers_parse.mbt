@@ -244,7 +244,7 @@ pub fn build_json_extract_path(
   arrow_req_json_type? : Bool = false,
   json_type? : String,
 ) -> FuncBuilder {
-  fn(args, _p) {
+  (args, _p) => {
     let segments : Array[Expr] = [mk0(JSONPathRoot)]
     for i in 1..<args.length() {
       let a = args[i]

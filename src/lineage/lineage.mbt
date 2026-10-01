@@ -890,21 +890,23 @@ pub fn Node::to_html(
   let nodes_json = Json::array(nodes).stringify()
   let edges_json = Json::array(edges).stringify()
   let options_json = options.stringify()
-  $|<div>
-  $|  <div id="sqlglot-lineage"></div>
-  $|  \{imports_html}
-  $|  <script type="text/javascript">
-  $|    var nodes = new vis.DataSet(\{nodes_json})
-  $|    nodes.forEach(row => row["title"] = new DOMParser().parseFromString(row["title"], "text/html").body.childNodes[0])
-  $|
-  $|    new vis.Network(
-  $|        document.getElementById("sqlglot-lineage"),
-  $|        {
-  $|            nodes: nodes,
-  $|            edges: new vis.DataSet(\{edges_json})
-  $|        },
-  $|        \{options_json},
-  $|    )
-  $|  </script>
-  $|</div>
+  let html =
+    $|<div>
+    $|  <div id="sqlglot-lineage"></div>
+    $|  \{imports_html}
+    $|  <script type="text/javascript">
+    $|    var nodes = new vis.DataSet(\{nodes_json})
+    $|    nodes.forEach(row => row["title"] = new DOMParser().parseFromString(row["title"], "text/html").body.childNodes[0])
+    $|
+    $|    new vis.Network(
+    $|        document.getElementById("sqlglot-lineage"),
+    $|        {
+    $|            nodes: nodes,
+    $|            edges: new vis.DataSet(\{edges_json})
+    $|        },
+    $|        \{options_json},
+    $|    )
+    $|  </script>
+    $|</div>
+  html
 }

@@ -60,7 +60,7 @@ pub(all) enum ErrorLevel {
   Warn
   Raise
   Immediate
-} derive(Eq, Show)
+} derive(Eq, Debug)
 
 ///|
 /// Highlight a SQL string using ANSI codes at the given (inclusive) positions.
