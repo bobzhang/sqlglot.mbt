@@ -61,12 +61,16 @@ let seq_signed : Template = Template::new(
 fn has_timezone(ts : String) -> Bool {
   let chars = ts.to_array()
   let n = chars.length()
-  let digit = (i : Int) => i < n && chars[i] >= '0' && chars[i] <= '9'
+  // `\d` is any Unicode decimal digit; `.` doesn't match a newline.
+  let digit = (i : Int) => i < n && @core.is_decimal(chars[i])
   for i in 0..<n {
     if chars[i] == ':' && digit(i + 1) && digit(i + 2) {
       for j in (i + 3)..<n {
         if (chars[j] == '+' || chars[j] == '-') && digit(j + 1) && digit(j + 2) {
           return true
+        }
+        if chars[j] == '\n' {
+          break
         }
       }
     }

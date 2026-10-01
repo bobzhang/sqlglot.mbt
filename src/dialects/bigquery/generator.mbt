@@ -330,21 +330,6 @@ let ts_or_ds_types : Array[@core.Kind] = [
 ]
 
 ///|
-fn safe_json_path_key(s : String) -> Bool {
-  // ^[\-\w]*$
-  for c in s {
-    if !(c == '-' ||
-      c == '_' ||
-      c.is_ascii_alphabetic() ||
-      c.is_ascii_digit() ||
-      c.to_int() > 127) {
-      return false
-    }
-  }
-  true
-}
-
-///|
 fn configure_generator(d : @core.Dialect) -> Unit {
   d.gen_fns.hooks.safe_json_path_key_re = Some(safe_json_path_key)
   // WINDOW comes after QUALIFY
@@ -697,4 +682,20 @@ fn bracket_sql(
     expressions_sql = "SAFE_\{expressions_sql}"
   }
   "\{g.sql(this)}[\{expressions_sql}]"
+}
+
+///|
+/// `re.match(r"^[\-\w]*$", s)` (`$` also matches before a trailing newline).
+fn safe_json_path_key(s : String) -> Bool {
+  let s = if s.has_suffix("\n") {
+    s.unsafe_substring(start=0, end=s.length() - 1)
+  } else {
+    s
+  }
+  for c in s {
+    if !(c == '-' || @core.is_word_char(c)) {
+      return false
+    }
+  }
+  true
 }

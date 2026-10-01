@@ -140,8 +140,10 @@ fn ilike_matches(
     }
     i += 1
   }
-  let s = name.to_array().map(c => @core.char_lower(c).to_int())
-  let t = tokens.map(x => if x >= 0 { @core.char_lower(Int::unsafe_to_char(x)).to_int() } else { x })
+  // `re.fullmatch(pattern, name, re.IGNORECASE)`: `.` (and so `.*`) doesn't match a newline.
+  let s = name.to_array().map(c => c.to_int())
+  let t = tokens
+  let nl = '\n'.to_int()
   // DP match
   let n = s.length()
   let m = t.length()
@@ -156,8 +158,15 @@ fn ilike_matches(
     for j in 1..=m {
       let tok = t[j - 1]
       let v = if tok == -2 {
-        dp[(a - 1) * (m + 1) + j] || dp[a * (m + 1) + j - 1]
-      } else if tok == -1 || tok == s[a - 1] {
+        (s[a - 1] != nl && dp[(a - 1) * (m + 1) + j]) || dp[a * (m + 1) + j - 1]
+      } else if (tok == -1 && s[a - 1] != nl) ||
+        (
+          tok >= 0 &&
+          @core.re_ignorecase_char_eq(
+            Int::unsafe_to_char(tok),
+            Int::unsafe_to_char(s[a - 1]),
+          )
+        ) {
         dp[(a - 1) * (m + 1) + j - 1]
       } else {
         false

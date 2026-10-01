@@ -1,194 +1,13 @@
 // Python-compatible helpers used throughout the port.
 
 ///|
-/// Python `str.upper()` for the common Unicode ranges.
-pub fn py_upper(s : String) -> String {
-  let mut ascii = true
-  for c in s {
-    if c.to_int() >= 128 {
-      ascii = false
-      break
-    }
-  }
-  if ascii {
-    return s.to_upper()
-  }
-  let sb = StringBuilder()
-  for c in s {
-    sb.write_char(char_upper(c))
-  }
-  sb.to_string()
-}
-
-///|
-/// Python `str.lower()` for the common Unicode ranges.
-pub fn py_lower(s : String) -> String {
-  let mut ascii = true
-  for c in s {
-    if c.to_int() >= 128 {
-      ascii = false
-      break
-    }
-  }
-  if ascii {
-    return s.to_lower()
-  }
-  let sb = StringBuilder()
-  for c in s {
-    sb.write_char(char_lower(c))
-  }
-  sb.to_string()
-}
-
-///|
-pub fn char_upper(c : Char) -> Char {
-  let i = c.to_int()
-  if i < 128 {
-    return c.to_ascii_uppercase()
-  }
-  let u = if (i >= 0xE0 && i <= 0xFE && i != 0xF7) ||
-    (i >= 0x3B1 && i <= 0x3C9 && i != 0x3C2) ||
-    (i >= 0x430 && i <= 0x44F) {
-    i - 32
-  } else if i >= 0x450 && i <= 0x45F {
-    i - 80
-  } else if i >= 0x100 &&
-    i <= 0x17F &&
-    i % 2 == 1 &&
-    i != 0x131 &&
-    i != 0x138 &&
-    i != 0x149 &&
-    i != 0x17F {
-    if (i >= 0x139 && i <= 0x148) || (i >= 0x179 && i <= 0x17E) {
-      i
-    } else {
-      i - 1
-    }
-  } else if ((i >= 0x139 && i <= 0x148) || (i >= 0x179 && i <= 0x17E)) &&
-    i % 2 == 0 {
-    i - 1
-  } else if i == 0xFF {
-    0x178
-  } else {
-    i
-  }
-  Int::unsafe_to_char(u)
-}
-
-///|
-pub fn char_lower(c : Char) -> Char {
-  let i = c.to_int()
-  if i < 128 {
-    return c.to_ascii_lowercase()
-  }
-  let l = if (i >= 0xC0 && i <= 0xDE && i != 0xD7) ||
-    (i >= 0x391 && i <= 0x3A9 && i != 0x3A2) ||
-    (i >= 0x410 && i <= 0x42F) {
-    i + 32
-  } else if i >= 0x400 && i <= 0x40F {
-    i + 80
-  } else if i >= 0x100 && i <= 0x17F && i % 2 == 0 && i != 0x130 && i != 0x138 {
-    if (i >= 0x139 && i <= 0x148) || (i >= 0x179 && i <= 0x17E) {
-      i
-    } else {
-      i + 1
-    }
-  } else if ((i >= 0x139 && i <= 0x148) || (i >= 0x179 && i <= 0x17E)) &&
-    i % 2 == 1 {
-    i + 1
-  } else if i == 0x178 {
-    0xFF
-  } else {
-    i
-  }
-  Int::unsafe_to_char(l)
-}
-
-///|
-/// Python `str.isspace()` for a single character.
-pub fn is_space(c : Char) -> Bool {
-  match c {
-    ' '
-    | '\t'
-    | '\n'
-    | '\r'
-    | '\u{0b}'
-    | '\u{0c}'
-    | '\u{1c}'
-    | '\u{1d}'
-    | '\u{1e}'
-    | '\u{1f}'
-    | '\u{85}'
-    | '\u{a0}' => true
-    _ => {
-      let i = c.to_int()
-      i == 0x1680 ||
-      (i >= 0x2000 && i <= 0x200A) ||
-      i == 0x2028 ||
-      i == 0x2029 ||
-      i == 0x202F ||
-      i == 0x205F ||
-      i == 0x3000
-    }
-  }
-}
-
-///|
-/// Python `str.isalpha()` approximation for a single character.
-pub fn is_alpha(c : Char) -> Bool {
-  if c.to_int() < 128 {
-    return c.is_ascii_alphabetic()
-  }
-  let i = c.to_int()
-  if i == 0xD7 || i == 0xF7 {
-    return false
-  }
-  // Treat most non-ASCII letters, CJK, etc. as alphabetic. Excludes common
-  // punctuation and symbol blocks.
-  if i >= 0xA0 && i < 0xC0 {
-    return i == 0xAA || i == 0xB5 || i == 0xBA
-  }
-  if i >= 0x2000 && i <= 0x2BFF {
-    return false
-  }
-  if i >= 0x3000 && i <= 0x303F {
-    return false
-  }
-  if i >= 0xFF00 && i <= 0xFF20 {
-    return false
-  }
-  if i >= 0x1F000 && i <= 0x1FAFF {
-    return false
-  }
-  !is_space(c) && !c.is_control()
-}
-
-///|
-/// Python `str.isdigit()` approximation for a single character.
-pub fn is_digit_char(c : Char) -> Bool {
-  c >= '0' && c <= '9'
-}
-
-///|
-/// Python `str.isalnum()` for a single character.
-pub fn is_alnum(c : Char) -> Bool {
-  is_digit_char(c) || is_alpha(c)
-}
-
-///|
-/// Python `str.isidentifier()` for a single character string.
-pub fn is_identifier_char(c : Char) -> Bool {
-  c == '_' || is_alpha(c)
-}
-
-///|
 /// Python `str.isdigit()` for a whole string.
 pub fn str_is_digit(s : String) -> Bool {
   if s.is_empty() {
     return false
   }
   for c in s {
-    if !is_digit_char(c) {
+    if !is_py_digit(c) {
       return false
     }
   }
@@ -295,9 +114,33 @@ pub fn find_new_name(taken : (String) -> Bool, base : String) -> String {
 }
 
 ///|
+/// Like CPython's `_PyUnicode_TransformDecimalAndSpaceToASCII` (used by `int()` and
+/// `float()`): replaces Unicode decimal digits by their ASCII digit and Unicode white space
+/// by a space.
+pub fn to_ascii_decimal(text : String) -> String {
+  if is_ascii_string(text) {
+    return text
+  }
+  let sb = StringBuilder()
+  for c in text {
+    let d = decimal_value(c)
+    if c.to_int() < 128 {
+      sb.write_char(c)
+    } else if d >= 0 {
+      sb.write_char(Int::unsafe_to_char('0'.to_int() + d))
+    } else if is_space(c) {
+      sb.write_char(' ')
+    } else {
+      sb.write_char(c)
+    }
+  }
+  sb.to_string()
+}
+
+///|
 /// Python `int(text)` succeeds.
 pub fn is_int_str(text : String) -> Bool {
-  let t = py_strip(text)
+  let t = py_strip(to_ascii_decimal(text))
   if t.is_empty() {
     return false
   }
@@ -330,7 +173,7 @@ pub fn is_int_str(text : String) -> Bool {
 ///|
 /// Python `float(text)` succeeds.
 pub fn is_float_str(text : String) -> Bool {
-  let t = py_lower(py_strip(text))
+  let t = py_lower(py_strip(to_ascii_decimal(text)))
   if t.is_empty() {
     return false
   }
@@ -387,7 +230,7 @@ pub fn parse_int_str(text : String) -> Int64? {
   if !is_int_str(text) {
     return None
   }
-  let t = py_strip(text).replace_all(old="_", new="")
+  let t = py_strip(to_ascii_decimal(text)).replace_all(old="_", new="")
   Some(@string.parse_int64(t)) catch {
     _ => None
   }
@@ -453,11 +296,13 @@ pub fn ends_with(s : String, suffix : String) -> Bool {
 }
 
 ///|
-/// Python's `repr()` for a string (single-quoted unless it contains single quotes only).
+/// Python's `repr()` for a string (single-quoted unless it contains single quotes only;
+/// non-printable characters are escaped as `\xhh`, `\uhhhh` or `\Uhhhhhhhh`).
 pub fn py_repr_str(s : String) -> String {
   let quote = if s.contains("'") && !s.contains("\"") { '"' } else { '\'' }
   let sb = StringBuilder()
   sb.write_char(quote)
+  let hex = "0123456789abcdef"
   for c in s {
     match c {
       '\\' => sb.write_string("\\\\")
@@ -468,14 +313,22 @@ pub fn py_repr_str(s : String) -> String {
         if c == quote {
           sb.write_char('\\')
           sb.write_char(c)
-        } else if c.to_int() < 32 || c.to_int() == 127 {
-          let h = c.to_int()
-          let hex = "0123456789abcdef"
-          sb.write_string("\\x")
-          sb.write_char(hex.get_char(h / 16).unwrap())
-          sb.write_char(hex.get_char(h % 16).unwrap())
-        } else {
+        } else if is_printable(c) {
           sb.write_char(c)
+        } else {
+          let h = c.to_int()
+          let (prefix, width) = if h < 0x100 {
+            ("\\x", 2)
+          } else if h < 0x10000 {
+            ("\\u", 4)
+          } else {
+            ("\\U", 8)
+          }
+          sb.write_string(prefix)
+          for k in 0..<width {
+            let shift = 4 * (width - 1 - k)
+            sb.write_char(hex.get_char((h >> shift) & 15).unwrap())
+          }
         }
     }
   }
@@ -484,18 +337,22 @@ pub fn py_repr_str(s : String) -> String {
 }
 
 ///|
-/// Whether `text` matches `^[_a-zA-Z][\w]*$` (Python `SAFE_IDENTIFIER_RE`).
+/// Whether `text` matches `^[_a-zA-Z][\w]*$` (Python `SAFE_IDENTIFIER_RE`; `$` also
+/// matches before a trailing newline).
 pub fn is_safe_identifier(text : String) -> Bool {
+  let text = if text.has_suffix("\n") {
+    text.unsafe_substring(start=0, end=text.length() - 1)
+  } else {
+    text
+  }
   let mut first = true
   for c in text {
     if first {
-      if !(c == '_' ||
-        c.is_ascii_alphabetic() ||
-        (c.to_int() >= 128 && is_alpha(c))) {
+      if !(c == '_' || c.is_ascii_alphabetic()) {
         return false
       }
       first = false
-    } else if !(c == '_' || is_alnum(c)) {
+    } else if !is_word_char(c) {
       return false
     }
   }

@@ -403,9 +403,9 @@ pub fn Dialect::case_sensitive(self : Dialect, text : String) -> Bool {
   }
   for c in text {
     let unsafe_ = if self.normalization_strategy == Uppercase {
-      char_upper(c) != c || c.is_ascii_lowercase()
+      is_lower_char(c)
     } else {
-      char_lower(c) != c || c.is_ascii_uppercase()
+      is_upper_char(c)
     }
     if unsafe_ {
       return true

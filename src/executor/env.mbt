@@ -330,15 +330,9 @@ fn like(this : Value, pattern : Value, ignore_case : Bool) -> Value raise {
 }
 
 ///|
+/// Pattern character `a` matches `b` (`re.IGNORECASE` semantics when `ignore_case`).
 fn char_eq(a : Char, b : Char, ignore_case : Bool) -> Bool {
-  a == b ||
-  (
-    ignore_case &&
-    (
-      @core.char_lower(a) == @core.char_lower(b) ||
-      @core.char_upper(a) == @core.char_upper(b)
-    )
-  )
+  a == b || (ignore_case && @core.re_ignorecase_char_eq(a, b))
 }
 
 ///|
@@ -760,7 +754,9 @@ fn build_env() -> Map[String, Value] {
   set(null_if_any("LIKE", 2, 2, args => like(args[0], args[1], false)))
   set(null_if_any("ILIKE", 2, 2, args => like(args[0], args[1], true)))
   set(
-    null_if_any("LOWER", 1, 1, args => str_method(args[0], "lower", str_lower)),
+    null_if_any("LOWER", 1, 1, args => {
+      str_method(args[0], "lower", @core.py_lower)
+    }),
   )
   set(null_if_any("LT", 2, 2, args => Bool(py_lt(args[0], args[1]))))
   set(null_if_any("LTE", 2, 2, args => Bool(py_le(args[0], args[1]))))
@@ -823,7 +819,9 @@ fn build_env() -> Map[String, Value] {
     }),
   )
   set(
-    null_if_any("UPPER", 1, 1, args => str_method(args[0], "upper", str_upper)),
+    null_if_any("UPPER", 1, 1, args => {
+      str_method(args[0], "upper", @core.py_upper)
+    }),
   )
   set(
     pyfunc("ZIPNOTNULL", 0, -1, args => {
