@@ -40,7 +40,8 @@ pub fn Parser::parse_alias_base(
     self.match_r_paren(expression=aliases)
     return Some(aliases)
   }
-  let alias = match self.parse_id_var(any_token~, tokens=self.cfg.alias_tokens) {
+  let alias = match
+    self.parse_id_var(any_token~, tokens=self.cfg.alias_tokens) {
     Some(a) => Some(a)
     None =>
       if self.cfg.string_aliases {
@@ -52,7 +53,10 @@ pub fn Parser::parse_alias_base(
   match alias {
     Some(a) => {
       let comments = comments + a.pop_comments()
-      let e = self.expression(mk(Alias, [("this", this), ("alias", a)]), comments~)
+      let e = self.expression(
+        mk(Alias, [("this", this), ("alias", a)]),
+        comments~,
+      )
       match e.this() {
         Some(column) =>
           if e.comments.unwrap_or([]).is_empty() &&
@@ -111,7 +115,9 @@ pub fn Parser::parse_string(self : Parser) -> Expr? raise SqlglotError {
 }
 
 ///|
-pub fn Parser::parse_string_as_identifier(self : Parser) -> Expr? raise SqlglotError {
+pub fn Parser::parse_string_as_identifier(
+  self : Parser,
+) -> Expr? raise SqlglotError {
   if !self.match_(STRING) {
     return None
   }
@@ -156,9 +162,15 @@ pub fn Parser::parse_var(
 }
 
 ///|
-pub fn Parser::advance_any(self : Parser, ignore_reserved? : Bool = false) -> Token? {
+pub fn Parser::advance_any(
+  self : Parser,
+  ignore_reserved? : Bool = false,
+) -> Token? {
   if self.curr.ok() &&
-    (ignore_reserved || !self.cfg.reserved_tokens.contains(self.curr.token_type)) {
+    (
+      ignore_reserved ||
+      !self.cfg.reserved_tokens.contains(self.curr.token_type)
+    ) {
     self.advance()
     return Some(self.prev)
   }
@@ -210,7 +222,9 @@ pub fn Parser::parse_parameter(self : Parser) -> Expr? raise SqlglotError {
   match self.fns.hooks.parse_parameter {
     Some(f) => f(self)
     None => {
-      let this = expr_or(self.parse_identifier(), () => self.parse_primary_or_var())
+      let this = expr_or(self.parse_identifier(), () => {
+        self.parse_primary_or_var()
+      })
       Some(self.expression(mk1(Parameter, this)))
     }
   }

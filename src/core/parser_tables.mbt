@@ -48,11 +48,20 @@ pub fn build_like(args : Array[Expr]) -> Expr {
 
 ///|
 /// `binary_range_parser(expr_type, reverse_args)`
-pub fn binary_range_parser(kind : Kind, reverse_args? : Bool = false) -> ParseFn1 {
+pub fn binary_range_parser(
+  kind : Kind,
+  reverse_args? : Bool = false,
+) -> ParseFn1 {
   fn(p, this) {
     let expression = p.parse_bitwise()
-    let (a, b) = if reverse_args { (expression, this) } else { (this, expression) }
-    p.parse_escape(Some(p.expression(mk(kind, [("this", a), ("expression", b)]))))
+    let (a, b) = if reverse_args {
+      (expression, this)
+    } else {
+      (this, expression)
+    }
+    p.parse_escape(
+      Some(p.expression(mk(kind, [("this", a), ("expression", b)]))),
+    )
   }
 }
 
@@ -108,7 +117,10 @@ pub fn build_extract_json_with_path(kind : Kind) -> FuncBuilder {
       expression.set("expressions", rest(args, 2))
     }
     if kind == JSONExtractScalar {
-      expression.set("scalar_only", p.dialect.cfg.json_extract_scalar_scalar_only)
+      expression.set(
+        "scalar_only",
+        p.dialect.cfg.json_extract_scalar_scalar_only,
+      )
     }
     expression
   }
@@ -136,7 +148,10 @@ pub fn build_pad(args : Array[Expr], is_left? : Bool = true) -> Expr {
 }
 
 ///|
-pub fn build_convert_timezone(args : Array[Expr], default_source_tz? : String) -> Expr {
+pub fn build_convert_timezone(
+  args : Array[Expr],
+  default_source_tz? : String,
+) -> Expr {
   if args.length() == 2 {
     let source_tz = match default_source_tz {
       Some(s) if !s.is_empty() => Some(literal_string(s))
@@ -172,7 +187,11 @@ pub fn build_trim(
 }
 
 ///|
-pub fn build_coalesce(args : Array[Expr], is_nvl? : Bool, is_null? : Bool) -> Expr {
+pub fn build_coalesce(
+  args : Array[Expr],
+  is_nvl? : Bool,
+  is_null? : Bool,
+) -> Expr {
   mk(Coalesce, [
     ("this", arg(args, 0)),
     ("expressions", rest(args, 1)),
@@ -228,7 +247,11 @@ pub fn build_array_remove(args : Array[Expr], p : Parser) -> Expr {
 
 ///|
 /// JSON operator builders shared between COLUMN_OPERATORS and JSON_OPERATORS.
-pub fn build_json_extract_op(p : Parser, this : Expr?, path : Expr?) -> Expr? raise SqlglotError {
+pub fn build_json_extract_op(
+  p : Parser,
+  this : Expr?,
+  path : Expr?,
+) -> Expr? raise SqlglotError {
   Some(
     p.expression(
       mk(JSONExtract, [
@@ -259,7 +282,11 @@ pub fn build_json_extract_scalar_op(
 }
 
 ///|
-pub fn build_jsonb_extract_op(p : Parser, this : Expr?, path : Expr?) -> Expr? raise SqlglotError {
+pub fn build_jsonb_extract_op(
+  p : Parser,
+  this : Expr?,
+  path : Expr?,
+) -> Expr? raise SqlglotError {
   Some(p.expression(mk(JSONBExtract, [("this", this), ("expression", path)])))
 }
 
@@ -269,7 +296,9 @@ pub fn build_jsonb_extract_scalar_op(
   this : Expr?,
   path : Expr?,
 ) -> Expr? raise SqlglotError {
-  Some(p.expression(mk(JSONBExtractScalar, [("this", this), ("expression", path)])))
+  Some(
+    p.expression(mk(JSONBExtractScalar, [("this", this), ("expression", path)])),
+  )
 }
 
 ///|
@@ -278,7 +307,9 @@ pub fn build_jsonb_contains_top_key_op(
   this : Expr?,
   key : Expr?,
 ) -> Expr? raise SqlglotError {
-  Some(p.expression(mk(JSONBContainsTopKey, [("this", this), ("expression", key)])))
+  Some(
+    p.expression(mk(JSONBContainsTopKey, [("this", this), ("expression", key)])),
+  )
 }
 
 ///|
@@ -314,12 +345,20 @@ fn base_functions() -> Map[String, FuncBuilder] {
   f["ARRAY_APPEND"] = fn(args, p) { build_array_append(args, p) }
   f["ARRAY_CAT"] = fn(args, p) { build_array_concat(args, p) }
   f["ARRAY_CONCAT"] = fn(args, p) { build_array_concat(args, p) }
-  f["ARRAY_INTERSECT"] = fn(args, _p) { mk(ArrayIntersect, [("expressions", args)]) }
-  f["ARRAY_INTERSECTION"] = fn(args, _p) { mk(ArrayIntersect, [("expressions", args)]) }
+  f["ARRAY_INTERSECT"] = fn(args, _p) {
+    mk(ArrayIntersect, [("expressions", args)])
+  }
+  f["ARRAY_INTERSECTION"] = fn(args, _p) {
+    mk(ArrayIntersect, [("expressions", args)])
+  }
   f["ARRAY_PREPEND"] = fn(args, p) { build_array_prepend(args, p) }
   f["ARRAY_REMOVE"] = fn(args, p) { build_array_remove(args, p) }
   f["COUNT"] = fn(args, _p) {
-    mk(Count, [("this", arg(args, 0)), ("expressions", rest(args, 1)), ("big_int", true)])
+    mk(Count, [
+      ("this", arg(args, 0)),
+      ("expressions", rest(args, 1)),
+      ("big_int", true),
+    ])
   }
   f["CONCAT"] = fn(args, p) {
     mk(Concat, [
@@ -340,7 +379,8 @@ fn base_functions() -> Map[String, FuncBuilder] {
   f["GENERATE_DATE_ARRAY"] = fn(args, _p) {
     let step = match arg(args, 2) {
       Some(s) => s
-      None => mk(Interval, [("this", literal_string("1")), ("unit", var_("DAY"))])
+      None =>
+        mk(Interval, [("this", literal_string("1")), ("unit", var_("DAY"))])
     }
     mk(GenerateDateArray, [
       ("start", arg(args, 0)),
@@ -471,9 +511,13 @@ fn base_property_parsers() -> Map[String, PropertyFn] {
       ),
     )
   }
-  m["ALGORITHM"] = fn(p, _) { node(p.parse_property_assignment(AlgorithmProperty)) }
+  m["ALGORITHM"] = fn(p, _) {
+    node(p.parse_property_assignment(AlgorithmProperty))
+  }
   m["AUTO"] = fn(p, _) { opt(p.parse_auto_property()) }
-  m["AUTO_INCREMENT"] = fn(p, _) { node(p.parse_property_assignment(AutoIncrementProperty)) }
+  m["AUTO_INCREMENT"] = fn(p, _) {
+    node(p.parse_property_assignment(AutoIncrementProperty))
+  }
   m["BACKUP"] = fn(p, _) {
     node(p.expression(mk1(BackupProperty, p.parse_var(any_token=true))))
   }
@@ -492,7 +536,9 @@ fn base_property_parsers() -> Map[String, PropertyFn] {
     }
     node(p.parse_property_assignment(CollateProperty, kwargs~))
   }
-  m["COMMENT"] = fn(p, _) { node(p.parse_property_assignment(SchemaCommentProperty)) }
+  m["COMMENT"] = fn(p, _) {
+    node(p.parse_property_assignment(SchemaCommentProperty))
+  }
   m["CONTAINS"] = fn(p, _) { opt(p.parse_contains_property()) }
   m["COPY"] = fn(p, _) { opt(p.parse_copy_property()) }
   m["DATABLOCKSIZE"] = fn(p, kw) {
@@ -510,10 +556,14 @@ fn base_property_parsers() -> Map[String, PropertyFn] {
     node(p.expression(mk1(StabilityProperty, literal_string("IMMUTABLE"))))
   }
   m["DISTRIBUTED"] = fn(p, _) { node(p.parse_distributed_property()) }
-  m["DUPLICATE"] = fn(p, _) { node(p.parse_composite_key_property(DuplicateKeyProperty)) }
+  m["DUPLICATE"] = fn(p, _) {
+    node(p.parse_composite_key_property(DuplicateKeyProperty))
+  }
   m["DYNAMIC"] = fn(p, _) { node(p.expression(mk0(DynamicProperty))) }
   m["DISTKEY"] = fn(p, _) { node(p.parse_distkey()) }
-  m["DISTSTYLE"] = fn(p, _) { node(p.parse_property_assignment(DistStyleProperty)) }
+  m["DISTSTYLE"] = fn(p, _) {
+    node(p.parse_property_assignment(DistStyleProperty))
+  }
   m["EMPTY"] = fn(p, _) { node(p.expression(mk0(EmptyProperty))) }
   m["ENGINE"] = fn(p, _) { node(p.parse_property_assignment(EngineProperty)) }
   m["ENVIRONMENT"] = fn(p, _) {
@@ -526,12 +576,16 @@ fn base_property_parsers() -> Map[String, PropertyFn] {
     )
   }
   m["HANDLER"] = fn(p, _) { node(p.parse_property_assignment(HandlerProperty)) }
-  m["EXECUTE"] = fn(p, _) { node(p.parse_property_assignment(ExecuteAsProperty)) }
+  m["EXECUTE"] = fn(p, _) {
+    node(p.parse_property_assignment(ExecuteAsProperty))
+  }
   m["EXTERNAL"] = fn(p, _) { node(p.expression(mk0(ExternalProperty))) }
   m["FALLBACK"] = fn(p, kw) {
     node(p.parse_fallback(no=kw.get("no").unwrap_or(false)))
   }
-  m["FORMAT"] = fn(p, _) { node(p.parse_property_assignment(FileFormatProperty)) }
+  m["FORMAT"] = fn(p, _) {
+    node(p.parse_property_assignment(FileFormatProperty))
+  }
   m["FREESPACE"] = fn(p, _) { node(p.parse_freespace()) }
   m["GLOBAL"] = fn(p, _) { node(p.expression(mk0(GlobalProperty))) }
   m["HEAP"] = fn(p, _) { node(p.expression(mk0(HeapProperty))) }
@@ -552,11 +606,15 @@ fn base_property_parsers() -> Map[String, PropertyFn] {
     node(p.expression(mk1(InputModelProperty, p.parse_schema())))
   }
   m["JOURNAL"] = fn(p, kw) { node(p.parse_journal(kw)) }
-  m["LANGUAGE"] = fn(p, _) { node(p.parse_property_assignment(LanguageProperty)) }
+  m["LANGUAGE"] = fn(p, _) {
+    node(p.parse_property_assignment(LanguageProperty))
+  }
   m["LAYOUT"] = fn(p, _) { opt(p.parse_dict_property("LAYOUT")) }
   m["LIFETIME"] = fn(p, _) { opt(p.parse_dict_range("LIFETIME")) }
   m["LIKE"] = fn(p, _) { opt(p.parse_create_like()) }
-  m["LOCATION"] = fn(p, _) { node(p.parse_property_assignment(LocationProperty)) }
+  m["LOCATION"] = fn(p, _) {
+    node(p.parse_property_assignment(LocationProperty))
+  }
   m["LOCK"] = fn(p, _) { node(p.parse_locking()) }
   m["LOCKING"] = fn(p, _) { node(p.parse_locking()) }
   m["LOG"] = fn(p, kw) { node(p.parse_log(no=kw.get("no").unwrap_or(false))) }
@@ -570,7 +628,9 @@ fn base_property_parsers() -> Map[String, PropertyFn] {
     )
   }
   m["MODIFIES"] = fn(p, _) { opt(p.parse_modifies_property()) }
-  m["MULTISET"] = fn(p, _) { node(p.expression(mk(SetProperty, [("multi", true)]))) }
+  m["MULTISET"] = fn(p, _) {
+    node(p.expression(mk(SetProperty, [("multi", true)])))
+  }
   m["NO"] = fn(p, _) { opt(p.parse_no_property()) }
   m["ON"] = fn(p, _) { opt(p.parse_on_property()) }
   m["ORDER BY"] = fn(p, _) { opt(p.parse_order(skip_order_token=true)) }
@@ -589,7 +649,9 @@ fn base_property_parsers() -> Map[String, PropertyFn] {
   m["STRICT"] = fn(p, _) { node(p.expression(mk0(StrictProperty))) }
   m["STREAMING"] = fn(p, _) { node(p.expression(mk0(StreamingTableProperty))) }
   m["ROW"] = fn(p, _) { opt(p.parse_row()) }
-  m["ROW_FORMAT"] = fn(p, _) { node(p.parse_property_assignment(RowFormatProperty)) }
+  m["ROW_FORMAT"] = fn(p, _) {
+    node(p.parse_property_assignment(RowFormatProperty))
+  }
   m["SAMPLE"] = fn(p, _) {
     let this = p.andv(p.match_text("BY"), () => p.parse_bitwise())
     node(p.expression(mk1(SampleProperty, this)))
@@ -597,7 +659,9 @@ fn base_property_parsers() -> Map[String, PropertyFn] {
   m["SECURE"] = fn(p, _) { node(p.expression(mk0(SecureProperty))) }
   m["SECURITY"] = fn(p, _) { node(p.parse_sql_security()) }
   m["SQL SECURITY"] = fn(p, _) { node(p.parse_sql_security()) }
-  m["SET"] = fn(p, _) { node(p.expression(mk(SetProperty, [("multi", false)]))) }
+  m["SET"] = fn(p, _) {
+    node(p.expression(mk(SetProperty, [("multi", false)])))
+  }
   m["SETTINGS"] = fn(p, _) { node(p.parse_settings_property()) }
   m["SHARING"] = fn(p, _) { node(p.parse_property_assignment(SharingProperty)) }
   m["SORTKEY"] = fn(p, _) { node(p.parse_sortkey()) }
@@ -606,7 +670,9 @@ fn base_property_parsers() -> Map[String, PropertyFn] {
     node(p.expression(mk1(StabilityProperty, literal_string("STABLE"))))
   }
   m["STORED"] = fn(p, _) { node(p.parse_stored()) }
-  m["SYSTEM_VERSIONING"] = fn(p, _) { node(p.parse_system_versioning_property()) }
+  m["SYSTEM_VERSIONING"] = fn(p, _) {
+    node(p.parse_system_versioning_property())
+  }
   m["TBLPROPERTIES"] = fn(p, _) {
     Some(List(p.parse_wrapped_properties().map(x => Node(x))))
   }
@@ -624,7 +690,9 @@ fn base_property_parsers() -> Map[String, PropertyFn] {
     )
   }
   m["TTL"] = fn(p, _) { opt(p.parse_ttl()) }
-  m["USING"] = fn(p, _) { node(p.parse_property_assignment(FileFormatProperty)) }
+  m["USING"] = fn(p, _) {
+    node(p.parse_property_assignment(FileFormatProperty))
+  }
   m["UNLOGGED"] = fn(p, _) { node(p.expression(mk0(UnloggedProperty))) }
   m["VOLATILE"] = fn(p, _) { node(p.parse_volatile_property()) }
   m["WITH"] = fn(p, _) { p.parse_with_property() }
@@ -636,67 +704,102 @@ fn base_constraint_parsers() -> Map[String, ParseFn] {
   let m : Map[String, ParseFn] = Map([])
   m["AUTOINCREMENT"] = p => p.parse_auto_increment()
   m["AUTO_INCREMENT"] = p => p.parse_auto_increment()
-  m["CASESPECIFIC"] = p => Some(
-    p.expression(mk(CaseSpecificColumnConstraint, [("not_", false)])),
-  )
+  m["CASESPECIFIC"] = p => {
+    Some(p.expression(mk(CaseSpecificColumnConstraint, [("not_", false)])))
+  }
   m["CHECK"] = p => p.parse_check_constraint()
-  m["COLLATE"] = p => Some(
-    p.expression(
-      mk1(CollateColumnConstraint, expr_or(p.parse_identifier(), () => p.parse_column())),
-    ),
-  )
-  m["COMMENT"] = p => Some(p.expression(mk1(CommentColumnConstraint, p.parse_string())))
+  m["COLLATE"] = p => {
+    Some(
+      p.expression(
+        mk1(
+          CollateColumnConstraint,
+          expr_or(p.parse_identifier(), () => p.parse_column()),
+        ),
+      ),
+    )
+  }
+  m["COMMENT"] = p => {
+    Some(p.expression(mk1(CommentColumnConstraint, p.parse_string())))
+  }
   m["COMPRESS"] = p => p.parse_compress()
-  m["CLUSTERED"] = p => Some(
-    p.expression(
-      mk1(ClusteredColumnConstraint, p.parse_wrapped_csv(() => p.parse_ordered())),
-    ),
-  )
-  m["NONCLUSTERED"] = p => Some(
-    p.expression(
-      mk1(NonClusteredColumnConstraint, p.parse_wrapped_csv(() => p.parse_ordered())),
-    ),
-  )
-  m["DEFAULT"] = p => Some(p.expression(mk1(DefaultColumnConstraint, p.parse_bitwise())))
-  m["ENCODE"] = p => Some(p.expression(mk1(EncodeColumnConstraint, p.parse_var())))
-  m["EPHEMERAL"] = p => Some(
-    p.expression(mk1(EphemeralColumnConstraint, p.parse_bitwise())),
-  )
-  m["EXCLUDE"] = p => Some(
-    p.expression(mk1(ExcludeColumnConstraint, p.parse_index_params())),
-  )
+  m["CLUSTERED"] = p => {
+    Some(
+      p.expression(
+        mk1(
+          ClusteredColumnConstraint,
+          p.parse_wrapped_csv(() => p.parse_ordered()),
+        ),
+      ),
+    )
+  }
+  m["NONCLUSTERED"] = p => {
+    Some(
+      p.expression(
+        mk1(
+          NonClusteredColumnConstraint,
+          p.parse_wrapped_csv(() => p.parse_ordered()),
+        ),
+      ),
+    )
+  }
+  m["DEFAULT"] = p => {
+    Some(p.expression(mk1(DefaultColumnConstraint, p.parse_bitwise())))
+  }
+  m["ENCODE"] = p => {
+    Some(p.expression(mk1(EncodeColumnConstraint, p.parse_var())))
+  }
+  m["EPHEMERAL"] = p => {
+    Some(p.expression(mk1(EphemeralColumnConstraint, p.parse_bitwise())))
+  }
+  m["EXCLUDE"] = p => {
+    Some(p.expression(mk1(ExcludeColumnConstraint, p.parse_index_params())))
+  }
   m["FOREIGN KEY"] = p => p.parse_foreign_key()
-  m["FORMAT"] = p => Some(
-    p.expression(mk1(DateFormatColumnConstraint, p.parse_var_or_string())),
-  )
+  m["FORMAT"] = p => {
+    Some(p.expression(mk1(DateFormatColumnConstraint, p.parse_var_or_string())))
+  }
   m["GENERATED"] = p => p.parse_generated_as_identity()
   m["IDENTITY"] = p => p.parse_auto_increment()
   m["INLINE"] = p => p.parse_inline()
   m["LIKE"] = p => p.parse_create_like()
   m["NOT"] = p => p.parse_not_constraint()
-  m["NULL"] = p => Some(
-    p.expression(mk(NotNullColumnConstraint, [("allow_null", true)])),
-  )
-  m["ON"] = p => if p.match_(UPDATE) {
-    Some(p.expression(mk1(OnUpdateColumnConstraint, p.parse_function())))
-  } else {
-    Some(p.expression(mk1(OnProperty, p.parse_id_var())))
+  m["NULL"] = p => {
+    Some(p.expression(mk(NotNullColumnConstraint, [("allow_null", true)])))
   }
-  m["PATH"] = p => Some(p.expression(mk1(PathColumnConstraint, p.parse_string())))
+  m["ON"] = p => {
+    if p.match_(UPDATE) {
+      Some(p.expression(mk1(OnUpdateColumnConstraint, p.parse_function())))
+    } else {
+      Some(p.expression(mk1(OnProperty, p.parse_id_var())))
+    }
+  }
+  m["PATH"] = p => {
+    Some(p.expression(mk1(PathColumnConstraint, p.parse_string())))
+  }
   m["PERIOD"] = p => p.parse_period_for_system_time()
   m["PRIMARY KEY"] = p => p.parse_primary_key()
   m["REFERENCES"] = p => p.parse_references(match_=false)
-  m["TITLE"] = p => Some(
-    p.expression(mk1(TitleColumnConstraint, p.parse_var_or_string())),
-  )
-  m["TTL"] = p => Some(
-    p.expression(mk(MergeTreeTTL, [("expressions", [p.parse_bitwise()].filter_map(x => x))])),
-  )
+  m["TITLE"] = p => {
+    Some(p.expression(mk1(TitleColumnConstraint, p.parse_var_or_string())))
+  }
+  m["TTL"] = p => {
+    Some(
+      p.expression(
+        mk(MergeTreeTTL, [
+          ("expressions", [p.parse_bitwise()].filter_map(x => x)),
+        ]),
+      ),
+    )
+  }
   m["UNIQUE"] = p => p.parse_unique()
   m["UPPERCASE"] = p => Some(p.expression(mk0(UppercaseColumnConstraint)))
-  m["WITH"] = p => Some(
-    p.expression(mk(Properties, [("expressions", p.parse_wrapped_properties())])),
-  )
+  m["WITH"] = p => {
+    Some(
+      p.expression(
+        mk(Properties, [("expressions", p.parse_wrapped_properties())]),
+      ),
+    )
+  }
   m["BUCKET"] = p => p.parse_partitioned_by_bucket_or_truncate()
   m["TRUNCATE"] = p => p.parse_partitioned_by_bucket_or_truncate()
   m
@@ -715,7 +818,9 @@ pub fn Parser::parse_partitioned_by_bucket_or_truncate(
   } else {
     PartitionByTruncate
   }
-  let args = self.parse_wrapped_csv(() => expr_or(self.parse_primary(), () => self.parse_column()))
+  let args = self.parse_wrapped_csv(() => {
+    expr_or(self.parse_primary(), () => self.parse_column())
+  })
   let mut this = args.get(0)
   let mut expression = args.get(1)
   match this {
@@ -768,7 +873,9 @@ pub fn base_parser_fns() -> ParserFns {
   let no_paren_function_parsers : Map[String, ParseFn] = {
     "ANY": p => Some(p.expression(mk1(Any, p.parse_bitwise()))),
     "CASE": p => p.parse_case(),
-    "CONNECT_BY_ROOT": p => Some(p.expression(mk1(ConnectByRoot, p.parse_column()))),
+    "CONNECT_BY_ROOT": p => {
+      Some(p.expression(mk1(ConnectByRoot, p.parse_column())))
+    },
     "IF": p => p.parse_if(),
   }
   let statement_parsers : Map[TokenType, ParseFn] = Map::from_array([
@@ -812,14 +919,25 @@ pub fn base_parser_fns() -> ParserFns {
     (DPIPE_SLASH, p => Some(p.expression(mk1(Cbrt, p.parse_unary())))),
   ])
   let string_parsers : Map[TokenType, TokenParseFn] = Map::from_array([
-    (HEREDOC_STRING, (p, t) => Some(p.expression(mk1(RawString, t.text), token=t))),
-    (NATIONAL_STRING, (p, t) => Some(p.expression(mk1(National, t.text), token=t))),
+    (
+      HEREDOC_STRING,
+      (p, t) => Some(p.expression(mk1(RawString, t.text), token=t)),
+    ),
+    (
+      NATIONAL_STRING,
+      (p, t) => Some(p.expression(mk1(National, t.text), token=t)),
+    ),
     (RAW_STRING, (p, t) => Some(p.expression(mk1(RawString, t.text), token=t))),
     (
       STRING,
-      (p, t) => Some(
-        p.expression(mk(Literal, [("this", t.text), ("is_string", true)]), token=t),
-      ),
+      (p, t) => {
+        Some(
+          p.expression(
+            mk(Literal, [("this", t.text), ("is_string", true)]),
+            token=t,
+          ),
+        )
+      },
     ),
     (
       UNICODE_STRING,
@@ -838,47 +956,56 @@ pub fn base_parser_fns() -> ParserFns {
     (BIT_STRING, (p, t) => Some(p.expression(mk1(BitString, t.text), token=t))),
     (
       BYTE_STRING,
-      (p, t) => Some(
-        p.expression(
-          mk(ByteString, [
-            ("this", t.text),
-            (
-              "is_bytes",
-              if p.dialect.cfg.byte_string_is_bytes_type {
-                Some(true)
-              } else {
-                None
-              },
-            ),
-          ]),
-          token=t,
-        ),
-      ),
+      (p, t) => {
+        Some(
+          p.expression(
+            mk(ByteString, [
+              ("this", t.text),
+              (
+                "is_bytes",
+                if p.dialect.cfg.byte_string_is_bytes_type {
+                  Some(true)
+                } else {
+                  None
+                },
+              ),
+            ]),
+            token=t,
+          ),
+        )
+      },
     ),
     (
       HEX_STRING,
-      (p, t) => Some(
-        p.expression(
-          mk(HexString, [
-            ("this", t.text),
-            (
-              "is_integer",
-              if p.dialect.cfg.hex_string_is_integer_type {
-                Some(true)
-              } else {
-                None
-              },
-            ),
-          ]),
-          token=t,
-        ),
-      ),
+      (p, t) => {
+        Some(
+          p.expression(
+            mk(HexString, [
+              ("this", t.text),
+              (
+                "is_integer",
+                if p.dialect.cfg.hex_string_is_integer_type {
+                  Some(true)
+                } else {
+                  None
+                },
+              ),
+            ]),
+            token=t,
+          ),
+        )
+      },
     ),
     (
       NUMBER,
-      (p, t) => Some(
-        p.expression(mk(Literal, [("this", t.text), ("is_string", false)]), token=t),
-      ),
+      (p, t) => {
+        Some(
+          p.expression(
+            mk(Literal, [("this", t.text), ("is_string", false)]),
+            token=t,
+          ),
+        )
+      },
     ),
   ])
   let primary_parsers : Map[TokenType, TokenParseFn] = Map([])
@@ -899,10 +1026,12 @@ pub fn base_parser_fns() -> ParserFns {
     (PARAMETER, p => p.parse_parameter()),
     (
       COLON,
-      p => if p.match_set(p.cfg.colon_placeholder_tokens) {
-        Some(p.expression(mk1(Placeholder, p.prev.text)))
-      } else {
-        None
+      p => {
+        if p.match_set(p.cfg.colon_placeholder_tokens) {
+          Some(p.expression(mk1(Placeholder, p.prev.text)))
+        } else {
+          None
+        }
       },
     ),
   ])
@@ -954,18 +1083,29 @@ pub fn base_parser_fns() -> ParserFns {
     (DHASH_ARROW, Some(build_jsonb_extract_scalar_op)),
     (PLACEHOLDER, Some(build_jsonb_contains_top_key_op)),
   ])
-  let lambdas : Map[TokenType, (Parser, Array[Expr]) -> Expr? raise SqlglotError] = Map::from_array([
+  let lambdas : Map[
+    TokenType,
+    (Parser, Array[Expr]) -> Expr? raise SqlglotError,
+  ] = Map::from_array([
     (
       ARROW,
       fn(p : Parser, expressions : Array[Expr]) raise SqlglotError {
         let body = p.replace_lambda(p.parse_disjunction(), expressions)
-        Some(p.expression(mk(Lambda, [("this", body), ("expressions", expressions)])))
+        Some(
+          p.expression(
+            mk(Lambda, [("this", body), ("expressions", expressions)]),
+          ),
+        )
       },
     ),
     (
       FARROW,
       fn(p : Parser, expressions : Array[Expr]) raise SqlglotError {
-        let name = if expressions.is_empty() { "" } else { expressions[0].name() }
+        let name = if expressions.is_empty() {
+          ""
+        } else {
+          expressions[0].name()
+        }
         let e = expr_or(p.parse_disjunction(), () => p.parse_select())
         Some(p.expression(mk(Kwarg, [("this", var_(name)), ("expression", e)])))
       },
@@ -1010,7 +1150,9 @@ pub fn base_parser_fns() -> ParserFns {
     "AS": p => p.parse_select().map(x => Node(x)),
     "ALTER": p => p.parse_alter_table_alter().map(x => Node(x)),
     "CLUSTER BY": p => p.parse_cluster_property().map(x => Node(x)),
-    "DELETE": p => Some(Node(p.expression(mk(Delete, [("where", p.parse_where())])))),
+    "DELETE": p => {
+      Some(Node(p.expression(mk(Delete, [("where", p.parse_where())]))))
+    },
     "DROP": p => Some(List(p.parse_alter_table_drop().map(x => Node(x)))),
     "RENAME": p => p.parse_alter_table_rename().map(x => Node(x)),
     "SET": p => p.parse_alter_table_set().map(x => Node(x)),
@@ -1025,10 +1167,10 @@ pub fn base_parser_fns() -> ParserFns {
     "SORTKEY": p => p.parse_alter_sortkey(),
     "COMPOUND": p => p.parse_alter_sortkey(compound=true),
   }
-  let qm = fn(key : String, f : (Parser) -> Expr? raise SqlglotError) -> (Parser) -> (
-    String,
-    Value?,
-  ) raise SqlglotError {
+  let qm = fn(
+    key : String,
+    f : (Parser) -> Expr? raise SqlglotError,
+  ) -> (Parser) -> (String, Value?) raise SqlglotError {
     fn(p) { (key, f(p).map(x => Node(x))) }
   }
   let query_modifier_parsers : Map[
@@ -1066,7 +1208,10 @@ pub fn base_parser_fns() -> ParserFns {
     (TABLE_SAMPLE, qm("sample", p => p.parse_table_sample(as_modifier=true))),
     (USING, qm("sample", p => p.parse_table_sample(as_modifier=true))),
     (CLUSTER_BY, qm("cluster", p => Some(p.parse_cluster()))),
-    (DISTRIBUTE_BY, qm("distribute", p => p.parse_sort(Distribute, DISTRIBUTE_BY))),
+    (
+      DISTRIBUTE_BY,
+      qm("distribute", p => p.parse_sort(Distribute, DISTRIBUTE_BY)),
+    ),
     (SORT_BY, qm("sort", p => p.parse_sort(Sort, SORT_BY))),
     (CONNECT_BY, qm("connect", p => p.parse_connect(skip_start_token=true))),
   ])
@@ -1076,7 +1221,10 @@ pub fn base_parser_fns() -> ParserFns {
     "SESSION": p => p.parse_set_item_assignment(kind="SESSION"),
     "TRANSACTION": p => Some(p.parse_set_transaction()),
   }
-  let type_literal_parsers : Map[DType, (Parser, Expr, Expr) -> Expr raise SqlglotError] = Map::from_array([
+  let type_literal_parsers : Map[
+    DType,
+    (Parser, Expr, Expr) -> Expr raise SqlglotError,
+  ] = Map::from_array([
     (
       DType::JSON,
       fn(p : Parser, this : Expr, _dt : Expr) raise SqlglotError {
@@ -1192,7 +1340,9 @@ pub fn Parser::replace_lambda(
         }
         match typ {
           Some(t) =>
-            dot_or_id = self.expression(mk(Cast, [("this", dot_or_id), ("to", t)]))
+            dot_or_id = self.expression(
+              mk(Cast, [("this", dot_or_id), ("to", t)]),
+            )
           None => ()
         }
         let mut parent = column.parent

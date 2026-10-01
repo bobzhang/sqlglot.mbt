@@ -12,7 +12,7 @@ pub fn Token::ok(self : Token) -> Bool {
 
 ///|
 /// Parser consumes a list of tokens produced by the Tokenizer and produces a parsed syntax tree.
-pub struct Parser {
+pub(all) struct Parser {
   dialect : Dialect
   cfg : ParserConfig
   fns : ParserFns
@@ -90,7 +90,11 @@ pub fn Parser::advance(self : Parser, times? : Int = 1) -> Unit {
   self.index = index
   let tokens = self.tokens
   let size = self.tokens_size
-  self.curr = if index >= 0 && index < size { tokens[index] } else { sentinel_none }
+  self.curr = if index >= 0 && index < size {
+    tokens[index]
+  } else {
+    sentinel_none
+  }
   self.next = if index + 1 >= 0 && index + 1 < size {
     tokens[index + 1]
   } else {
@@ -107,7 +111,7 @@ pub fn Parser::advance(self : Parser, times? : Int = 1) -> Unit {
 }
 
 ///|
-fn Parser::advance_chunk(self : Parser) -> Unit {
+pub fn Parser::advance_chunk(self : Parser) -> Unit {
   self.index = -1
   self.tokens = self.chunks[self.chunk_index]
   self.tokens_size = self.tokens.length()
@@ -285,7 +289,11 @@ pub fn Parser::match_text_seq(
 
 ///|
 /// `self._match_text_seq("X")` for a single keyword.
-pub fn Parser::match_text(self : Parser, text : String, advance? : Bool = true) -> Bool {
+pub fn Parser::match_text(
+  self : Parser,
+  text : String,
+  advance? : Bool = true,
+) -> Bool {
   self.match_text_seq([text], advance~)
 }
 
@@ -415,7 +423,7 @@ pub fn Parser::parse_into(
         for i, info in infos {
           errors.push(
             if i == 0 {
-              { ..info, into_expression: Some(expression_type.name()) }
+              { ..info, into_expression: Some(expression_type.name()), }
             } else {
               info
             },
@@ -480,7 +488,10 @@ pub fn Parser::expression(
 
 ///|
 /// `self.expression(...)` for an optional instance.
-pub fn Parser::expression_opt(self : Parser, instance : Expr?) -> Expr? raise SqlglotError {
+pub fn Parser::expression_opt(
+  self : Parser,
+  instance : Expr?,
+) -> Expr? raise SqlglotError {
   match instance {
     Some(e) => Some(self.expression(e))
     None => None
@@ -488,7 +499,7 @@ pub fn Parser::expression_opt(self : Parser, instance : Expr?) -> Expr? raise Sq
 }
 
 ///|
-fn Parser::parse_batch_statements(
+pub fn Parser::parse_batch_statements(
   self : Parser,
   parse_method : (Parser) -> Expr? raise SqlglotError,
   sep_first_statement? : Bool = true,
@@ -518,7 +529,7 @@ fn Parser::parse_batch_statements(
 }
 
 ///|
-fn Parser::parse_tokens_with(
+pub fn Parser::parse_tokens_with(
   self : Parser,
   parse_method : (Parser) -> Expr? raise SqlglotError,
   raw_tokens : Array[Token],
@@ -545,7 +556,7 @@ fn Parser::parse_tokens_with(
 }
 
 ///|
-fn Parser::warn_unsupported(self : Parser) -> Unit {
+pub fn Parser::warn_unsupported(self : Parser) -> Unit {
   if self.tokens_size <= 1 {
     return
   }
@@ -654,7 +665,9 @@ pub fn[T] Parser::parse_wrapped(
 }
 
 ///|
-pub fn Parser::parse_expressions(self : Parser) -> Array[Expr] raise SqlglotError {
+pub fn Parser::parse_expressions(
+  self : Parser,
+) -> Array[Expr] raise SqlglotError {
   self.parse_csv(() => self.parse_expression())
 }
 

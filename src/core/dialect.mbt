@@ -36,7 +36,7 @@ pub(all) struct DialectHooks {
 
 ///|
 pub fn DialectHooks::new() -> DialectHooks {
-  { normalize_identifier: None, generate_values_aliases: None, extra: Map([]) }
+  { normalize_identifier: None, generate_values_aliases: None, extra: Map([]), }
 }
 
 ///|
@@ -63,6 +63,12 @@ pub fn Dialect::finalize(self : Dialect) -> Dialect {
   self.tokenizer.finalize() |> ignore
   self.jsonpath_tokenizer.finalize() |> ignore
   self.parser_fns.finalize()
+  // Remove transforms that correspond to unsupported JSONPathPart expressions
+  for part in all_json_path_parts {
+    if !self.gen_cfg.supported_json_path_parts.contains(part) {
+      self.gen_fns.transforms.remove(part)
+    }
+  }
   self.time_trie = trie_of_keys(self.cfg.time_mapping)
   self.format_trie = if self.cfg.format_mapping.is_empty() {
     self.time_trie
@@ -136,16 +142,16 @@ pub fn Dialect::subclass(
 /// Returns a shallow instance copy (shares class-level configuration) so that
 /// instance settings can be changed without affecting the registered dialect.
 pub fn Dialect::instance(self : Dialect) -> Dialect {
-  { ..self, settings: Map::from_iter(self.settings.iter()) }
+  { ..self, settings: Map::from_iter(self.settings.iter()), }
 }
 
 ///|
-pub impl Eq for Dialect with equal(self, other) {
+pub impl Eq for Dialect with fn equal(self, other) {
   self.name == other.name
 }
 
 ///|
-pub impl Show for Dialect with output(self, logger) {
+pub impl Show for Dialect with fn output(self, logger) {
   logger.write_string(if self.name.is_empty() { "sqlglot" } else { self.name })
 }
 
@@ -236,9 +242,11 @@ pub fn Dialect::get_or_raise(spec : String) -> Dialect raise SqlglotError {
       }
     } else if key == "version" {
       let vs = py_split(value, ".")
-      let nums = vs.map(v => match parse_int_str(v) {
-        Some(n) => n.to_int()
-        None => 0
+      let nums = vs.map(v => {
+        match parse_int_str(v) {
+          Some(n) => n.to_int()
+          None => 0
+        }
       })
       while nums.length() < 3 {
         nums.push(0)
@@ -264,13 +272,20 @@ pub fn Dialect::normalize_identifier(self : Dialect, expression : Expr) -> Expr 
 }
 
 ///|
-pub fn Dialect::normalize_identifier_base(self : Dialect, expression : Expr) -> Expr {
+pub fn Dialect::normalize_identifier_base(
+  self : Dialect,
+  expression : Expr,
+) -> Expr {
   if expression.kind == Identifier &&
     self.normalization_strategy != CaseSensitive &&
-    (!expression.has("quoted") ||
-    self.normalization_strategy is (CaseInsensitive | CaseInsensitiveUppercase)) {
+    (
+      !expression.has("quoted") ||
+      self.normalization_strategy
+      is (CaseInsensitive | CaseInsensitiveUppercase)
+    ) {
     let text = expression.text("this")
-    let normalized = if self.normalization_strategy is (Uppercase | CaseInsensitiveUppercase) {
+    let normalized = if self.normalization_strategy
+      is (Uppercase | CaseInsensitiveUppercase) {
       if self.cfg.ascii_only_normalization {
         text.to_upper()
       } else {
@@ -294,7 +309,7 @@ pub fn Dialect::case_sensitive(self : Dialect, text : String) -> Bool {
   }
   for c in text {
     let unsafe_ = if self.normalization_strategy == Uppercase {
-      char_upper(c) != c || (c.is_ascii_lowercase())
+      char_upper(c) != c || c.is_ascii_lowercase()
     } else {
       char_lower(c) != c || c.is_ascii_uppercase()
     }
@@ -344,7 +359,10 @@ pub fn Dialect::quote_identifier(
   if expression.kind == Identifier {
     expression.set(
       "quoted",
-      self.can_quote(expression, identify=if identify { "always" } else { "unsafe" }),
+      self.can_quote(
+        expression,
+        identify=if identify { "always" } else { "unsafe" },
+      ),
     )
   }
   expression
@@ -389,3 +407,18 @@ pub fn Dialect::format_time_str(self : Dialect, s : String) -> Expr {
     format_time(substr(s, 1, -1), self.cfg.time_mapping, self.time_trie),
   )
 }
+
+///|
+/// Python `ALL_JSON_PATH_PARTS`.
+pub let all_json_path_parts : Array[Kind] = [
+  JSONPathFilter,
+  JSONPathKey,
+  JSONPathRecursive,
+  JSONPathRoot,
+  JSONPathScript,
+  JSONPathSelector,
+  JSONPathSlice,
+  JSONPathSubscript,
+  JSONPathUnion,
+  JSONPathWildcard,
+]

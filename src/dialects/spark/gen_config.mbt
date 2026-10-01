@@ -8,12 +8,50 @@ fn apply_dialect_config(c : @core.DialectConfig) -> Unit {
   c.supports_limit_all = true
   c.supports_null_type = true
   c.supports_order_by_all = true
-  c.time_mapping = Map::from_array([("y", "%Y"), ("Y", "%Y"), ("YYYY", "%Y"), ("yyyy", "%Y"), ("YY", "%y"), ("yy", "%y"), ("MMMM", "%B"), ("MMM", "%b"), ("MM", "%mstrict"), ("M", "%-m"), ("dd", "%dstrict"), ("d", "%-d"), ("HH", "%Hstrict"), ("H", "%-H"), ("hh", "%Istrict"), ("h", "%-I"), ("mm", "%Mstrict"), ("m", "%-M"), ("ss", "%Sstrict"), ("s", "%-S"), ("SSSSSS", "%f"), ("a", "%p"), ("DD", "%j"), ("D", "%-j"), ("E", "%a"), ("EE", "%a"), ("EEE", "%a"), ("EEEE", "%A"), ("z", "%Z"), ("Z", "%z")])
+  c.time_mapping = Map::from_array([
+    ("y", "%Y"),
+    ("Y", "%Y"),
+    ("YYYY", "%Y"),
+    ("yyyy", "%Y"),
+    ("YY", "%y"),
+    ("yy", "%y"),
+    ("MMMM", "%B"),
+    ("MMM", "%b"),
+    ("MM", "%mstrict"),
+    ("M", "%-m"),
+    ("dd", "%dstrict"),
+    ("d", "%-d"),
+    ("HH", "%Hstrict"),
+    ("H", "%-H"),
+    ("hh", "%Istrict"),
+    ("h", "%-I"),
+    ("mm", "%Mstrict"),
+    ("m", "%-M"),
+    ("ss", "%Sstrict"),
+    ("s", "%-S"),
+    ("SSSSSS", "%f"),
+    ("a", "%p"),
+    ("DD", "%j"),
+    ("D", "%-j"),
+    ("E", "%a"),
+    ("EE", "%a"),
+    ("EEE", "%a"),
+    ("EEEE", "%A"),
+    ("z", "%Z"),
+    ("Z", "%z"),
+  ])
 }
 
 ///|
 fn apply_parser_config(c : @core.ParserConfig) -> Unit {
-  c.no_paren_functions = Map::from_array([(@core.TokenType::CURRENT_DATE, @core.Kind::CurrentDate), (@core.TokenType::CURRENT_DATETIME, @core.Kind::CurrentDate), (@core.TokenType::CURRENT_TIMESTAMP, @core.Kind::CurrentTimestamp), (@core.TokenType::CURRENT_USER, @core.Kind::CurrentUser), (@core.TokenType::CURRENT_ROLE, @core.Kind::CurrentRole), (@core.TokenType::SESSION_USER, @core.Kind::SessionUser)])
+  c.no_paren_functions = Map::from_array([
+    (@core.TokenType::CURRENT_DATE, @core.Kind::CurrentDate),
+    (@core.TokenType::CURRENT_DATETIME, @core.Kind::CurrentDate),
+    (@core.TokenType::CURRENT_TIMESTAMP, @core.Kind::CurrentTimestamp),
+    (@core.TokenType::CURRENT_USER, @core.Kind::CurrentUser),
+    (@core.TokenType::CURRENT_ROLE, @core.Kind::CurrentRole),
+    (@core.TokenType::SESSION_USER, @core.Kind::SessionUser),
+  ])
 }
 
 ///|
@@ -25,14 +63,44 @@ fn apply_generator_config(c : @core.GeneratorConfig) -> Unit {
   c.supports_median = true
   c.supports_to_number = true
   c.supports_unix_seconds = true
-  c.type_mapping = Map::from_array([(@core.DType::DATETIME2, "TIMESTAMP"), (@core.DType::NCHAR, "CHAR"), (@core.DType::NVARCHAR, "VARCHAR"), (@core.DType::MEDIUMTEXT, "TEXT"), (@core.DType::LONGTEXT, "TEXT"), (@core.DType::TINYTEXT, "TEXT"), (@core.DType::BLOB, "BINARY"), (@core.DType::MEDIUMBLOB, "BLOB"), (@core.DType::LONGBLOB, "BLOB"), (@core.DType::TINYBLOB, "BLOB"), (@core.DType::INET, "INET"), (@core.DType::ROWVERSION, "BINARY"), (@core.DType::SMALLDATETIME, "TIMESTAMP"), (@core.DType::BIT, "BOOLEAN"), (@core.DType::DATETIME, "TIMESTAMP"), (@core.DType::TEXT, "STRING"), (@core.DType::TIME, "TIMESTAMP"), (@core.DType::TIMESTAMPNTZ, "TIMESTAMP_NTZ"), (@core.DType::TIMESTAMPTZ, "TIMESTAMP"), (@core.DType::UTINYINT, "SMALLINT"), (@core.DType::VARBINARY, "BINARY"), (@core.DType::MONEY, "DECIMAL"), (@core.DType::SMALLMONEY, "DECIMAL"), (@core.DType::UUID, "STRING"), (@core.DType::TIMESTAMPLTZ, "TIMESTAMP_LTZ")])
+  c.type_mapping = Map::from_array([
+    (@core.DType::DATETIME2, "TIMESTAMP"),
+    (@core.DType::NCHAR, "CHAR"),
+    (@core.DType::NVARCHAR, "VARCHAR"),
+    (@core.DType::MEDIUMTEXT, "TEXT"),
+    (@core.DType::LONGTEXT, "TEXT"),
+    (@core.DType::TINYTEXT, "TEXT"),
+    (@core.DType::BLOB, "BINARY"),
+    (@core.DType::MEDIUMBLOB, "BLOB"),
+    (@core.DType::LONGBLOB, "BLOB"),
+    (@core.DType::TINYBLOB, "BLOB"),
+    (@core.DType::INET, "INET"),
+    (@core.DType::ROWVERSION, "BINARY"),
+    (@core.DType::SMALLDATETIME, "TIMESTAMP"),
+    (@core.DType::BIT, "BOOLEAN"),
+    (@core.DType::DATETIME, "TIMESTAMP"),
+    (@core.DType::TEXT, "STRING"),
+    (@core.DType::TIME, "TIMESTAMP"),
+    (@core.DType::TIMESTAMPNTZ, "TIMESTAMP_NTZ"),
+    (@core.DType::TIMESTAMPTZ, "TIMESTAMP"),
+    (@core.DType::UTINYINT, "SMALLINT"),
+    (@core.DType::VARBINARY, "BINARY"),
+    (@core.DType::MONEY, "DECIMAL"),
+    (@core.DType::SMALLMONEY, "DECIMAL"),
+    (@core.DType::UUID, "STRING"),
+    (@core.DType::TIMESTAMPLTZ, "TIMESTAMP_LTZ"),
+  ])
 }
 
 ///|
 fn apply_tokenizer_config(t : @core.TokenizerSettings) -> Unit {
   t.keywords["DECLARE"] = @core.TokenType::DECLARE
-  t.raw_strings = [@core.QuoteSpec::Pair("r'", "'"), @core.QuoteSpec::Pair("R'", "'"), @core.QuoteSpec::Pair("r\"", "\""), @core.QuoteSpec::Pair("R\"", "\"")]
+  t.raw_strings = [
+    @core.QuoteSpec::Pair("r'", "'"),
+    @core.QuoteSpec::Pair("R'", "'"),
+    @core.QuoteSpec::Pair("r\"", "\""),
+    @core.QuoteSpec::Pair("R\"", "\""),
+  ]
   t.byte_string_escapes = Some(["\\"])
   t.string_escapes_allowed_in_raw_strings = false
 }
-

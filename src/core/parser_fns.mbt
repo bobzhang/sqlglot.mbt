@@ -41,7 +41,10 @@ pub(all) struct ParserFns {
   /// `None` value means "handled inline" (e.g. DOT).
   mut column_operators : Map[TokenType, ColumnOpFn?]
   mut json_operators : Map[TokenType, ColumnOpFn]
-  mut lambdas : Map[TokenType, (Parser, Array[Expr]) -> Expr? raise SqlglotError]
+  mut lambdas : Map[
+    TokenType,
+    (Parser, Array[Expr]) -> Expr? raise SqlglotError,
+  ]
   mut expression_parsers : Map[Kind, ParseFn]
   mut property_parsers : Map[String, PropertyFn]
   mut constraint_parsers : Map[String, ParseFn]
@@ -53,7 +56,10 @@ pub(all) struct ParserFns {
   ]
   mut set_parsers : Map[String, ParseFn]
   mut show_parsers : Map[String, ParseFn]
-  mut type_literal_parsers : Map[DType, (Parser, Expr, Expr) -> Expr raise SqlglotError]
+  mut type_literal_parsers : Map[
+    DType,
+    (Parser, Expr, Expr) -> Expr raise SqlglotError,
+  ]
   mut type_converters : Map[DType, (Expr) -> Expr]
   mut pipe_syntax_transform_parsers : Map[
     String,
@@ -72,7 +78,9 @@ pub fn ParserFns::copy(self : ParserFns) -> ParserFns {
   {
     functions: Map::from_iter(self.functions.iter()),
     function_parsers: Map::from_iter(self.function_parsers.iter()),
-    no_paren_function_parsers: Map::from_iter(self.no_paren_function_parsers.iter()),
+    no_paren_function_parsers: Map::from_iter(
+      self.no_paren_function_parsers.iter(),
+    ),
     statement_parsers: Map::from_iter(self.statement_parsers.iter()),
     unary_parsers: Map::from_iter(self.unary_parsers.iter()),
     string_parsers: Map::from_iter(self.string_parsers.iter()),

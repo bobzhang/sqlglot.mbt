@@ -98,7 +98,11 @@ pub fn Parser::parse_select_query(
       None
     }
     let mut distinct : Expr? = if matched_distinct {
-      let on = if self.match_(ON) { self.parse_value(values=false) } else { None }
+      let on = if self.match_(ON) {
+        self.parse_value(values=false)
+      } else {
+        None
+      }
       Some(self.expression(mk(Distinct, [("on", on)])))
     } else {
       None
@@ -111,7 +115,11 @@ pub fn Parser::parse_select_query(
     if limit is Some(_) && !matched_distinct && all_ != Some(true) {
       matched_distinct = self.match_set(self.cfg.distinct_tokens)
       if matched_distinct {
-        let on = if self.match_(ON) { self.parse_value(values=false) } else { None }
+        let on = if self.match_(ON) {
+          self.parse_value(values=false)
+        } else {
+          None
+        }
         distinct = Some(self.expression(mk(Distinct, [("on", on)])))
       } else {
         all_ = Some(self.match_(ALL))
@@ -169,11 +177,12 @@ pub fn Parser::parse_select_query(
     this = self.parse_query_modifiers(Some(sel))
   } else if self.match_(SUMMARIZE) {
     let table = self.match_(TABLE)
-    let this = expr_or(self.parse_select(), () => expr_or(
-      self.parse_string(),
-      () => self.parse_table(),
-    ))
-    return Some(self.expression(mk(Summarize, [("this", this), ("table", table)])))
+    let this = expr_or(self.parse_select(), () => {
+      expr_or(self.parse_string(), () => self.parse_table())
+    })
+    return Some(
+      self.expression(mk(Summarize, [("this", this), ("table", table)])),
+    )
   } else if self.match_(DESCRIBE) {
     this = self.parse_describe()
   } else {
@@ -187,7 +196,9 @@ pub fn Parser::parse_select_query(
 }
 
 ///|
-pub fn Parser::parse_recursive_with_search(self : Parser) -> Expr? raise SqlglotError {
+pub fn Parser::parse_recursive_with_search(
+  self : Parser,
+) -> Expr? raise SqlglotError {
   self.match_text("SEARCH") |> ignore
   let kind = if self.match_text_set(self.cfg.recursive_cte_search_kind) {
     self.prev_upper()
@@ -337,7 +348,9 @@ pub fn Parser::parse_table_alias(
     Some(t) => t
     None => self.cfg.table_alias_tokens
   }
-  let alias = expr_or(self.parse_id_var(any_token~, tokens~), () => self.parse_string_as_identifier())
+  let alias = expr_or(self.parse_id_var(any_token~, tokens~), () => {
+    self.parse_string_as_identifier()
+  })
   let index = self.index
   let columns = if self.match_(L_PAREN) {
     let columns = self.parse_csv(() => self.parse_function_parameter())
@@ -361,7 +374,8 @@ pub fn Parser::parse_table_alias(
     mk(TableAlias, [("this", alias), ("columns", columns)]),
   )
   match alias {
-    Some(a) if a.kind == Identifier => table_alias.add_comments(Some(a.pop_comments()))
+    Some(a) if a.kind == Identifier =>
+      table_alias.add_comments(Some(a.pop_comments()))
     _ => ()
   }
   Some(table_alias)
@@ -393,13 +407,15 @@ pub fn Parser::parse_subquery(
 }
 
 ///|
-fn Parser::implicit_unnests_to_explicit(self : Parser, this : Expr) -> Expr {
+pub fn Parser::implicit_unnests_to_explicit(self : Parser, this : Expr) -> Expr {
   let refs : @set.Set[String] = @set.Set::new()
   match this.arg("from_") {
     Some(f) =>
       match f.this() {
         Some(t) =>
-          refs.add(normalize_identifiers(t.copy(), self.dialect).alias_or_name())
+          refs.add(
+            normalize_identifiers(t.copy(), self.dialect).alias_or_name(),
+          )
         None => ()
       }
     None => ()
@@ -441,7 +457,10 @@ fn Parser::implicit_unnests_to_explicit(self : Parser, this : Expr) -> Expr {
 }
 
 ///|
-pub fn Parser::parse_query_modifiers(self : Parser, this : Expr?) -> Expr? raise SqlglotError {
+pub fn Parser::parse_query_modifiers(
+  self : Parser,
+  this : Expr?,
+) -> Expr? raise SqlglotError {
   let this = match this {
     Some(t) => t
     None => return None
@@ -456,7 +475,8 @@ pub fn Parser::parse_query_modifiers(self : Parser, this : Expr?) -> Expr? raise
     while true {
       if self.match_keys(self.fns.query_modifier_parsers, advance=false) {
         let modifier_token = self.curr
-        if modifier_token.token_type == LIMIT || modifier_token.token_type == FETCH {
+        if modifier_token.token_type == LIMIT ||
+          modifier_token.token_type == FETCH {
           match this.arg("limit") {
             Some(limit) if limit.meta_bool("top") => break
             _ => ()
@@ -529,7 +549,9 @@ pub fn Parser::parse_query_modifiers(self : Parser, this : Expr?) -> Expr? raise
 }
 
 ///|
-pub fn Parser::parse_hint_fallback_to_string(self : Parser) -> Expr? raise SqlglotError {
+pub fn Parser::parse_hint_fallback_to_string(
+  self : Parser,
+) -> Expr? raise SqlglotError {
   let start = self.curr
   while self.curr.ok() {
     self.advance()
@@ -539,7 +561,9 @@ pub fn Parser::parse_hint_fallback_to_string(self : Parser) -> Expr? raise Sqlgl
 }
 
 ///|
-pub fn Parser::parse_hint_function_call(self : Parser) -> Expr? raise SqlglotError {
+pub fn Parser::parse_hint_function_call(
+  self : Parser,
+) -> Expr? raise SqlglotError {
   match self.fns.hooks.parse_hint_function_call {
     Some(f) => f(self)
     None => self.parse_function_call()
@@ -553,9 +577,11 @@ pub fn Parser::parse_hint_body(self : Parser) -> Expr? raise SqlglotError {
   let hints = []
   try {
     while true {
-      let hint = self.parse_csv(() => expr_or(self.parse_hint_function_call(), () => self.parse_var(
-        upper=true,
-      )))
+      let hint = self.parse_csv(() => {
+        expr_or(self.parse_hint_function_call(), () => {
+          self.parse_var(upper=true)
+        })
+      })
       if hint.is_empty() {
         break
       }
@@ -575,7 +601,9 @@ pub fn Parser::parse_hint_body(self : Parser) -> Expr? raise SqlglotError {
 ///|
 pub fn Parser::parse_hint(self : Parser) -> Expr? raise SqlglotError {
   if self.match_(HINT) && !self.prev_comments.is_empty() {
-    return Some(parse_one(self.prev_comments[0], dialect=self.dialect, into=[Hint]))
+    return Some(
+      parse_one(self.prev_comments[0], dialect=self.dialect, into=[Hint]),
+    )
   }
   None
 }
@@ -589,7 +617,9 @@ pub fn Parser::parse_into_clause(self : Parser) -> Expr? raise SqlglotError {
 }
 
 ///|
-pub fn Parser::parse_into_clause_base(self : Parser) -> Expr? raise SqlglotError {
+pub fn Parser::parse_into_clause_base(
+  self : Parser,
+) -> Expr? raise SqlglotError {
   if !self.match_(INTO) {
     return None
   }
@@ -640,7 +670,9 @@ pub fn Parser::parse_from_base(
 }
 
 ///|
-pub fn Parser::parse_match_recognize_measure(self : Parser) -> Expr raise SqlglotError {
+pub fn Parser::parse_match_recognize_measure(
+  self : Parser,
+) -> Expr raise SqlglotError {
   let window_frame : Value = if self.match_texts(["FINAL", "RUNNING"]) {
     Str(self.prev_upper())
   } else {

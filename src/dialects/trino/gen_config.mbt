@@ -11,15 +11,165 @@ fn apply_dialect_config(c : @core.DialectConfig) -> Unit {
 
 ///|
 fn apply_parser_config(c : @core.ParserConfig) -> Unit {
-  c.no_paren_functions = Map::from_array([(@core.TokenType::CURRENT_DATE, @core.Kind::CurrentDate), (@core.TokenType::CURRENT_DATETIME, @core.Kind::CurrentDate), (@core.TokenType::CURRENT_TIME, @core.Kind::CurrentTime), (@core.TokenType::CURRENT_TIMESTAMP, @core.Kind::CurrentTimestamp), (@core.TokenType::CURRENT_USER, @core.Kind::CurrentUser), (@core.TokenType::CURRENT_ROLE, @core.Kind::CurrentRole), (@core.TokenType::LOCALTIME, @core.Kind::Localtime), (@core.TokenType::LOCALTIMESTAMP, @core.Kind::Localtimestamp), (@core.TokenType::CURRENT_CATALOG, @core.Kind::CurrentCatalog)])
+  c.no_paren_functions = Map::from_array([
+    (@core.TokenType::CURRENT_DATE, @core.Kind::CurrentDate),
+    (@core.TokenType::CURRENT_DATETIME, @core.Kind::CurrentDate),
+    (@core.TokenType::CURRENT_TIME, @core.Kind::CurrentTime),
+    (@core.TokenType::CURRENT_TIMESTAMP, @core.Kind::CurrentTimestamp),
+    (@core.TokenType::CURRENT_USER, @core.Kind::CurrentUser),
+    (@core.TokenType::CURRENT_ROLE, @core.Kind::CurrentRole),
+    (@core.TokenType::LOCALTIME, @core.Kind::Localtime),
+    (@core.TokenType::LOCALTIMESTAMP, @core.Kind::Localtimestamp),
+    (@core.TokenType::CURRENT_CATALOG, @core.Kind::CurrentCatalog),
+  ])
 }
 
 ///|
 fn apply_generator_config(c : @core.GeneratorConfig) -> Unit {
   c.declare_default_assignment = "DEFAULT"
   c.except_intersect_support_all_clause = true
-  c.properties_location = Map::from_array([(@core.Kind::AllowedValuesProperty, @core.PropertiesLocation::PostSchema), (@core.Kind::AlgorithmProperty, @core.PropertiesLocation::PostCreate), (@core.Kind::ApiProperty, @core.PropertiesLocation::PostCreate), (@core.Kind::ApplicationProperty, @core.PropertiesLocation::PostCreate), (@core.Kind::AutoIncrementProperty, @core.PropertiesLocation::PostSchema), (@core.Kind::AutoRefreshProperty, @core.PropertiesLocation::PostSchema), (@core.Kind::BackupProperty, @core.PropertiesLocation::PostSchema), (@core.Kind::BlockCompressionProperty, @core.PropertiesLocation::PostName), (@core.Kind::CalledOnNullInputProperty, @core.PropertiesLocation::PostSchema), (@core.Kind::CatalogProperty, @core.PropertiesLocation::PostCreate), (@core.Kind::CharacterSetProperty, @core.PropertiesLocation::PostSchema), (@core.Kind::ChecksumProperty, @core.PropertiesLocation::PostName), (@core.Kind::CollateProperty, @core.PropertiesLocation::PostSchema), (@core.Kind::ComputeProperty, @core.PropertiesLocation::PostCreate), (@core.Kind::CopyGrantsProperty, @core.PropertiesLocation::PostSchema), (@core.Kind::Cluster, @core.PropertiesLocation::PostSchema), (@core.Kind::ClusteredByProperty, @core.PropertiesLocation::PostSchema), (@core.Kind::ClusterProperty, @core.PropertiesLocation::PostSchema), (@core.Kind::DistributedByProperty, @core.PropertiesLocation::PostSchema), (@core.Kind::DuplicateKeyProperty, @core.PropertiesLocation::PostSchema), (@core.Kind::DataBlocksizeProperty, @core.PropertiesLocation::PostName), (@core.Kind::DatabaseProperty, @core.PropertiesLocation::PostCreate), (@core.Kind::DataDeletionProperty, @core.PropertiesLocation::PostSchema), (@core.Kind::DefinerProperty, @core.PropertiesLocation::PostCreate), (@core.Kind::DictRange, @core.PropertiesLocation::PostSchema), (@core.Kind::DictProperty, @core.PropertiesLocation::PostSchema), (@core.Kind::DynamicProperty, @core.PropertiesLocation::PostCreate), (@core.Kind::DistKeyProperty, @core.PropertiesLocation::PostSchema), (@core.Kind::DistStyleProperty, @core.PropertiesLocation::PostSchema), (@core.Kind::EmptyProperty, @core.PropertiesLocation::PostSchema), (@core.Kind::EncodeProperty, @core.PropertiesLocation::PostExpression), (@core.Kind::EngineProperty, @core.PropertiesLocation::PostSchema), (@core.Kind::EnviromentProperty, @core.PropertiesLocation::PostSchema), (@core.Kind::HandlerProperty, @core.PropertiesLocation::PostSchema), (@core.Kind::ParameterStyleProperty, @core.PropertiesLocation::PostSchema), (@core.Kind::ExecuteAsProperty, @core.PropertiesLocation::PostSchema), (@core.Kind::ExternalProperty, @core.PropertiesLocation::PostCreate), (@core.Kind::FallbackProperty, @core.PropertiesLocation::PostName), (@core.Kind::FileFormatProperty, @core.PropertiesLocation::PostWith), (@core.Kind::FreespaceProperty, @core.PropertiesLocation::PostName), (@core.Kind::GlobalProperty, @core.PropertiesLocation::PostCreate), (@core.Kind::HeapProperty, @core.PropertiesLocation::PostWith), (@core.Kind::HybridProperty, @core.PropertiesLocation::PostCreate), (@core.Kind::InheritsProperty, @core.PropertiesLocation::PostSchema), (@core.Kind::IcebergProperty, @core.PropertiesLocation::PostCreate), (@core.Kind::IncludeProperty, @core.PropertiesLocation::PostSchema), (@core.Kind::InputModelProperty, @core.PropertiesLocation::PostSchema), (@core.Kind::IsolatedLoadingProperty, @core.PropertiesLocation::PostName), (@core.Kind::JournalProperty, @core.PropertiesLocation::PostName), (@core.Kind::LanguageProperty, @core.PropertiesLocation::PostSchema), (@core.Kind::LikeProperty, @core.PropertiesLocation::PostSchema), (@core.Kind::LocationProperty, @core.PropertiesLocation::PostWith), (@core.Kind::LockProperty, @core.PropertiesLocation::PostSchema), (@core.Kind::LockingProperty, @core.PropertiesLocation::PostAlias), (@core.Kind::LogProperty, @core.PropertiesLocation::PostName), (@core.Kind::MaskingProperty, @core.PropertiesLocation::PostCreate), (@core.Kind::MaterializedProperty, @core.PropertiesLocation::PostCreate), (@core.Kind::MergeBlockRatioProperty, @core.PropertiesLocation::PostName), (@core.Kind::ModuleProperty, @core.PropertiesLocation::PostSchema), (@core.Kind::NetworkProperty, @core.PropertiesLocation::PostCreate), (@core.Kind::NoPrimaryIndexProperty, @core.PropertiesLocation::PostExpression), (@core.Kind::OnProperty, @core.PropertiesLocation::PostSchema), (@core.Kind::OnCommitProperty, @core.PropertiesLocation::PostExpression), (@core.Kind::Order, @core.PropertiesLocation::PostSchema), (@core.Kind::OutputModelProperty, @core.PropertiesLocation::PostSchema), (@core.Kind::PartitionedByProperty, @core.PropertiesLocation::PostWith), (@core.Kind::PartitionedOfProperty, @core.PropertiesLocation::PostSchema), (@core.Kind::PrimaryKey, @core.PropertiesLocation::PostSchema), (@core.Kind::Property, @core.PropertiesLocation::PostWith), (@core.Kind::RefreshTriggerProperty, @core.PropertiesLocation::PostSchema), (@core.Kind::RemoteWithConnectionModelProperty, @core.PropertiesLocation::PostSchema), (@core.Kind::ReturnsProperty, @core.PropertiesLocation::PostSchema), (@core.Kind::RollupProperty, @core.PropertiesLocation::Unsupported), (@core.Kind::RowAccessProperty, @core.PropertiesLocation::Unsupported), (@core.Kind::RowFormatProperty, @core.PropertiesLocation::PostSchema), (@core.Kind::RowFormatDelimitedProperty, @core.PropertiesLocation::PostSchema), (@core.Kind::RowFormatSerdeProperty, @core.PropertiesLocation::PostSchema), (@core.Kind::SampleProperty, @core.PropertiesLocation::PostSchema), (@core.Kind::SchemaCommentProperty, @core.PropertiesLocation::PostSchema), (@core.Kind::SecureProperty, @core.PropertiesLocation::PostCreate), (@core.Kind::SecurityIntegrationProperty, @core.PropertiesLocation::PostCreate), (@core.Kind::SerdeProperties, @core.PropertiesLocation::PostSchema), (@core.Kind::Set, @core.PropertiesLocation::PostSchema), (@core.Kind::SettingsProperty, @core.PropertiesLocation::PostSchema), (@core.Kind::SetProperty, @core.PropertiesLocation::PostCreate), (@core.Kind::SetConfigProperty, @core.PropertiesLocation::PostSchema), (@core.Kind::SharingProperty, @core.PropertiesLocation::PostExpression), (@core.Kind::SequenceProperties, @core.PropertiesLocation::PostExpression), (@core.Kind::TriggerProperties, @core.PropertiesLocation::PostExpression), (@core.Kind::SortKeyProperty, @core.PropertiesLocation::PostSchema), (@core.Kind::SqlReadWriteProperty, @core.PropertiesLocation::PostSchema), (@core.Kind::SqlSecurityProperty, @core.PropertiesLocation::PostSchema), (@core.Kind::StabilityProperty, @core.PropertiesLocation::PostSchema), (@core.Kind::StorageHandlerProperty, @core.PropertiesLocation::PostSchema), (@core.Kind::StreamingTableProperty, @core.PropertiesLocation::PostCreate), (@core.Kind::StrictProperty, @core.PropertiesLocation::PostSchema), (@core.Kind::Tags, @core.PropertiesLocation::PostWith), (@core.Kind::TemporaryProperty, @core.PropertiesLocation::PostCreate), (@core.Kind::ToTableProperty, @core.PropertiesLocation::PostSchema), (@core.Kind::TransientProperty, @core.PropertiesLocation::PostCreate), (@core.Kind::TransformModelProperty, @core.PropertiesLocation::PostSchema), (@core.Kind::MergeTreeTTL, @core.PropertiesLocation::PostSchema), (@core.Kind::UnloggedProperty, @core.PropertiesLocation::PostCreate), (@core.Kind::UsingProperty, @core.PropertiesLocation::PostExpression), (@core.Kind::UsingTemplateProperty, @core.PropertiesLocation::PostSchema), (@core.Kind::ViewAttributeProperty, @core.PropertiesLocation::PostSchema), (@core.Kind::VirtualProperty, @core.PropertiesLocation::PostCreate), (@core.Kind::VolatileProperty, @core.PropertiesLocation::Unsupported), (@core.Kind::WithDataProperty, @core.PropertiesLocation::PostExpression), (@core.Kind::WithJournalTableProperty, @core.PropertiesLocation::PostName), (@core.Kind::WithProcedureOptions, @core.PropertiesLocation::PostSchema), (@core.Kind::WithSchemaBindingProperty, @core.PropertiesLocation::PostSchema), (@core.Kind::WithSystemVersioningProperty, @core.PropertiesLocation::PostSchema), (@core.Kind::ForceProperty, @core.PropertiesLocation::PostCreate)])
-  c.supported_json_path_parts = [@core.Kind::JSONPathKey, @core.Kind::JSONPathRoot, @core.Kind::JSONPathSubscript]
+  c.properties_location = Map::from_array([
+    (@core.Kind::AllowedValuesProperty, @core.PropertiesLocation::PostSchema),
+    (@core.Kind::AlgorithmProperty, @core.PropertiesLocation::PostCreate),
+    (@core.Kind::ApiProperty, @core.PropertiesLocation::PostCreate),
+    (@core.Kind::ApplicationProperty, @core.PropertiesLocation::PostCreate),
+    (@core.Kind::AutoIncrementProperty, @core.PropertiesLocation::PostSchema),
+    (@core.Kind::AutoRefreshProperty, @core.PropertiesLocation::PostSchema),
+    (@core.Kind::BackupProperty, @core.PropertiesLocation::PostSchema),
+    (@core.Kind::BlockCompressionProperty, @core.PropertiesLocation::PostName),
+    (
+      @core.Kind::CalledOnNullInputProperty,
+      @core.PropertiesLocation::PostSchema,
+    ),
+    (@core.Kind::CatalogProperty, @core.PropertiesLocation::PostCreate),
+    (@core.Kind::CharacterSetProperty, @core.PropertiesLocation::PostSchema),
+    (@core.Kind::ChecksumProperty, @core.PropertiesLocation::PostName),
+    (@core.Kind::CollateProperty, @core.PropertiesLocation::PostSchema),
+    (@core.Kind::ComputeProperty, @core.PropertiesLocation::PostCreate),
+    (@core.Kind::CopyGrantsProperty, @core.PropertiesLocation::PostSchema),
+    (@core.Kind::Cluster, @core.PropertiesLocation::PostSchema),
+    (@core.Kind::ClusteredByProperty, @core.PropertiesLocation::PostSchema),
+    (@core.Kind::ClusterProperty, @core.PropertiesLocation::PostSchema),
+    (@core.Kind::DistributedByProperty, @core.PropertiesLocation::PostSchema),
+    (@core.Kind::DuplicateKeyProperty, @core.PropertiesLocation::PostSchema),
+    (@core.Kind::DataBlocksizeProperty, @core.PropertiesLocation::PostName),
+    (@core.Kind::DatabaseProperty, @core.PropertiesLocation::PostCreate),
+    (@core.Kind::DataDeletionProperty, @core.PropertiesLocation::PostSchema),
+    (@core.Kind::DefinerProperty, @core.PropertiesLocation::PostCreate),
+    (@core.Kind::DictRange, @core.PropertiesLocation::PostSchema),
+    (@core.Kind::DictProperty, @core.PropertiesLocation::PostSchema),
+    (@core.Kind::DynamicProperty, @core.PropertiesLocation::PostCreate),
+    (@core.Kind::DistKeyProperty, @core.PropertiesLocation::PostSchema),
+    (@core.Kind::DistStyleProperty, @core.PropertiesLocation::PostSchema),
+    (@core.Kind::EmptyProperty, @core.PropertiesLocation::PostSchema),
+    (@core.Kind::EncodeProperty, @core.PropertiesLocation::PostExpression),
+    (@core.Kind::EngineProperty, @core.PropertiesLocation::PostSchema),
+    (@core.Kind::EnviromentProperty, @core.PropertiesLocation::PostSchema),
+    (@core.Kind::HandlerProperty, @core.PropertiesLocation::PostSchema),
+    (@core.Kind::ParameterStyleProperty, @core.PropertiesLocation::PostSchema),
+    (@core.Kind::ExecuteAsProperty, @core.PropertiesLocation::PostSchema),
+    (@core.Kind::ExternalProperty, @core.PropertiesLocation::PostCreate),
+    (@core.Kind::FallbackProperty, @core.PropertiesLocation::PostName),
+    (@core.Kind::FileFormatProperty, @core.PropertiesLocation::PostWith),
+    (@core.Kind::FreespaceProperty, @core.PropertiesLocation::PostName),
+    (@core.Kind::GlobalProperty, @core.PropertiesLocation::PostCreate),
+    (@core.Kind::HeapProperty, @core.PropertiesLocation::PostWith),
+    (@core.Kind::HybridProperty, @core.PropertiesLocation::PostCreate),
+    (@core.Kind::InheritsProperty, @core.PropertiesLocation::PostSchema),
+    (@core.Kind::IcebergProperty, @core.PropertiesLocation::PostCreate),
+    (@core.Kind::IncludeProperty, @core.PropertiesLocation::PostSchema),
+    (@core.Kind::InputModelProperty, @core.PropertiesLocation::PostSchema),
+    (@core.Kind::IsolatedLoadingProperty, @core.PropertiesLocation::PostName),
+    (@core.Kind::JournalProperty, @core.PropertiesLocation::PostName),
+    (@core.Kind::LanguageProperty, @core.PropertiesLocation::PostSchema),
+    (@core.Kind::LikeProperty, @core.PropertiesLocation::PostSchema),
+    (@core.Kind::LocationProperty, @core.PropertiesLocation::PostWith),
+    (@core.Kind::LockProperty, @core.PropertiesLocation::PostSchema),
+    (@core.Kind::LockingProperty, @core.PropertiesLocation::PostAlias),
+    (@core.Kind::LogProperty, @core.PropertiesLocation::PostName),
+    (@core.Kind::MaskingProperty, @core.PropertiesLocation::PostCreate),
+    (@core.Kind::MaterializedProperty, @core.PropertiesLocation::PostCreate),
+    (@core.Kind::MergeBlockRatioProperty, @core.PropertiesLocation::PostName),
+    (@core.Kind::ModuleProperty, @core.PropertiesLocation::PostSchema),
+    (@core.Kind::NetworkProperty, @core.PropertiesLocation::PostCreate),
+    (
+      @core.Kind::NoPrimaryIndexProperty,
+      @core.PropertiesLocation::PostExpression,
+    ),
+    (@core.Kind::OnProperty, @core.PropertiesLocation::PostSchema),
+    (@core.Kind::OnCommitProperty, @core.PropertiesLocation::PostExpression),
+    (@core.Kind::Order, @core.PropertiesLocation::PostSchema),
+    (@core.Kind::OutputModelProperty, @core.PropertiesLocation::PostSchema),
+    (@core.Kind::PartitionedByProperty, @core.PropertiesLocation::PostWith),
+    (@core.Kind::PartitionedOfProperty, @core.PropertiesLocation::PostSchema),
+    (@core.Kind::PrimaryKey, @core.PropertiesLocation::PostSchema),
+    (@core.Kind::Property, @core.PropertiesLocation::PostWith),
+    (@core.Kind::RefreshTriggerProperty, @core.PropertiesLocation::PostSchema),
+    (
+      @core.Kind::RemoteWithConnectionModelProperty,
+      @core.PropertiesLocation::PostSchema,
+    ),
+    (@core.Kind::ReturnsProperty, @core.PropertiesLocation::PostSchema),
+    (@core.Kind::RollupProperty, @core.PropertiesLocation::Unsupported),
+    (@core.Kind::RowAccessProperty, @core.PropertiesLocation::Unsupported),
+    (@core.Kind::RowFormatProperty, @core.PropertiesLocation::PostSchema),
+    (
+      @core.Kind::RowFormatDelimitedProperty,
+      @core.PropertiesLocation::PostSchema,
+    ),
+    (@core.Kind::RowFormatSerdeProperty, @core.PropertiesLocation::PostSchema),
+    (@core.Kind::SampleProperty, @core.PropertiesLocation::PostSchema),
+    (@core.Kind::SchemaCommentProperty, @core.PropertiesLocation::PostSchema),
+    (@core.Kind::SecureProperty, @core.PropertiesLocation::PostCreate),
+    (
+      @core.Kind::SecurityIntegrationProperty,
+      @core.PropertiesLocation::PostCreate,
+    ),
+    (@core.Kind::SerdeProperties, @core.PropertiesLocation::PostSchema),
+    (@core.Kind::Set, @core.PropertiesLocation::PostSchema),
+    (@core.Kind::SettingsProperty, @core.PropertiesLocation::PostSchema),
+    (@core.Kind::SetProperty, @core.PropertiesLocation::PostCreate),
+    (@core.Kind::SetConfigProperty, @core.PropertiesLocation::PostSchema),
+    (@core.Kind::SharingProperty, @core.PropertiesLocation::PostExpression),
+    (@core.Kind::SequenceProperties, @core.PropertiesLocation::PostExpression),
+    (@core.Kind::TriggerProperties, @core.PropertiesLocation::PostExpression),
+    (@core.Kind::SortKeyProperty, @core.PropertiesLocation::PostSchema),
+    (@core.Kind::SqlReadWriteProperty, @core.PropertiesLocation::PostSchema),
+    (@core.Kind::SqlSecurityProperty, @core.PropertiesLocation::PostSchema),
+    (@core.Kind::StabilityProperty, @core.PropertiesLocation::PostSchema),
+    (@core.Kind::StorageHandlerProperty, @core.PropertiesLocation::PostSchema),
+    (@core.Kind::StreamingTableProperty, @core.PropertiesLocation::PostCreate),
+    (@core.Kind::StrictProperty, @core.PropertiesLocation::PostSchema),
+    (@core.Kind::Tags, @core.PropertiesLocation::PostWith),
+    (@core.Kind::TemporaryProperty, @core.PropertiesLocation::PostCreate),
+    (@core.Kind::ToTableProperty, @core.PropertiesLocation::PostSchema),
+    (@core.Kind::TransientProperty, @core.PropertiesLocation::PostCreate),
+    (@core.Kind::TransformModelProperty, @core.PropertiesLocation::PostSchema),
+    (@core.Kind::MergeTreeTTL, @core.PropertiesLocation::PostSchema),
+    (@core.Kind::UnloggedProperty, @core.PropertiesLocation::PostCreate),
+    (@core.Kind::UsingProperty, @core.PropertiesLocation::PostExpression),
+    (@core.Kind::UsingTemplateProperty, @core.PropertiesLocation::PostSchema),
+    (@core.Kind::ViewAttributeProperty, @core.PropertiesLocation::PostSchema),
+    (@core.Kind::VirtualProperty, @core.PropertiesLocation::PostCreate),
+    (@core.Kind::VolatileProperty, @core.PropertiesLocation::Unsupported),
+    (@core.Kind::WithDataProperty, @core.PropertiesLocation::PostExpression),
+    (@core.Kind::WithJournalTableProperty, @core.PropertiesLocation::PostName),
+    (@core.Kind::WithProcedureOptions, @core.PropertiesLocation::PostSchema),
+    (
+      @core.Kind::WithSchemaBindingProperty,
+      @core.PropertiesLocation::PostSchema,
+    ),
+    (
+      @core.Kind::WithSystemVersioningProperty,
+      @core.PropertiesLocation::PostSchema,
+    ),
+    (@core.Kind::ForceProperty, @core.PropertiesLocation::PostCreate),
+  ])
+  c.supported_json_path_parts = [
+    @core.Kind::JSONPathKey,
+    @core.Kind::JSONPathRoot,
+    @core.Kind::JSONPathSubscript,
+  ]
 }
 
 ///|
@@ -29,4 +179,3 @@ fn apply_tokenizer_config(t : @core.TokenizerSettings) -> Unit {
   t.keywords["DECLARE"] = @core.TokenType::DECLARE
   t.byte_string_escapes = Some(["'"])
 }
-

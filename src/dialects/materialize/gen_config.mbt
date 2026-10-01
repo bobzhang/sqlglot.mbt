@@ -23,4 +23,3 @@ fn apply_generator_config(c : @core.GeneratorConfig) -> Unit {
 fn apply_tokenizer_config(t : @core.TokenizerSettings) -> Unit {
   t.byte_string_escapes = Some(["'"])
 }
-

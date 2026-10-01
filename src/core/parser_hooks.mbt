@@ -6,89 +6,95 @@
 pub(all) struct ParserHooks {
   mut negate_range : ((Parser, Expr?) -> Expr? raise SqlglotError)?
   mut parse_alias : ((Parser, Expr?, Bool) -> Expr? raise SqlglotError)?
-  mut parse_alter_drop_action : (ParseFn)?
-  mut parse_alter_table_alter : (ParseFn)?
-  mut parse_alter_table_rename : (ParseFn)?
-  mut parse_alter_table_set : (ParseFn)?
-  mut parse_assignment : (ParseFn)?
-  mut parse_bracket : (ParseFn1)?
+  mut parse_alter_drop_action : ParseFn?
+  mut parse_alter_table_alter : ParseFn?
+  mut parse_alter_table_rename : ParseFn?
+  mut parse_alter_table_set : ParseFn?
+  mut parse_assignment : ParseFn?
+  mut parse_bracket : ParseFn1?
   mut parse_bracket_key_value : ((Parser, Bool) -> Expr? raise SqlglotError)?
-  mut parse_charset_name : (ParseFn)?
-  mut parse_check_constraint : (ParseFn)?
-  mut parse_cluster_property : (ParseFn)?
-  mut parse_column : (ParseFn)?
-  mut parse_column_constraint : (ParseFn)?
+  mut parse_charset_name : ParseFn?
+  mut parse_check_constraint : ParseFn?
+  mut parse_cluster_property : ParseFn?
+  mut parse_column : ParseFn?
+  mut parse_column_constraint : ParseFn?
   mut parse_column_def : ((Parser, Expr?, Bool) -> Expr? raise SqlglotError)?
-  mut parse_column_ops : (ParseFn1)?
-  mut parse_commit_or_rollback : (ParseFn)?
-  mut parse_connect_with_prior : (ParseFn)?
-  mut parse_constraint : (ParseFn)?
+  mut parse_column_ops : ParseFn1?
+  mut parse_commit_or_rollback : ParseFn?
+  mut parse_connect_with_prior : ParseFn?
+  mut parse_constraint : ParseFn?
   mut parse_convert : ((Parser, Bool, Bool?) -> Expr? raise SqlglotError)?
-  mut parse_create : (ParseFn)?
-  mut parse_cte : (ParseFn)?
-  mut parse_dcolon : (ParseFn)?
-  mut parse_definer : (ParseFn)?
-  mut parse_describe : (ParseFn)?
-  mut parse_drop_column : (ParseFn)?
-  mut parse_equality : (ParseFn)?
-  mut parse_expression : (ParseFn)?
-  mut parse_extract : (ParseFn)?
-  mut parse_factor_operand : (ParseFn)?
-  mut parse_file_location : (ParseFn)?
-  mut parse_foreign_key : (ParseFn)?
+  mut parse_create : ParseFn?
+  mut parse_cte : ParseFn?
+  mut parse_dcolon : ParseFn?
+  mut parse_definer : ParseFn?
+  mut parse_describe : ParseFn?
+  mut parse_drop_column : ParseFn?
+  mut parse_equality : ParseFn?
+  mut parse_expression : ParseFn?
+  mut parse_extract : ParseFn?
+  mut parse_factor_operand : ParseFn?
+  mut parse_file_location : ParseFn?
+  mut parse_foreign_key : ParseFn?
   mut parse_from : ((Parser, Bool, Bool, Bool) -> Expr? raise SqlglotError)?
   mut parse_function : ((Parser, Map[String, FuncBuilder]?, Bool, Bool, Bool) -> Expr? raise SqlglotError)?
-  mut parse_function_call : ((Parser, Map[String, FuncBuilder]?, Bool, Bool, Bool) -> Expr? raise SqlglotError)?
-  mut parse_function_parameter : (ParseFn)?
-  mut parse_function_properties : (ParseFn)?
-  mut parse_generated_as_identity : (ParseFn)?
-  mut parse_group_concat : (ParseFn)?
-  mut parse_hint_function_call : (ParseFn)?
+  mut parse_function_call : ((
+    Parser,
+    Map[String, FuncBuilder]?,
+    Bool,
+    Bool,
+    Bool,
+  ) -> Expr? raise SqlglotError)?
+  mut parse_function_parameter : ParseFn?
+  mut parse_function_properties : ParseFn?
+  mut parse_generated_as_identity : ParseFn?
+  mut parse_group_concat : ParseFn?
+  mut parse_hint_function_call : ParseFn?
   mut parse_id_var : ((Parser, Bool, TokenSet?) -> Expr? raise SqlglotError)?
-  mut parse_if : (ParseFn)?
-  mut parse_index_params : (ParseFn)?
-  mut parse_insert_table : (ParseFn)?
-  mut parse_into_clause : (ParseFn)?
+  mut parse_if : ParseFn?
+  mut parse_index_params : ParseFn?
+  mut parse_insert_table : ParseFn?
+  mut parse_into_clause : ParseFn?
   mut parse_join : ((Parser, Bool, Bool, TokenSet?) -> Expr? raise SqlglotError)?
   mut parse_join_parts : ((Parser) -> (Token?, Token?, Token?) raise SqlglotError)?
   mut parse_json_object : ((Parser, Bool) -> Expr? raise SqlglotError)?
   mut parse_lambda : ((Parser, Bool) -> Expr? raise SqlglotError)?
-  mut parse_lambda_arg : (ParseFn)?
-  mut parse_lateral : (ParseFn)?
-  mut parse_on_property : (ParseFn)?
+  mut parse_lambda_arg : ParseFn?
+  mut parse_lateral : ParseFn?
+  mut parse_on_property : ParseFn?
   mut parse_ordered : ((Parser, (() -> Expr? raise SqlglotError)?) -> Expr? raise SqlglotError)?
-  mut parse_parameter : (ParseFn)?
-  mut parse_partition : (ParseFn)?
+  mut parse_parameter : ParseFn?
+  mut parse_partition : ParseFn?
   mut parse_partition_and_order : ((Parser) -> (Array[Expr], Expr?) raise SqlglotError)?
-  mut parse_partitioned_by : (ParseFn)?
-  mut parse_pivot_aggregation : (ParseFn)?
+  mut parse_partitioned_by : ParseFn?
+  mut parse_pivot_aggregation : ParseFn?
   mut parse_position : ((Parser, Bool) -> Expr? raise SqlglotError)?
-  mut parse_primary : (ParseFn)?
+  mut parse_primary : ParseFn?
   mut parse_primary_key : ((Parser, Bool, Bool, Bool) -> Expr? raise SqlglotError)?
-  mut parse_primary_key_part : (ParseFn)?
+  mut parse_primary_key_part : ParseFn?
   mut parse_projections : ((Parser) -> (Array[Expr], Array[Expr]?) raise SqlglotError)?
   mut parse_property_before : ((Parser) -> Value? raise SqlglotError)?
-  mut parse_range : (ParseFn1)?
-  mut parse_returns : (ParseFn)?
+  mut parse_range : ParseFn1?
+  mut parse_returns : ParseFn?
   mut parse_set : ((Parser, Bool, Bool) -> Expr? raise SqlglotError)?
-  mut parse_statement : (ParseFn)?
+  mut parse_statement : ParseFn?
   mut parse_struct_types : ((Parser, Bool) -> Expr? raise SqlglotError)?
-  mut parse_substring : (ParseFn)?
+  mut parse_substring : ParseFn?
   mut parse_table : ((Parser, TableArgs) -> Expr? raise SqlglotError)?
   mut parse_table_hints : ((Parser) -> Array[Expr]? raise SqlglotError)?
   mut parse_table_part : ((Parser, Bool) -> Expr? raise SqlglotError)?
   mut parse_table_parts : ((Parser, Bool, Bool, Bool, Bool) -> Expr? raise SqlglotError)?
   mut parse_table_sample : ((Parser, Bool) -> Expr? raise SqlglotError)?
-  mut parse_transaction : (ParseFn)?
+  mut parse_transaction : ParseFn?
   mut parse_type : ((Parser, Bool, Bool) -> Expr? raise SqlglotError)?
   mut parse_types : ((Parser, Bool, Bool, Bool, Bool) -> Expr? raise SqlglotError)?
-  mut parse_unique : (ParseFn)?
-  mut parse_unique_key : (ParseFn)?
+  mut parse_unique : ParseFn?
+  mut parse_unique_key : ParseFn?
   mut parse_unnest : ((Parser, Bool) -> Expr? raise SqlglotError)?
-  mut parse_update : (ParseFn)?
-  mut parse_use : (ParseFn)?
+  mut parse_update : ParseFn?
+  mut parse_use : ParseFn?
   mut parse_user_defined_function : ((Parser, TokenType?) -> Expr? raise SqlglotError)?
-  mut parse_user_defined_function_expression : (ParseFn)?
+  mut parse_user_defined_function_expression : ParseFn?
   mut parse_user_defined_type : ((Parser, Expr) -> Expr? raise SqlglotError)?
   mut parse_value : ((Parser, Bool) -> Expr? raise SqlglotError)?
   mut parse_vector_expressions : ((Parser, Array[Expr]) -> Array[Expr] raise SqlglotError)?
@@ -208,7 +214,7 @@ pub fn ParserHooks::new() -> ParserHooks {
 
 ///|
 pub fn ParserHooks::copy(self : ParserHooks) -> ParserHooks {
-  { ..self }
+  { ..self, }
 }
 
 ///|

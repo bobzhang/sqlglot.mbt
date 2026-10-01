@@ -3,7 +3,10 @@
 
 ///|
 /// Tokenizes `sql` with this dialect's tokenizer.
-pub fn Dialect::tokenize(self : Dialect, sql : String) -> Array[Token] raise SqlglotError {
+pub fn Dialect::tokenize(
+  self : Dialect,
+  sql : String,
+) -> Array[Token] raise SqlglotError {
   Tokenizer::new(
     self.tokenizer,
     numbers_can_be_underscore_separated=self.cfg.numbers_can_be_underscore_separated,
@@ -21,7 +24,13 @@ pub fn Dialect::parser(
   max_errors? : Int = 3,
   max_nodes? : Int = -1,
 ) -> Parser {
-  Parser::new(self, error_level~, error_message_context~, max_errors~, max_nodes~)
+  Parser::new(
+    self,
+    error_level~,
+    error_message_context~,
+    max_errors~,
+    max_nodes~,
+  )
 }
 
 ///|
@@ -91,7 +100,10 @@ pub fn parse_one_with(
 
 ///|
 /// Parses all statements of `sql`.
-pub fn parse(sql : String, dialect? : Dialect) -> Array[Expr?] raise SqlglotError {
+pub fn parse(
+  sql : String,
+  dialect? : Dialect,
+) -> Array[Expr?] raise SqlglotError {
   let d = match dialect {
     Some(d) => d
     None => base_dialect()
@@ -119,7 +131,6 @@ pub fn datatype_from_str(
     e => raise e
   }
 }
-
 
 ///|
 /// Parses `sql` with `read` and generates it with `write` (Python `sqlglot.transpile`).

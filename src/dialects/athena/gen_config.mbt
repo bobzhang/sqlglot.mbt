@@ -5,9 +5,27 @@
 ///|
 fn apply_dialect_config(c : @core.DialectConfig) -> Unit {
   c.byte_strings_support_escaped_sequences = true
-  c.escaped_sequences = Map::from_array([("\u{7}", "\\a"), ("\u{8}", "\\b"), ("\u{c}", "\\f"), ("\n", "\\n"), ("\r", "\\r"), ("\t", "\\t"), ("\u{b}", "\\v"), ("\\", "\\\\")])
+  c.escaped_sequences = Map::from_array([
+    ("\u{7}", "\\a"),
+    ("\u{8}", "\\b"),
+    ("\u{c}", "\\f"),
+    ("\n", "\\n"),
+    ("\r", "\\r"),
+    ("\t", "\\t"),
+    ("\u{b}", "\\v"),
+    ("\\", "\\\\"),
+  ])
   c.strings_support_escaped_sequences = true
-  c.unescaped_sequences = Map::from_array([("\\a", "\u{7}"), ("\\b", "\u{8}"), ("\\f", "\u{c}"), ("\\n", "\n"), ("\\r", "\r"), ("\\t", "\t"), ("\\v", "\u{b}"), ("\\\\", "\\")])
+  c.unescaped_sequences = Map::from_array([
+    ("\\a", "\u{7}"),
+    ("\\b", "\u{8}"),
+    ("\\f", "\u{c}"),
+    ("\\n", "\n"),
+    ("\\r", "\r"),
+    ("\\t", "\t"),
+    ("\\v", "\u{b}"),
+    ("\\\\", "\\"),
+  ])
 }
 
 ///|
@@ -39,6 +57,12 @@ fn apply_tokenizer_config(t : @core.TokenizerSettings) -> Unit {
   t.string_escapes = ["'", "\\"]
   t.byte_string_escapes = Some(["'", "\\"])
   t.nested_comments = true
-  t.numeric_literals = { "L": "BIGINT", "S": "SMALLINT", "Y": "TINYINT", "D": "DOUBLE", "F": "FLOAT", "BD": "DECIMAL" }
+  t.numeric_literals = {
+    "L": "BIGINT",
+    "S": "SMALLINT",
+    "Y": "TINYINT",
+    "D": "DOUBLE",
+    "F": "FLOAT",
+    "BD": "DECIMAL",
+  }
 }
-

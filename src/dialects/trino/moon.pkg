@@ -1,0 +1,6 @@
+import {
+  "hongbozhang/sqlglot/core",
+  "hongbozhang/sqlglot/dialects/presto",
+}
+
+warnings = "-79-15"

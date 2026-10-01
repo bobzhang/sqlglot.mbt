@@ -2,7 +2,7 @@
 
 ///|
 /// Python `cond and f()`: `False` when `cond` is false, else the result of `f()`.
-fn Parser::andv(
+pub fn Parser::andv(
   self : Parser,
   cond : Bool,
   f : () -> Expr? raise SqlglotError,
@@ -20,7 +20,7 @@ fn Parser::andv(
 
 ///|
 /// Python `cond and f()` where `f` returns a list.
-fn Parser::andl(
+pub fn Parser::andl(
   self : Parser,
   cond : Bool,
   f : () -> Array[Expr] raise SqlglotError,
@@ -35,7 +35,10 @@ fn Parser::andl(
 
 ///|
 /// Python `a or b` for values.
-fn value_or(a : Value?, b : () -> Value? raise SqlglotError) -> Value? raise SqlglotError {
+fn value_or(
+  a : Value?,
+  b : () -> Value? raise SqlglotError,
+) -> Value? raise SqlglotError {
   match a {
     Some(v) if v.truthy() => a
     _ => b()
@@ -44,7 +47,10 @@ fn value_or(a : Value?, b : () -> Value? raise SqlglotError) -> Value? raise Sql
 
 ///|
 /// Python `a or b` for optional expressions.
-pub fn expr_or(a : Expr?, b : () -> Expr? raise SqlglotError) -> Expr? raise SqlglotError {
+pub fn expr_or(
+  a : Expr?,
+  b : () -> Expr? raise SqlglotError,
+) -> Expr? raise SqlglotError {
   match a {
     Some(_) => a
     None => b()
@@ -231,7 +237,9 @@ pub fn Parser::parse_insert(self : Parser) -> Expr? raise SqlglotError {
     }
 
     self.parse_csv(parse_set_assignment) |> ignore
-    this = Some(self.expression(mk(Schema, [("this", this), ("expressions", columns)])))
+    this = Some(
+      self.expression(mk(Schema, [("this", this), ("expressions", columns)])),
+    )
     let alias = self.parse_table_alias()
     set_values = Some(
       self.expression(
@@ -243,7 +251,9 @@ pub fn Parser::parse_insert(self : Parser) -> Expr? raise SqlglotError {
     )
   }
   let returning = self.parse_returning()
-  let stored = self.andv(self.match_text("STORED"), () => Some(self.parse_stored()))
+  let stored = self.andv(self.match_text("STORED"), () => {
+    Some(self.parse_stored())
+  })
   let by_name = self.match_text_seq(["BY", "NAME"])
   let exists = self.parse_exists()
   let mut replace_where : Expr? = None
@@ -255,15 +265,18 @@ pub fn Parser::parse_insert(self : Parser) -> Expr? raise SqlglotError {
       replace_using = Some(self.parse_using_identifiers())
     }
   }
-  let partition = self.andv(self.match_(PARTITION_BY), () => self.parse_partitioned_by())
-  let settings = self.andv(self.match_text("SETTINGS"), () => Some(
-    self.parse_settings_property(),
-  ))
+  let partition = self.andv(self.match_(PARTITION_BY), () => {
+    self.parse_partitioned_by()
+  })
+  let settings = self.andv(self.match_text("SETTINGS"), () => {
+    Some(self.parse_settings_property())
+  })
   let default = self.match_text_seq(["DEFAULT", "VALUES"])
-  let expression = expr_or(set_values, () => expr_or(
-    self.parse_derived_table_values(allow_value_synonym=true),
-    () => self.parse_ddl_select(),
-  ))
+  let expression = expr_or(set_values, () => {
+    expr_or(self.parse_derived_table_values(allow_value_synonym=true), () => {
+      self.parse_ddl_select()
+    })
+  })
   let conflict = self.parse_on_conflict()
   let returning = expr_or(returning, () => self.parse_returning())
   let source = self.andv(self.match_(TABLE), () => self.parse_table())
@@ -303,7 +316,9 @@ pub fn Parser::parse_insert_table(self : Parser) -> Expr? raise SqlglotError {
 }
 
 ///|
-pub fn Parser::parse_insert_table_base(self : Parser) -> Expr? raise SqlglotError {
+pub fn Parser::parse_insert_table_base(
+  self : Parser,
+) -> Expr? raise SqlglotError {
   let this = self.parse_table(schema=true, parse_partition=true)
   match this {
     Some(t) if t.kind == Table && self.match_(ALIAS, advance=false) =>
@@ -320,7 +335,9 @@ pub fn Parser::parse_kill(self : Parser) -> Expr? raise SqlglotError {
   } else {
     None
   }
-  Some(self.expression(mk(Kill, [("this", self.parse_primary()), ("kind", kind)])))
+  Some(
+    self.expression(mk(Kill, [("this", self.parse_primary()), ("kind", kind)])),
+  )
 }
 
 ///|
@@ -464,11 +481,13 @@ pub fn Parser::parse_load(self : Parser) -> Expr? raise SqlglotError {
       self.match_(TABLE) |> ignore
     }
     let this = self.parse_table(schema=true)
-    let files = self.andv(self.match_text_seq(["FROM", "FILES"]), () => Some(
-      mk(Properties, [("expressions", self.parse_wrapped_properties())]),
-    ))
+    let files = self.andv(self.match_text_seq(["FROM", "FILES"]), () => {
+      Some(mk(Properties, [("expressions", self.parse_wrapped_properties())]))
+    })
     let partition = self.parse_partition()
-    let input_format = self.andv(self.match_text("INPUTFORMAT"), () => self.parse_string())
+    let input_format = self.andv(self.match_text("INPUTFORMAT"), () => {
+      self.parse_string()
+    })
     let serde = self.andv(self.match_text("SERDE"), () => self.parse_string())
     return Some(
       self.expression(
@@ -499,9 +518,9 @@ pub fn Parser::parse_delete(self : Parser) -> Expr? raise SqlglotError {
   }
   let returning = self.parse_returning()
   let this = self.andv(self.match_(FROM), () => self.parse_table(joins=true))
-  let using_ = self.andl(self.match_(USING), () => self.parse_csv(() => self.parse_table(
-    joins=true,
-  )))
+  let using_ = self.andl(self.match_(USING), () => {
+    self.parse_csv(() => self.parse_table(joins=true))
+  })
   let cluster = self.andv(self.match_(ON), () => self.parse_on_property())
   let where_ = self.parse_where()
   let returning = expr_or(returning, () => self.parse_returning())
@@ -525,7 +544,9 @@ pub fn Parser::parse_delete(self : Parser) -> Expr? raise SqlglotError {
 }
 
 ///|
-pub fn Parser::parse_update_assignment(self : Parser) -> Expr? raise SqlglotError {
+pub fn Parser::parse_update_assignment(
+  self : Parser,
+) -> Expr? raise SqlglotError {
   let mut this = self.parse_comparison()
   if self.match_(EQ) {
     let comments = self.prev_comments
@@ -570,7 +591,14 @@ pub fn Parser::parse_update_base(self : Parser) -> Expr? raise SqlglotError {
             Some(table) =>
               if table.kind.is_a(Subquery) && self.match_(JOIN, advance=false) {
                 let joins = self.parse_joins()
-                table.set("joins", if joins.is_empty() { None } else { Some(joins) })
+                table.set(
+                  "joins",
+                  if joins.is_empty() {
+                    None
+                  } else {
+                    Some(joins)
+                  },
+                )
               }
             None => ()
           }
@@ -600,7 +628,10 @@ pub fn Parser::parse_use(self : Parser) -> Expr? raise SqlglotError {
 
 ///|
 pub fn Parser::parse_use_base(self : Parser) -> Expr? raise SqlglotError {
-  let kind = self.parse_var_from_options(self.cfg.usables, raise_unmatched=false)
+  let kind = self.parse_var_from_options(
+    self.cfg.usables,
+    raise_unmatched=false,
+  )
   Some(
     self.expression(
       mk(Use, [("kind", kind), ("this", self.parse_table(schema=false))]),
@@ -674,7 +705,10 @@ pub fn Parser::parse_partition_base(self : Parser) -> Expr? raise SqlglotError {
 }
 
 ///|
-pub fn Parser::parse_value(self : Parser, values? : Bool = true) -> Expr? raise SqlglotError {
+pub fn Parser::parse_value(
+  self : Parser,
+  values? : Bool = true,
+) -> Expr? raise SqlglotError {
   match self.fns.hooks.parse_value {
     Some(f) => f(self, values)
     None => self.parse_value_base(values~)
@@ -733,9 +767,15 @@ pub fn Parser::parse_wrapped_select_base(
 ) -> Expr? raise SqlglotError {
   let mut this : Expr? = None
   if self.match_any([PIVOT, UNPIVOT]) {
-    this = self.parse_simplified_pivot(is_unpivot=self.prev.token_type == UNPIVOT)
+    this = self.parse_simplified_pivot(
+      is_unpivot=self.prev.token_type == UNPIVOT,
+    )
   } else if self.match_(FROM) {
-    let from_ = self.parse_from(joins=true, skip_from_token=true, consume_pipe=true)
+    let from_ = self.parse_from(
+      joins=true,
+      skip_from_token=true,
+      consume_pipe=true,
+    )
     let select = self.parse_select(from_?)
     match select {
       Some(s) => {

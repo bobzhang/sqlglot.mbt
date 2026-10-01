@@ -14,7 +14,39 @@ fn apply_parser_config(c : @core.ParserConfig) -> Unit {
 
 ///|
 fn apply_generator_config(c : @core.GeneratorConfig) -> Unit {
-  c.type_mapping = Map::from_array([(@core.DType::DATETIME2, "DATETIME2"), (@core.DType::MEDIUMTEXT, "TEXT"), (@core.DType::LONGTEXT, "TEXT"), (@core.DType::TINYTEXT, "TEXT"), (@core.DType::BLOB, "VARBINARY"), (@core.DType::MEDIUMBLOB, "BLOB"), (@core.DType::LONGBLOB, "BLOB"), (@core.DType::TINYBLOB, "BLOB"), (@core.DType::INET, "INET"), (@core.DType::ROWVERSION, "ROWVERSION"), (@core.DType::SMALLDATETIME, "DATETIME2"), (@core.DType::BOOLEAN, "BIT"), (@core.DType::DECIMAL, "DECIMAL"), (@core.DType::DOUBLE, "FLOAT"), (@core.DType::INT, "INT"), (@core.DType::TEXT, "VARCHAR(MAX)"), (@core.DType::TIMESTAMP, "DATETIME2"), (@core.DType::TIMESTAMPNTZ, "DATETIME2"), (@core.DType::TIMESTAMPTZ, "DATETIME2"), (@core.DType::UTINYINT, "SMALLINT"), (@core.DType::VARIANT, "SQL_VARIANT"), (@core.DType::UUID, "UNIQUEIDENTIFIER"), (@core.DType::DATETIME, "DATETIME2"), (@core.DType::IMAGE, "VARBINARY(MAX)"), (@core.DType::JSON, "VARCHAR(MAX)"), (@core.DType::MONEY, "DECIMAL(19, 4)"), (@core.DType::NCHAR, "CHAR"), (@core.DType::NVARCHAR, "VARCHAR"), (@core.DType::SMALLMONEY, "DECIMAL(10, 4)"), (@core.DType::TINYINT, "SMALLINT"), (@core.DType::XML, "VARCHAR(MAX)")])
+  c.type_mapping = Map::from_array([
+    (@core.DType::DATETIME2, "DATETIME2"),
+    (@core.DType::MEDIUMTEXT, "TEXT"),
+    (@core.DType::LONGTEXT, "TEXT"),
+    (@core.DType::TINYTEXT, "TEXT"),
+    (@core.DType::BLOB, "VARBINARY"),
+    (@core.DType::MEDIUMBLOB, "BLOB"),
+    (@core.DType::LONGBLOB, "BLOB"),
+    (@core.DType::TINYBLOB, "BLOB"),
+    (@core.DType::INET, "INET"),
+    (@core.DType::ROWVERSION, "ROWVERSION"),
+    (@core.DType::SMALLDATETIME, "DATETIME2"),
+    (@core.DType::BOOLEAN, "BIT"),
+    (@core.DType::DECIMAL, "DECIMAL"),
+    (@core.DType::DOUBLE, "FLOAT"),
+    (@core.DType::INT, "INT"),
+    (@core.DType::TEXT, "VARCHAR(MAX)"),
+    (@core.DType::TIMESTAMP, "DATETIME2"),
+    (@core.DType::TIMESTAMPNTZ, "DATETIME2"),
+    (@core.DType::TIMESTAMPTZ, "DATETIME2"),
+    (@core.DType::UTINYINT, "SMALLINT"),
+    (@core.DType::VARIANT, "SQL_VARIANT"),
+    (@core.DType::UUID, "UNIQUEIDENTIFIER"),
+    (@core.DType::DATETIME, "DATETIME2"),
+    (@core.DType::IMAGE, "VARBINARY(MAX)"),
+    (@core.DType::JSON, "VARCHAR(MAX)"),
+    (@core.DType::MONEY, "DECIMAL(19, 4)"),
+    (@core.DType::NCHAR, "CHAR"),
+    (@core.DType::NVARCHAR, "VARCHAR"),
+    (@core.DType::SMALLMONEY, "DECIMAL(10, 4)"),
+    (@core.DType::TINYINT, "SMALLINT"),
+    (@core.DType::XML, "VARCHAR(MAX)"),
+  ])
 }
 
 ///|
@@ -23,4 +55,3 @@ fn apply_tokenizer_config(t : @core.TokenizerSettings) -> Unit {
   t.keywords["UTINYINT"] = @core.TokenType::UTINYINT
   t.byte_string_escapes = Some(["'"])
 }
-

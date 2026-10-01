@@ -1,0 +1,6 @@
+import {
+  "hongbozhang/sqlglot",
+  "hongbozhang/sqlglot/core",
+}
+
+warnings = "-79"

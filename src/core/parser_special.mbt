@@ -53,8 +53,13 @@ pub fn Parser::parse_if(self : Parser) -> Expr? raise SqlglotError {
 ///|
 pub fn Parser::parse_if_base(self : Parser) -> Expr? raise SqlglotError {
   if self.match_(L_PAREN) {
-    let args = self.parse_csv(() => self.parse_alias(self.parse_assignment(), explicit=true))
-    let this = self.validate_expression(from_arg_list(If, args), nargs=args.length())
+    let args = self.parse_csv(() => {
+      self.parse_alias(self.parse_assignment(), explicit=true)
+    })
+    let this = self.validate_expression(
+      from_arg_list(If, args),
+      nargs=args.length(),
+    )
     self.match_r_paren()
     Some(this)
   } else {
@@ -88,7 +93,9 @@ pub fn Parser::parse_next_value_for(self : Parser) -> Expr? raise SqlglotError {
     return None
   }
   let this = self.parse_column()
-  let order = self.andv(self.match_(OVER), () => self.parse_wrapped(() => self.parse_order()))
+  let order = self.andv(self.match_(OVER), () => {
+    self.parse_wrapped(() => self.parse_order())
+  })
   Some(self.expression(mk(NextValueFor, [("this", this), ("order", order)])))
 }
 
@@ -102,17 +109,23 @@ pub fn Parser::parse_extract(self : Parser) -> Expr? raise SqlglotError {
 
 ///|
 pub fn Parser::parse_extract_base(self : Parser) -> Expr? raise SqlglotError {
-  let this = expr_or(self.parse_function(), () => self.parse_var_or_string(upper=true))
+  let this = expr_or(self.parse_function(), () => {
+    self.parse_var_or_string(upper=true)
+  })
   if self.match_(FROM) {
     return Some(
-      self.expression(mk(Extract, [("this", this), ("expression", self.parse_bitwise())])),
+      self.expression(
+        mk(Extract, [("this", this), ("expression", self.parse_bitwise())]),
+      ),
     )
   }
   if !self.match_(COMMA) {
     self.raise_error("Expected FROM or comma after EXTRACT", token=self.prev)
   }
   Some(
-    self.expression(mk(Extract, [("this", this), ("expression", self.parse_bitwise())])),
+    self.expression(
+      mk(Extract, [("this", this), ("expression", self.parse_bitwise())]),
+    ),
   )
 }
 
@@ -132,7 +145,9 @@ pub fn Parser::parse_char(self : Parser) -> Expr? raise SqlglotError {
   let expressions = self.parse_csv(() => self.parse_assignment())
   let charset = self.andv(self.match_(USING), () => self.parse_charset_name())
   Some(
-    self.expression(mk(Chr, [("expressions", expressions), ("charset", charset)])),
+    self.expression(
+      mk(Chr, [("expressions", expressions), ("charset", charset)]),
+    ),
   )
 }
 
@@ -169,7 +184,10 @@ pub fn Parser::parse_cast(
     self.match_text_seq(["ON", "CONVERSION", "ERROR"]) |> ignore
   }
   if self.match_any([FORMAT, COMMA]) {
-    let fmt_string = self.parse_wrapped(() => self.parse_string(), optional=true)
+    let fmt_string = self.parse_wrapped(
+      () => self.parse_string(),
+      optional=true,
+    )
     fmt = self.parse_at_time_zone(fmt_string)
     let to_ = match to {
       Some(t) => t
@@ -228,7 +246,10 @@ pub fn Parser::parse_cast(
         }
     }
   }
-  let action = self.parse_var_from_options(self.cfg.cast_actions, raise_unmatched=false)
+  let action = self.parse_var_from_options(
+    self.cfg.cast_actions,
+    raise_unmatched=false,
+  )
   this = Some(
     self.build_cast(strict, [
       ("this", this.map(x => Node(x))),
@@ -281,7 +302,11 @@ pub fn Parser::build_cast_base(
 pub fn Parser::parse_string_agg(self : Parser) -> Expr? raise SqlglotError {
   let args : Array[Expr] = if self.match_(DISTINCT) {
     let a = [
-      self.expression(mk(Distinct, [("expressions", [self.parse_disjunction()].filter_map(x => x))])),
+      self.expression(
+        mk(Distinct, [
+          ("expressions", [self.parse_disjunction()].filter_map(x => x)),
+        ]),
+      ),
     ]
     if self.match_(COMMA) {
       a.append(self.parse_csv(() => self.parse_disjunction()))
@@ -300,7 +325,10 @@ pub fn Parser::parse_string_agg(self : Parser) -> Expr? raise SqlglotError {
         !self.match_text_seq(["WITHOUT", "COUNT"])
       Some(
         self.expression(
-          mk(OverflowTruncateBehavior, [("this", this), ("with_count", with_count)]),
+          mk(OverflowTruncateBehavior, [
+            ("this", this),
+            ("with_count", with_count),
+          ]),
         ),
       )
     }
@@ -318,7 +346,12 @@ pub fn Parser::parse_string_agg(self : Parser) -> Expr? raise SqlglotError {
   }
   if !self.match_text_seq(["WITHIN", "GROUP"]) {
     self.retreat(index)
-    return Some(self.validate_expression(from_arg_list(GroupConcat, args), nargs=args.length()))
+    return Some(
+      self.validate_expression(
+        from_arg_list(GroupConcat, args),
+        nargs=args.length(),
+      ),
+    )
   }
   self.match_l_paren()
   Some(
@@ -382,7 +415,9 @@ pub fn Parser::parse_xml_element(self : Parser) -> Expr? raise SqlglotError {
     self.match_text("NAME") |> ignore
     self.parse_id_var()
   }
-  let expressions = self.andl(self.match_(COMMA), () => self.parse_csv(() => self.parse_bitwise()))
+  let expressions = self.andl(self.match_(COMMA), () => {
+    self.parse_csv(() => self.parse_bitwise())
+  })
   Some(
     self.expression(
       mk(XMLElement, [
@@ -426,7 +461,9 @@ pub fn Parser::parse_xml_table(self : Parser) -> Expr? raise SqlglotError {
 }
 
 ///|
-pub fn Parser::parse_xml_namespace(self : Parser) -> Array[Expr] raise SqlglotError {
+pub fn Parser::parse_xml_namespace(
+  self : Parser,
+) -> Array[Expr] raise SqlglotError {
   let namespaces = []
   while true {
     let uri = if self.match_(DEFAULT) {
@@ -465,11 +502,16 @@ pub fn Parser::parse_json_key_value(self : Parser) -> Expr? raise SqlglotError {
   if key is None && value is None {
     return None
   }
-  Some(self.expression(mk(JSONKeyValue, [("this", key), ("expression", value)])))
+  Some(
+    self.expression(mk(JSONKeyValue, [("this", key), ("expression", value)])),
+  )
 }
 
 ///|
-pub fn Parser::parse_format_json(self : Parser, this : Expr?) -> Expr? raise SqlglotError {
+pub fn Parser::parse_format_json(
+  self : Parser,
+  this : Expr?,
+) -> Expr? raise SqlglotError {
   if this is None || !self.match_text_seq(["FORMAT", "JSON"]) {
     return this
   }
@@ -523,7 +565,10 @@ pub fn Parser::parse_on_handling(
 }
 
 ///|
-pub fn Parser::parse_json_object(self : Parser, agg? : Bool = false) -> Expr? raise SqlglotError {
+pub fn Parser::parse_json_object(
+  self : Parser,
+  agg? : Bool = false,
+) -> Expr? raise SqlglotError {
   match self.fns.hooks.parse_json_object {
     Some(f) => f(self, agg)
     None => self.parse_json_object_base(agg~)
@@ -538,7 +583,8 @@ pub fn Parser::parse_json_object_base(
   let star = self.parse_star()
   let expressions = match star {
     Some(s) => [s]
-    None => self.parse_csv(() => self.parse_format_json(self.parse_json_key_value()))
+    None =>
+      self.parse_csv(() => self.parse_format_json(self.parse_json_key_value()))
   }
   let null_handling = self.parse_on_handling("NULL", ["NULL", "ABSENT"])
   let mut unique_keys : Bool? = None
@@ -548,9 +594,9 @@ pub fn Parser::parse_json_object_base(
     unique_keys = Some(false)
   }
   self.match_text("KEYS") |> ignore
-  let return_type = self.andv(self.match_text("RETURNING"), () => self.parse_format_json(
-    self.parse_type(),
-  ))
+  let return_type = self.andv(self.match_text("RETURNING"), () => {
+    self.parse_format_json(self.parse_type())
+  })
   let encoding = self.andv(self.match_text("ENCODING"), () => self.parse_var())
   let kind = if agg { JSONObjectAgg } else { JSONObject }
   Some(
@@ -606,7 +652,10 @@ pub fn Parser::parse_json_schema(self : Parser) -> Expr raise SqlglotError {
     mk(JSONSchema, [
       (
         "expressions",
-        self.parse_wrapped_csv(() => self.parse_json_column_def(), optional=true),
+        self.parse_wrapped_csv(
+          () => self.parse_json_column_def(),
+          optional=true,
+        ),
       ),
     ]),
   )
@@ -695,7 +744,11 @@ pub fn Parser::parse_open_json(self : Parser) -> Expr? raise SqlglotError {
   }
   Some(
     self.expression(
-      mk(OpenJSON, [("this", this), ("path", path), ("expressions", expressions)]),
+      mk(OpenJSON, [
+        ("this", this),
+        ("path", path),
+        ("expressions", expressions),
+      ]),
     ),
   )
 }
@@ -720,7 +773,10 @@ pub fn Parser::parse_position_base(
   if self.match_(IN) {
     return Some(
       self.expression(
-        mk(StrPosition, [("this", self.parse_bitwise()), ("substr", args.get(0))]),
+        mk(StrPosition, [
+          ("this", self.parse_bitwise()),
+          ("substr", args.get(0)),
+        ]),
       ),
     )
   }
@@ -741,7 +797,10 @@ pub fn Parser::parse_position_base(
 }
 
 ///|
-pub fn Parser::parse_join_hint(self : Parser, func_name : String) -> Expr? raise SqlglotError {
+pub fn Parser::parse_join_hint(
+  self : Parser,
+  func_name : String,
+) -> Expr? raise SqlglotError {
   let args = self.parse_csv(() => self.parse_table())
   Some(mk(JoinHint, [("this", py_upper(func_name)), ("expressions", args)]))
 }
@@ -779,7 +838,12 @@ pub fn Parser::parse_substring_base(self : Parser) -> Expr? raise SqlglotError {
     Some(l) => args.push(l)
     None => ()
   }
-  Some(self.validate_expression(from_arg_list(Substring, args), nargs=args.length()))
+  Some(
+    self.validate_expression(
+      from_arg_list(Substring, args),
+      nargs=args.length(),
+    ),
+  )
 }
 
 ///|
@@ -792,7 +856,8 @@ pub fn Parser::parse_trim(self : Parser) -> Expr? raise SqlglotError {
   }
   let mut this = self.parse_bitwise()
   if self.match_any([FROM, COMMA]) {
-    let invert_order = self.prev.token_type == FROM || self.cfg.trim_pattern_first
+    let invert_order = self.prev.token_type == FROM ||
+      self.cfg.trim_pattern_first
     expression = self.parse_bitwise()
     if invert_order {
       let tmp = this
@@ -816,7 +881,9 @@ pub fn Parser::parse_trim(self : Parser) -> Expr? raise SqlglotError {
 }
 
 ///|
-pub fn Parser::parse_window_clause(self : Parser) -> Array[Expr]? raise SqlglotError {
+pub fn Parser::parse_window_clause(
+  self : Parser,
+) -> Array[Expr]? raise SqlglotError {
   if self.match_(WINDOW) {
     Some(self.parse_csv(() => self.parse_named_window()))
   } else {
@@ -846,7 +913,10 @@ pub fn Parser::parse_respect_or_ignore_nulls(
 }
 
 ///|
-pub fn Parser::parse_having_max(self : Parser, this : Expr?) -> Expr? raise SqlglotError {
+pub fn Parser::parse_having_max(
+  self : Parser,
+  this : Expr?,
+) -> Expr? raise SqlglotError {
   if self.match_(HAVING) {
     self.match_texts(["MAX", "MIN"]) |> ignore
     let max = self.prev_upper() != "MIN"
@@ -898,7 +968,9 @@ pub fn Parser::parse_window_base(
   }
   if self.match_text_seq(["WITHIN", "GROUP"]) {
     let order = self.parse_wrapped(() => self.parse_order())
-    this = Some(self.expression(mk(WithinGroup, [("this", this), ("expression", order)])))
+    this = Some(
+      self.expression(mk(WithinGroup, [("this", this), ("expression", order)])),
+    )
   }
   if self.match_pair(FILTER, L_PAREN) {
     self.match_(WHERE) |> ignore
@@ -950,7 +1022,10 @@ pub fn Parser::parse_window_base(
       ),
     )
   }
-  let window_alias = self.parse_id_var(any_token=false, tokens=self.cfg.window_alias_tokens)
+  let window_alias = self.parse_id_var(
+    any_token=false,
+    tokens=self.cfg.window_alias_tokens,
+  )
   let mut first : Bool? = if self.match_(FIRST) { Some(true) } else { None }
   if self.match_text("LAST") {
     first = Some(false)
@@ -1025,7 +1100,9 @@ pub fn Parser::parse_partition_and_order(
 
 ///|
 /// Returns (value, side).
-pub fn Parser::parse_window_spec(self : Parser) -> (Value?, String?) raise SqlglotError {
+pub fn Parser::parse_window_spec(
+  self : Parser,
+) -> (Value?, String?) raise SqlglotError {
   self.match_(BETWEEN) |> ignore
   let value : Value? = if self.match_text("UNBOUNDED") {
     Some(Str("UNBOUNDED"))
@@ -1103,7 +1180,10 @@ pub fn walk_in_scope(expression : Expr, prune? : (Expr) -> Bool) -> Array[Expr] 
 }
 
 ///|
-pub fn find_all_in_scope(expression : Expr, kinds : ArrayView[Kind]) -> Array[Expr] {
+pub fn find_all_in_scope(
+  expression : Expr,
+  kinds : ArrayView[Kind],
+) -> Array[Expr] {
   walk_in_scope(expression).filter(n => n.kind.is_any(kinds))
 }
 

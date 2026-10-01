@@ -11,10 +11,9 @@ pub fn Parser::parse_truncate_table(self : Parser) -> Expr? raise SqlglotError {
   let is_database = self.match_(DATABASE)
   self.match_(TABLE) |> ignore
   let exists = self.parse_exists(not_=false)
-  let expressions = self.parse_csv(() => self.parse_table(
-    schema=true,
-    is_db_reference=is_database,
-  ))
+  let expressions = self.parse_csv(() => {
+    self.parse_table(schema=true, is_db_reference=is_database)
+  })
   let cluster = if self.match_(ON) { self.parse_on_property() } else { None }
   let identity = if self.match_text_seq(["RESTART", "IDENTITY"]) {
     Some("RESTART")
@@ -63,7 +62,9 @@ pub fn Parser::parse_with_operator(self : Parser) -> Expr? raise SqlglotError {
 }
 
 ///|
-pub fn Parser::parse_wrapped_options(self : Parser) -> Array[Expr] raise SqlglotError {
+pub fn Parser::parse_wrapped_options(
+  self : Parser,
+) -> Array[Expr] raise SqlglotError {
   self.match_(EQ) |> ignore
   self.match_(L_PAREN) |> ignore
   let opts = []
@@ -93,7 +94,9 @@ pub fn Parser::parse_wrapped_options(self : Parser) -> Array[Expr] raise Sqlglot
 }
 
 ///|
-pub fn Parser::parse_copy_parameters(self : Parser) -> Array[Expr] raise SqlglotError {
+pub fn Parser::parse_copy_parameters(
+  self : Parser,
+) -> Array[Expr] raise SqlglotError {
   let sep : TokenType? = if self.dialect.cfg.copy_params_are_csv {
     Some(COMMA)
   } else {
@@ -186,7 +189,10 @@ pub fn Parser::parse_copy(self : Parser) -> Expr? raise SqlglotError {
   }
   let credentials = self.parse_credentials()
   self.match_text("WITH") |> ignore
-  let params = self.parse_wrapped(() => self.parse_copy_parameters(), optional=true)
+  let params = self.parse_wrapped(
+    () => self.parse_copy_parameters(),
+    optional=true,
+  )
   if self.curr.ok() {
     return Some(self.parse_as_command(start))
   }
@@ -211,7 +217,10 @@ pub fn Parser::parse_normalize(self : Parser) -> Expr? raise SqlglotError {
 }
 
 ///|
-pub fn Parser::parse_ceil_floor(self : Parser, kind : Kind) -> Expr? raise SqlglotError {
+pub fn Parser::parse_ceil_floor(
+  self : Parser,
+  kind : Kind,
+) -> Expr? raise SqlglotError {
   let args = self.parse_csv(() => self.parse_lambda())
   let this = args.get(0)
   let decimals = args.get(1)
@@ -271,7 +280,9 @@ pub fn Parser::parse_grant_privilege(self : Parser) -> Expr? raise SqlglotError 
     None
   }
   Some(
-    self.expression(mk(GrantPrivilege, [("this", this), ("expressions", expressions)])),
+    self.expression(
+      mk(GrantPrivilege, [("this", this), ("expressions", expressions)]),
+    ),
   )
 }
 
@@ -286,11 +297,13 @@ pub fn Parser::parse_grant_principal(self : Parser) -> Expr? raise SqlglotError 
     Some(p) => p
     None => return None
   }
-  Some(self.expression(mk(GrantPrincipal, [("this", principal), ("kind", kind)])))
+  Some(
+    self.expression(mk(GrantPrincipal, [("this", principal), ("kind", kind)])),
+  )
 }
 
 ///|
-fn Parser::parse_grant_revoke_common(
+pub fn Parser::parse_grant_revoke_common(
   self : Parser,
 ) -> (Array[Expr], String?, Expr?) raise SqlglotError {
   let privileges = self.parse_csv(() => self.parse_grant_privilege())
@@ -389,14 +402,16 @@ pub fn Parser::parse_overlay(self : Parser) -> Expr? raise SqlglotError {
 ///|
 pub fn Parser::parse_format_name(self : Parser) -> Expr raise SqlglotError {
   let value = expr_or(self.parse_string(), () => self.parse_table_parts())
-  self.expression(mk(Property, [("this", var_("FORMAT_NAME")), ("value", value)]))
+  self.expression(
+    mk(Property, [("this", var_("FORMAT_NAME")), ("value", value)]),
+  )
 }
 
 // ---------------------------------------------------------------------------
 // Pipe syntax
 
 ///|
-fn Parser::build_pipe_cte(
+pub fn Parser::build_pipe_cte(
   self : Parser,
   query : Expr,
   expressions : Array[Expr],
@@ -432,7 +447,10 @@ fn Parser::build_pipe_cte(
 }
 
 ///|
-pub fn Parser::parse_pipe_syntax_select(self : Parser, query : Expr) -> Expr? raise SqlglotError {
+pub fn Parser::parse_pipe_syntax_select(
+  self : Parser,
+  query : Expr,
+) -> Expr? raise SqlglotError {
   match self.parse_select(consume_pipe=false) {
     None => Some(query)
     Some(select) => {
@@ -443,7 +461,10 @@ pub fn Parser::parse_pipe_syntax_select(self : Parser, query : Expr) -> Expr? ra
 }
 
 ///|
-pub fn Parser::parse_pipe_syntax_limit(self : Parser, query : Expr) -> Expr? raise SqlglotError {
+pub fn Parser::parse_pipe_syntax_limit(
+  self : Parser,
+  query : Expr,
+) -> Expr? raise SqlglotError {
   let limit = self.parse_limit()
   let offset = self.parse_offset()
   match limit {
@@ -486,7 +507,9 @@ pub fn Parser::parse_pipe_syntax_limit(self : Parser, query : Expr) -> Expr? rai
 }
 
 ///|
-pub fn Parser::parse_pipe_syntax_aggregate_fields(self : Parser) -> Expr? raise SqlglotError {
+pub fn Parser::parse_pipe_syntax_aggregate_fields(
+  self : Parser,
+) -> Expr? raise SqlglotError {
   let this = self.parse_disjunction()
   if self.match_text_seq(["GROUP", "AND"], advance=false) {
     return this
@@ -523,15 +546,20 @@ pub fn Parser::parse_pipe_syntax_aggregate_group_order_by(
   if group_by_exists {
     let projections = aggregates_or_groups + query.expressions()
     query.set("expressions", projections)
-    let groups = aggregates_or_groups.map(p => match p.arg("alias") {
-      Some(a) => a
-      None => p
+    let groups = aggregates_or_groups.map(p => {
+      match p.arg("alias") {
+        Some(a) => a
+        None => p
+      }
     })
     let existing = match query.arg("group") {
       Some(g) => g.expressions()
       None => []
     }
-    query.set("group", mk(Group, [("expressions", existing + groups.map(g => g.copy()))]))
+    query.set(
+      "group",
+      mk(Group, [("expressions", existing + groups.map(g => g.copy()))]),
+    )
   } else {
     query.set("expressions", aggregates_or_groups)
   }
@@ -542,7 +570,10 @@ pub fn Parser::parse_pipe_syntax_aggregate_group_order_by(
 }
 
 ///|
-pub fn Parser::parse_pipe_syntax_aggregate(self : Parser, query : Expr) -> Expr? raise SqlglotError {
+pub fn Parser::parse_pipe_syntax_aggregate(
+  self : Parser,
+  query : Expr,
+) -> Expr? raise SqlglotError {
   self.match_text("AGGREGATE") |> ignore
   let mut query = self.parse_pipe_syntax_aggregate_group_order_by(
     query,
@@ -596,7 +627,10 @@ pub fn Parser::parse_pipe_syntax_set_operator(
 }
 
 ///|
-pub fn Parser::parse_pipe_syntax_join(self : Parser, query : Expr) -> Expr? raise SqlglotError {
+pub fn Parser::parse_pipe_syntax_join(
+  self : Parser,
+  query : Expr,
+) -> Expr? raise SqlglotError {
   let join = match self.parse_join() {
     Some(j) => j
     None => return None
@@ -608,7 +642,10 @@ pub fn Parser::parse_pipe_syntax_join(self : Parser, query : Expr) -> Expr? rais
 }
 
 ///|
-pub fn Parser::parse_pipe_syntax_pivot(self : Parser, query : Expr) -> Expr? raise SqlglotError {
+pub fn Parser::parse_pipe_syntax_pivot(
+  self : Parser,
+  query : Expr,
+) -> Expr? raise SqlglotError {
   let pivots = match self.parse_pivots() {
     Some(p) => p
     None => return Some(query)
@@ -625,7 +662,10 @@ pub fn Parser::parse_pipe_syntax_pivot(self : Parser, query : Expr) -> Expr? rai
 }
 
 ///|
-pub fn Parser::parse_pipe_syntax_extend(self : Parser, query : Expr) -> Expr? raise SqlglotError {
+pub fn Parser::parse_pipe_syntax_extend(
+  self : Parser,
+  query : Expr,
+) -> Expr? raise SqlglotError {
   self.match_text("EXTEND") |> ignore
   query.set("expressions", [mk0(Star)] + self.parse_expressions())
   Some(self.build_pipe_cte(query, [mk0(Star)]))
@@ -651,7 +691,10 @@ pub fn Parser::parse_pipe_syntax_tablesample(
 }
 
 ///|
-pub fn Parser::parse_pipe_syntax_query(self : Parser, query : Expr) -> Expr? raise SqlglotError {
+pub fn Parser::parse_pipe_syntax_query(
+  self : Parser,
+  query : Expr,
+) -> Expr? raise SqlglotError {
   let mut query = query
   if query.kind.is_a(Subquery) {
     query = select_star_from(Some(query))
@@ -672,7 +715,9 @@ pub fn Parser::parse_pipe_syntax_query(self : Parser, query : Expr) -> Expr? rai
           Some(q) => query = q
           None => {
             self.retreat(start_index)
-            self.raise_error("Unsupported pipe syntax operator: '\{start_text}'.")
+            self.raise_error(
+              "Unsupported pipe syntax operator: '\{start_text}'.",
+            )
             break
           }
         }
@@ -697,8 +742,14 @@ pub fn Parser::parse_declareitem(self : Parser) -> Expr? raise SqlglotError {
     return None
   }
   self.match_(ALIAS) |> ignore
-  let kind = if self.match_(TABLE) { self.parse_schema() } else { self.parse_types() }
-  let default = self.andv(self.match_(DEFAULT) || self.match_(EQ), () => self.parse_bitwise())
+  let kind = if self.match_(TABLE) {
+    self.parse_schema()
+  } else {
+    self.parse_types()
+  }
+  let default = self.andv(self.match_(DEFAULT) || self.match_(EQ), () => {
+    self.parse_bitwise()
+  })
   Some(
     self.expression(
       mk(DeclareItem, [("this", vars), ("kind", kind), ("default", default)]),
@@ -755,9 +806,14 @@ pub fn Parser::parse_group_concat(self : Parser) -> Expr? raise SqlglotError {
 }
 
 ///|
-pub fn Parser::parse_group_concat_base(self : Parser) -> Expr? raise SqlglotError {
+pub fn Parser::parse_group_concat_base(
+  self : Parser,
+) -> Expr? raise SqlglotError {
   let args = self.parse_csv(() => self.parse_lambda())
-  fn concat_exprs(node : Expr?, exprs : Array[Expr]) -> Expr raise SqlglotError {
+  fn concat_exprs(
+    node : Expr?,
+    exprs : Array[Expr],
+  ) -> Expr raise SqlglotError {
     match node {
       Some(n) if n.kind == Distinct && n.expressions().length() > 1 => {
         let c = self.expression(
@@ -817,7 +873,10 @@ pub fn Parser::parse_initcap(self : Parser) -> Expr? raise SqlglotError {
 }
 
 ///|
-pub fn Parser::parse_operator(self : Parser, this : Expr?) -> Expr? raise SqlglotError {
+pub fn Parser::parse_operator(
+  self : Parser,
+  this : Expr?,
+) -> Expr? raise SqlglotError {
   if !self.match_(L_PAREN) {
     self.retreat(self.index - 1)
     return None

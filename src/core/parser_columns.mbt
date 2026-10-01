@@ -11,7 +11,12 @@ pub fn Parser::parse_types(
   match self.fns.hooks.parse_types {
     Some(f) => f(self, check_func, schema, allow_identifiers, with_collation)
     None =>
-      self.parse_types_base(check_func~, schema~, allow_identifiers~, with_collation~)
+      self.parse_types_base(
+        check_func~,
+        schema~,
+        allow_identifiers~,
+        with_collation~,
+      )
   }
 }
 
@@ -46,10 +51,13 @@ pub fn Parser::parse_types_base(
             TokenError(_) => []
             e => raise e
           }
-          if !tokens.is_empty() && self.cfg.type_tokens.contains(tokens[0].token_type) {
+          if !tokens.is_empty() &&
+            self.cfg.type_tokens.contains(tokens[0].token_type) {
             type_token = Some(tokens[0].token_type)
             if tokens.length() > 1 {
-              return Some(datatype_from_str(identifier.name(), dialect=self.dialect))
+              return Some(
+                datatype_from_str(identifier.name(), dialect=self.dialect),
+              )
             }
           } else if self.dialect.cfg.supports_user_defined_types {
             this = self.parse_user_defined_type(identifier)
@@ -99,13 +107,13 @@ pub fn Parser::parse_types_base(
   let mut maybe_func = false
   if self.match_(L_PAREN) {
     if is_struct {
-      expressions = Some(self.parse_csv(() => self.parse_struct_types(type_required=true)))
+      expressions = Some(
+        self.parse_csv(() => self.parse_struct_types(type_required=true)),
+      )
     } else if nested {
-      let exprs = self.parse_csv(() => self.parse_types(
-        check_func~,
-        schema~,
-        allow_identifiers~,
-      ))
+      let exprs = self.parse_csv(() => {
+        self.parse_types(check_func~, schema~, allow_identifiers~)
+      })
       expressions = Some(exprs)
       if type_token == Some(NULLABLE) && exprs.length() == 1 {
         let this = exprs[0]
@@ -118,10 +126,9 @@ pub fn Parser::parse_types_base(
     } else if type_token == Some(JSON) {
       expressions = Some(self.parse_csv(() => self.parse_json_type_arg()))
     } else if is_aggregate {
-      let func_or_ident = expr_or(self.parse_function(anonymous=true), () => self.parse_id_var(
-        any_token=false,
-        tokens=TokenSet::new([VAR, ANY]),
-      ))
+      let func_or_ident = expr_or(self.parse_function(anonymous=true), () => {
+        self.parse_id_var(any_token=false, tokens=TokenSet::new([VAR, ANY]))
+      })
       let foi = match func_or_ident {
         Some(f) => f
         None => return None
@@ -129,7 +136,9 @@ pub fn Parser::parse_types_base(
       let exprs = [foi]
       if self.match_(COMMA) {
         exprs.append(
-          self.parse_csv(() => self.parse_types(check_func~, schema~, allow_identifiers~)),
+          self.parse_csv(() => {
+            self.parse_types(check_func~, schema~, allow_identifiers~)
+          }),
         )
       }
       expressions = Some(exprs)
@@ -149,15 +158,19 @@ pub fn Parser::parse_types_base(
   let mut values : Array[Expr]? = None
   if nested && self.match_(LT) {
     if is_struct {
-      expressions = Some(self.parse_csv(() => self.parse_struct_types(type_required=true)))
+      expressions = Some(
+        self.parse_csv(() => self.parse_struct_types(type_required=true)),
+      )
     } else {
       expressions = Some(
-        self.parse_csv(() => self.parse_types(
-          check_func~,
-          schema~,
-          allow_identifiers~,
-          with_collation=true,
-        )),
+        self.parse_csv(() => {
+          self.parse_types(
+            check_func~,
+            schema~,
+            allow_identifiers~,
+            with_collation=true,
+          )
+        }),
       )
     }
     if !self.match_(GT) {
@@ -182,7 +195,9 @@ pub fn Parser::parse_types_base(
       } else {
         DType::TIMESTAMPTZ
       }
-      this = Some(mk(DataType, [("this", tz_type), ("expressions", expressions)]))
+      this = Some(
+        mk(DataType, [("this", tz_type), ("expressions", expressions)]),
+      )
     } else if self.match_text_seq(["WITH", "LOCAL", "TIME", "ZONE"]) {
       maybe_func = false
       this = Some(
@@ -313,7 +328,10 @@ pub fn Parser::parse_types_base(
     }
   }
   if with_collation && this.kind == DataType && self.match_(COLLATE) {
-    this.set("collate", expr_or(self.parse_identifier(), () => self.parse_column()))
+    this.set(
+      "collate",
+      expr_or(self.parse_identifier(), () => self.parse_column()),
+    )
   }
   Some(this)
 }
@@ -336,7 +354,9 @@ pub fn Parser::parse_json_type_arg(self : Parser) -> Expr? raise SqlglotError {
       _ => ()
     }
     return Some(
-      self.expression(mk(SkipJSONColumn, [("regexp", regexp), ("expression", arg)])),
+      self.expression(
+        mk(SkipJSONColumn, [("regexp", regexp), ("expression", arg)]),
+      ),
     )
   }
   let param_or_col = match self.parse_column() {
@@ -395,7 +415,10 @@ pub fn Parser::parse_struct_types_base(
     self.cfg.type_tokens.contains(self.next.token_type) {
     self.parse_id_var()
   } else {
-    expr_or(self.parse_type(parse_interval=false, fallback_to_identifier=true), () => self.parse_id_var())
+    expr_or(
+      self.parse_type(parse_interval=false, fallback_to_identifier=true),
+      () => self.parse_id_var(),
+    )
   }
   self.match_(COLON) |> ignore
   if type_required &&
@@ -411,7 +434,10 @@ pub fn Parser::parse_struct_types_base(
 }
 
 ///|
-pub fn Parser::parse_at_time_zone(self : Parser, this : Expr?) -> Expr? raise SqlglotError {
+pub fn Parser::parse_at_time_zone(
+  self : Parser,
+  this : Expr?,
+) -> Expr? raise SqlglotError {
   if !self.match_text_seq(["AT", "TIME", "ZONE"]) {
     return this
   }
@@ -481,7 +507,9 @@ pub fn Parser::parse_column_base(self : Parser) -> Expr? raise SqlglotError {
 }
 
 ///|
-pub fn Parser::parse_column_parts_fast(self : Parser) -> Expr? raise SqlglotError {
+pub fn Parser::parse_column_parts_fast(
+  self : Parser,
+) -> Expr? raise SqlglotError {
   let index = self.index
   let mut parts : Array[Expr]? = None
   let mut all_comments : Array[String]? = None
@@ -560,7 +588,9 @@ pub fn Parser::parse_column_parts_fast(self : Parser) -> Expr? raise SqlglotErro
 }
 
 ///|
-pub fn Parser::parse_column_reference(self : Parser) -> Expr? raise SqlglotError {
+pub fn Parser::parse_column_reference(
+  self : Parser,
+) -> Expr? raise SqlglotError {
   let mut this = self.parse_field()
   if this is None &&
     self.match_(VALUES, advance=false) &&
@@ -579,7 +609,7 @@ pub fn Parser::parse_column_reference(self : Parser) -> Expr? raise SqlglotError
 }
 
 ///|
-fn Parser::build_json_extract(
+pub fn Parser::build_json_extract(
   self : Parser,
   this : Expr?,
   path_parts : Array[Expr],
@@ -615,13 +645,16 @@ pub fn Parser::parse_colon_as_variant_extract(
     match key {
       Some(k) => {
         let quoted = k.kind == Identifier && k.has("quoted")
-        path_parts.push(mk(JSONPathKey, [("this", k.name()), ("quoted", quoted)]))
+        path_parts.push(
+          mk(JSONPathKey, [("this", k.name()), ("quoted", quoted)]),
+        )
       }
       None => ()
     }
     while true {
       if self.match_(DOT) {
-        match self.parse_id_var(any_token=true, tokens=TokenSet::new([SELECT])) {
+        match
+          self.parse_id_var(any_token=true, tokens=TokenSet::new([SELECT])) {
           Some(next_key) => {
             let quoted = next_key.kind == Identifier && next_key.has("quoted")
             path_parts.push(
@@ -638,7 +671,9 @@ pub fn Parser::parse_colon_as_variant_extract(
         match bracket_expr {
           Some(be) =>
             if be.is_string() {
-              path_parts.push(mk(JSONPathKey, [("this", be.name()), ("quoted", true)]))
+              path_parts.push(
+                mk(JSONPathKey, [("this", be.name()), ("quoted", true)]),
+              )
             } else if be.is_star() {
               path_parts.push(mk1(JSONPathSubscript, mk0(JSONPathWildcard)))
             } else if be.is_number() {
@@ -665,7 +700,9 @@ pub fn Parser::parse_colon_as_variant_extract(
         path_parts = p
         match self.parse_types() {
           Some(cast_type) =>
-            this = Some(self.expression(mk(Cast, [("this", this), ("to", cast_type)])))
+            this = Some(
+              self.expression(mk(Cast, [("this", this), ("to", cast_type)])),
+            )
           None => self.raise_error("Expected type after '::'")
         }
       } else {
@@ -701,7 +738,10 @@ pub fn Parser::parse_dcolon(self : Parser) -> Expr? raise SqlglotError {
 }
 
 ///|
-pub fn Parser::parse_column_ops(self : Parser, this : Expr?) -> Expr? raise SqlglotError {
+pub fn Parser::parse_column_ops(
+  self : Parser,
+  this : Expr?,
+) -> Expr? raise SqlglotError {
   match self.fns.hooks.parse_column_ops {
     Some(f) => f(self, this)
     None => self.parse_column_ops_base(this)
@@ -709,7 +749,10 @@ pub fn Parser::parse_column_ops(self : Parser, this : Expr?) -> Expr? raise Sqlg
 }
 
 ///|
-pub fn Parser::parse_column_ops_base(self : Parser, this : Expr?) -> Expr? raise SqlglotError {
+pub fn Parser::parse_column_ops_base(
+  self : Parser,
+  this : Expr?,
+) -> Expr? raise SqlglotError {
   let mut this = this
   while self.cfg.brackets.contains(self.curr.token_type) {
     this = self.parse_bracket(this)
@@ -742,7 +785,10 @@ pub fn Parser::parse_column_ops_base(self : Parser, this : Expr?) -> Expr? raise
       match field {
         Some(f) if dot && f.kind.is_any([Null, Boolean]) =>
           field = Some(
-            self.expression(mk1(Identifier, self.prev.text), comments=f.comments.unwrap_or([])),
+            self.expression(
+              mk1(Identifier, self.prev.text),
+              comments=f.comments.unwrap_or([]),
+            ),
           )
         _ => ()
       }
@@ -750,10 +796,12 @@ pub fn Parser::parse_column_ops_base(self : Parser, this : Expr?) -> Expr? raise
     match (field, this) {
       (Some(f), Some(t)) if f.kind.is_any([Func, Window]) =>
         this = Some(
-          t.transform(n => if n.kind.is_a(Column) {
-            Some(n.to_dot(include_dots=false))
-          } else {
-            Some(n)
+          t.transform(n => {
+            if n.kind.is_a(Column) {
+              Some(n.to_dot(include_dots=false))
+            } else {
+              Some(n)
+            }
           }),
         )
       _ => ()
@@ -785,7 +833,9 @@ pub fn Parser::parse_column_ops_base(self : Parser, this : Expr?) -> Expr? raise
               }
               _ =>
                 this = Some(
-                  self.expression(mk(Dot, [("this", this), ("expression", field)])),
+                  self.expression(
+                    mk(Dot, [("this", this), ("expression", field)]),
+                  ),
                 )
             }
         }
@@ -908,12 +958,13 @@ pub fn Parser::parse_field(
   let after_dot = self.cfg.supports_digit_prefixed_field_names &&
     self.prev.token_type == DOT
   let mut field = if anonymous_func {
-    expr_or(self.parse_function(anonymous=anonymous_func, any_token~), () => self.parse_primary())
+    expr_or(self.parse_function(anonymous=anonymous_func, any_token~), () => {
+      self.parse_primary()
+    })
   } else {
-    expr_or(self.parse_primary(), () => self.parse_function(
-      anonymous=anonymous_func,
-      any_token~,
-    ))
+    expr_or(self.parse_primary(), () => {
+      self.parse_function(anonymous=anonymous_func, any_token~)
+    })
   }
   if field is None {
     field = self.parse_id_var(any_token~, tokens?)
@@ -925,7 +976,9 @@ pub fn Parser::parse_field(
         name += self.prev.text
       }
       field = Some(
-        mk(Identifier, [("this", name), ("quoted", true)]).update_positions(Some(f)),
+        mk(Identifier, [("this", name), ("quoted", true)]).update_positions(
+          Some(f),
+        ),
       )
     }
     _ => ()
@@ -944,7 +997,12 @@ pub fn Parser::parse_function(
   match self.fns.hooks.parse_function {
     Some(f) => f(self, functions, anonymous, optional_parens, any_token)
     None =>
-      self.parse_function_base(functions?, anonymous~, optional_parens~, any_token~)
+      self.parse_function_base(
+        functions?,
+        anonymous~,
+        optional_parens~,
+        any_token~,
+      )
   }
 }
 
@@ -963,7 +1021,12 @@ pub fn Parser::parse_function_base(
     self.advance(times=2)
     fn_syntax = true
   }
-  let func = self.parse_function_call(functions?, anonymous~, optional_parens~, any_token~)
+  let func = self.parse_function_call(
+    functions?,
+    anonymous~,
+    optional_parens~,
+    any_token~,
+  )
   if fn_syntax {
     self.match_(R_BRACE) |> ignore
   }

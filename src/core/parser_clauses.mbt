@@ -55,10 +55,11 @@ pub fn Parser::parse_group(
     if self.match_set(self.cfg.query_modifier_tokens, advance=false) {
       break
     }
-    let exprs = self.parse_csv(() => expr_or(self.parse_grouping_sets(), () => expr_or(
-      self.parse_cube_or_rollup(),
-      () => self.parse_disjunction(),
-    )))
+    let exprs = self.parse_csv(() => {
+      expr_or(self.parse_grouping_sets(), () => {
+        expr_or(self.parse_cube_or_rollup(), () => self.parse_disjunction())
+      })
+    })
     let l = list_of("expressions")
     for e in exprs {
       l.push(Node(e))
@@ -68,7 +69,11 @@ pub fn Parser::parse_group(
     if self.match_(WITH) {
       match self.parse_cube_or_rollup(with_prefix=true) {
         Some(cube_or_rollup) => {
-          let key = if cube_or_rollup.kind == Rollup { "rollup" } else { "cube" }
+          let key = if cube_or_rollup.kind == Rollup {
+            "rollup"
+          } else {
+            "cube"
+          }
           list_of(key).push(Node(cube_or_rollup))
           handled = true
         }
@@ -123,7 +128,10 @@ pub fn Parser::parse_grouping_sets(self : Parser) -> Expr? raise SqlglotError {
     return Some(
       self.expression(
         mk(GroupingSets, [
-          ("expressions", self.parse_wrapped_csv(() => self.parse_grouping_set())),
+          (
+            "expressions",
+            self.parse_wrapped_csv(() => self.parse_grouping_set()),
+          ),
         ]),
       ),
     )
@@ -133,7 +141,9 @@ pub fn Parser::parse_grouping_sets(self : Parser) -> Expr? raise SqlglotError {
 
 ///|
 pub fn Parser::parse_grouping_set(self : Parser) -> Expr? raise SqlglotError {
-  expr_or(self.parse_grouping_sets(), () => expr_or(self.parse_cube_or_rollup(), () => self.parse_bitwise()))
+  expr_or(self.parse_grouping_sets(), () => {
+    expr_or(self.parse_cube_or_rollup(), () => self.parse_bitwise())
+  })
 }
 
 ///|
@@ -157,7 +167,9 @@ pub fn Parser::parse_qualify(self : Parser) -> Expr? raise SqlglotError {
 }
 
 ///|
-pub fn Parser::parse_connect_with_prior(self : Parser) -> Expr? raise SqlglotError {
+pub fn Parser::parse_connect_with_prior(
+  self : Parser,
+) -> Expr? raise SqlglotError {
   match self.fns.hooks.parse_connect_with_prior {
     Some(f) => f(self)
     None => self.parse_connect_with_prior_base()
@@ -165,10 +177,12 @@ pub fn Parser::parse_connect_with_prior(self : Parser) -> Expr? raise SqlglotErr
 }
 
 ///|
-pub fn Parser::parse_connect_with_prior_base(self : Parser) -> Expr? raise SqlglotError {
-  self.fns.no_paren_function_parsers["PRIOR"] = p => Some(
-    p.expression(mk1(Prior, p.parse_bitwise())),
-  )
+pub fn Parser::parse_connect_with_prior_base(
+  self : Parser,
+) -> Expr? raise SqlglotError {
+  self.fns.no_paren_function_parsers["PRIOR"] = p => {
+    Some(p.expression(mk1(Prior, p.parse_bitwise())))
+  }
   let connect = self.parse_disjunction() catch {
     e => {
       self.fns.no_paren_function_parsers.remove("PRIOR")
@@ -206,7 +220,9 @@ pub fn Parser::parse_connect(
 }
 
 ///|
-pub fn Parser::parse_name_as_expression(self : Parser) -> Expr? raise SqlglotError {
+pub fn Parser::parse_name_as_expression(
+  self : Parser,
+) -> Expr? raise SqlglotError {
   let mut this = self.parse_id_var(any_token=true)
   if self.match_(ALIAS) {
     this = Some(
@@ -219,7 +235,9 @@ pub fn Parser::parse_name_as_expression(self : Parser) -> Expr? raise SqlglotErr
 }
 
 ///|
-pub fn Parser::parse_interpolate(self : Parser) -> Array[Expr]? raise SqlglotError {
+pub fn Parser::parse_interpolate(
+  self : Parser,
+) -> Array[Expr]? raise SqlglotError {
   if self.match_text("INTERPOLATE") {
     return Some(self.parse_wrapped_csv(() => self.parse_name_as_expression()))
   }
@@ -381,14 +399,7 @@ pub fn Parser::parse_limit(
     Some(t) => t
     None => None
   }
-  if skip_limit_token ||
-    self.match_(
-      if top {
-        TOP
-      } else {
-        LIMIT
-      },
-    ) {
+  if skip_limit_token || self.match_(if top { TOP } else { LIMIT }) {
     let comments = self.prev_comments
     let mut expression : Expr? = None
     if top {
@@ -453,7 +464,10 @@ pub fn Parser::parse_limit(
 }
 
 ///|
-pub fn Parser::parse_offset(self : Parser, this? : Expr?) -> Expr? raise SqlglotError {
+pub fn Parser::parse_offset(
+  self : Parser,
+  this? : Expr?,
+) -> Expr? raise SqlglotError {
   let this : Expr? = match this {
     Some(t) => t
     None => None
@@ -480,7 +494,8 @@ pub fn Parser::can_parse_limit_or_offset(self : Parser) -> Bool {
     return false
   }
   let index = self.index
-  let mut result = self.try_parse(() => self.parse_limit(), retreat=true) is Some(_) ||
+  let mut result = self.try_parse(() => self.parse_limit(), retreat=true)
+    is Some(_) ||
     self.try_parse(() => self.parse_offset(), retreat=true) is Some(_)
   self.retreat(index)
   if self.next.token_type == MATCH_CONDITION {
@@ -616,7 +631,8 @@ pub fn Parser::parse_set_operation(
       kind = Some("INNER")
     }
   }
-  let on_column_list = if by_name == Some(true) && self.match_texts(["ON", "BY"]) {
+  let on_column_list = if by_name == Some(true) &&
+    self.match_texts(["ON", "BY"]) {
     Some(self.parse_wrapped_csv(() => self.parse_column()))
   } else {
     None
@@ -665,7 +681,10 @@ pub fn Parser::parse_set_operation(
 }
 
 ///|
-pub fn Parser::parse_set_operations(self : Parser, this : Expr?) -> Expr? raise SqlglotError {
+pub fn Parser::parse_set_operations(
+  self : Parser,
+  this : Expr?,
+) -> Expr? raise SqlglotError {
   let mut this = this
   while this is Some(_) {
     match self.parse_set_operation(this) {
@@ -674,7 +693,8 @@ pub fn Parser::parse_set_operations(self : Parser, this : Expr?) -> Expr? raise 
     }
   }
   match this {
-    Some(t) if t.kind.is_a(SetOperation) && self.cfg.modifiers_attached_to_set_op => {
+    Some(t) if t.kind.is_a(SetOperation) &&
+      self.cfg.modifiers_attached_to_set_op => {
       match t.expression() {
         Some(expression) =>
           for arg in self.cfg.set_op_modifiers {

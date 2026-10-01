@@ -28,7 +28,8 @@ pub fn Parser::parse_assignment_base(self : Parser) -> Expr? raise SqlglotError 
   }
   while self.match_keys(self.cfg.assignment) {
     match this {
-      Some(t) if t.kind.is_a(Column) && t.parts().length() == 1 => this = t.this()
+      Some(t) if t.kind.is_a(Column) && t.parts().length() == 1 =>
+        this = t.this()
       _ => ()
     }
     let comments = self.prev_comments
@@ -46,7 +47,7 @@ pub fn Parser::parse_assignment_base(self : Parser) -> Expr? raise SqlglotError 
 
 ///|
 /// Parses a left-associative binary operator level.
-fn Parser::parse_binary_level(
+pub fn Parser::parse_binary_level(
   self : Parser,
   table : Map[TokenType, Kind],
   next : () -> Expr? raise SqlglotError,
@@ -91,7 +92,10 @@ pub fn Parser::parse_comparison(self : Parser) -> Expr? raise SqlglotError {
 }
 
 ///|
-pub fn Parser::parse_range(self : Parser, this? : Expr?) -> Expr? raise SqlglotError {
+pub fn Parser::parse_range(
+  self : Parser,
+  this? : Expr?,
+) -> Expr? raise SqlglotError {
   let this : Expr? = match this {
     Some(t) => t
     None => None
@@ -103,7 +107,10 @@ pub fn Parser::parse_range(self : Parser, this? : Expr?) -> Expr? raise SqlglotE
 }
 
 ///|
-pub fn Parser::parse_range_base(self : Parser, this : Expr?) -> Expr? raise SqlglotError {
+pub fn Parser::parse_range_base(
+  self : Parser,
+  this : Expr?,
+) -> Expr? raise SqlglotError {
   let mut this = expr_or(this, () => self.parse_bitwise())
   while true {
     let negate = self.match_(NOT)
@@ -114,10 +121,14 @@ pub fn Parser::parse_range_base(self : Parser, this : Expr?) -> Expr? raise Sqlg
         Some(e) => this = Some(e)
       }
     } else if self.match_(ISNULL) || (negate && self.match_(NULL)) {
-      this = Some(self.expression(mk(Is, [("this", this), ("expression", null_())])))
+      this = Some(
+        self.expression(mk(Is, [("this", this), ("expression", null_())])),
+      )
     } else if self.match_(NOTNULL) {
       if self.dialect.cfg.normalize_not_null {
-        this = Some(self.expression(mk(Is, [("this", this), ("expression", null_())])))
+        this = Some(
+          self.expression(mk(Is, [("this", this), ("expression", null_())])),
+        )
         this = Some(self.expression(mk1(Not, this)))
       } else {
         this = Some(
@@ -147,7 +158,10 @@ pub fn Parser::parse_range_base(self : Parser, this : Expr?) -> Expr? raise Sqlg
 }
 
 ///|
-pub fn Parser::negate_range(self : Parser, this : Expr?) -> Expr? raise SqlglotError {
+pub fn Parser::negate_range(
+  self : Parser,
+  this : Expr?,
+) -> Expr? raise SqlglotError {
   match self.fns.hooks.negate_range {
     Some(f) => f(self, this)
     None => self.negate_range_base(this)
@@ -155,7 +169,10 @@ pub fn Parser::negate_range(self : Parser, this : Expr?) -> Expr? raise SqlglotE
 }
 
 ///|
-pub fn Parser::negate_range_base(self : Parser, this : Expr?) -> Expr? raise SqlglotError {
+pub fn Parser::negate_range_base(
+  self : Parser,
+  this : Expr?,
+) -> Expr? raise SqlglotError {
   let t = match this {
     Some(t) => t
     None => return this
@@ -176,7 +193,10 @@ pub fn Parser::negate_range_base(self : Parser, this : Expr?) -> Expr? raise Sql
 }
 
 ///|
-pub fn Parser::parse_is(self : Parser, this : Expr?) -> Expr? raise SqlglotError {
+pub fn Parser::parse_is(
+  self : Parser,
+  this : Expr?,
+) -> Expr? raise SqlglotError {
   let index = self.index - 1
   let negate = self.match_(NOT)
   if self.match_text_seq(["DISTINCT", "FROM"]) {
@@ -224,7 +244,9 @@ pub fn Parser::parse_is(self : Parser, this : Expr?) -> Expr? raise SqlglotError
         ),
       )
     _ => {
-      this = Some(self.expression(mk(Is, [("this", this), ("expression", expression)])))
+      this = Some(
+        self.expression(mk(Is, [("this", this), ("expression", expression)])),
+      )
       if negate {
         this = Some(self.expression(mk1(Not, this)))
       }
@@ -246,9 +268,9 @@ pub fn Parser::parse_in(
     None =>
       if self.match_any([L_PAREN, L_BRACKET]) {
         let matched_l_paren = self.prev.token_type == L_PAREN
-        let expressions = self.parse_csv(() => self.parse_select_or_expression(
-          alias~,
-        ))
+        let expressions = self.parse_csv(() => {
+          self.parse_select_or_expression(alias~)
+        })
         if expressions.length() == 1 && expressions[0].kind.is_a(Query) {
           let query = expressions[0]
           let q = self.parse_query_modifiers(Some(query)).unwrap()
@@ -259,7 +281,9 @@ pub fn Parser::parse_in(
           )
         } else {
           this = Some(
-            self.expression(mk(In, [("this", this), ("expressions", expressions)])),
+            self.expression(
+              mk(In, [("this", this), ("expressions", expressions)]),
+            ),
           )
         }
         if matched_l_paren {
@@ -269,7 +293,9 @@ pub fn Parser::parse_in(
         }
       } else {
         this = Some(
-          self.expression(mk(In, [("this", this), ("field", self.parse_column())])),
+          self.expression(
+            mk(In, [("this", this), ("field", self.parse_column())]),
+          ),
         )
       }
   }
@@ -277,7 +303,10 @@ pub fn Parser::parse_in(
 }
 
 ///|
-pub fn Parser::parse_between(self : Parser, this : Expr?) -> Expr? raise SqlglotError {
+pub fn Parser::parse_between(
+  self : Parser,
+  this : Expr?,
+) -> Expr? raise SqlglotError {
   let symmetric : Bool? = if self.match_text("SYMMETRIC") {
     Some(true)
   } else if self.match_text("ASYMMETRIC") {
@@ -301,12 +330,17 @@ pub fn Parser::parse_between(self : Parser, this : Expr?) -> Expr? raise Sqlglot
 }
 
 ///|
-pub fn Parser::parse_escape(self : Parser, this : Expr?) -> Expr? raise SqlglotError {
+pub fn Parser::parse_escape(
+  self : Parser,
+  this : Expr?,
+) -> Expr? raise SqlglotError {
   if !self.match_(ESCAPE) {
     return this
   }
   let expression = expr_or(self.parse_string(), () => self.parse_null())
-  Some(self.expression(mk(Escape, [("this", this), ("expression", expression)])))
+  Some(
+    self.expression(mk(Escape, [("this", this), ("expression", expression)])),
+  )
 }
 
 ///|
@@ -546,12 +580,13 @@ pub fn Parser::parse_interval_span(
     _ => ()
   }
   if self.cfg.interval_spans && self.match_text("TO") {
-    let expression = expr_or(self.parse_function(), () => self.parse_var(
-      any_token=true,
-      upper=true,
-    ))
+    let expression = expr_or(self.parse_function(), () => {
+      self.parse_var(any_token=true, upper=true)
+    })
     unit = Some(
-      self.expression(mk(IntervalSpan, [("this", unit), ("expression", expression)])),
+      self.expression(
+        mk(IntervalSpan, [("this", unit), ("expression", expression)]),
+      ),
     )
   }
   self.expression(mk(Interval, [("this", this), ("unit", unit)]))
@@ -601,7 +636,8 @@ pub fn py_decimal_str(text : String) -> String {
         ("", mant)
       }
       let (int_part, frac_part) = match digits0.find(".") {
-        Some(d) => (substr(digits0, 0, d), substr(digits0, d + 1, py_len(digits0)))
+        Some(d) =>
+          (substr(digits0, 0, d), substr(digits0, d + 1, py_len(digits0)))
         None => (digits0, "")
       }
       let mut coeff = int_part + frac_part
@@ -629,11 +665,7 @@ pub fn py_decimal_str(text : String) -> String {
         let first = substr(coeff, 0, 1)
         let rest = substr(coeff, 1, ndigits)
         let mant_s = if rest.is_empty() { first } else { first + "." + rest }
-        let es = if adjusted >= 0 {
-          "+\{adjusted}"
-        } else {
-          "\{adjusted}"
-        }
+        let es = if adjusted >= 0 { "+\{adjusted}" } else { "\{adjusted}" }
         exponent = adjusted
         ignore(exponent)
         sign + mant_s + "E" + es
@@ -714,7 +746,9 @@ pub fn Parser::parse_bitwise(self : Parser) -> Expr? raise SqlglotError {
     if self.match_keys(self.cfg.bitwise) {
       let kind = self.cfg.bitwise[self.prev.token_type]
       this = Some(
-        self.expression(mk(kind, [("this", this), ("expression", self.parse_term())])),
+        self.expression(
+          mk(kind, [("this", this), ("expression", self.parse_term())]),
+        ),
       )
     } else if self.dialect.cfg.dpipe_is_string_concat && self.match_(DPIPE) {
       this = Some(
@@ -736,13 +770,19 @@ pub fn Parser::parse_bitwise(self : Parser) -> Expr? raise SqlglotError {
     } else if self.match_pair(LT, LT) {
       this = Some(
         self.expression(
-          mk(BitwiseLeftShift, [("this", this), ("expression", self.parse_term())]),
+          mk(BitwiseLeftShift, [
+            ("this", this),
+            ("expression", self.parse_term()),
+          ]),
         ),
       )
     } else if self.match_pair(GT, GT) {
       this = Some(
         self.expression(
-          mk(BitwiseRightShift, [("this", this), ("expression", self.parse_term())]),
+          mk(BitwiseRightShift, [
+            ("this", this),
+            ("expression", self.parse_term()),
+          ]),
         ),
       )
     } else if !self.fns.json_operators.is_empty() &&
@@ -757,7 +797,10 @@ pub fn Parser::parse_bitwise(self : Parser) -> Expr? raise SqlglotError {
 }
 
 ///|
-pub fn Parser::parse_term(self : Parser, parse_mod? : Bool = true) -> Expr? raise SqlglotError {
+pub fn Parser::parse_term(
+  self : Parser,
+  parse_mod? : Bool = true,
+) -> Expr? raise SqlglotError {
   let mut this = self.parse_factor(parse_mod~)
   while self.match_keys(self.cfg.term) {
     let klass = self.cfg.term[self.prev.token_type]
@@ -776,7 +819,7 @@ pub fn Parser::parse_term(self : Parser, parse_mod? : Bool = true) -> Expr? rais
 }
 
 ///|
-fn Parser::normalize_collate(self : Parser, collate : Expr) -> Unit {
+pub fn Parser::normalize_collate(self : Parser, collate : Expr) -> Unit {
   ignore(self)
   match collate.expression() {
     Some(expr) if expr.kind.is_a(Column) && expr.parts().length() == 1 =>
@@ -797,7 +840,10 @@ fn Parser::normalize_collate(self : Parser, collate : Expr) -> Unit {
 }
 
 ///|
-pub fn Parser::parse_factor(self : Parser, parse_mod? : Bool = true) -> Expr? raise SqlglotError {
+pub fn Parser::parse_factor(
+  self : Parser,
+  parse_mod? : Bool = true,
+) -> Expr? raise SqlglotError {
   let mut this = self.parse_at_time_zone(self.parse_factor_operand())
   while self.match_keys(self.cfg.factor, advance=false) {
     if !parse_mod && self.curr.token_type == MOD {

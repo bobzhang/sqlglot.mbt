@@ -132,13 +132,13 @@ pub fn Parser::parse_lateral_base(self : Parser) -> Expr? raise SqlglotError {
     return None
   }
   if this is None {
-    this = expr_or(self.parse_unnest(), () => expr_or(self.parse_function(), () => self.parse_id_var(
-      any_token=false,
-    )))
+    this = expr_or(self.parse_unnest(), () => {
+      expr_or(self.parse_function(), () => self.parse_id_var(any_token=false))
+    })
     while self.match_(DOT) {
-      let expression = expr_or(self.parse_function(), () => self.parse_id_var(
-        any_token=false,
-      ))
+      let expression = expr_or(self.parse_function(), () => {
+        self.parse_id_var(any_token=false)
+      })
       this = Some(mk(Dot, [("this", this), ("expression", expression)]))
     }
   }
@@ -222,7 +222,9 @@ pub fn Parser::parse_join_parts_base(self : Parser) -> (Token?, Token?, Token?) 
 }
 
 ///|
-pub fn Parser::parse_using_identifiers(self : Parser) -> Array[Expr] raise SqlglotError {
+pub fn Parser::parse_using_identifiers(
+  self : Parser,
+) -> Array[Expr] raise SqlglotError {
   fn parse_column_as_identifier() -> Expr? raise SqlglotError {
     let this = self.parse_column()
     match this {
@@ -243,7 +245,8 @@ pub fn Parser::parse_join(
 ) -> Expr? raise SqlglotError {
   match self.fns.hooks.parse_join {
     Some(f) => f(self, skip_join_token, parse_bracket, alias_tokens)
-    None => self.parse_join_base(skip_join_token~, parse_bracket~, alias_tokens?)
+    None =>
+      self.parse_join_base(skip_join_token~, parse_bracket~, alias_tokens?)
   }
 }
 
@@ -261,7 +264,8 @@ pub fn Parser::parse_join_base(
       None => None
     }
     match cross_join {
-      Some(cj) if self.cfg.joins_have_equal_precedence => cj.set("kind", "CROSS")
+      Some(cj) if self.cfg.joins_have_equal_precedence =>
+        cj.set("kind", "CROSS")
       _ => ()
     }
     return cross_join
@@ -413,7 +417,9 @@ pub fn Parser::parse_index_params(self : Parser) -> Expr? raise SqlglotError {
 }
 
 ///|
-pub fn Parser::parse_index_params_base(self : Parser) -> Expr? raise SqlglotError {
+pub fn Parser::parse_index_params_base(
+  self : Parser,
+) -> Expr? raise SqlglotError {
   let using_ = if self.match_(USING) {
     self.parse_var(any_token=true)
   } else {
@@ -430,7 +436,9 @@ pub fn Parser::parse_index_params_base(self : Parser) -> Expr? raise SqlglotErro
     None
   }
   let partition_by = self.parse_partition_by()
-  let with_storage = self.andl(self.match_(WITH), () => self.parse_wrapped_properties())
+  let with_storage = self.andl(self.match_(WITH), () => {
+    self.parse_wrapped_properties()
+  })
   let tablespace = if self.match_text_seq(["USING", "INDEX", "TABLESPACE"]) {
     self.parse_var(any_token=true)
   } else {
@@ -498,7 +506,9 @@ pub fn Parser::parse_index(
 }
 
 ///|
-pub fn Parser::parse_table_hints(self : Parser) -> Array[Expr]? raise SqlglotError {
+pub fn Parser::parse_table_hints(
+  self : Parser,
+) -> Array[Expr]? raise SqlglotError {
   match self.fns.hooks.parse_table_hints {
     Some(f) => f(self)
     None => self.parse_table_hints_base()
@@ -506,7 +516,9 @@ pub fn Parser::parse_table_hints(self : Parser) -> Array[Expr]? raise SqlglotErr
 }
 
 ///|
-pub fn Parser::parse_table_hints_base(self : Parser) -> Array[Expr]? raise SqlglotError {
+pub fn Parser::parse_table_hints_base(
+  self : Parser,
+) -> Array[Expr]? raise SqlglotError {
   let hints = []
   if self.match_pair(WITH, L_PAREN) {
     hints.push(
@@ -514,9 +526,11 @@ pub fn Parser::parse_table_hints_base(self : Parser) -> Array[Expr]? raise Sqlgl
         mk(WithTableHint, [
           (
             "expressions",
-            self.parse_csv(() => expr_or(self.parse_function(), () => self.parse_var(
-              any_token=true,
-            ))),
+            self.parse_csv(() => {
+              expr_or(self.parse_function(), () => {
+                self.parse_var(any_token=true)
+              })
+            }),
           ),
         ]),
       ),
@@ -544,7 +558,10 @@ pub fn Parser::parse_table_hints_base(self : Parser) -> Array[Expr]? raise Sqlgl
 }
 
 ///|
-pub fn Parser::parse_table_part(self : Parser, schema? : Bool = false) -> Expr? raise SqlglotError {
+pub fn Parser::parse_table_part(
+  self : Parser,
+  schema? : Bool = false,
+) -> Expr? raise SqlglotError {
   match self.fns.hooks.parse_table_part {
     Some(f) => f(self, schema)
     None => self.parse_table_part_base(schema~)
@@ -564,15 +581,18 @@ pub fn Parser::parse_table_part_base(
   match f {
     Some(_) => f
     None =>
-      expr_or(self.parse_id_var(any_token=false), () => expr_or(
-        self.parse_string_as_identifier(),
-        () => self.parse_placeholder(),
-      ))
+      expr_or(self.parse_id_var(any_token=false), () => {
+        expr_or(self.parse_string_as_identifier(), () => {
+          self.parse_placeholder()
+        })
+      })
   }
 }
 
 ///|
-pub fn Parser::parse_table_parts_fast(self : Parser) -> Expr? raise SqlglotError {
+pub fn Parser::parse_table_parts_fast(
+  self : Parser,
+) -> Expr? raise SqlglotError {
   let index = self.index
   let mut parts : Array[Expr]? = None
   let mut all_comments : Array[String]? = None
@@ -648,7 +668,8 @@ pub fn Parser::parse_table_parts(
 ) -> Expr? raise SqlglotError {
   match self.fns.hooks.parse_table_parts {
     Some(f) => f(self, schema, is_db_reference, wildcard, fast)
-    None => self.parse_table_parts_base(schema~, is_db_reference~, wildcard~, fast~)
+    None =>
+      self.parse_table_parts_base(schema~, is_db_reference~, wildcard~, fast~)
   }
 }
 
@@ -670,7 +691,11 @@ pub fn Parser::parse_table_parts_base(
     if catalog is Some(c) && c.truthy() {
       let expression = self.parse_table_part(schema~)
       table = Some(
-        Node(self.expression(mk(Dot, [("this", table), ("expression", expression)]))),
+        Node(
+          self.expression(
+            mk(Dot, [("this", table), ("expression", expression)]),
+          ),
+        ),
       )
     } else {
       catalog = db
@@ -749,9 +774,7 @@ pub fn Parser::parse_table_parts_base(
 ///|
 /// Python `repr(token)`.
 pub fn token_repr(t : Token) -> String {
-  let comments = "[" +
-    t.comments.map(c => py_repr_str(c)).join(", ") +
-    "]"
+  let comments = "[" + t.comments.map(c => py_repr_str(c)).join(", ") + "]"
   "<Token token_type: TokenType.\{t.token_type.name()}, text: \{t.text}, line: \{t.line}, col: \{t.col}, start: \{t.start}, end: \{t.end}, comments: \{comments}>"
 }
 
@@ -782,8 +805,19 @@ pub fn Parser::parse_table(
 }
 
 ///|
-pub fn Parser::parse_table_base(self : Parser, args : TableArgs) -> Expr? raise SqlglotError {
-  let { schema, joins, alias_tokens, parse_bracket, is_db_reference, parse_partition, consume_pipe } = args
+pub fn Parser::parse_table_base(
+  self : Parser,
+  args : TableArgs,
+) -> Expr? raise SqlglotError {
+  let {
+    schema,
+    joins,
+    alias_tokens,
+    parse_bracket,
+    is_db_reference,
+    parse_partition,
+    consume_pipe,
+  } = args
   let tokens = match alias_tokens {
     Some(t) => t
     None => self.cfg.table_alias_tokens
@@ -799,7 +833,8 @@ pub fn Parser::parse_table_base(self : Parser, args : TableArgs) -> Expr? raise 
           return Some(table)
         }
         let postfix_tokens = self.cfg.table_postfix_tokens
-        if !postfix_tokens.contains(curr_tt) && !postfix_tokens.contains(next_tt) {
+        if !postfix_tokens.contains(curr_tt) &&
+          !postfix_tokens.contains(next_tt) {
           match self.parse_table_alias(alias_tokens=tokens) {
             Some(alias) => table.set("alias", alias)
             None => ()
@@ -969,7 +1004,9 @@ pub fn Parser::parse_version(self : Parser) -> Expr? raise SqlglotError {
     self.match_texts(["TO", "AND"]) |> ignore
     let end = self.parse_bitwise()
     expression = Some(
-      self.expression(mk(Tuple, [("expressions", [start, end].filter_map(x => x))])),
+      self.expression(
+        mk(Tuple, [("expressions", [start, end].filter_map(x => x))]),
+      ),
     )
   } else if self.match_text_seq(["CONTAINED", "IN"]) {
     kind = "CONTAINED IN"
@@ -1017,7 +1054,11 @@ pub fn Parser::parse_historical_data(self : Parser) -> Expr? raise SqlglotError 
         self.match_r_paren()
         historical_data = Some(
           self.expression(
-            mk(HistoricalData, [("this", this), ("kind", kind), ("expression", e)]),
+            mk(HistoricalData, [
+              ("this", this),
+              ("kind", kind),
+              ("expression", e),
+            ]),
           ),
         )
       }
@@ -1048,7 +1089,10 @@ pub fn Parser::parse_changes(self : Parser) -> Expr? raise SqlglotError {
 }
 
 ///|
-pub fn Parser::parse_unnest(self : Parser, with_alias? : Bool = true) -> Expr? raise SqlglotError {
+pub fn Parser::parse_unnest(
+  self : Parser,
+  with_alias? : Bool = true,
+) -> Expr? raise SqlglotError {
   match self.fns.hooks.parse_unnest {
     Some(f) => f(self, with_alias)
     None => self.parse_unnest_base(with_alias~)
@@ -1077,7 +1121,7 @@ pub fn Parser::parse_unnest_base(
         alias.set("this", null_arg)
       }
       let columns = alias.list("columns")
-      if (offset is Some(Bool(true))) && expressions.length() < columns.length() {
+      if offset is Some(Bool(true)) && expressions.length() < columns.length() {
         let last = columns[columns.length() - 1]
         let raw = alias.raw_list("columns")
         raw.pop() |> ignore
@@ -1093,7 +1137,10 @@ pub fn Parser::parse_unnest_base(
   if !offset_truthy && self.match_pair(WITH, OFFSET) {
     self.match_(ALIAS) |> ignore
     offset = match
-      self.parse_id_var(any_token=false, tokens=self.cfg.unnest_offset_alias_tokens) {
+      self.parse_id_var(
+        any_token=false,
+        tokens=self.cfg.unnest_offset_alias_tokens,
+      ) {
       Some(o) => Some(Node(o))
       None => Some(Node(to_identifier("offset")))
     }
@@ -1116,11 +1163,9 @@ pub fn Parser::parse_derived_table_values(
 ) -> Expr? raise SqlglotError {
   let is_derived = self.match_pair(L_PAREN, VALUES)
   if !is_derived &&
-    !(
-      self.match_text("VALUES") ||
-      self.match_text_seq(["FORMAT", "VALUES"]) ||
-      (allow_value_synonym && self.match_text("VALUE"))
-    ) {
+    !(self.match_text("VALUES") ||
+    self.match_text_seq(["FORMAT", "VALUES"]) ||
+    (allow_value_synonym && self.match_text("VALUE"))) {
     return None
   }
   let expressions = self.parse_csv(() => self.parse_value())
@@ -1130,7 +1175,9 @@ pub fn Parser::parse_derived_table_values(
   }
   let alias = expr_or(alias, () => self.parse_table_alias())
   Some(
-    self.expression(mk(Values, [("expressions", expressions), ("alias", alias)])),
+    self.expression(
+      mk(Values, [("expressions", expressions), ("alias", alias)]),
+    ),
   )
 }
 
@@ -1252,7 +1299,9 @@ pub fn Parser::parse_unpivot_columns(self : Parser) -> Expr? raise SqlglotError 
     return None
   }
   let this = self.andv(self.match_text("NAME"), () => self.parse_column())
-  let expressions = self.andl(self.match_text("VALUE"), () => self.parse_csv(() => self.parse_column()))
+  let expressions = self.andl(self.match_text("VALUE"), () => {
+    self.parse_csv(() => self.parse_column())
+  })
   Some(
     self.expression(
       mk(UnpivotColumns, [("this", this), ("expressions", expressions)]),
@@ -1279,9 +1328,9 @@ pub fn Parser::parse_simplified_pivot(
   let this = self.parse_table()
   let expressions = self.andl(self.match_(ON), () => self.parse_csv(parse_on))
   let into = self.parse_unpivot_columns()
-  let using_ = self.andl(self.match_(USING), () => self.parse_csv(() => self.parse_alias(
-    self.parse_column(),
-  )))
+  let using_ = self.andl(self.match_(USING), () => {
+    self.parse_csv(() => self.parse_alias(self.parse_column()))
+  })
   let group = self.parse_group()
   Some(
     self.expression(
@@ -1330,13 +1379,19 @@ pub fn Parser::parse_pivot_in(self : Parser) -> Expr? raise SqlglotError {
       self.parse_csv(parse_aliased_expression)
     }
     self.match_r_paren()
-    return Some(self.expression(mk(In, [("this", value), ("expressions", exprs)])))
+    return Some(
+      self.expression(mk(In, [("this", value), ("expressions", exprs)])),
+    )
   }
-  Some(self.expression(mk(In, [("this", value), ("field", self.parse_id_var())])))
+  Some(
+    self.expression(mk(In, [("this", value), ("field", self.parse_id_var())])),
+  )
 }
 
 ///|
-pub fn Parser::parse_pivot_aggregation(self : Parser) -> Expr? raise SqlglotError {
+pub fn Parser::parse_pivot_aggregation(
+  self : Parser,
+) -> Expr? raise SqlglotError {
   match self.fns.hooks.parse_pivot_aggregation {
     Some(f) => f(self)
     None => self.parse_pivot_aggregation_base()
@@ -1344,7 +1399,9 @@ pub fn Parser::parse_pivot_aggregation(self : Parser) -> Expr? raise SqlglotErro
 }
 
 ///|
-pub fn Parser::parse_pivot_aggregation_base(self : Parser) -> Expr? raise SqlglotError {
+pub fn Parser::parse_pivot_aggregation_base(
+  self : Parser,
+) -> Expr? raise SqlglotError {
   let func = self.parse_function()
   if func is None {
     if self.prev.token_type == COMMA {
@@ -1465,11 +1522,12 @@ pub fn Parser::parse_pivot(self : Parser) -> Expr? raise SqlglotError {
         continue
       }
       all_fields.push(
-        pivot_field_expressions.map(fld => if self.cfg.identify_pivot_strings &&
-          fld.kind != PivotAlias {
-          expr_to_sql(fld)
-        } else {
-          fld.alias_or_name()
+        pivot_field_expressions.map(fld => {
+          if self.cfg.identify_pivot_strings && fld.kind != PivotAlias {
+            expr_to_sql(fld)
+          } else {
+            fld.alias_or_name()
+          }
         }),
       )
     }

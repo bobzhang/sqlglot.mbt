@@ -32,7 +32,12 @@ pub fn Parser::parse_function_call(
   match self.fns.hooks.parse_function_call {
     Some(f) => f(self, functions, anonymous, optional_parens, any_token)
     None =>
-      self.parse_function_call_base(functions?, anonymous~, optional_parens~, any_token~)
+      self.parse_function_call_base(
+        functions?,
+        anonymous~,
+        optional_parens~,
+        any_token~,
+      )
   }
 }
 
@@ -92,13 +97,16 @@ pub fn Parser::parse_function_call_base(
           if self.cfg.subquery_tokens.contains(self.curr.token_type) {
             expr = self.parse_select()
             self.match_r_paren()
-          } else if prev.ok() && (prev.token_type == LIKE || prev.token_type == ILIKE) {
+          } else if prev.ok() &&
+            (prev.token_type == LIKE || prev.token_type == ILIKE) {
             self.advance(times=-1)
             expr = self.parse_bitwise()
           }
           match expr {
             Some(e) =>
-              return Some(self.expression(mk1(subquery_predicate, e), comments~))
+              return Some(
+                self.expression(mk1(subquery_predicate, e), comments~),
+              )
             None => ()
           }
         }
@@ -147,7 +155,9 @@ pub fn Parser::parse_function_call_base(
           Str(this_text)
         }
         result = Some(
-          self.expression(mk(Anonymous, [("this", this), ("expressions", args)])),
+          self.expression(
+            mk(Anonymous, [("this", this), ("expressions", args)]),
+          ),
         )
       }
       result = Some(result.unwrap().update_positions_from_token(token))
@@ -166,7 +176,11 @@ pub fn Parser::parse_function_call_base(
 }
 
 ///|
-pub fn Parser::to_prop_eq(self : Parser, expression : Expr, index : Int) -> Expr raise SqlglotError {
+pub fn Parser::to_prop_eq(
+  self : Parser,
+  expression : Expr,
+  index : Int,
+) -> Expr raise SqlglotError {
   match self.fns.hooks.to_prop_eq {
     Some(f) => f(self, expression, index)
     None => expression
@@ -214,7 +228,9 @@ pub fn Parser::kv_to_prop_eq(
 }
 
 ///|
-pub fn Parser::parse_function_properties(self : Parser) -> Expr? raise SqlglotError {
+pub fn Parser::parse_function_properties(
+  self : Parser,
+) -> Expr? raise SqlglotError {
   match self.fns.hooks.parse_function_properties {
     Some(f) => f(self)
     None => self.parse_function_properties_base()
@@ -222,14 +238,17 @@ pub fn Parser::parse_function_properties(self : Parser) -> Expr? raise SqlglotEr
 }
 
 ///|
-pub fn Parser::parse_function_properties_base(self : Parser) -> Expr? raise SqlglotError {
+pub fn Parser::parse_function_properties_base(
+  self : Parser,
+) -> Expr? raise SqlglotError {
   let properties = []
   while true {
     let mut keyword = ""
     let prop = if self.match_text_keys(self.fns.property_parsers) {
       keyword = self.prev_upper()
       self.fns.property_parsers[keyword](self, Map([]))
-    } else if self.match_(DEFAULT) && self.match_text_keys(self.fns.property_parsers) {
+    } else if self.match_(DEFAULT) &&
+      self.match_text_keys(self.fns.property_parsers) {
       keyword = self.prev_upper()
       self.fns.property_parsers[keyword](self, { "default": true })
     } else {
@@ -269,7 +288,9 @@ pub fn Parser::parse_user_defined_function_expression(
 }
 
 ///|
-pub fn Parser::parse_function_parameter(self : Parser) -> Expr? raise SqlglotError {
+pub fn Parser::parse_function_parameter(
+  self : Parser,
+) -> Expr? raise SqlglotError {
   match self.fns.hooks.parse_function_parameter {
     Some(f) => f(self)
     None => self.parse_column_def(self.parse_id_var(), computed_column=false)
@@ -351,7 +372,10 @@ pub fn Parser::parse_macro_overloads(
 }
 
 ///|
-pub fn Parser::parse_introducer(self : Parser, token : Token) -> Expr? raise SqlglotError {
+pub fn Parser::parse_introducer(
+  self : Parser,
+  token : Token,
+) -> Expr? raise SqlglotError {
   match self.parse_primary() {
     Some(literal) =>
       Some(
@@ -365,7 +389,9 @@ pub fn Parser::parse_introducer(self : Parser, token : Token) -> Expr? raise Sql
 }
 
 ///|
-pub fn Parser::parse_session_parameter(self : Parser) -> Expr? raise SqlglotError {
+pub fn Parser::parse_session_parameter(
+  self : Parser,
+) -> Expr? raise SqlglotError {
   let mut kind : String? = None
   let mut this = expr_or(self.parse_id_var(), () => self.parse_primary())
   if this is Some(t) && self.match_(DOT) {
@@ -384,7 +410,10 @@ pub fn Parser::parse_lambda_arg(self : Parser) -> Expr? raise SqlglotError {
 }
 
 ///|
-pub fn Parser::parse_lambda(self : Parser, alias? : Bool = false) -> Expr? raise SqlglotError {
+pub fn Parser::parse_lambda(
+  self : Parser,
+  alias? : Bool = false,
+) -> Expr? raise SqlglotError {
   match self.fns.hooks.parse_lambda {
     Some(f) => f(self, alias)
     None => self.parse_lambda_base(alias~)
@@ -392,7 +421,10 @@ pub fn Parser::parse_lambda(self : Parser, alias? : Bool = false) -> Expr? raise
 }
 
 ///|
-pub fn Parser::parse_lambda_base(self : Parser, alias? : Bool = false) -> Expr? raise SqlglotError {
+pub fn Parser::parse_lambda_base(
+  self : Parser,
+  alias? : Bool = false,
+) -> Expr? raise SqlglotError {
   let next_token_type = self.next.token_type
   if self.cfg.lambda_arg_terminators.contains(next_token_type) {
     match self.parse_atom() {
@@ -410,7 +442,8 @@ pub fn Parser::parse_lambda_base(self : Parser, alias? : Bool = false) -> Expr? 
     } else {
       self.retreat(index)
     }
-  } else if self.cfg.typed_lambda_args || self.fns.lambdas.contains(next_token_type) {
+  } else if self.cfg.typed_lambda_args ||
+    self.fns.lambdas.contains(next_token_type) {
     let expressions = [self.parse_lambda_arg()].filter_map(x => x)
     if self.match_keys(self.fns.lambdas) {
       return self.fns.lambdas[self.prev.token_type](self, expressions)
@@ -439,7 +472,10 @@ pub fn Parser::parse_lambda_base(self : Parser, alias? : Bool = false) -> Expr? 
 }
 
 ///|
-pub fn Parser::parse_schema(self : Parser, this? : Expr?) -> Expr? raise SqlglotError {
+pub fn Parser::parse_schema(
+  self : Parser,
+  this? : Expr?,
+) -> Expr? raise SqlglotError {
   let this : Expr? = match this {
     Some(t) => t
     None => None
@@ -452,7 +488,9 @@ pub fn Parser::parse_schema(self : Parser, this? : Expr?) -> Expr? raise Sqlglot
     self.retreat(index)
     return this
   }
-  let args = self.parse_csv(() => expr_or(self.parse_constraint(), () => self.parse_field_def()))
+  let args = self.parse_csv(() => {
+    expr_or(self.parse_constraint(), () => self.parse_field_def())
+  })
   self.match_r_paren()
   Some(self.expression(mk(Schema, [("this", this), ("expressions", args)])))
 }
@@ -490,7 +528,9 @@ pub fn Parser::parse_column_def_base(
   }
   let mut kind = self.parse_types(schema=true)
   if self.match_text_seq(["FOR", "ORDINALITY"]) {
-    return Some(self.expression(mk(ColumnDef, [("this", this), ("ordinality", true)])))
+    return Some(
+      self.expression(mk(ColumnDef, [("this", this), ("ordinality", true)])),
+    )
   }
   let constraints = []
   if (kind is None && self.match_(ALIAS)) ||
@@ -541,7 +581,10 @@ pub fn Parser::parse_column_def_base(
         mk(ColumnConstraint, [
           (
             "kind",
-            mk(ComputedColumnConstraint, [("this", expr), ("persisted", persisted)]),
+            mk(ComputedColumnConstraint, [
+              ("this", expr),
+              ("persisted", persisted),
+            ]),
           ),
         ]),
       ),
@@ -614,7 +657,9 @@ pub fn Parser::parse_auto_increment(self : Parser) -> Expr? raise SqlglotError {
 }
 
 ///|
-pub fn Parser::parse_check_constraint(self : Parser) -> Expr? raise SqlglotError {
+pub fn Parser::parse_check_constraint(
+  self : Parser,
+) -> Expr? raise SqlglotError {
   match self.fns.hooks.parse_check_constraint {
     Some(f) => f(self)
     None => self.parse_check_constraint_base()
@@ -622,7 +667,9 @@ pub fn Parser::parse_check_constraint(self : Parser) -> Expr? raise SqlglotError
 }
 
 ///|
-pub fn Parser::parse_check_constraint_base(self : Parser) -> Expr? raise SqlglotError {
+pub fn Parser::parse_check_constraint_base(
+  self : Parser,
+) -> Expr? raise SqlglotError {
   if !self.match_(L_PAREN, advance=false) {
     return None
   }
@@ -651,7 +698,10 @@ pub fn Parser::parse_compress(self : Parser) -> Expr? raise SqlglotError {
   if self.match_(L_PAREN, advance=false) {
     return Some(
       self.expression(
-        mk1(CompressColumnConstraint, self.parse_wrapped_csv(() => self.parse_bitwise())),
+        mk1(
+          CompressColumnConstraint,
+          self.parse_wrapped_csv(() => self.parse_bitwise()),
+        ),
       ),
     )
   }
@@ -659,7 +709,9 @@ pub fn Parser::parse_compress(self : Parser) -> Expr? raise SqlglotError {
 }
 
 ///|
-pub fn Parser::parse_generated_as_identity(self : Parser) -> Expr? raise SqlglotError {
+pub fn Parser::parse_generated_as_identity(
+  self : Parser,
+) -> Expr? raise SqlglotError {
   match self.fns.hooks.parse_generated_as_identity {
     Some(f) => f(self)
     None => self.parse_generated_as_identity_base()
@@ -667,11 +719,16 @@ pub fn Parser::parse_generated_as_identity(self : Parser) -> Expr? raise Sqlglot
 }
 
 ///|
-pub fn Parser::parse_generated_as_identity_base(self : Parser) -> Expr? raise SqlglotError {
+pub fn Parser::parse_generated_as_identity_base(
+  self : Parser,
+) -> Expr? raise SqlglotError {
   let this = if self.match_text_seq(["BY", "DEFAULT"]) {
     let on_null = self.match_pair(ON, NULL)
     self.expression(
-      mk(GeneratedAsIdentityColumnConstraint, [("this", false), ("on_null", on_null)]),
+      mk(GeneratedAsIdentityColumnConstraint, [
+        ("this", false),
+        ("on_null", on_null),
+      ]),
     )
   } else {
     self.match_text("ALWAYS") |> ignore
@@ -686,7 +743,10 @@ pub fn Parser::parse_generated_as_identity_base(self : Parser) -> Expr? raise Sq
     let hidden = self.match_text("HIDDEN")
     return Some(
       self.expression(
-        mk(GeneratedAsRowColumnConstraint, [("start", start), ("hidden", hidden)]),
+        mk(GeneratedAsRowColumnConstraint, [
+          ("start", start),
+          ("hidden", hidden),
+        ]),
       ),
     )
   }
@@ -733,7 +793,9 @@ pub fn Parser::parse_not_constraint(self : Parser) -> Expr? raise SqlglotError {
     return Some(self.expression(mk0(NotNullColumnConstraint)))
   }
   if self.match_text("CASESPECIFIC") {
-    return Some(self.expression(mk(CaseSpecificColumnConstraint, [("not_", true)])))
+    return Some(
+      self.expression(mk(CaseSpecificColumnConstraint, [("not_", true)])),
+    )
   }
   if self.match_text_seq(["FOR", "REPLICATION"]) {
     return Some(self.expression(mk0(NotForReplicationColumnConstraint)))
@@ -743,7 +805,9 @@ pub fn Parser::parse_not_constraint(self : Parser) -> Expr? raise SqlglotError {
 }
 
 ///|
-pub fn Parser::parse_column_constraint(self : Parser) -> Expr? raise SqlglotError {
+pub fn Parser::parse_column_constraint(
+  self : Parser,
+) -> Expr? raise SqlglotError {
   match self.fns.hooks.parse_column_constraint {
     Some(f) => f(self)
     None => self.parse_column_constraint_base()
@@ -751,13 +815,16 @@ pub fn Parser::parse_column_constraint(self : Parser) -> Expr? raise SqlglotErro
 }
 
 ///|
-pub fn Parser::parse_column_constraint_base(self : Parser) -> Expr? raise SqlglotError {
+pub fn Parser::parse_column_constraint_base(
+  self : Parser,
+) -> Expr? raise SqlglotError {
   let this = if self.match_(CONSTRAINT) { self.parse_id_var() } else { None }
   let procedure_option_follows = self.match_(WITH, advance=false) &&
     self.next.ok() &&
     self.cfg.procedure_options.contains(py_upper(self.next.text))
   let index = self.index
-  if !procedure_option_follows && self.match_text_keys(self.fns.constraint_parsers) {
+  if !procedure_option_follows &&
+    self.match_text_keys(self.fns.constraint_parsers) {
     let constraint = self.fns.constraint_parsers[self.prev_upper()](self)
     match constraint {
       None => {
@@ -808,10 +875,13 @@ pub fn Parser::parse_constraint_base(self : Parser) -> Expr? raise SqlglotError 
 }
 
 ///|
-pub fn Parser::parse_unnamed_constraints(self : Parser) -> Array[Expr] raise SqlglotError {
+pub fn Parser::parse_unnamed_constraints(
+  self : Parser,
+) -> Array[Expr] raise SqlglotError {
   let constraints = []
   while true {
-    match expr_or(self.parse_unnamed_constraint(), () => self.parse_function()) {
+    match
+      expr_or(self.parse_unnamed_constraint(), () => self.parse_function()) {
       Some(c) => constraints.push(c)
       None => break
     }
@@ -838,7 +908,9 @@ pub fn Parser::parse_unnamed_constraint(
   let constraint_key = self.prev_upper()
   match self.fns.constraint_parsers.get(constraint_key) {
     None => {
-      self.raise_error("No parser found for schema constraint \{constraint_key}.")
+      self.raise_error(
+        "No parser found for schema constraint \{constraint_key}.",
+      )
       None
     }
     Some(parser) => {
@@ -906,7 +978,9 @@ pub fn Parser::parse_unique_base(self : Parser) -> Expr? raise SqlglotError {
 }
 
 ///|
-pub fn Parser::parse_key_constraint_options(self : Parser) -> Array[String] raise SqlglotError {
+pub fn Parser::parse_key_constraint_options(
+  self : Parser,
+) -> Array[String] raise SqlglotError {
   let options = []
   while true {
     if !self.curr.ok() {
@@ -947,7 +1021,10 @@ pub fn Parser::parse_key_constraint_options(self : Parser) -> Array[String] rais
 }
 
 ///|
-pub fn Parser::parse_references(self : Parser, match_? : Bool = true) -> Expr? raise SqlglotError {
+pub fn Parser::parse_references(
+  self : Parser,
+  match_? : Bool = true,
+) -> Expr? raise SqlglotError {
   if match_ && !self.match_(REFERENCES) {
     return None
   }
@@ -965,7 +1042,9 @@ pub fn Parser::parse_foreign_key(self : Parser) -> Expr? raise SqlglotError {
 }
 
 ///|
-pub fn Parser::parse_foreign_key_base(self : Parser) -> Expr? raise SqlglotError {
+pub fn Parser::parse_foreign_key_base(
+  self : Parser,
+) -> Expr? raise SqlglotError {
   let expressions = if !self.match_(REFERENCES, advance=false) {
     Some(self.parse_wrapped_id_vars())
   } else {
@@ -1001,7 +1080,9 @@ pub fn Parser::parse_foreign_key_base(self : Parser) -> Expr? raise SqlglotError
 }
 
 ///|
-pub fn Parser::parse_primary_key_part(self : Parser) -> Expr? raise SqlglotError {
+pub fn Parser::parse_primary_key_part(
+  self : Parser,
+) -> Expr? raise SqlglotError {
   match self.fns.hooks.parse_primary_key_part {
     Some(f) => f(self)
     None => self.parse_field()
@@ -1009,7 +1090,9 @@ pub fn Parser::parse_primary_key_part(self : Parser) -> Expr? raise SqlglotError
 }
 
 ///|
-pub fn Parser::parse_period_for_system_time(self : Parser) -> Expr? raise SqlglotError {
+pub fn Parser::parse_period_for_system_time(
+  self : Parser,
+) -> Expr? raise SqlglotError {
   if !self.match_text_seq(["FOR", "SYSTEM_TIME"]) {
     self.retreat(self.index - 1)
     return None
@@ -1035,7 +1118,11 @@ pub fn Parser::parse_primary_key(
   match self.fns.hooks.parse_primary_key {
     Some(f) => f(self, wrapped_optional, in_props, named_primary_key)
     None =>
-      self.parse_primary_key_base(wrapped_optional~, in_props~, named_primary_key~)
+      self.parse_primary_key_base(
+        wrapped_optional~,
+        in_props~,
+        named_primary_key~,
+      )
   }
 }
 
@@ -1094,14 +1181,19 @@ pub fn Parser::parse_bracket_key_value(
   match self.fns.hooks.parse_bracket_key_value {
     Some(f) => f(self, is_map)
     None =>
-      self.parse_slice(self.parse_alias(self.parse_disjunction(), explicit=true))
+      self.parse_slice(
+        self.parse_alias(self.parse_disjunction(), explicit=true),
+      )
   }
 }
 
 ///|
-pub fn Parser::parse_odbc_datetime_literal(self : Parser) -> Expr raise SqlglotError {
+pub fn Parser::parse_odbc_datetime_literal(
+  self : Parser,
+) -> Expr raise SqlglotError {
   self.match_(VAR) |> ignore
-  let kind = match self.cfg.odbc_datetime_literals.get(py_lower(self.prev.text)) {
+  let kind = match
+    self.cfg.odbc_datetime_literals.get(py_lower(self.prev.text)) {
     Some(k) => k
     None => raise ParseError("Unknown ODBC literal", [])
   }
@@ -1127,7 +1219,10 @@ pub fn build_array_constructor(
 }
 
 ///|
-pub fn Parser::parse_bracket(self : Parser, this : Expr?) -> Expr? raise SqlglotError {
+pub fn Parser::parse_bracket(
+  self : Parser,
+  this : Expr?,
+) -> Expr? raise SqlglotError {
   match self.fns.hooks.parse_bracket {
     Some(f) => f(self, this)
     None => self.parse_bracket_base(this)
@@ -1135,7 +1230,10 @@ pub fn Parser::parse_bracket(self : Parser, this : Expr?) -> Expr? raise Sqlglot
 }
 
 ///|
-pub fn Parser::parse_bracket_base(self : Parser, this : Expr?) -> Expr? raise SqlglotError {
+pub fn Parser::parse_bracket_base(
+  self : Parser,
+  this : Expr?,
+) -> Expr? raise SqlglotError {
   if !self.match_set(self.cfg.brackets) {
     return this
   }
@@ -1152,9 +1250,9 @@ pub fn Parser::parse_bracket_base(self : Parser, this : Expr?) -> Expr? raise Sq
     self.cfg.odbc_datetime_literals.contains(py_lower(self.curr.text)) {
     return Some(self.parse_odbc_datetime_literal())
   }
-  let expressions = self.parse_csv(() => self.parse_bracket_key_value(
-    is_map=bracket_kind == L_BRACE,
-  ))
+  let expressions = self.parse_csv(() => {
+    self.parse_bracket_key_value(is_map=bracket_kind == L_BRACE)
+  })
   if bracket_kind == L_BRACKET && !self.match_(R_BRACKET) {
     self.raise_error("Expected ]")
   } else if bracket_kind == L_BRACE && !self.match_(R_BRACE) {
@@ -1164,13 +1262,22 @@ pub fn Parser::parse_bracket_base(self : Parser, this : Expr?) -> Expr? raise Sq
   if bracket_kind == L_BRACE {
     this = Some(
       self.expression(
-        mk(Struct, [("expressions", self.kv_to_prop_eq(expressions, parse_map~))]),
+        mk(Struct, [
+          ("expressions", self.kv_to_prop_eq(expressions, parse_map~)),
+        ]),
       ),
     )
   } else {
     match this {
       None =>
-        this = Some(build_array_constructor(Array, expressions, bracket_kind, self.dialect))
+        this = Some(
+          build_array_constructor(
+            Array,
+            expressions,
+            bracket_kind,
+            self.dialect,
+          ),
+        )
       Some(t) => {
         match self.cfg.array_constructors.get(py_upper(t.name())) {
           Some(constructor_type) =>
@@ -1205,7 +1312,10 @@ pub fn Parser::parse_bracket_base(self : Parser, this : Expr?) -> Expr? raise Sq
 }
 
 ///|
-pub fn Parser::parse_slice(self : Parser, this : Expr?) -> Expr? raise SqlglotError {
+pub fn Parser::parse_slice(
+  self : Parser,
+  this : Expr?,
+) -> Expr? raise SqlglotError {
   if !self.match_(COLON) {
     return this
   }
@@ -1233,7 +1343,10 @@ pub fn Parser::identifier_expression(
     Some(t) => t
     None => self.prev
   }
-  self.expression(mk(Identifier, [("this", token.text), ("quoted", quoted)]), token~)
+  self.expression(
+    mk(Identifier, [("this", token.text), ("quoted", quoted)]),
+    token~,
+  )
 }
 
 ///|

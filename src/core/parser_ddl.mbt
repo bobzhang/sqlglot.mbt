@@ -1,13 +1,13 @@
 // Port of sqlglot/parser.py: statements, DROP/CREATE and properties.
 
 ///|
-fn Parser::prev_upper(self : Parser) -> String {
+pub fn Parser::prev_upper(self : Parser) -> String {
   py_upper(self.prev.text)
 }
 
 ///|
 /// `self._match_set(types) and self._prev.text.upper()`
-fn Parser::match_set_text(self : Parser, types : TokenSet) -> String? {
+pub fn Parser::match_set_text(self : Parser, types : TokenSet) -> String? {
   if self.match_set(types) {
     Some(self.prev_upper())
   } else {
@@ -17,7 +17,10 @@ fn Parser::match_set_text(self : Parser, types : TokenSet) -> String? {
 
 ///|
 /// `self._match_texts(texts) and self._prev.text.upper()`
-fn Parser::match_texts_upper(self : Parser, texts : ArrayView[String]) -> String? {
+pub fn Parser::match_texts_upper(
+  self : Parser,
+  texts : ArrayView[String],
+) -> String? {
   if self.match_texts(texts) {
     Some(self.prev_upper())
   } else {
@@ -78,7 +81,9 @@ pub fn Parser::parse_ttl(self : Parser) -> Expr? raise SqlglotError {
     let this = self.parse_bitwise()
     if self.match_text("DELETE") {
       return Some(
-        self.expression(mk(MergeTreeTTLAction, [("this", this), ("delete", true)])),
+        self.expression(
+          mk(MergeTreeTTLAction, [("this", this), ("delete", true)]),
+        ),
       )
     }
     if self.match_text("RECOMPRESS") {
@@ -94,7 +99,10 @@ pub fn Parser::parse_ttl(self : Parser) -> Expr? raise SqlglotError {
     if self.match_text_seq(["TO", "DISK"]) {
       return Some(
         self.expression(
-          mk(MergeTreeTTLAction, [("this", this), ("to_disk", self.parse_string())]),
+          mk(MergeTreeTTLAction, [
+            ("this", this),
+            ("to_disk", self.parse_string()),
+          ]),
         ),
       )
     }
@@ -222,7 +230,8 @@ pub fn Parser::parse_drop(
   } else if kind == "TABLE" || kind == "VIEW" {
     self.parse_csv(() => self.parse_table_parts(schema=true))
   } else {
-    match self.parse_table_parts(schema=true, is_db_reference=kind == "SCHEMA") {
+    match
+      self.parse_table_parts(schema=true, is_db_reference=kind == "SCHEMA") {
       Some(t) => [t]
       None => []
     }
@@ -392,7 +401,11 @@ pub fn Parser::parse_create_base(self : Parser) -> Expr? raise SqlglotError {
       }
     }
     if overload_mode && expression is Some(_) {
-      expression = self.parse_macro_overloads(this.unwrap(), expression.unwrap(), is_table)
+      expression = self.parse_macro_overloads(
+        this.unwrap(),
+        expression.unwrap(),
+        is_table,
+      )
     }
   } else if create_token_type == INDEX {
     let (index, anonymous) = if !self.match_(ON) {
@@ -573,7 +586,8 @@ pub fn Parser::parse_create_base(self : Parser) -> Expr? raise SqlglotError {
     return Some(self.parse_as_command(start))
   }
   let create_kind_text = py_upper(create_token.text)
-  let kind = match self.dialect.cfg.creatable_kind_mapping.get(create_kind_text) {
+  let kind = match
+    self.dialect.cfg.creatable_kind_mapping.get(create_kind_text) {
     Some(k) if !k.is_empty() => k
     _ => create_kind_text
   }
@@ -600,7 +614,9 @@ pub fn Parser::parse_create_base(self : Parser) -> Expr? raise SqlglotError {
 }
 
 ///|
-pub fn Parser::parse_sequence_properties(self : Parser) -> Expr? raise SqlglotError {
+pub fn Parser::parse_sequence_properties(
+  self : Parser,
+) -> Expr? raise SqlglotError {
   let seq = mk0(SequenceProperties)
   let options : Array[Expr] = []
   let index = self.index
@@ -630,7 +646,11 @@ pub fn Parser::parse_sequence_properties(self : Parser) -> Expr? raise SqlglotEr
         seq.set("owned", self.parse_column())
       }
     } else {
-      match self.parse_var_from_options(self.cfg.create_sequence, raise_unmatched=false) {
+      match
+        self.parse_var_from_options(
+          self.cfg.create_sequence,
+          raise_unmatched=false,
+        ) {
         Some(opt) => options.push(opt)
         None => break
       }
@@ -645,12 +665,16 @@ pub fn Parser::parse_sequence_properties(self : Parser) -> Expr? raise SqlglotEr
 }
 
 ///|
-pub fn Parser::parse_trigger_events(self : Parser) -> Array[Expr] raise SqlglotError {
+pub fn Parser::parse_trigger_events(
+  self : Parser,
+) -> Array[Expr] raise SqlglotError {
   let events = []
   while true {
     let event_type = self.match_set_text(self.cfg.trigger_events)
     if event_type is None {
-      self.raise_error("Expected trigger event (INSERT, UPDATE, DELETE, TRUNCATE)")
+      self.raise_error(
+        "Expected trigger event (INSERT, UPDATE, DELETE, TRUNCATE)",
+      )
     }
     let columns = if event_type == Some("UPDATE") && self.match_text("OF") {
       Some(self.parse_csv(() => self.parse_column()))
@@ -710,7 +734,9 @@ pub fn Parser::parse_trigger_referencing_clause(
 }
 
 ///|
-pub fn Parser::parse_trigger_referencing(self : Parser) -> Expr? raise SqlglotError {
+pub fn Parser::parse_trigger_referencing(
+  self : Parser,
+) -> Expr? raise SqlglotError {
   if !self.match_text("REFERENCING") {
     return None
   }
@@ -737,7 +763,9 @@ pub fn Parser::parse_trigger_referencing(self : Parser) -> Expr? raise SqlglotEr
     }
   }
   if old_alias is None && new_alias is None {
-    self.raise_error("REFERENCING clause requires at least OLD TABLE or NEW TABLE")
+    self.raise_error(
+      "REFERENCING clause requires at least OLD TABLE or NEW TABLE",
+    )
   }
   Some(
     self.expression(
@@ -747,7 +775,9 @@ pub fn Parser::parse_trigger_referencing(self : Parser) -> Expr? raise SqlglotEr
 }
 
 ///|
-pub fn Parser::parse_trigger_for_each(self : Parser) -> String? raise SqlglotError {
+pub fn Parser::parse_trigger_for_each(
+  self : Parser,
+) -> String? raise SqlglotError {
   if !self.match_text_seq(["FOR", "EACH"]) {
     return None
   }
@@ -771,7 +801,9 @@ pub fn Parser::parse_trigger_execute(self : Parser) -> Expr? raise SqlglotError 
 }
 
 ///|
-pub fn Parser::parse_property_before(self : Parser) -> Value? raise SqlglotError {
+pub fn Parser::parse_property_before(
+  self : Parser,
+) -> Value? raise SqlglotError {
   match self.fns.hooks.parse_property_before {
     Some(f) => f(self)
     None => self.parse_property_before_base()
@@ -779,7 +811,9 @@ pub fn Parser::parse_property_before(self : Parser) -> Value? raise SqlglotError
 }
 
 ///|
-pub fn Parser::parse_property_before_base(self : Parser) -> Value? raise SqlglotError {
+pub fn Parser::parse_property_before_base(
+  self : Parser,
+) -> Value? raise SqlglotError {
   self.match_(COMMA) |> ignore
   let kwargs : PropKwargs = Map([])
   let no = self.match_text("NO")
@@ -833,7 +867,9 @@ pub fn Parser::parse_property_before_base(self : Parser) -> Value? raise Sqlglot
 }
 
 ///|
-pub fn Parser::parse_wrapped_properties(self : Parser) -> Array[Expr] raise SqlglotError {
+pub fn Parser::parse_wrapped_properties(
+  self : Parser,
+) -> Array[Expr] raise SqlglotError {
   self.parse_wrapped(fn() raise SqlglotError {
     let out = []
     fn push(v : Value?) -> Unit {
@@ -983,7 +1019,9 @@ pub fn Parser::parse_stored(self : Parser) -> Expr raise SqlglotError {
         }
     }
   }
-  self.expression(mk(FileFormatProperty, [("this", this), ("hive_format", true)]))
+  self.expression(
+    mk(FileFormatProperty, [("this", this), ("hive_format", true)]),
+  )
 }
 
 ///|
@@ -1051,9 +1089,15 @@ pub fn Parser::parse_properties(
 }
 
 ///|
-pub fn Parser::parse_fallback(self : Parser, no? : Bool = false) -> Expr raise SqlglotError {
+pub fn Parser::parse_fallback(
+  self : Parser,
+  no? : Bool = false,
+) -> Expr raise SqlglotError {
   self.expression(
-    mk(FallbackProperty, [("no", no), ("protection", self.match_text("PROTECTION"))]),
+    mk(FallbackProperty, [
+      ("no", no),
+      ("protection", self.match_text("PROTECTION")),
+    ]),
   )
 }
 
@@ -1068,7 +1112,9 @@ pub fn Parser::parse_sql_security(self : Parser) -> Expr raise SqlglotError {
 }
 
 ///|
-pub fn Parser::parse_settings_property(self : Parser) -> Expr raise SqlglotError {
+pub fn Parser::parse_settings_property(
+  self : Parser,
+) -> Expr raise SqlglotError {
   self.expression(
     mk(SettingsProperty, [
       ("expressions", self.parse_csv(() => self.parse_assignment())),
@@ -1088,7 +1134,9 @@ pub fn Parser::parse_called_on_null_input_property(
 }
 
 ///|
-pub fn Parser::parse_volatile_property(self : Parser) -> Expr raise SqlglotError {
+pub fn Parser::parse_volatile_property(
+  self : Parser,
+) -> Expr raise SqlglotError {
   let pre_volatile_token = if self.index >= 2 {
     Some(self.tokens[self.index - 2])
   } else {
@@ -1150,7 +1198,9 @@ pub fn Parser::parse_system_versioning_property(
 }
 
 ///|
-pub fn Parser::parse_data_deletion_property(self : Parser) -> Expr raise SqlglotError {
+pub fn Parser::parse_data_deletion_property(
+  self : Parser,
+) -> Expr raise SqlglotError {
   self.match_(EQ) |> ignore
   let on = self.match_text("ON") || !self.match_text("OFF")
   let prop = self.expression(mk(DataDeletionProperty, [("on", on)]))
@@ -1168,7 +1218,9 @@ pub fn Parser::parse_data_deletion_property(self : Parser) -> Expr raise Sqlglot
 }
 
 ///|
-pub fn Parser::parse_distributed_property(self : Parser) -> Expr raise SqlglotError {
+pub fn Parser::parse_distributed_property(
+  self : Parser,
+) -> Expr raise SqlglotError {
   let mut kind = "HASH"
   let mut expressions : Array[Expr]? = None
   if self.match_text_seq(["BY", "HASH"]) {
@@ -1209,7 +1261,9 @@ pub fn Parser::parse_with_property(self : Parser) -> Value? raise SqlglotError {
 }
 
 ///|
-pub fn Parser::parse_with_property_base(self : Parser) -> Value? raise SqlglotError {
+pub fn Parser::parse_with_property_base(
+  self : Parser,
+) -> Value? raise SqlglotError {
   if self.match_text_seq(["(", "SYSTEM_VERSIONING"]) {
     let prop = self.parse_system_versioning_property(with_=true)
     self.match_r_paren()
@@ -1265,7 +1319,9 @@ pub fn Parser::parse_with_property_base(self : Parser) -> Value? raise SqlglotEr
 }
 
 ///|
-pub fn Parser::parse_procedure_option(self : Parser) -> Expr? raise SqlglotError {
+pub fn Parser::parse_procedure_option(
+  self : Parser,
+) -> Expr? raise SqlglotError {
   if self.match_text_seq(["EXECUTE", "AS"]) {
     let this = match
       self.parse_var_from_options(
@@ -1312,12 +1368,18 @@ pub fn Parser::parse_withjournaltable(self : Parser) -> Expr raise SqlglotError 
 }
 
 ///|
-pub fn Parser::parse_log(self : Parser, no? : Bool = false) -> Expr raise SqlglotError {
+pub fn Parser::parse_log(
+  self : Parser,
+  no? : Bool = false,
+) -> Expr raise SqlglotError {
   self.expression(mk(LogProperty, [("no", no)]))
 }
 
 ///|
-pub fn Parser::parse_journal(self : Parser, kwargs : PropKwargs) -> Expr raise SqlglotError {
+pub fn Parser::parse_journal(
+  self : Parser,
+  kwargs : PropKwargs,
+) -> Expr raise SqlglotError {
   let e = mk0(JournalProperty)
   for k, v in kwargs {
     if k == "not_local" {
@@ -1355,7 +1417,9 @@ pub fn Parser::parse_cluster(self : Parser) -> Expr raise SqlglotError {
 }
 
 ///|
-pub fn Parser::parse_cluster_property(self : Parser) -> Expr? raise SqlglotError {
+pub fn Parser::parse_cluster_property(
+  self : Parser,
+) -> Expr? raise SqlglotError {
   match self.fns.hooks.parse_cluster_property {
     Some(f) => f(self)
     None => self.parse_cluster_property_base()
@@ -1363,7 +1427,9 @@ pub fn Parser::parse_cluster_property(self : Parser) -> Expr? raise SqlglotError
 }
 
 ///|
-pub fn Parser::parse_cluster_property_base(self : Parser) -> Expr? raise SqlglotError {
+pub fn Parser::parse_cluster_property_base(
+  self : Parser,
+) -> Expr? raise SqlglotError {
   Some(
     self.expression(
       mk(ClusterProperty, [
@@ -1432,7 +1498,9 @@ pub fn Parser::parse_mergeblockratio(
       ]),
     )
   }
-  self.expression(mk(MergeBlockRatioProperty, [("no", no), ("default", default)]))
+  self.expression(
+    mk(MergeBlockRatioProperty, [("no", no), ("default", default)]),
+  )
 }
 
 ///|
@@ -1484,7 +1552,9 @@ pub fn Parser::parse_blockcompression(self : Parser) -> Expr raise SqlglotError 
 }
 
 ///|
-pub fn Parser::parse_withisolatedloading(self : Parser) -> Expr? raise SqlglotError {
+pub fn Parser::parse_withisolatedloading(
+  self : Parser,
+) -> Expr? raise SqlglotError {
   let index = self.index
   let no = self.match_text("NO")
   let concurrent = self.match_text("CONCURRENT")
@@ -1559,7 +1629,9 @@ pub fn Parser::parse_locking(self : Parser) -> Expr raise SqlglotError {
 }
 
 ///|
-pub fn Parser::parse_partition_by(self : Parser) -> Array[Expr] raise SqlglotError {
+pub fn Parser::parse_partition_by(
+  self : Parser,
+) -> Array[Expr] raise SqlglotError {
   if self.match_(PARTITION_BY) {
     return self.parse_csv(() => self.parse_disjunction())
   }
@@ -1567,7 +1639,9 @@ pub fn Parser::parse_partition_by(self : Parser) -> Array[Expr] raise SqlglotErr
 }
 
 ///|
-pub fn Parser::parse_partition_bound_spec(self : Parser) -> Expr raise SqlglotError {
+pub fn Parser::parse_partition_bound_spec(
+  self : Parser,
+) -> Expr raise SqlglotError {
   fn parse_partition_bound_expr() -> Expr? raise SqlglotError {
     if self.match_text("MINVALUE") {
       return Some(var_("MINVALUE"))
@@ -1639,7 +1713,9 @@ pub fn Parser::parse_partitioned_by(self : Parser) -> Expr? raise SqlglotError {
 }
 
 ///|
-pub fn Parser::parse_partitioned_by_base(self : Parser) -> Expr? raise SqlglotError {
+pub fn Parser::parse_partitioned_by_base(
+  self : Parser,
+) -> Expr? raise SqlglotError {
   self.match_(EQ) |> ignore
   let this = match self.parse_schema() {
     Some(s) => Some(s)
@@ -1649,7 +1725,10 @@ pub fn Parser::parse_partitioned_by_base(self : Parser) -> Expr? raise SqlglotEr
 }
 
 ///|
-pub fn Parser::parse_withdata(self : Parser, no? : Bool = false) -> Expr raise SqlglotError {
+pub fn Parser::parse_withdata(
+  self : Parser,
+  no? : Bool = false,
+) -> Expr raise SqlglotError {
   let statistics : Bool? = if self.match_text_seq(["AND", "STATISTICS"]) {
     Some(true)
   } else if self.match_text_seq(["AND", "NO", "STATISTICS"]) {
@@ -1657,11 +1736,15 @@ pub fn Parser::parse_withdata(self : Parser, no? : Bool = false) -> Expr raise S
   } else {
     None
   }
-  self.expression(mk(WithDataProperty, [("no", no), ("statistics", statistics)]))
+  self.expression(
+    mk(WithDataProperty, [("no", no), ("statistics", statistics)]),
+  )
 }
 
 ///|
-pub fn Parser::parse_contains_property(self : Parser) -> Expr? raise SqlglotError {
+pub fn Parser::parse_contains_property(
+  self : Parser,
+) -> Expr? raise SqlglotError {
   if self.match_text("SQL") {
     return Some(self.expression(mk1(SqlReadWriteProperty, "CONTAINS SQL")))
   }
@@ -1669,7 +1752,9 @@ pub fn Parser::parse_contains_property(self : Parser) -> Expr? raise SqlglotErro
 }
 
 ///|
-pub fn Parser::parse_modifies_property(self : Parser) -> Expr? raise SqlglotError {
+pub fn Parser::parse_modifies_property(
+  self : Parser,
+) -> Expr? raise SqlglotError {
   if self.match_text_seq(["SQL", "DATA"]) {
     return Some(self.expression(mk1(SqlReadWriteProperty, "MODIFIES SQL DATA")))
   }
@@ -1696,14 +1781,20 @@ pub fn Parser::parse_on_property(self : Parser) -> Expr? raise SqlglotError {
 }
 
 ///|
-pub fn Parser::parse_on_property_base(self : Parser) -> Expr? raise SqlglotError {
+pub fn Parser::parse_on_property_base(
+  self : Parser,
+) -> Expr? raise SqlglotError {
   if self.match_text_seq(["COMMIT", "PRESERVE", "ROWS"]) {
     return Some(mk0(OnCommitProperty))
   }
   if self.match_text_seq(["COMMIT", "DELETE", "ROWS"]) {
     return Some(mk(OnCommitProperty, [("delete", true)]))
   }
-  Some(self.expression(mk1(OnProperty, self.parse_schema(this=self.parse_id_var()))))
+  Some(
+    self.expression(
+      mk1(OnProperty, self.parse_schema(this=self.parse_id_var())),
+    ),
+  )
 }
 
 ///|
@@ -1716,7 +1807,9 @@ pub fn Parser::parse_reads_property(self : Parser) -> Expr? raise SqlglotError {
 
 ///|
 pub fn Parser::parse_distkey(self : Parser) -> Expr raise SqlglotError {
-  self.expression(mk1(DistKeyProperty, self.parse_wrapped(() => self.parse_id_var())))
+  self.expression(
+    mk1(DistKeyProperty, self.parse_wrapped(() => self.parse_id_var())),
+  )
 }
 
 ///|
@@ -1738,11 +1831,18 @@ pub fn Parser::parse_create_like(self : Parser) -> Expr? raise SqlglotError {
       ),
     )
   }
-  Some(self.expression(mk(LikeProperty, [("this", table), ("expressions", options)])))
+  Some(
+    self.expression(
+      mk(LikeProperty, [("this", table), ("expressions", options)]),
+    ),
+  )
 }
 
 ///|
-pub fn Parser::parse_sortkey(self : Parser, compound? : Bool = false) -> Expr raise SqlglotError {
+pub fn Parser::parse_sortkey(
+  self : Parser,
+  compound? : Bool = false,
+) -> Expr raise SqlglotError {
   self.expression(
     mk(SortKeyProperty, [
       ("this", self.parse_wrapped_id_vars()),
@@ -1766,9 +1866,13 @@ pub fn Parser::parse_character_set(
 }
 
 ///|
-pub fn Parser::parse_remote_with_connection(self : Parser) -> Expr raise SqlglotError {
+pub fn Parser::parse_remote_with_connection(
+  self : Parser,
+) -> Expr raise SqlglotError {
   self.match_text_seq(["WITH", "CONNECTION"]) |> ignore
-  self.expression(mk1(RemoteWithConnectionModelProperty, self.parse_table_parts()))
+  self.expression(
+    mk1(RemoteWithConnectionModelProperty, self.parse_table_parts()),
+  )
 }
 
 ///|
@@ -1808,14 +1912,21 @@ pub fn Parser::parse_returns_base(self : Parser) -> Expr? raise SqlglotError {
   }
   Some(
     self.expression(
-      mk(ReturnsProperty, [("this", value), ("is_table", is_table), ("null", null)]),
+      mk(ReturnsProperty, [
+        ("this", value),
+        ("is_table", is_table),
+        ("null", null),
+      ]),
     ),
   )
 }
 
 ///|
 /// Python `f"{expr}"`: the SQL of an expression with the base dialect.
-pub fn Parser::dialect_sql(self : Parser, e : Expr) -> String raise SqlglotError {
+pub fn Parser::dialect_sql(
+  self : Parser,
+  e : Expr,
+) -> String raise SqlglotError {
   ignore(self)
   expr_to_sql(e)
 }
