@@ -163,8 +163,8 @@ pub fn Scope::new(
     ctes_: [],
     subqueries_: [],
     join_hints_: [],
-    semi_anti_join_tables_: @set.new(),
-    column_index_: @set.new(),
+    semi_anti_join_tables_: @set.Set([]),
+    column_index_: @set.Set([]),
     selected_sources_: None,
     columns_: None,
     external_columns_: None,
@@ -195,8 +195,8 @@ pub fn Scope::clear_cache(self : Scope) -> Unit {
   self.ctes_ = []
   self.subqueries_ = []
   self.join_hints_ = []
-  self.semi_anti_join_tables_ = @set.new()
-  self.column_index_ = @set.new()
+  self.semi_anti_join_tables_ = @set.Set([])
+  self.column_index_ = @set.Set([])
   self.selected_sources_ = None
   self.columns_ = None
   self.external_columns_ = None
@@ -258,8 +258,8 @@ fn Scope::collect(self : Scope) -> Unit {
   self.table_columns_ = []
   self.stars_ = []
   self.join_hints_ = []
-  self.semi_anti_join_tables_ = @set.new()
-  self.column_index_ = @set.new()
+  self.semi_anti_join_tables_ = @set.Set([])
+  self.column_index_ = @set.Set([])
   let inner_query = if self.expression.kind.is_a(Subquery) {
     Some(self.expression.unnest())
   } else {
@@ -445,7 +445,7 @@ pub fn Scope::columns(self : Scope) -> Array[@core.Expr] {
         let s : @set.Set[String] = if expr.kind.is_a(Query) {
           @set.from_array(expr.named_selects())
         } else {
-          @set.new()
+          @set.Set([])
         }
         named_selects_ = Some(s)
         s
@@ -566,7 +566,7 @@ pub fn Scope::external_columns(self : Scope) -> Array[@core.Expr] {
     let right = self.set_operation_scopes[1]
     left.external_columns() + right.external_columns()
   } else {
-    let local_source_names : @set.Set[String] = @set.new()
+    let local_source_names : @set.Set[String] = @set.Set([])
     for r in self.references() {
       local_source_names.add(r.0)
     }
@@ -589,7 +589,7 @@ pub fn Scope::local_columns(self : Scope) -> Array[@core.Expr] {
     Some(c) => return c
     None => ()
   }
-  let ids : @set.Set[Int] = @set.new()
+  let ids : @set.Set[Int] = @set.Set([])
   for c in self.external_columns() {
     ids.add(c.uid)
   }

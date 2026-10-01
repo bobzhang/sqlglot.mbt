@@ -41,7 +41,7 @@ fn Node::new(
 ///|
 /// Iterates the graph from this node (depth first, each node once).
 pub fn Node::walk(self : Node) -> Array[Node] {
-  let visited : @set.Set[Int] = @set.new()
+  let visited : @set.Set[Int] = @set.Set([])
   let out = []
   let queue = [self]
   while queue.pop() is Some(node) {
@@ -732,7 +732,7 @@ fn pivot_chain_mapping(
       }
       assoc_set(composed, kv.0, resolved)
     }
-    let consumed : @set.Set[String] = @set.new()
+    let consumed : @set.Set[String] = @set.Set([])
     for kv in step_mapping {
       for col in kv.1 {
         consumed.add(col.name())

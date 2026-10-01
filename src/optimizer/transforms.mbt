@@ -64,11 +64,11 @@ pub fn explode_projection_to_unnest(
 ) -> @core.Transform {
   fn(expression : @core.Expr) raise @core.SqlglotError {
     if expression.kind == Select {
-      let taken_select_names : @set.Set[String] = @set.Set::new()
+      let taken_select_names : @set.Set[String] = @set.Set([])
       for name in expression.named_selects() {
         taken_select_names.add(name)
       }
-      let taken_source_names : @set.Set[String] = @set.Set::new()
+      let taken_source_names : @set.Set[String] = @set.Set([])
       for reference in Scope::new(expression).references() {
         taken_source_names.add(reference.0)
       }
@@ -298,7 +298,7 @@ pub fn explode_projection_to_unnest(
       if !arrays.is_empty() {
         let mut end = @core.mk(Greatest, [
           ("this", arrays[0]),
-          ("expressions", arrays[1:].to_array()),
+          ("expressions", arrays[1:].to_owned()),
         ])
         if index_offset != 1 {
           end = @core.exp_binop(Sub, end, @core.literal_int(1 - index_offset))

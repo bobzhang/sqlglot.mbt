@@ -135,7 +135,7 @@ test "TestTokens.test_error_msg" {
       // assertRaisesRegex(TokenError, "Error tokenizing 'select /'")
       assert_true(msg.contains("Error tokenizing 'select /'"))
       // The quoted context snippet is also exposed through structured offsets
-      assert_eq(sql[start.unwrap():end.unwrap()].to_string(), "select /")
+      assert_eq(sql[start.unwrap():end.unwrap()].to_owned(), "select /")
     }
     e => fail("expected TokenError, got \{e}")
   } noraise {
@@ -224,7 +224,7 @@ test "TestTokens.test_unicode_identifiers" {
 test "TestTokens.test_token_repr" {
   // Ensures both the Python and the Rust tokenizer produce a human-friendly representation
   assert_eq(
-    tokenize("foo").to_string(),
+    "[" + tokenize("foo").map(t => t.to_string()).join(", ") + "]",
     "[<Token token_type: TokenType.VAR, text: foo, line: 1, col: 3, start: 0, end: 2, comments: []>]",
   )
 }

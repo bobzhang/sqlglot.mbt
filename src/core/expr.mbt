@@ -91,7 +91,7 @@ pub impl[T : IntoValue] IntoValue for T? with fn into_value(self) {
 
 ///|
 pub impl[T : IntoValue] IntoValue for Array[T] with fn into_value(self) {
-  let out = Array::new(capacity=self.length())
+  let out = Array::Array(capacity=self.length())
   for x in self {
     match x.into_value() {
       Some(v) => out.push(v)
@@ -337,7 +337,7 @@ pub fn Expr::arg(self : Expr, key : String) -> Expr? {
 pub fn Expr::list(self : Expr, key : String) -> Array[Expr] {
   match self.args.get(key) {
     Some(List(l)) => {
-      let out = Array::new(capacity=l.length())
+      let out = Array::Array(capacity=l.length())
       for v in l {
         match v {
           Node(e) => out.push(e)
@@ -675,7 +675,7 @@ pub fn Expr::parts(self : Expr) -> Array[Expr] {
     Some(Dot) => {
       let flat = self.flatten().collect()
       let this = flat[0]
-      let parts = flat[1:].to_array()
+      let parts = flat[1:].to_owned()
       parts.rev_in_place()
       for arg in ["this", "table", "db", "catalog"] {
         match this.args.get(arg) {
@@ -868,7 +868,7 @@ pub fn Expr::add_comments(
       for comment in comments {
         let parts = py_split(comment, sqlglot_meta)
         if parts.length() > 1 {
-          let meta = parts[1:].to_array().join("")
+          let meta = parts[1:].to_owned().join("")
           for kv in py_split(meta, ",") {
             let kvs = py_split(kv, "=")
             let k = py_strip(kvs[0])
@@ -1138,7 +1138,7 @@ pub fn Expr::dfs(self : Expr, prune? : (Expr) -> Bool) -> Iter[Expr] {
 ///|
 /// Iterates the tree in BFS order.
 pub fn Expr::bfs(self : Expr, prune? : (Expr) -> Bool) -> Iter[Expr] {
-  let queue = @deque.Deque::new()
+  let queue = @deque.Deque([])
   queue.push_back(self)
   let mut pending : Expr? = None
   Iter::new(fn() {
@@ -1203,7 +1203,7 @@ pub fn Expr::find_all(
   kinds : ArrayView[Kind],
   bfs? : Bool = true,
 ) -> Iter[Expr] {
-  let kinds = kinds.to_array()
+  let kinds = kinds.to_owned()
   self.walk(bfs~).filter(e => e.kind.is_any(kinds))
 }
 

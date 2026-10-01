@@ -330,7 +330,7 @@ fn decorrelate(
   let table_alias = next_alias_name()
   let keys : Array[(@core.Expr, @core.Expr, @core.Expr)] = []
   let mut eq_count = 0
-  let external_ids : @set.Set[Int] = @set.new()
+  let external_ids : @set.Set[Int] = @set.Set([])
   for column in external_columns {
     match column.find_ancestor([Where]) {
       Some(w) if physical_equal(w, where_) => ()

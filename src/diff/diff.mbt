@@ -64,11 +64,11 @@ pub fn diff(
 ) -> Array[Edit] {
   let source_nodes = source.walk().collect()
   let target_nodes = target.walk().collect()
-  let source_ids : @set.Set[Int] = @set.new()
+  let source_ids : @set.Set[Int] = @set.Set([])
   for n in source_nodes {
     source_ids.add(n.uid)
   }
-  let target_ids : @set.Set[Int] = @set.new()
+  let target_ids : @set.Set[Int] = @set.Set([])
   for n in target_nodes {
     target_ids.add(n.uid)
   }
@@ -144,8 +144,8 @@ pub fn ChangeDistiller::new(
     },
     source_index: {},
     target_index: {},
-    unmatched_source: @set.new(),
-    unmatched_target: @set.new(),
+    unmatched_source: @set.Set([]),
+    unmatched_target: @set.Set([]),
     bigram_cache: {},
     roots: None,
   }
@@ -163,7 +163,7 @@ pub fn ChangeDistiller::diff(
   for m in matchings {
     pre_matched[m.0.uid] = m.1.uid
   }
-  let pre_matched_targets : @set.Set[Int] = @set.new()
+  let pre_matched_targets : @set.Set[Int] = @set.Set([])
   for _, v in pre_matched {
     pre_matched_targets.add(v)
   }
@@ -179,13 +179,13 @@ pub fn ChangeDistiller::diff(
       self.target_index[n.uid] = n
     }
   }
-  self.unmatched_source = @set.new()
+  self.unmatched_source = @set.Set([])
   for k, _ in self.source_index {
     if !pre_matched.contains(k) {
       self.unmatched_source.add(k)
     }
   }
-  self.unmatched_target = @set.new()
+  self.unmatched_target = @set.Set([])
   for k, _ in self.target_index {
     if !pre_matched_targets.contains(k) {
       self.unmatched_target.add(k)
@@ -362,11 +362,11 @@ fn ChangeDistiller::compute_matching_set(
       let source_node = self.source_index[source_node_id]
       let target_node = self.target_index[target_node_id]
       if is_same_type(source_node, target_node) {
-        let source_leaf_ids : @set.Set[Int] = @set.new()
+        let source_leaf_ids : @set.Set[Int] = @set.Set([])
         for l in expression_leaves(source_node) {
           source_leaf_ids.add(l.uid)
         }
-        let target_leaf_ids : @set.Set[Int] = @set.new()
+        let target_leaf_ids : @set.Set[Int] = @set.Set([])
         for l in expression_leaves(target_node) {
           target_leaf_ids.add(l.uid)
         }

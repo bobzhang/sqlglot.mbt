@@ -408,7 +408,7 @@ pub fn Parser::parse_subquery(
 
 ///|
 pub fn Parser::implicit_unnests_to_explicit(self : Parser, this : Expr) -> Expr {
-  let refs : @set.Set[String] = @set.Set::new()
+  let refs : @set.Set[String] = @set.Set([])
   match this.arg("from_") {
     Some(f) =>
       match f.this() {

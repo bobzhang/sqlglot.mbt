@@ -200,7 +200,7 @@ fn expand_using(
   if joins.is_empty() {
     return column_tables
   }
-  let names : @set.Set[String] = @set.new()
+  let names : @set.Set[String] = @set.Set([])
   for join in joins {
     names.add(join.alias_or_name())
   }
@@ -415,7 +415,7 @@ fn expand_alias_refs_impl(
     return
   }
   let alias_to_expression : Map[String, (@core.Expr, Int)] = Map([])
-  let projections : @set.Set[String] = @set.new()
+  let projections : @set.Set[String] = @set.Set([])
   for s in expression.selects() {
     projections.add(s.alias_or_name())
   }
@@ -614,7 +614,7 @@ fn expand_order_by_and_distinct_on(
         for n in expression.named_selects() {
           counts[n] = counts.get_or_default(n, 0) + 1
         }
-        let a : @set.Set[String] = @set.new()
+        let a : @set.Set[String] = @set.Set([])
         for n, c in counts {
           if c == 1 {
             a.add(n)
@@ -721,7 +721,7 @@ fn expand_positional_references(
             let ap = match ambiguous_projections {
               Some(a) => a
               None => {
-                let a : @set.Set[String] = @set.new()
+                let a : @set.Set[String] = @set.Set([])
                 let selected = scope.selected_sources()
                 for s in expression.selects() {
                   if selected.contains(s.alias_or_name()) {
@@ -831,7 +831,7 @@ fn convert_columns_to_dots(
       !scope.is_correlated_subquery()) {
       let all_parts = column.parts()
       let mut root = all_parts[0]
-      let mut parts = all_parts[1:].to_array()
+      let mut parts = all_parts[1:].to_owned()
       let mut was_qualified = false
       // column_table starts as the column's table name (a string in Python)
       let mut table_str : String? = Some(column_table_name)
@@ -854,7 +854,7 @@ fn convert_columns_to_dots(
           table_str = None
           column_table = Some(root)
           root = parts[0]
-          parts = parts[1:].to_array()
+          parts = parts[1:].to_owned()
           was_qualified = true
           break
         }
@@ -883,7 +883,7 @@ fn convert_columns_to_dots(
           if !dot_parts.is_empty() {
             let skip = if was_qualified { 2 } else { 1 }
             let rest = if skip <= dot_parts.length() {
-              dot_parts[skip:].to_array()
+              dot_parts[skip:].to_owned()
             } else {
               []
             }
@@ -1090,7 +1090,7 @@ fn qualify_columns_impl(
       (None, None) => true
       _ => false
     })
-  let produced : @set.Set[String] = @set.new()
+  let produced : @set.Set[String] = @set.Set([])
   let pivoted_source = if single_chain {
     pivots[pivots.length() - 1].alias_()
   } else {
@@ -1130,7 +1130,7 @@ pub fn pivot_output_columns(
   pivot : @core.Expr,
   pre_pivot_columns : Array[String],
 ) -> Array[(String, String)] {
-  let excluded : @set.Set[String] = @set.new()
+  let excluded : @set.Set[String] = @set.Set([])
   let outputs = if pivot.has("unpivot") {
     let name_columns = []
     for field in pivot.list("fields") {
@@ -1185,7 +1185,7 @@ pub fn pivot_output_columns(
   let post_rename = if !renames.is_empty() {
     let rename_names = renames.map(r => r.name())
     if rename_names.length() < pre_rename.length() {
-      rename_names + pre_rename[rename_names.length():].to_array()
+      rename_names + pre_rename[rename_names.length():].to_owned()
     } else {
       rename_names
     }

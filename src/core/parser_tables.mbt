@@ -11,7 +11,7 @@ fn rest(args : Array[Expr], from : Int) -> Array[Expr] {
   if from >= args.length() {
     []
   } else {
-    args[from:].to_array()
+    args[from:].to_owned()
   }
 }
 

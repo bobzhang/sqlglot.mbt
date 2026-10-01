@@ -38,14 +38,14 @@ fn T::done(self : T) -> Unit raise {
 }
 
 ///|
-fn[X : Show] repr_of(x : X) -> String {
-  x.to_string().escape()
+fn[X : Debug] repr_of(x : X) -> String {
+  Repr(x).to_string().escape()
 }
 
 ///|
 /// Python `assertEqual(actual, expected)`.
 #callsite(autofill(loc))
-fn[X : Show + Eq] T::eq(
+fn[X : Debug + Eq] T::eq(
   self : T,
   actual : X,
   expected : X,
@@ -62,7 +62,7 @@ fn[X : Show + Eq] T::eq(
 ///|
 /// Python `assertNotEqual(actual, expected)`.
 #callsite(autofill(loc))
-fn[X : Show + Eq] T::ne(
+fn[X : Debug + Eq] T::ne(
   self : T,
   actual : X,
   expected : X,
@@ -185,7 +185,7 @@ fn[X] T::run(self : T, f : () -> X raise, loc~ : SourceLoc) -> X? {
 ///|
 /// Python `assertEqual(f(), expected)` where `f` may raise.
 #callsite(autofill(loc))
-fn[X : Show + Eq] T::eqf(
+fn[X : Debug + Eq] T::eqf(
   self : T,
   f : () -> X raise,
   expected : X,

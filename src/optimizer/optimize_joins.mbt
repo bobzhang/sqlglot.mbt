@@ -255,7 +255,7 @@ fn should_eliminate_join(scope : Scope, join : @core.Expr, alias_ : String) -> B
 
 ///|
 fn join_is_used(scope : Scope, join : @core.Expr, alias_ : String) -> Bool {
-  let on_ids : @set.Set[Int] = @set.new()
+  let on_ids : @set.Set[Int] = @set.Set([])
   match join.arg("on") {
     Some(on) => for c in on.find_all([Column]) { on_ids.add(c.uid) }
     None => ()

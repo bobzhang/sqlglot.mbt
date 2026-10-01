@@ -218,7 +218,7 @@ pub fn Table::to_string(self : Table) -> String {
       } else {
         s
       }
-      String::from_array(s.to_array()[0:width].to_array())
+      String::from_array(s.to_array()[0:width].to_owned())
     })
     lines.push(cells.join(" "))
   }
@@ -267,7 +267,7 @@ pub fn Tables::new(
   } else {
     let depth = data_depth(mapping)
     if depth >= 1 && depth <= 3 {
-      table_parts[0:depth].to_array()
+      table_parts[0:depth].to_owned()
     } else {
       raise @core.SchemaError("Invalid mapping shape. Depth: \{depth}")
     }
@@ -317,7 +317,7 @@ pub fn Tables::find(
   let all_parts = table.parts().map(p => p.name())
   all_parts.rev_in_place()
   let n = @cmp.minimum(self.supported_table_args.length(), all_parts.length())
-  let parts = all_parts[0:n].to_array()
+  let parts = all_parts[0:n].to_owned()
   // trie lookup of the reversed paths
   let paths = self
     .flatten()
@@ -331,7 +331,7 @@ pub fn Tables::find(
     parts
   } else {
     let prefixed = paths.filter(p => {
-      p.length() > parts.length() && p[0:parts.length()].to_array() == parts
+      p.length() > parts.length() && p[0:parts.length()].to_owned() == parts
     })
     if prefixed.is_empty() {
       return None
@@ -342,7 +342,7 @@ pub fn Tables::find(
       if raise_on_missing {
         let joined = parts.join(".")
         let message = prefixed
-          .map(p => p[parts.length():].to_array().join("."))
+          .map(p => p[parts.length():].to_owned().join("."))
           .join(", ")
         raise @core.SchemaError("Ambiguous mapping for \{joined}: \{message}.")
       }

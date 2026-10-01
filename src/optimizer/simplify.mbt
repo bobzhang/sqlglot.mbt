@@ -1239,7 +1239,7 @@ fn Simplifier::simplify_coalesce_impl(
     return expression
   }
   let arg = exprs[arg_index]
-  coalesce.set("expressions", exprs[0:arg_index].to_array())
+  coalesce.set("expressions", exprs[0:arg_index].to_owned())
   let this = if !coalesce.expressions().is_empty() {
     coalesce
   } else {
@@ -1288,7 +1288,7 @@ fn simplify_concat_impl(expression : @core.Expr) -> @core.Expr {
   }
   let (sep_expr, expressions, sep) = if is_ws {
     let all = expression.expressions()
-    (Some(all[0]), all[1:].to_array(), all[0].name())
+    (Some(all[0]), all[1:].to_owned(), all[0].name())
   } else {
     (None, expression.expressions(), "")
   }

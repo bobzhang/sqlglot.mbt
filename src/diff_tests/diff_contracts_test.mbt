@@ -12,7 +12,7 @@ fn validate_delta_only(
   let extra = actual.filter(e => !expected.contains(e))
   if !missing.is_empty() || !extra.is_empty() {
     fail(
-      "missing: \{missing.map(e => e.to_string())}\nunexpected: \{extra.map(e => e.to_string())}",
+      "missing: \{Repr(missing.map(e => e.to_string()))}\nunexpected: \{Repr(extra.map(e => e.to_string()))}",
     )
   }
 }

@@ -79,7 +79,7 @@ priv struct IdSet {
 
 ///|
 fn IdSet::new() -> IdSet {
-  { ids: @set.new() }
+  { ids: @set.Set([]) }
 }
 
 ///|

@@ -20,7 +20,7 @@ pub fn canonicalize_internal_names(
   if !expression.kind.is_a(Query) {
     return expression
   }
-  let output_scope_exprs : @set.Set[Int] = @set.new()
+  let output_scope_exprs : @set.Set[Int] = @set.Set([])
   let stack = [expression]
   while stack.pop() is Some(node) {
     if node.kind.is_a(SetOperation) {
@@ -61,7 +61,7 @@ pub fn canonicalize_internal_names(
       }
     }
     let table_map : Map[String, (String, String)] = Map([])
-    let ref_canon_taken : @set.Set[String] = @set.new()
+    let ref_canon_taken : @set.Set[String] = @set.Set([])
     for source_name, source in scope.sources {
       let source_cols = columns_by_source.get(source_name).unwrap_or([])
       let mut alias_holder : @core.Expr? = None

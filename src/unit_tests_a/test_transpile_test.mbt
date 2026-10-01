@@ -1137,7 +1137,7 @@ test "TestTranspile.test_identity" {
   let t = t()
   t.eqf(() => @sqlglot.transpile("")[0], "")
   for sql in identity_fixtures {
-    t.eqf(() => @sqlglot.transpile(sql)[0], sql.trim().to_string())
+    t.eqf(() => @sqlglot.transpile(sql)[0], sql.trim().to_owned())
   }
   t.done()
 }
@@ -1168,7 +1168,7 @@ test "TestTranspile.test_command_identity" {
     t.ok(
       output.length() > 0 &&
       output[0].contains("'\{prefix}' contains unsupported syntax"),
-      msg="\{sql}: missing unsupported syntax warning in \{output}",
+      msg="\{sql}: missing unsupported syntax warning in \{Repr(output)}",
     )
   }
   t.done()
@@ -1197,7 +1197,7 @@ test "TestTranspile.test_partial" {
   for sql in partial_fixtures {
     t.eqf(
       () => @sqlglot.transpile(sql, error_level=@core.Ignore)[0],
-      sql.trim().to_string(),
+      sql.trim().to_owned(),
     )
   }
   t.done()
@@ -1389,11 +1389,11 @@ test "TestTranspile.test_unsupported_level" {
 
   match t.raises(() => unsupported(@core.Raise)) {
     Some(@core.UnsupportedError(m)) => t.eq(count(m, error), 3)
-    e => t.ok(false, msg="expected UnsupportedError, got \{e}")
+    e => t.ok(false, msg="expected UnsupportedError, got \{Repr(e)}")
   }
   match t.raises(() => unsupported(@core.Immediate)) {
     Some(@core.UnsupportedError(m)) => t.eq(count(m, error), 1)
-    e => t.ok(false, msg="expected UnsupportedError, got \{e}")
+    e => t.ok(false, msg="expected UnsupportedError, got \{Repr(e)}")
   }
   t.done()
 }

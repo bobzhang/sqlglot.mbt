@@ -173,7 +173,7 @@ fn assert_rows_unordered(
   let a = sorted_reprs(rows_value(t))
   let e = sorted_reprs(py(expected))
   if a != e {
-    fail("rows differ:\n  actual:   \{a}\n  expected: \{e}", loc~)
+    fail("rows differ:\n  actual:   \{Repr(a)}\n  expected: \{Repr(e)}", loc~)
   }
 }
 
@@ -191,7 +191,10 @@ fn assert_set(
     @executor.Value::List(@executor.py_set(@executor.py_iter(py(expected)))),
   )
   if a != e {
-    fail("row sets differ:\n  actual:   \{a}\n  expected: \{e}", loc~)
+    fail(
+      "row sets differ:\n  actual:   \{Repr(a)}\n  expected: \{Repr(e)}",
+      loc~,
+    )
   }
 }
 
@@ -203,7 +206,7 @@ fn assert_columns(
   loc~ : SourceLoc,
 ) -> Unit raise {
   if t.columns != expected {
-    fail("columns differ: \{t.columns} != \{expected}", loc~)
+    fail("columns differ: \{Repr(t.columns)} != \{Repr(expected)}", loc~)
   }
 }
 
@@ -218,7 +221,7 @@ fn execute_error(
   try @executor.execute(sql, schema~, dialect~, tables~) catch {
     e => e
   } noraise {
-    t => fail("expected an error, got \{t.columns} \{rows_value(t)}")
+    t => fail("expected an error, got \{Repr(t.columns)} \{rows_value(t)}")
   }
 }
 

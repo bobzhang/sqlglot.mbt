@@ -429,7 +429,7 @@ fn greatest_least_sql(
     coalesces.push(
       @core.mk(Coalesce, [
         ("this", rotated[0]),
-        ("expressions", rotated[1:].to_array()),
+        ("expressions", rotated[1:].to_owned()),
       ]),
     )
   }

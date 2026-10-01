@@ -207,9 +207,11 @@ test "journal: pushdown_projections" {
   let original = expression.copy()
   @optimizer.pushdown_projections(expression, journal~) |> ignore
   let group = expression.find([CTE]).unwrap().this_().arg("group").unwrap()
-  inspect(
+  debug_inspect(
     group.expressions().map(e => gen_sql(e)),
-    content="[t.z, 1, 1]",
+    content=(
+      #|["t.z", "1", "1"]
+    ),
   )
   @optimizer.revert(journal)
   assert_true(expression.equal(original))
@@ -252,7 +254,7 @@ test "merge_subqueries: copy budget" {
 
   // A None factor disables the budget, so everything is merged despite the zero minimum
   let short_chain = parse_sql(
-    "WITH \{ctes[:5].to_array().join(", ")} SELECT q4.a AS a FROM q4 AS q4",
+    "WITH \{ctes[:5].to_owned().join(", ")} SELECT q4.a AS a FROM q4 AS q4",
   )
   let merged = @optimizer.merge_subqueries(
     short_chain,
@@ -341,8 +343,12 @@ test "pushdown_projections: prunes non-self-referencing ctes" {
     schema="{\"graph\": {\"id\": \"INT\", \"link\": \"INT\", \"junk\": \"INT\"}}",
   )
   let ctes = optimized.find_all([CTE]).collect()
-  inspect(alias_names(ctes[0].this_().selects()), content="[id, link]")
-  inspect(alias_names(ctes[1].this_().selects()), content="[id]")
+  debug_inspect(alias_names(ctes[0].this_().selects()), content=(
+    #|["id", "link"]
+  ))
+  debug_inspect(alias_names(ctes[1].this_().selects()), content=(
+    #|["id"]
+  ))
 
   // A db-qualified table that shares the CTE's name is not a self-reference
   let optimized = optimize_sql_str(
@@ -352,7 +358,9 @@ test "pushdown_projections: prunes non-self-referencing ctes" {
   )
   let union = optimized.find([CTE]).unwrap().this_()
   for side in [union.this_(), union.expression_()] {
-    inspect(alias_names(side.selects()), content="[id]")
+    debug_inspect(alias_names(side.selects()), content=(
+      #|["id"]
+    ))
   }
 }
 

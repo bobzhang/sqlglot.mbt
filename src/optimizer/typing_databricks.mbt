@@ -37,7 +37,7 @@ fn databricks_coerces_to() -> Map[@core.DType, @set.Set[@core.DType]] {
     let s = match m.get(text_type) {
       Some(s) => s
       None => {
-        let s = @set.new()
+        let s = @set.Set([])
         m[text_type] = s
         s
       }

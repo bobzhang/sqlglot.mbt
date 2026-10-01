@@ -28,7 +28,7 @@ fn dump(
   let lines = []
   for c in children {
     for line in c.split("\n") {
-      lines.push("  " + line.to_string())
+      lines.push("  " + line.to_owned())
     }
   }
   head + "\n" + lines.join("\n")

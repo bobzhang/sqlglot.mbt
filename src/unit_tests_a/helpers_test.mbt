@@ -22,7 +22,7 @@ fn T::fail(self : T, msg : String, loc : SourceLoc) -> Unit {
 
 ///|
 #callsite(autofill(loc))
-fn[X : Show + Eq] T::eq(
+fn[X : Debug + Eq] T::eq(
   self : T,
   actual : X,
   expected : X,
@@ -54,9 +54,8 @@ fn T::eq_expr(
 }
 
 ///|
-fn[X : Show] repr_of(x : X) -> String {
-  let s = x.to_string()
-  s.escape()
+fn[X : Debug] repr_of(x : X) -> String {
+  Repr(x).to_string().escape()
 }
 
 ///|
@@ -89,7 +88,7 @@ fn[X] T::run(self : T, f : () -> X raise, loc~ : SourceLoc) -> X? {
 ///|
 /// Python `assertEqual(f(), expected)` where `f` may raise.
 #callsite(autofill(loc))
-fn[X : Show + Eq] T::eqf(
+fn[X : Debug + Eq] T::eqf(
   self : T,
   f : () -> X raise,
   expected : X,

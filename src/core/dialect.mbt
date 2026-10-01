@@ -191,7 +191,7 @@ let dialect_registry : Map[String, () -> Dialect] = Map([])
 let dialect_cache : Map[String, Dialect] = Map([])
 
 ///|
-let base_dialect_cell : Ref[Dialect?] = Ref::new(None)
+let base_dialect_cell : Ref[Dialect?] = Ref(None)
 
 ///|
 /// Registers a dialect constructor under `name`.

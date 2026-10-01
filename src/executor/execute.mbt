@@ -61,7 +61,7 @@ fn nested_set(
       m
     }
   }
-  nested_set(sub, keys[1:].to_array(), value)
+  nested_set(sub, keys[1:].to_owned(), value)
 }
 
 ///|

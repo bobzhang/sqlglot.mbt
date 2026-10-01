@@ -634,7 +634,7 @@ pub fn column_table_names(
   expression : Expr,
   exclude? : String = "",
 ) -> Array[String] {
-  let out : @set.Set[String] = @set.Set::new()
+  let out : @set.Set[String] = @set.Set([])
   for c in expression.find_all([Column]) {
     let t = c.table_name()
     if !t.is_empty() && t != exclude {

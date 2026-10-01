@@ -478,7 +478,7 @@ test "annotate_types: ORDER BY aliases" {
     let (sql, expected) = case_
     let got = order_types(sql)
     if got != expected {
-      fail("\{sql}: expected \{expected}, got \{got}")
+      fail("\{sql}: expected \{Repr(expected)}, got \{Repr(got)}")
     }
   }
 

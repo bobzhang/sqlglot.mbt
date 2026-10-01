@@ -13,7 +13,7 @@ fn expand_struct_stars_no_parens(expression : @core.Expr) -> Array[@core.Expr] {
   ])
   let all_parts = expression.parts()
   let dot_parts = if all_parts.length() >= 2 {
-    all_parts[1:all_parts.length() - 1].to_array()
+    all_parts[1:all_parts.length() - 1].to_owned()
   } else {
     []
   }
@@ -36,7 +36,7 @@ fn expand_struct_stars_no_parens(expression : @core.Expr) -> Array[@core.Expr] {
       return []
     }
   }
-  let taken_names : @set.Set[String] = @set.new()
+  let taken_names : @set.Set[String] = @set.Set([])
   let new_selections = []
   for field in starting_struct.arg("kind").unwrap().expressions() {
     let name = field.name()
@@ -51,7 +51,7 @@ fn expand_struct_stars_no_parens(expression : @core.Expr) -> Array[@core.Expr] {
     let this = field.this_().copy()
     let parts = (dot_parts + [this]).map(p => p.copy())
     let root = parts[0]
-    let rest = parts[1:].to_array()
+    let rest = parts[1:].to_owned()
     let new_column = @core.column_from_parts(
       root,
       table=dot_column.arg("table").map(t => t.copy()),
@@ -265,7 +265,7 @@ fn expand_stars_impl(
   let replace_columns : Map[String, Map[String, @core.Expr]] = Map([])
   let rename_columns : Map[String, Map[String, String]] = Map([])
   let mut ilike_pattern : String? = None
-  let coalesced_columns : @set.Set[String] = @set.new()
+  let coalesced_columns : @set.Set[String] = @set.Set([])
   let dialect = resolver.dialect
   let annotated_ahead = dialect.cfg.supports_struct_star_expansion &&
     scope.stars().iter().any(c => c.kind.is_a(Dot))
@@ -321,7 +321,7 @@ fn expand_stars_impl(
             annotator.uncache(expression)
           }
           let star = expression.expression_()
-          let excluded : @set.Set[String] = @set.new()
+          let excluded : @set.Set[String] = @set.Set([])
           for e in star.list("except_") {
             excluded.add(e.name())
           }
@@ -421,7 +421,7 @@ fn expand_stars_impl(
         Some(c) => c
         None => {}
       }
-      let quoted_columns : @set.Set[String] = @set.new()
+      let quoted_columns : @set.Set[String] = @set.Set([])
       match source {
         ScopeSource(s) if s.expression.kind.is_a(Query) =>
           for sel in selects_of(s.expression) {

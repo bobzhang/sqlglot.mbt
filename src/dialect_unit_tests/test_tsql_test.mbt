@@ -350,7 +350,7 @@ test "TestTSQL.test_odbc_date_literals" {
 fn c_join_stripped_lines(sql : String) -> String {
   sql
   .split("\n")
-  .map(l => @core.py_strip(l.to_string()))
+  .map(l => @core.py_strip(l.to_owned()))
   .filter(l => l != "")
   .collect()
   .join(" ")

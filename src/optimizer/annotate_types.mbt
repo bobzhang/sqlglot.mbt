@@ -99,7 +99,7 @@ fn build_default_coerces_to() -> Map[@core.DType, @set.Set[@core.DType]] {
   ]
   let result : Map[@core.DType, @set.Set[@core.DType]] = Map([])
   for type_precedence in [text_precedence, numeric_precedence, timelike_precedence] {
-    let coerces_to : @set.Set[@core.DType] = @set.new()
+    let coerces_to : @set.Set[@core.DType] = @set.Set([])
     for data_type in type_precedence {
       result[data_type] = coerces_to.copy()
       coerces_to.add(data_type)
@@ -239,7 +239,7 @@ pub fn TypeAnnotator::new(
       Some(b) if !b.is_empty() => b
       _ => default_binary_coercions
     },
-    visited: @set.new(),
+    visited: @set.Set([]),
     null_expressions: {},
     supports_null_type: dialect.cfg.supports_null_type,
     setop_column_types: {},

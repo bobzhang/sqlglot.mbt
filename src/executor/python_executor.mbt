@@ -179,7 +179,7 @@ fn slice_rows(rows : Array[Row], start : Int, end : Int?) -> Array[Row] {
     Some(e) => if e > n { n } else if e < s { s } else { e }
     None => n
   }
-  rows[s:e].to_array()
+  rows[s:e].to_owned()
 }
 
 ///|
@@ -377,7 +377,7 @@ fn PythonExecutor::subquery_exists(
   self : PythonExecutor,
   args : Array[Value],
 ) -> Value raise {
-  let table = self.subquery_table(args[0], args[1], args[2:].to_array())
+  let table = self.subquery_table(args[0], args[1], args[2:].to_owned())
   Bool(!table.rows.is_empty())
 }
 
@@ -386,7 +386,7 @@ fn PythonExecutor::subquery_scalar(
   self : PythonExecutor,
   args : Array[Value],
 ) -> Value raise {
-  let rows = self.subquery_table(args[0], args[1], args[2:].to_array()).rows
+  let rows = self.subquery_table(args[0], args[1], args[2:].to_owned()).rows
   if rows.length() > 1 {
     raise ExecuteError(
       "More than one row returned by a subquery used as an expression",
@@ -416,7 +416,7 @@ fn PythonExecutor::subquery_comparison(
   }
   let is_any = args[4] is Str("ANY")
   let mut saw_null = false
-  for row in self.subquery_table(args[1], args[2], args[5:].to_array()).rows {
+  for row in self.subquery_table(args[1], args[2], args[5:].to_owned()).rows {
     let result = call_value(compare, [value, row[0]])
     if result is Null {
       saw_null = true
@@ -994,7 +994,7 @@ fn slice_values(row : Row, start : Int, end : Int) -> Row {
   let n = row.length()
   let s = @cmp.minimum(start, n)
   let e = @cmp.maximum(s, @cmp.minimum(end, n))
-  row[s:e].to_array()
+  row[s:e].to_owned()
 }
 
 ///|

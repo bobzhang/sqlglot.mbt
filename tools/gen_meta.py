@@ -232,7 +232,7 @@ def gen_dtypes():
     lines.append("pub(all) enum DType {")
     for n in names:
         lines.append(f"  {n}")
-    lines.append("} derive(Eq, Hash, Compare)")
+    lines.append("} derive(Eq, Hash, Compare, Debug)")
     lines.append("")
     lines.append("///|")
     lines.append("pub fn DType::id(self : DType) -> Int {")
@@ -358,7 +358,7 @@ def tokenizer_settings_full(cls, fn_name, pub=True):
     L.append("    numeric_literals,")
     L.append(f"    numbers_can_have_decimals: {str(cls.NUMBERS_CAN_HAVE_DECIMALS).lower()},")
     for d in ["quotes_map", "identifiers_map", "identifier_chars", "format_strings", "string_escapes_set", "byte_string_escapes_set", "escape_follow_chars_set", "identifier_escapes_set", "comments_map", "commands_set"]:
-        L.append(f"    {d}: Map::new(),")
+        L.append(f"    {d}: Map([]),")
     L.append("    keyword_trie: Trie::new(),")
     L.append("  }")
     L.append("}")

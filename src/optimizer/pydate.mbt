@@ -271,7 +271,7 @@ fn parse_py_datetime(text : String) -> PyDT? {
   if n + 1 >= chars.length() {
     return None
   }
-  parse_iso_time_parts(chars[n + 1:].to_array()).map(t => {
+  parse_iso_time_parts(chars[n + 1:].to_owned()).map(t => {
     ..base,
     h: t.0,
     mi: t.1,

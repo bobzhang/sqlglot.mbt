@@ -99,7 +99,7 @@ test "annotate_types: json dot parts preserve meta" {
     identifier.meta_get("end") is Some(Int(end)) else {
     fail("missing token positions")
   }
-  assert_eq(sql[start.to_int():end.to_int() + 1].to_string(), "CaseSensitive")
+  assert_eq(sql[start.to_int():end.to_int() + 1].to_owned(), "CaseSensitive")
 }
 
 ///|

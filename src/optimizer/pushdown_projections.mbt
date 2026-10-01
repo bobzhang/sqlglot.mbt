@@ -280,7 +280,7 @@ pub fn projection_reachability(
       let windows = query.list("windows")
       let group_all = is_implicit_group_by_all(query)
       group_by_ordinals[scope.id] = group_by_ordinal_refs(query)
-      let ordinals : @set.Set[Int] = @set.new()
+      let ordinals : @set.Set[Int] = @set.Set([])
       for r in group_by_ordinals[scope.id] {
         ordinals.add(r.1.uid)
       }
@@ -388,8 +388,8 @@ pub fn projection_reachability(
       None => true
     })
   }
-  let pending : @deque.Deque[DepNode] = @deque.new()
-  let queued : @set.Set[Int] = @set.new()
+  let pending : @deque.Deque[DepNode] = @deque.Deque([])
+  let queued : @set.Set[Int] = @set.Set([])
   for root in roots {
     let root_outputs = output_nodes[root.id]
     let all_roots = if whole_query {
@@ -696,7 +696,7 @@ pub fn projection_has_aggregate(
   projection : @core.Expr,
   windows : Array[@core.Expr],
 ) -> Bool {
-  let windowed_aggregates : @set.Set[Int] = @set.new()
+  let windowed_aggregates : @set.Set[Int] = @set.Set([])
   let remaining_windows : Map[String, @core.Expr] = Map([])
   for w in windows {
     remaining_windows[w.name()] = w

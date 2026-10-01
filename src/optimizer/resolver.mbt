@@ -149,7 +149,7 @@ pub fn Resolver::all_columns(
   match self.all_columns_ {
     Some(c) => c
     None => {
-      let s : @set.Set[String] = @set.new()
+      let s : @set.Set[String] = @set.Set([])
       for _, columns in self.get_all_source_columns() {
         for c in columns {
           s.add(c)
@@ -163,7 +163,7 @@ pub fn Resolver::all_columns(
 
 ///|
 fn dedup_strings(xs : Array[String]) -> Array[String] {
-  let seen : @set.Set[String] = @set.new()
+  let seen : @set.Set[String] = @set.Set([])
   let out = []
   for x in xs {
     if !seen.contains(x) {
@@ -451,7 +451,7 @@ fn Resolver::get_unambiguous_columns(
       }
     }
   }
-  let all_columns : @set.Set[String] = @set.new()
+  let all_columns : @set.Set[String] = @set.Set([])
   for c in unambiguous_columns.keys() {
     all_columns.add(c)
   }

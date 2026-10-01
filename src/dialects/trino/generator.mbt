@@ -111,7 +111,7 @@ fn concatws_sql(
       let array = if arrays.length() > 1 {
         @core.mk(ArrayConcat, [
           ("this", arrays[0]),
-          ("expressions", arrays[1:].to_array()),
+          ("expressions", arrays[1:].to_owned()),
         ])
       } else {
         arrays[0]

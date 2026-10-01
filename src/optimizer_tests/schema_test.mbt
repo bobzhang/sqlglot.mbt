@@ -26,7 +26,7 @@ fn assert_column_names(
     let (table, expected) = case_
     let got = schema.column_names(@core.to_table(table))
     if got != expected {
-      fail("\{table}: expected \{expected}, got \{got}")
+      fail("\{table}: expected \{Repr(expected)}, got \{Repr(got)}")
     }
   }
 }
@@ -134,18 +134,18 @@ test "schema: test_schema_add_table_with_and_without_mapping" {
   let schema = @optimizer.MappingSchema::new()
   let test_ = @core.to_table("test")
   schema.add_table(test_)
-  inspect(schema.column_names(test_), content="[]")
+  debug_inspect(schema.column_names(test_), content="[]")
   schema.add_table(test_, column_mapping={ "x": Type("string") })
-  inspect(schema.column_names(test_), content=(
-    #|[x]
+  debug_inspect(schema.column_names(test_), content=(
+    #|["x"]
   ))
   schema.add_table(test_, column_mapping={ "x": Type("string"), "y": Type("int") })
-  inspect(schema.column_names(test_), content=(
-    #|[x, y]
+  debug_inspect(schema.column_names(test_), content=(
+    #|["x", "y"]
   ))
   schema.add_table(test_)
-  inspect(schema.column_names(test_), content=(
-    #|[x, y]
+  debug_inspect(schema.column_names(test_), content=(
+    #|["x", "y"]
   ))
 }
 
@@ -198,15 +198,15 @@ test "schema: test_schema_normalization" {
   )
   let table_z = @core.to_table("x.y.Z")
   let table_w = @core.to_table("x.y.w")
-  inspect(schema.column_names(table_z), content=(
-    #|[a, B]
+  debug_inspect(schema.column_names(table_z), content=(
+    #|["a", "B"]
   ))
-  inspect(schema.column_names(table_w), content=(
-    #|[C]
+  debug_inspect(schema.column_names(table_w), content=(
+    #|["C"]
   ))
   let schema = schema_of("{\"x\": {\"`y`\": \"INT\"}}", dialect="clickhouse")
-  inspect(schema.column_names(@core.to_table("x")), content=(
-    #|[y]
+  debug_inspect(schema.column_names(@core.to_table("x")), content=(
+    #|["y"]
   ))
 
   // add_table normalizes both the table and the column names to be added / updated
@@ -215,10 +215,10 @@ test "schema: test_schema_normalization" {
     "SomeColumn": Type("INT"),
     "\"SomeColumn\"": Type("DOUBLE"),
   })
-  inspect(
+  debug_inspect(
     schema.column_names(@core.to_table("fOO")),
     content=(
-      #|[somecolumn, SomeColumn]
+      #|["somecolumn", "SomeColumn"]
     ),
   )
 
@@ -227,8 +227,8 @@ test "schema: test_schema_normalization" {
     "{\"x\": {\"foo\": \"int\", \"\\\"bLa\\\"\": \"int\"}}",
     dialect="snowflake",
   )
-  inspect(schema.column_names(@core.to_table("x")), content=(
-    #|[FOO, bLa]
+  debug_inspect(schema.column_names(@core.to_table("x")), content=(
+    #|["FOO", "bLa"]
   ))
 
   // switching off the normalization logic
@@ -237,8 +237,8 @@ test "schema: test_schema_normalization" {
     normalize=false,
     dialect="snowflake",
   )
-  inspect(schema.column_names(@core.to_table("x")), content=(
-    #|[foo]
+  debug_inspect(schema.column_names(@core.to_table("x")), content=(
+    #|["foo"]
   ))
 
   // the correct dialect is used when calling schema methods
@@ -248,21 +248,21 @@ test "schema: test_schema_normalization" {
     schema.column_names(table_in("[Fo]", "tsql")),
     schema.column_names(table_in("`fo`", "clickhouse"), dialect=clickhouse),
   )
-  inspect(schema.column_names(table_in("[Fo]", "tsql")), content=(
-    #|[x]
+  debug_inspect(schema.column_names(table_in("[Fo]", "tsql")), content=(
+    #|["x"]
   ))
 
   // BigQuery: all column identifiers are lowercased, even quoted ones; tables aren't
   let schema = schema_of("{\"Foo\": {\"`BaR`\": \"int\"}}", dialect="bigquery")
-  inspect(
+  debug_inspect(
     schema.column_names(table_in("Foo", "bigquery")),
     content=(
-      #|[bar]
+      #|["bar"]
     ),
   )
   // Python: [] (BigQuery table names are case-sensitive); needs the ported BigQuery
   // normalize_identifier, i.e. it fails until the dialect port is merged
-  inspect(schema.column_names(table_in("foo", "bigquery")), content="[]")
+  debug_inspect(schema.column_names(table_in("foo", "bigquery")), content="[]")
 
   // the schema's normalization setting can be overridden
   let schema = schema_of(
@@ -270,10 +270,10 @@ test "schema: test_schema_normalization" {
     normalize=false,
     dialect="snowflake",
   )
-  inspect(
+  debug_inspect(
     schema.column_names(table_in("x", "snowflake"), normalize=true),
     content=(
-      #|[y]
+      #|["y"]
     ),
   )
 
@@ -370,8 +370,8 @@ test "schema: test_has_column" {
 test "schema: test_find" {
   let schema = schema_of("{\"x\": {\"c\": \"int\"}}")
   let found = schema.find(@core.to_table("x")).unwrap()
-  inspect(found.keys().collect(), content=(
-    #|[c]
+  debug_inspect(found.keys().collect(), content=(
+    #|["c"]
   ))
   guard found.get("c") is Some(Type("int")) else { fail("expected 'int'") }
   let found = schema.find_column_types(@core.to_table("x")).unwrap()

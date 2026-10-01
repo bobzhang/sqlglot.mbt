@@ -73,7 +73,7 @@ pub fn qualify_tables(
 
   if (db_ident is Some(_) || catalog_ident is Some(_)) &&
     !expression.kind.is_a(Query) {
-    let cte_names : @set.Set[String] = @set.new()
+    let cte_names : @set.Set[String] = @set.Set([])
     match expression.arg("with_") {
       Some(w) => for cte in w.expressions() { cte_names.add(cte.alias_or_name()) }
       None => ()
@@ -321,7 +321,7 @@ pub fn qualify_tables(
       if column.db() != "" {
         let parts = column.parts()
         let key = parts[0:parts.length() - 1]
-          .to_array()
+          .to_owned()
           .map(p => p.name())
           .join(".")
         match table_aliases.get(key) {

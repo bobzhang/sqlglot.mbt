@@ -50,7 +50,7 @@ pub fn py_strip(s : String) -> String {
 ///|
 /// Python `str.strip(chars)`.
 pub fn strip_chars(s : String, chars : String) -> String {
-  s.trim(chars~).to_string()
+  s.trim(chars~).to_owned()
 }
 
 ///|
@@ -80,7 +80,7 @@ pub fn py_split_ws(s : String) -> Array[String] {
 ///|
 /// Python `str.split(sep)`.
 pub fn py_split(s : String, sep : String) -> Array[String] {
-  s.split(sep).map(x => x.to_string()).collect()
+  s.split(sep).map(x => x.to_owned()).collect()
 }
 
 ///|
@@ -293,7 +293,7 @@ pub fn to_bool_str(value : String) -> Bool? {
 ///|
 /// Returns a name generator given a prefix (e.g. a0, a1, a2...).
 pub fn name_sequence(prefix : String) -> () -> String {
-  let counter = Ref::new(0)
+  let counter = Ref(0)
   fn() {
     let n = counter.val
     counter.val += 1

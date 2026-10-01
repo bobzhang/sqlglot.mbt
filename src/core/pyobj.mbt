@@ -183,9 +183,13 @@ pub fn py_float_repr(d : Double) -> String {
   let s = d.abs().to_string()
   let (mantissa, exp) = match s.find("e") {
     Some(i) => {
-      let m = s.view(end_offset=i).to_string()
-      let e = s.view(start_offset=i + 1).to_string()
-      let e = if e.has_prefix("+") { e.substring(start=1) } else { e }
+      let m = s.view(end_offset=i).to_owned()
+      let e = s.view(start_offset=i + 1).to_owned()
+      let e = if e.has_prefix("+") {
+        e.view(start_offset=1).to_owned()
+      } else {
+        e
+      }
       (m, parse_int_str(e).map(x => x.to_int()).unwrap_or(0))
     }
     None => (s, 0)
@@ -193,8 +197,8 @@ pub fn py_float_repr(d : Double) -> String {
   let (int_part, frac_part) = match mantissa.find(".") {
     Some(i) =>
       (
-        mantissa.view(end_offset=i).to_string(),
-        mantissa.view(start_offset=i + 1).to_string(),
+        mantissa.view(end_offset=i).to_owned(),
+        mantissa.view(start_offset=i + 1).to_owned(),
       )
     None => (mantissa, "")
   }
@@ -206,14 +210,14 @@ pub fn py_float_repr(d : Double) -> String {
   while lead < digits.length() - 1 && digits[lead] == '0' {
     lead += 1
   }
-  digits = digits.substring(start=lead)
+  digits = digits.view(start_offset=lead).to_owned()
   decpt -= lead
   // strip trailing zeros
   let mut end = digits.length()
   while end > 1 && digits[end - 1] == '0' {
     end -= 1
   }
-  digits = digits.substring(end~)
+  digits = digits.view(end_offset=end).to_owned()
   let sign = if d < 0.0 { "-" } else { "" }
   let n = digits.length()
   if decpt <= -4 || decpt > 16 {
@@ -221,7 +225,9 @@ pub fn py_float_repr(d : Double) -> String {
     let mant = if n == 1 {
       digits
     } else {
-      digits.substring(end=1) + "." + digits.substring(start=1)
+      digits.view(end_offset=1).to_owned() +
+      "." +
+      digits.view(start_offset=1).to_owned()
     }
     let es = e.abs().to_string()
     let es = if es.length() < 2 { "0" + es } else { es }
@@ -231,7 +237,10 @@ pub fn py_float_repr(d : Double) -> String {
   } else if decpt >= n {
     sign + digits + "0".repeat(decpt - n) + ".0"
   } else {
-    sign + digits.substring(end=decpt) + "." + digits.substring(start=decpt)
+    sign +
+    digits.view(end_offset=decpt).to_owned() +
+    "." +
+    digits.view(start_offset=decpt).to_owned()
   }
 }
 
@@ -321,7 +330,7 @@ pub fn[T : IntoPy] maybe_parse(
     Some(p) if !p.is_empty() => sql = "\{p} \{sql}"
     _ => ()
   }
-  parse_one(sql, dialect?, into?=into.map(i => i.to_array()), error_level~)
+  parse_one(sql, dialect?, into?=into.map(i => i.to_owned()), error_level~)
 }
 
 ///|
@@ -450,7 +459,7 @@ pub fn Expr::to_py(self : Expr) -> PyObj raise SqlglotError {
         PyDecimal(s) =>
           PyDecimal(
             if s.has_prefix("-") {
-              s.view(start_offset=1).to_string()
+              s.view(start_offset=1).to_owned()
             } else {
               "-" + s
             },
@@ -496,7 +505,7 @@ fn to_s_value(value : Value, level : Int, repr_str : Bool) -> String {
 ///|
 /// `textwrap.dedent(s.strip("\n")).splitlines()`
 fn to_s_dedent(s : String) -> Array[String] {
-  let lines = strip_chars(s, "\n").split("\n").map(l => l.to_string()).collect()
+  let lines = strip_chars(s, "\n").split("\n").map(l => l.to_owned()).collect()
   let mut margin : Int? = None
   for line in lines {
     if py_strip(line).is_empty() {
@@ -520,7 +529,7 @@ fn to_s_dedent(s : String) -> Array[String] {
     if py_strip(line).is_empty() {
       ""
     } else {
-      line.view(start_offset=m).to_string()
+      line.view(start_offset=m).to_owned()
     }
   })
 }

@@ -70,7 +70,7 @@ fn hive_coerces_to() -> Map[@core.DType, @set.Set[@core.DType]] {
     let s = match m.get(target) {
       Some(s) => s
       None => {
-        let s = @set.new()
+        let s = @set.Set([])
         m[target] = s
         s
       }

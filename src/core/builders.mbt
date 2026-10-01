@@ -100,9 +100,9 @@ pub fn Expr::to_column(self : Expr, copy? : Bool = true) -> Expr {
   let parts = self.parts()
   let last_part = parts[parts.length() - 1]
   let mut col = if last_part.kind == Identifier {
-    let first4 = parts[0:min_int(4, parts.length())].to_array()
+    let first4 = parts[0:min_int(4, parts.length())].to_owned()
     first4.rev_in_place()
-    let fields = parts[min_int(4, parts.length()):].to_array()
+    let fields = parts[min_int(4, parts.length()):].to_owned()
     let m = fn(e : Expr) { if copy { e.copy() } else { e } }
     column_from_parts(
       m(first4[0]),

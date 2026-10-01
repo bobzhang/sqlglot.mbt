@@ -3,7 +3,7 @@
 
 ///|
 test "optimizer dialect stress" {
-  let totals : Map[String, (Int, Int)] = {}
+  let totals : Map[String, (Int, Int)] = Map([])
   let mut reported = 0
   let mut i = 0
   while i + 2 < dialect_stress_fixtures.length() {

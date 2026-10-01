@@ -304,7 +304,7 @@ fn mergeable(
     Some(_) if number_literal_aliases.is_empty() => false
     Some(group) => {
       let grouped = []
-      let top_level_ids : @set.Set[Int] = @set.new()
+      let top_level_ids : @set.Set[Int] = @set.Set([])
       for e in group.expressions() {
         top_level_ids.add(e.unnest().uid)
       }
