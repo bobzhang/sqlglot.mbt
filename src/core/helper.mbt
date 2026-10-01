@@ -304,8 +304,10 @@ pub fn name_sequence(prefix : String) -> () -> String {
 ///|
 /// Python `str[start:end]` on code points.
 pub fn substr(s : String, start : Int, end : Int) -> String {
-  let chars = s.to_array()
-  let n = chars.length()
+  // Without surrogate pairs, code point and UTF-16 indices coincide: slice directly
+  // instead of materializing the code points.
+  let bmp = !has_surrogates(s)
+  let n = if bmp { s.length() } else { s.char_length() }
   let mut a = if start < 0 { n + start } else { start }
   let mut b = if end < 0 { n + end } else { end }
   if a < 0 {
@@ -317,7 +319,46 @@ pub fn substr(s : String, start : Int, end : Int) -> String {
   if a >= b {
     return ""
   }
-  String::from_array(chars[a:b])
+  if bmp {
+    return s.unsafe_substring(start=a, end=b)
+  }
+  let offsets = code_point_offsets(s)
+  s.unsafe_substring(start=offsets[a], end=offsets[b])
+}
+
+///|
+fn has_surrogates(s : String) -> Bool {
+  for i in 0..<s.length() {
+    let u = s.code_unit_at(i).to_int()
+    if u >= 0xD800 && u <= 0xDFFF {
+      return true
+    }
+  }
+  false
+}
+
+///|
+/// The UTF-16 offset of every code point of `s`, plus `s.length()` at the end; `[]` when
+/// `s` has no surrogate pairs (offsets equal code point indices).
+pub fn code_point_offsets(s : String) -> Array[Int] {
+  if !has_surrogates(s) {
+    return []
+  }
+  let out = []
+  let mut i = 0
+  let n = s.length()
+  while i < n {
+    out.push(i)
+    let u = s.code_unit_at(i).to_int()
+    let pair = u >= 0xD800 &&
+      u <= 0xDBFF &&
+      i + 1 < n &&
+      s.code_unit_at(i + 1).to_int() >= 0xDC00 &&
+      s.code_unit_at(i + 1).to_int() <= 0xDFFF
+    i += if pair { 2 } else { 1 }
+  }
+  out.push(n)
+  out
 }
 
 ///|

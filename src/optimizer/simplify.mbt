@@ -369,6 +369,7 @@ pub fn Simplifier::simplify_connectors(
       expression,
       (e, l, r) => self.simplify_connectors_pair(e, l, r),
       root,
+      index=connector_flat_index(expression.kind.is_a(Or)),
     )
     if !expression.kind.is_any([Connector, Boolean]) &&
       !expression.is_type([BOOLEAN]) {
@@ -467,15 +468,76 @@ fn cmpval_eq(a : CmpVal, b : CmpVal) -> Bool {
 }
 
 ///|
+/// A Python set of expressions (structural equality), insertion ordered, with hashed
+/// lookups.
+priv struct ExprSet {
+  items : Array[@core.Expr]
+  index : Map[Int, Array[Int]]
+}
+
+///|
+fn ExprSet::new() -> ExprSet {
+  { items: [], index: {}, }
+}
+
+///|
+fn ExprSet::find(self : ExprSet, x : @core.Expr, h : Int) -> Int {
+  match self.index.get(h) {
+    Some(bucket) =>
+      for i in bucket {
+        if self.items[i] == x {
+          return i
+        }
+      }
+    None => ()
+  }
+  -1
+}
+
+///|
+fn ExprSet::contains(self : ExprSet, x : @core.Expr) -> Bool {
+  self.find(x, x.hash()) >= 0
+}
+
+///|
+/// Adds `x` unless an equal expression is present; returns its position.
+fn ExprSet::add(self : ExprSet, x : @core.Expr) -> Int {
+  let h = x.hash()
+  let i = self.find(x, h)
+  if i >= 0 {
+    return i
+  }
+  let i = self.items.length()
+  self.items.push(x)
+  match self.index.get(h) {
+    Some(bucket) => bucket.push(i)
+    None => self.index[h] = [i]
+  }
+  i
+}
+
+///|
+fn ExprSet::of(xs : Array[@core.Expr]) -> ExprSet {
+  let s = ExprSet::new()
+  for x in xs {
+    s.add(x) |> ignore
+  }
+  s
+}
+
+///|
 /// Python set of structurally-equal expressions (insertion ordered).
 fn expr_set(xs : Array[@core.Expr]) -> Array[@core.Expr] {
-  let out = []
-  for x in xs {
-    if !out.contains(x) {
-      out.push(x)
+  if xs.length() <= 4 {
+    let out = []
+    for x in xs {
+      if !out.contains(x) {
+        out.push(x)
+      }
     }
+    return out
   }
-  out
+  ExprSet::of(xs).items
 }
 
 ///|
@@ -608,9 +670,9 @@ pub fn Simplifier::remove_complements(
 ) -> @core.Expr raise @core.SqlglotError {
   let mut result = expression
   if expression.kind.is_any([And, Or]) && (root || !expression.same_parent()) {
-    let ops = expr_set(expression.flatten().collect())
-    for op in ops {
-      if op.kind.is_a(Not) && ops.contains(op.this_()) {
+    let op_set = ExprSet::of(expression.flatten().collect())
+    for op in op_set.items {
+      if op.kind.is_a(Not) && op_set.contains(op.this_()) {
         if expression.meta_get("nonnull") is Some(Bool(true)) {
           result = if expression.kind.is_a(And) {
             @core.false_()
@@ -654,18 +716,15 @@ pub fn Simplifier::uniq_sort(
       }
     } else {
       // dict {gen(e): e}: first position, last value
+      let positions : Map[String, Int] = {}
       for e in flattened {
         let key = gen(e)
-        let mut found = false
-        for i, kv in arr {
-          if kv.0 == key {
-            arr[i] = (key, e)
-            found = true
-            break
+        match positions.get(key) {
+          Some(i) => arr[i] = (key, e)
+          None => {
+            positions[key] = arr.length()
+            arr.push((key, e))
           }
-        }
-        if !found {
-          arr.push((key, e))
         }
       }
       deduped_len = arr.length()
@@ -720,43 +779,73 @@ pub fn Simplifier::absorb_and_eliminate(
   if expression.kind.is_any([And, Or]) && (root || !expression.same_parent()) {
     let kind : @core.Kind = if expression.kind.is_a(And) { Or } else { And }
     let ops = expression.flatten().collect()
-    let op_set = expr_set(ops)
-    let subops : Array[(@core.Expr, Array[Array[@core.Expr]])] = []
+    let op_set = ExprSet::of(ops)
+    // defaultdict(list) keyed by expression (hashed lookups)
+    let subop_keys = ExprSet::new()
+    let subop_vals : Array[Array[Array[@core.Expr]]] = []
     fn subops_add(k : @core.Expr, s : Array[@core.Expr]) {
-      for entry in subops {
-        if entry.0 == k {
-          entry.1.push(s)
-          return
-        }
+      let i = subop_keys.add(k)
+      if i == subop_vals.length() {
+        subop_vals.push([])
       }
-      subops.push((k, [s]))
+      subop_vals[i].push(s)
     }
 
     fn subops_get(k : @core.Expr) -> Array[Array[@core.Expr]] {
-      for entry in subops {
-        if entry.0 == k {
-          return entry.1
-        }
+      let i = subop_keys.find(k, k.hash())
+      if i >= 0 {
+        subop_vals[i]
+      } else {
+        []
       }
-      []
     }
 
-    let pairs : Array[(@core.Expr, @core.Expr, Array[(@core.Expr, @core.Expr)])] = []
+    // defaultdict(list) keyed by frozenset({a, b}), bucketed by an order-independent hash
+    let pairs : Map[
+      Int,
+      Array[(@core.Expr, @core.Expr, Array[(@core.Expr, @core.Expr)])],
+    ] = {}
+    fn pair_hash(a : @core.Expr, b : @core.Expr) -> Int {
+      let ha = a.hash()
+      let hb = b.hash()
+      if ha < hb {
+        ha * 31 + hb
+      } else {
+        hb * 31 + ha
+      }
+    }
+
     fn pairs_add(a : @core.Expr, b : @core.Expr, v : (@core.Expr, @core.Expr)) {
-      for entry in pairs {
+      let h = pair_hash(a, b)
+      let bucket = match pairs.get(h) {
+        Some(bucket) => bucket
+        None => {
+          let bucket = []
+          pairs[h] = bucket
+          bucket
+        }
+      }
+      for entry in bucket {
         if frozen_pair_eq(entry.0, entry.1, a, b) {
           entry.2.push(v)
           return
         }
       }
-      pairs.push((a, b, [v]))
+      bucket.push((a, b, [v]))
     }
 
-    fn pairs_get(a : @core.Expr, b : @core.Expr) -> Array[(@core.Expr, @core.Expr)] {
-      for entry in pairs {
-        if frozen_pair_eq(entry.0, entry.1, a, b) {
-          return entry.2
-        }
+    fn pairs_get(
+      a : @core.Expr,
+      b : @core.Expr,
+    ) -> Array[(@core.Expr, @core.Expr)] {
+      match pairs.get(pair_hash(a, b)) {
+        Some(bucket) =>
+          for entry in bucket {
+            if frozen_pair_eq(entry.0, entry.1, a, b) {
+              return entry.2
+            }
+          }
+        None => ()
       }
       []
     }
@@ -903,7 +992,12 @@ pub fn Simplifier::simplify_literals(
   root : Bool,
 ) -> @core.Expr raise @core.SqlglotError {
   let result = if expression.kind.is_a(Binary) && !expression.kind.is_a(Connector) {
-    self.flat_simplify(expression, (e, a, b) => self.simplify_binary(e, a, b), root)
+    self.flat_simplify(
+      expression,
+      (e, a, b) => self.simplify_binary(e, a, b),
+      root,
+      index?=binary_flat_index(expression),
+    )
   } else if expression.kind.is_a(Neg) &&
     (match expression.this() {
       Some(t) => t.kind.is_a(Neg)
@@ -1472,10 +1566,11 @@ fn Simplifier::flat_simplify(
   expression : @core.Expr,
   simplifier : (@core.Expr, @core.Expr, @core.Expr) -> @core.Expr? raise @core.SqlglotError,
   root : Bool,
+  index? : FlatIndex,
 ) -> @core.Expr raise @core.SqlglotError {
   ignore(self)
   if root || !expression.same_parent() {
-    let operands = []
+    let mut operands = []
     let queue = expression.flatten(unnest=false).collect()
     let size = queue.length()
     if expression.kind.is_a(Connector) &&
@@ -1483,6 +1578,10 @@ fn Simplifier::flat_simplify(
       .iter()
       .any(op => op.kind.is_any([Boolean, Literal, Null]) || is_comparison(op)) {
       return expression
+    }
+    if index is Some(ix) && size >= flat_index_min_size {
+      operands = flat_simplify_indexed(expression, queue, simplifier, ix)
+      queue.clear()
     }
     while queue.length() > 0 {
       let a = queue.remove(0)

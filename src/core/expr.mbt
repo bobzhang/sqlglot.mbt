@@ -1517,36 +1517,9 @@ pub fn Expr::to_py_float(self : Expr) -> Double? {
 }
 
 // ---------------------------------------------------------------------------
-// Equality and hashing (structural, mirroring Python's __eq__/__hash__)
-
-///|
-fn value_eq(a : Value, b : Value, raw : Bool) -> Bool {
-  match (a, b) {
-    (Node(x), Node(y)) => x == y
-    (List(x), List(y)) => {
-      if x.length() != y.length() {
-        return false
-      }
-      for i in 0..<x.length() {
-        if !value_eq(x[i], y[i], raw) {
-          return false
-        }
-      }
-      true
-    }
-    (Str(x), Str(y)) =>
-      if raw {
-        x == y
-      } else {
-        x == y || py_lower(x) == py_lower(y)
-      }
-    (Bool(x), Bool(y)) => x == y
-    (Int(x), Int(y)) => x == y
-    (DT(x), DT(y)) => x == y
-    (Bool(true), Int(1)) | (Int(1), Bool(true)) => true
-    _ => false
-  }
-}
+// Equality and hashing (structural, mirroring Python's __eq__/__hash__). Like Python's
+// `Expr.__hash__`, both walk the tree with an explicit stack so that very deep trees
+// (e.g. long left-deep chains of binary operators) don't exhaust the call stack.
 
 ///|
 fn significant(v : Value, raw : Bool) -> Bool {
@@ -1562,16 +1535,64 @@ fn significant(v : Value, raw : Bool) -> Bool {
 }
 
 ///|
-pub impl Eq for Expr with fn equal(self, other) {
-  if physical_equal(self, other) {
-    return true
+fn str_eq(x : String, y : String, raw : Bool) -> Bool {
+  if raw {
+    x == y
+  } else {
+    x == y || py_lower(x) == py_lower(y)
   }
-  if self.kind != other.kind {
+}
+
+///|
+/// Compares two argument values; nested expression pairs are pushed on `pending`
+/// instead of being compared recursively.
+fn value_eq_shallow(
+  a : Value,
+  b : Value,
+  raw : Bool,
+  pending : Array[(Expr, Expr)],
+) -> Bool {
+  match (a, b) {
+    (Node(x), Node(y)) => {
+      if !physical_equal(x, y) {
+        pending.push((x, y))
+      }
+      true
+    }
+    (List(x), List(y)) => {
+      if x.length() != y.length() {
+        return false
+      }
+      for i in 0..<x.length() {
+        if !value_eq_shallow(x[i], y[i], raw, pending) {
+          return false
+        }
+      }
+      true
+    }
+    (Str(x), Str(y)) => str_eq(x, y, raw)
+    (Bool(x), Bool(y)) => x == y
+    (Int(x), Int(y)) => x == y
+    (DT(x), DT(y)) => x == y
+    (Bool(true), Int(1)) | (Int(1), Bool(true)) => true
+    _ => false
+  }
+}
+
+///|
+/// Compares the kind and the significant arguments of two nodes; child expression pairs
+/// are pushed on `pending`.
+fn node_eq_shallow(
+  a : Expr,
+  other : Expr,
+  pending : Array[(Expr, Expr)],
+) -> Bool {
+  if a.kind != other.kind {
     return false
   }
-  let raw = self.kind.hash_raw_args()
+  let raw = a.kind.hash_raw_args()
   let mut n1 = 0
-  for k, v in self.args {
+  for k, v in a.args {
     if !significant(v, raw) {
       continue
     }
@@ -1581,7 +1602,7 @@ pub impl Eq for Expr with fn equal(self, other) {
         if !significant(w, raw) {
           return false
         }
-        if !value_eq(v, w, raw) {
+        if !value_eq_shallow(v, w, raw, pending) {
           return false
         }
       }
@@ -1598,13 +1619,41 @@ pub impl Eq for Expr with fn equal(self, other) {
 }
 
 ///|
-fn hash_value(hasher : Hasher, v : Value, raw : Bool) -> Unit {
+pub impl Eq for Expr with fn equal(self, other) {
+  if physical_equal(self, other) {
+    return true
+  }
+  let pending : Array[(Expr, Expr)] = []
+  if !node_eq_shallow(self, other, pending) {
+    return false
+  }
+  while pending.pop() is Some((x, y)) {
+    if !node_eq_shallow(x, y, pending) {
+      return false
+    }
+  }
+  true
+}
+
+///|
+/// Hashes an argument value; nested expressions are pushed on `pending` and hashed into
+/// the same hasher afterwards (in a fixed order).
+fn hash_value_shallow(
+  hasher : Hasher,
+  v : Value,
+  raw : Bool,
+  pending : Array[Expr],
+) -> Unit {
   match v {
-    Node(e) => hasher.combine_int(e.hash())
+    Node(e) => {
+      // a marker, the node's own contribution follows when it is popped
+      hasher.combine_int(-1)
+      pending.push(e)
+    }
     List(l) => {
       hasher.combine_int(l.length())
       for x in l {
-        hash_value(hasher, x, raw)
+        hash_value_shallow(hasher, x, raw, pending)
       }
     }
     Str(s) => hasher.combine_string(if raw { s } else { py_lower(s) })
@@ -1616,18 +1665,24 @@ fn hash_value(hasher : Hasher, v : Value, raw : Bool) -> Unit {
 
 ///|
 pub impl Hash for Expr with fn hash_combine(self, hasher) {
-  hasher.combine_int(self.kind.id())
-  let raw = self.kind.hash_raw_args()
-  let keys = []
-  for k, v in self.args {
-    if significant(v, raw) {
-      keys.push(k)
+  // Children are hashed after their parent's arguments, in reverse push order; the
+  // traversal order is deterministic, so equal trees produce equal hashes.
+  let pending : Array[Expr] = [self]
+  while pending.pop() is Some(node) {
+    hasher.combine_int(node.kind.id())
+    let raw = node.kind.hash_raw_args()
+    let keys = []
+    for k, v in node.args {
+      if significant(v, raw) {
+        keys.push(k)
+      }
     }
-  }
-  keys.sort()
-  for k in keys {
-    hasher.combine_string(k)
-    hash_value(hasher, self.args[k], raw)
+    keys.sort()
+    hasher.combine_int(keys.length())
+    for k in keys {
+      hasher.combine_string(k)
+      hash_value_shallow(hasher, node.args[k], raw, pending)
+    }
   }
 }
 
