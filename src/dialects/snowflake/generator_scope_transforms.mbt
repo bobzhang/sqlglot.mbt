@@ -1,6 +1,7 @@
-// Port of the scope-dependent Select transforms used by the Snowflake generator:
-// (`explode_projection_to_unnest` comes from the optimizer package),
-// `_transform_generate_date_array` and `_qualify_unnested_columns`.
+// Port of the scope-dependent Select transforms used by the Snowflake generator
+// (`explode_projection_to_unnest` comes from the optimizer package):
+// `_transform_generate_date_array` and `_qualify_unnested_columns`, built on the
+// optimizer's `build_scope`.
 
 ///|
 fn new_name(names : Array[String], name : String) -> String {
@@ -76,16 +77,20 @@ fn unnest_generate_date_array(
       match unnest_parent.parent {
         Some(select) if select.kind == Select => {
           let replace_column_name = sequence_value_str
-          for column in scope_columns(select) {
-            if @core.py_lower(column.name()) ==
-              @core.py_lower(replace_column_name) {
-              let replacement = match column.parent {
-                Some(p) if p.kind == Select =>
-                  @core.alias_(date_add, replace_column_name)
-                _ => date_add
+          match @optimizer.build_scope(select) {
+            Some(scope) =>
+              for column in scope.columns() {
+                if @core.py_lower(column.name()) ==
+                  @core.py_lower(replace_column_name) {
+                  let replacement = match column.parent {
+                    Some(p) if p.kind == Select =>
+                      @core.alias_(date_add, replace_column_name)
+                    _ => date_add
+                  }
+                  column.replace(Some(replacement)) |> ignore
+                }
               }
-              column.replace(Some(replacement)) |> ignore
-            }
+            None => ()
           }
           let lateral = @core.mk1(Lateral, unnest_parent.this_().pop())
           unnest_parent.replace(Some(@core.mk1(Join, lateral))) |> ignore
@@ -93,9 +98,17 @@ fn unnest_generate_date_array(
         _ => ()
       }
     _ => {
-      let sub = @core.select_([@core.alias_(date_add, sequence_value_str)]).from_(
-        unnest.copy(),
-      )
+      // `date_add.as_(sequence_value_name)`: an alias column Identifier is reused
+      // as-is (keeping its quoting); the "value" fallback is a plain string
+      let projection = if sequence_value_name.kind == Identifier {
+        @core.mk(Alias, [
+          ("this", date_add.copy()),
+          ("alias", sequence_value_name.copy()),
+        ])
+      } else {
+        @core.alias_(date_add, sequence_value_str)
+      }
+      let sub = @core.select_([projection]).from_(unnest.copy())
       unnest.replace(
         Some(@core.exp_subquery_with_alias_expr(sub, unnest_alias, copy=false)),
       )
@@ -144,12 +157,14 @@ fn qualify_unnested_columns(
   expression : @core.Expr,
 ) -> @core.Expr raise @core.SqlglotError {
   guard expression.kind == Select else { return expression }
-  let scope = build_mini_scope(expression)
-  let unnests = @core.gen_find_all_in_scope(expression, [Unnest])
+  guard @optimizer.build_scope(expression) is Some(scope) else {
+    return expression
+  }
+  let unnests = scope.find_all([Unnest]).collect()
   if unnests.is_empty() {
     return expression
   }
-  let taken_source_names = scope.sources.copy()
+  let taken_source_names = scope.sources.keys().collect()
   let column_source : Map[String, @core.Expr] = Map([])
   let unnest_to_identifier : Array[(@core.Expr, @core.Expr)] = []
   let mut unnest_identifier : @core.Expr? = None
@@ -191,7 +206,7 @@ fn qualify_unnested_columns(
         let aliased_unnest = alias_with_table(unnest, None, [
           @core.to_identifier(alias_name),
         ])
-        unnest.replace(Some(aliased_unnest)) |> ignore
+        scope.replace(unnest, aliased_unnest)
         unnest_identifier = aliased_unnest
           .arg("alias")
           .unwrap()
@@ -212,7 +227,7 @@ fn qualify_unnested_columns(
       column_source[@core.py_lower(c)] = ui
     }
   }
-  for column in scope_columns(expression) {
+  for column in scope.columns() {
     if column.text("table") != "" {
       continue
     }
