@@ -49,7 +49,8 @@ fn serde_leaf_to_json(v : Value) -> Json {
   match v {
     Str(s) => Json::string(s)
     Bool(b) => Json::boolean(b)
-    Int(i) => Json::number(i.to_double())
+    // Keep the exact decimal text so 64-bit values survive the Double representation
+    Int(i) => Json::number(i.to_double(), repr=i.to_string())
     DT(d) => Json::string(d.value())
     List(l) => Json::array(l.map(serde_leaf_to_json))
     // Not JSON-serializable in Python; dumped as a nested payload list.
@@ -64,7 +65,17 @@ fn serde_leaf_from_json(j : Json) -> Value raise SqlglotError {
     String(s) => Str(s)
     True => Bool(true)
     False => Bool(false)
-    Number(n, ..) => Int(n.to_int())
+    Number(n, repr~) =>
+      Int(
+        match repr {
+          Some(r) =>
+            match parse_int_str(r) {
+              Some(v) => v
+              None => n.to_int64()
+            }
+          None => n.to_int64()
+        },
+      )
     Array(items) =>
       // A list of payload objects is a nested dump (see `serde_leaf_to_json`).
       if !items.is_empty() && items.iter().all(x => x is Object(_)) {
