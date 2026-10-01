@@ -1,7 +1,10 @@
 // Port of tests/test_expressions.py
 
 ///|
-fn sql(e : @core.Expr, dialect? : String = "") -> String raise @core.SqlglotError {
+fn sql(
+  e : @core.Expr,
+  dialect? : String = "",
+) -> String raise @core.SqlglotError {
   @sqlglot.generate(e, dialect~)
 }
 
@@ -101,8 +104,7 @@ test "TestExprs.test_eq" {
     p1("ROW() OVER(Partition by y)") == p1("ROW() OVER (partition BY y)"),
   )
   assert_true(
-    @core.mk(Table, [("pivots", ([] : Array[@core.Expr]))]) ==
-    @core.mk0(Table),
+    @core.mk(Table, [("pivots", ([] : Array[@core.Expr]))]) == @core.mk0(Table),
   )
   // SKIP: `exp.Table(pivots=[None]) != exp.Table()`: argument lists can't hold `None` in the port
   assert_true(
@@ -265,10 +267,7 @@ test "TestExprs.test_table_name" {
     "`a-1`.b.c",
   )
   assert_eq(@sqlglot.table_name("a-1.b.c", dialect="bigquery"), "`a-1`.b.c")
-  assert_eq(
-    @sqlglot.table_name(@sqlglot.maybe_parse("a", into=[Table])),
-    "a",
-  )
+  assert_eq(@sqlglot.table_name(@sqlglot.maybe_parse("a", into=[Table])), "a")
   assert_eq(
     @sqlglot.table_name(@sqlglot.maybe_parse("a.b", into=[Table])),
     "a.b",
@@ -429,10 +428,9 @@ test "TestExprs.test_replace_placeholders" {
   )
   assert_eq(
     sql(
-      @sqlglot.replace_placeholders(
-        p1("select * from :name WHERE ? > 100"),
-        kwargs={ "another_name": "bla" },
-      ),
+      @sqlglot.replace_placeholders(p1("select * from :name WHERE ? > 100"), kwargs={
+        "another_name": "bla",
+      }),
     ),
     "SELECT * FROM :name WHERE ? > 100",
   )
@@ -506,11 +504,10 @@ test "TestExprs.test_function_building" {
   )
   assert_eq(
     sql(
-      @sqlglot.func(
-        "log",
-        dialect="bigquery",
-        kwargs={ "expression": "x", "this": 2 },
-      ),
+      @sqlglot.func("log", dialect="bigquery", kwargs={
+        "expression": "x",
+        "this": 2,
+      }),
       dialect="bigquery",
     ),
     "LOG(x, 2)",
@@ -665,7 +662,10 @@ test "TestExprs.test_alias_column_names" {
 test "TestExprs.test_cast" {
   let expression = p1("CAST(x AS DATE)")
   assert_true(
-    physical_equal(expression.get_type().unwrap(), expression.arg("to").unwrap()),
+    physical_equal(
+      expression.get_type().unwrap(),
+      expression.arg("to").unwrap(),
+    ),
   )
   let expression = p1("select cast(x as DATE)")
   let casts = expression.find_all([Cast]).collect()
@@ -740,18 +740,12 @@ test "TestExprs.test_sql" {
     gen(p1("select \"x\""), dialect="hive", pretty=true),
     "SELECT\n  `x`",
   )
-  assert_eq(
-    gen(p1("X + y"), identify=true, normalize=true),
-    "\"x\" + \"y\"",
-  )
+  assert_eq(gen(p1("X + y"), identify=true, normalize=true), "\"x\" + \"y\"")
   assert_eq(
     gen(p1("\"X\" + Y"), identify=true, normalize=true),
     "\"X\" + \"y\"",
   )
-  assert_eq(
-    gen(p1("SUM(X)"), identify=true, normalize=true),
-    "SUM(\"x\")",
-  )
+  assert_eq(gen(p1("SUM(X)"), identify=true, normalize=true), "SUM(\"x\")")
 }
 
 ///|
@@ -781,10 +775,16 @@ test "TestExprs.test_transform_simple" {
     }
   }
   let actual_expression_1 = expression.transform(fun)
-  assert_eq(sql(actual_expression_1, dialect="presto"), "IF(c - 2 > 0, c - 2, b)")
+  assert_eq(
+    sql(actual_expression_1, dialect="presto"),
+    "IF(c - 2 > 0, c - 2, b)",
+  )
   assert_false(physical_equal(actual_expression_1, expression))
   let actual_expression_2 = expression.transform(fun, copy=false)
-  assert_eq(sql(actual_expression_2, dialect="presto"), "IF(c - 2 > 0, c - 2, b)")
+  assert_eq(
+    sql(actual_expression_2, dialect="presto"),
+    "IF(c - 2 > 0, c - 2, b)",
+  )
   assert_true(physical_equal(actual_expression_2, expression))
 }
 
@@ -1143,23 +1143,11 @@ test "TestExprs.test_identifier" {
 
 ///|
 test "TestExprs.test_function_normalizer" {
-  assert_eq(
-    gen(p1("HELLO()"), normalize_functions="lower"),
-    "hello()",
-  )
-  assert_eq(
-    gen(p1("hello()"), normalize_functions="upper"),
-    "HELLO()",
-  )
+  assert_eq(gen(p1("HELLO()"), normalize_functions="lower"), "hello()")
+  assert_eq(gen(p1("hello()"), normalize_functions="upper"), "HELLO()")
   assert_eq(gen(p1("heLLO()"), normalize_functions=""), "heLLO()")
-  assert_eq(
-    gen(p1("SUM(x)"), normalize_functions="lower"),
-    "sum(x)",
-  )
-  assert_eq(
-    gen(p1("sum(x)"), normalize_functions="upper"),
-    "SUM(x)",
-  )
+  assert_eq(gen(p1("SUM(x)"), normalize_functions="lower"), "sum(x)")
+  assert_eq(gen(p1("sum(x)"), normalize_functions="upper"), "SUM(x)")
 }
 
 ///|
@@ -1205,7 +1193,10 @@ test "TestExprs.test_convert" {
     (@core.PyStr("1"), "'1'"),
     (@core.PyNone, "NULL"),
     (@core.PyBool(true), "TRUE"),
-    (@core.PyTuple([@core.PyInt(1), @core.PyStr("2"), @core.PyNone]), "(1, '2', NULL)"),
+    (
+      @core.PyTuple([@core.PyInt(1), @core.PyStr("2"), @core.PyNone]),
+      "(1, '2', NULL)",
+    ),
     (
       @core.PyList([@core.PyInt(1), @core.PyStr("2"), @core.PyNone]),
       "ARRAY(1, '2', NULL)",
@@ -1214,8 +1205,50 @@ test "TestExprs.test_convert" {
       @core.PyDict([(@core.PyStr("x"), @core.PyNone)]),
       "MAP(ARRAY('x'), ARRAY(NULL))",
     ),
-    // SKIP: datetime.datetime (x2), pytz-localized datetime and datetime.date values are
-    // Python-specific host types
+    // datetime.datetime(2022, 10, 1, 1, 1, 1, 1)
+    (
+      @core.PyDateTime(
+        year=2022,
+        month=10,
+        day=1,
+        hour=1,
+        minute=1,
+        second=1,
+        microsecond=1,
+        tz=None,
+      ),
+      "TIME_STR_TO_TIME('2022-10-01 01:01:01.000001')",
+    ),
+    // datetime.datetime(2022, 10, 1, 1, 1, 1, tzinfo=datetime.timezone.utc)
+    (
+      @core.PyDateTime(
+        year=2022,
+        month=10,
+        day=1,
+        hour=1,
+        minute=1,
+        second=1,
+        microsecond=0,
+        tz=Some(("UTC", 0)),
+      ),
+      "TIME_STR_TO_TIME('2022-10-01 01:01:01+00:00', 'UTC')",
+    ),
+    // pytz.timezone("America/Los_Angeles").localize(datetime.datetime(2022, 10, 1, 1, 1, 1))
+    (
+      @core.PyDateTime(
+        year=2022,
+        month=10,
+        day=1,
+        hour=1,
+        minute=1,
+        second=1,
+        microsecond=0,
+        tz=Some(("America/Los_Angeles", -7 * 60)),
+      ),
+      "TIME_STR_TO_TIME('2022-10-01 01:01:01-07:00', 'America/Los_Angeles')",
+    ),
+    // datetime.date(2022, 10, 1)
+    (@core.PyDate(year=2022, month=10, day=1), "DATE_STR_TO_DATE('2022-10-01')"),
     (@core.PyFloat(@double.not_a_number), "NULL"),
     (@core.PyBytes(b"\x00\x00\x00\x00\x00\x00\x07\xd3"), "2003"),
     // namedtuple PointTuple(1, 2) and object PointClass(1, 2)
@@ -1241,8 +1274,24 @@ test "TestExprs.test_convert" {
   )
 }
 
-// SKIP: TestExprs.test_convert_python39 (1 assertion): converts a zoneinfo-aware Python
-// datetime.
+///|
+test "TestExprs.test_convert_python39" {
+  // datetime.datetime(2022, 10, 1, 1, 1, 1, tzinfo=zoneinfo.ZoneInfo("America/Los_Angeles"))
+  let value = @core.PyDateTime(
+    year=2022,
+    month=10,
+    day=1,
+    hour=1,
+    minute=1,
+    second=1,
+    microsecond=0,
+    tz=Some(("America/Los_Angeles", -7 * 60)),
+  )
+  assert_eq(
+    sql(@core.convert(value)),
+    "TIME_STR_TO_TIME('2022-10-01 01:01:01-07:00', 'America/Los_Angeles')",
+  )
+}
 
 ///|
 test "TestExprs.test_comment_alias" {
@@ -1348,7 +1397,10 @@ test "TestExprs.test_to_column" {
     sql(@sqlglot.to_column("`column_name`", dialect="spark")),
     "\"column_name\"",
   )
-  assert_eq(sql(@sqlglot.to_column("column_name", quoted=true)), "\"column_name\"")
+  assert_eq(
+    sql(@sqlglot.to_column("column_name", quoted=true)),
+    "\"column_name\"",
+  )
   assert_eq(
     sql(
       @sqlglot.to_column("column_name", kwargs={
@@ -1447,10 +1499,7 @@ test "TestExprs.test_data_type_builder" {
   assert_eq(dtb("ARRAY<UNKNOWN>"), "ARRAY<UNKNOWN>")
   assert_eq(dtb("ARRAY<NULL>"), "ARRAY<NULL>")
   assert_eq(dtb("varchar(100) collate 'en-ci'"), "VARCHAR(100)")
-  assert_eq(
-    sql(@sqlglot.datatype_build("int[3]"), dialect="duckdb"),
-    "INT[3]",
-  )
+  assert_eq(sql(@sqlglot.datatype_build("int[3]"), dialect="duckdb"), "INT[3]")
   assert_eq(
     sql(@sqlglot.datatype_build("int[3][3]"), dialect="duckdb"),
     "INT[3][3]",
@@ -1660,8 +1709,32 @@ test "TestExprs.test_parse_identifier" {
   assert_true(@sqlglot.parse_identifier("a ' b") == ident("a ' b"))
 }
 
-// SKIP: TestExprs.test_convert_datetime_time (11 assertions): converts Python
-// `datetime.time` objects.
+///|
+fn py_time(h : Int, m : Int, s : Int, us? : Int = 0) -> @core.PyObj {
+  PyTime(hour=h, minute=m, second=s, microsecond=us)
+}
+
+///|
+test "TestExprs.test_convert_datetime_time" {
+  // Test converting datetime.time objects to TsOrDsToTime expressions
+  let result = @core.convert(py_time(14, 30, 45))
+  assert_true(result.kind.is_a(TsOrDsToTime))
+  assert_true(result.this_().kind.is_a(Literal))
+  assert_eq(sql(result), "CAST('14:30:45' AS TIME)")
+  assert_true(result.this_().is_string())
+  // Test with microseconds
+  let result = @core.convert(py_time(9, 15, 30, us=123456))
+  assert_true(result.kind.is_a(TsOrDsToTime))
+  assert_eq(sql(result), "CAST('09:15:30.123456' AS TIME)")
+  // Test midnight
+  let result = @core.convert(py_time(0, 0, 0))
+  assert_true(result.kind.is_a(TsOrDsToTime))
+  assert_eq(sql(result), "CAST('00:00:00' AS TIME)")
+  // Test noon
+  let result = @core.convert(py_time(12, 0, 0))
+  assert_true(result.kind.is_a(TsOrDsToTime))
+  assert_eq(sql(result), "CAST('12:00:00' AS TIME)")
+}
 
 ///|
 test "TestExprs.test_hash_large_ast" {

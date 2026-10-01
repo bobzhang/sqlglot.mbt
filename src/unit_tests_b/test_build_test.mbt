@@ -54,16 +54,8 @@ test "TestBuild.test_build" {
     (() => x.isin(unnest=["x"]), "x IN UNNEST(x)", "bigquery"),
     (() => x.isin(unnest=["x", "y"]), "x IN (SELECT UNNEST(x, y))", ""),
     (() => x.between(1, 2), "x BETWEEN 1 AND 2", ""),
-    (
-      () => x.binop(Add, 1, reverse=true).add(2).add(3),
-      "1 + x + 2 + 3",
-      "",
-    ),
-    (
-      () => x.mul(2).binop(Add, 1, reverse=true).add(3),
-      "1 + (x * 2) + 3",
-      "",
-    ),
+    (() => x.binop(Add, 1, reverse=true).add(2).add(3), "1 + x + 2 + 3", ""),
+    (() => x.mul(2).binop(Add, 1, reverse=true).add(3), "1 + (x * 2) + 3", ""),
     (() => x.mul(1).mul(2).add(3), "(x * 1 * 2) + 3", ""),
     (
       () => x.mul(2).truediv(3).binop(Add, 1, reverse=true),
@@ -101,11 +93,7 @@ test "TestBuild.test_build" {
     (() => @sqlglot.select(["x"]), "SELECT x", ""),
     (() => @sqlglot.select(["x", "y"]), "SELECT x, y", ""),
     (() => @sqlglot.select(["x"]).from_("tbl"), "SELECT x FROM tbl", ""),
-    (
-      () => @sqlglot.select(["x", "y"]).from_("tbl"),
-      "SELECT x, y FROM tbl",
-      "",
-    ),
+    (() => @sqlglot.select(["x", "y"]).from_("tbl"), "SELECT x, y FROM tbl", ""),
     (
       () => @sqlglot.select(["x"]).select_(["y"]).from_("tbl"),
       "SELECT x, y FROM tbl",
@@ -134,11 +122,9 @@ test "TestBuild.test_build" {
       "",
     ),
     (
-      () =>
-        @sqlglot.select(["x"])
-        .from_("tbl")
-        .where_(["x > 0"])
-        .where_(["x < 9"]),
+      () => {
+        @sqlglot.select(["x"]).from_("tbl").where_(["x > 0"]).where_(["x < 9"])
+      },
       "SELECT x FROM tbl WHERE x > 0 AND x < 9",
       "",
     ),
@@ -148,32 +134,36 @@ test "TestBuild.test_build" {
       "",
     ),
     (
-      () =>
+      () => {
         @sqlglot.select(["x"])
         .from_("tbl")
         .where_([@core.PyNone])
-        .where_(([false, ""] : Array[&@core.IntoPy])),
+        .where_(([false, ""] : Array[&@core.IntoPy]))
+      },
       "SELECT x FROM tbl WHERE FALSE",
       "",
     ),
     (
-      () =>
+      () => {
         @sqlglot.select(["x"])
         .from_("tbl")
         .where_(["x > 0"])
-        .where_(["x < 9"], append=false),
+        .where_(["x < 9"], append=false)
+      },
       "SELECT x FROM tbl WHERE x < 9",
       "",
     ),
     (
-      () =>
-        @sqlglot.select(["x"]).from_("tbl").where_(["x > 0"]).lock(copy=false),
+      () => {
+        @sqlglot.select(["x"]).from_("tbl").where_(["x > 0"]).lock(copy=false)
+      },
       "SELECT x FROM tbl WHERE x > 0 FOR UPDATE",
       "mysql",
     ),
     (
-      () =>
-        @sqlglot.select(["x"]).from_("tbl").where_(["x > 0"]).lock(update=false),
+      () => {
+        @sqlglot.select(["x"]).from_("tbl").where_(["x > 0"]).lock(update=false)
+      },
       "SELECT x FROM tbl WHERE x > 0 FOR SHARE",
       "postgres",
     ),
@@ -183,10 +173,11 @@ test "TestBuild.test_build" {
       "spark",
     ),
     (
-      () =>
+      () => {
         @sqlglot.select(["x"])
         .from_("tbl")
-        .hint(["coalesce(3)", "broadcast(x)"]),
+        .hint(["coalesce(3)", "broadcast(x)"])
+      },
       "SELECT /*+ COALESCE(3), BROADCAST(x) */ x FROM tbl",
       "spark",
     ),
@@ -201,11 +192,12 @@ test "TestBuild.test_build" {
       "",
     ),
     (
-      () =>
+      () => {
         @sqlglot.select(["x", "y", "z", "a"])
         .from_("tbl")
         .group_by(["x, y", "z"])
-        .group_by(["a"]),
+        .group_by(["a"])
+      },
       "SELECT x, y, z, a FROM tbl GROUP BY x, y, z, a",
       "",
     ),
@@ -230,10 +222,11 @@ test "TestBuild.test_build" {
       "",
     ),
     (
-      () =>
+      () => {
         @sqlglot.select(["x"])
         .lateral(["OUTER explode(y) tbl2 AS z"])
-        .from_("tbl"),
+        .from_("tbl")
+      },
       "SELECT x FROM tbl LATERAL VIEW OUTER EXPLODE(y) tbl2 AS z",
       "",
     ),
@@ -243,84 +236,92 @@ test "TestBuild.test_build" {
       "",
     ),
     (
-      () =>
-        @sqlglot.select(["x"]).from_("tbl").join_("tbl2", on=["tbl.y = tbl2.y"]),
+      () => {
+        @sqlglot.select(["x"]).from_("tbl").join_("tbl2", on=["tbl.y = tbl2.y"])
+      },
       "SELECT x FROM tbl JOIN tbl2 ON tbl.y = tbl2.y",
       "",
     ),
     (
-      () =>
+      () => {
         @sqlglot.select(["x"])
         .from_("tbl")
-        .join_("tbl2", on=["tbl.y = tbl2.y", "a = b"]),
+        .join_("tbl2", on=["tbl.y = tbl2.y", "a = b"])
+      },
       "SELECT x FROM tbl JOIN tbl2 ON tbl.y = tbl2.y AND a = b",
       "",
     ),
     (
-      () =>
-        @sqlglot.select(["x"]).from_("tbl").join_("tbl2", join_type="left outer"),
-      "SELECT x FROM tbl LEFT OUTER JOIN tbl2",
-      "",
-    ),
-    (
-      () =>
+      () => {
         @sqlglot.select(["x"])
         .from_("tbl")
-        .join_(@core.mk(Table, [("this", "tbl2")]), join_type="left outer"),
+        .join_("tbl2", join_type="left outer")
+      },
       "SELECT x FROM tbl LEFT OUTER JOIN tbl2",
       "",
     ),
     (
-      () =>
+      () => {
+        @sqlglot.select(["x"])
+        .from_("tbl")
+        .join_(@core.mk(Table, [("this", "tbl2")]), join_type="left outer")
+      },
+      "SELECT x FROM tbl LEFT OUTER JOIN tbl2",
+      "",
+    ),
+    (
+      () => {
         @sqlglot.select(["x"])
         .from_("tbl")
         .join_(
           @core.mk(Table, [("this", "tbl2")]),
           join_type="left outer",
           join_alias="foo",
-        ),
+        )
+      },
       "SELECT x FROM tbl LEFT OUTER JOIN tbl2 AS foo",
       "",
     ),
     (
-      () =>
+      () => {
         @sqlglot.select(["x"])
         .from_("tbl")
-        .join_(
-          @sqlglot.select(["y"]).from_("tbl2"),
-          join_type="left outer",
-        ),
+        .join_(@sqlglot.select(["y"]).from_("tbl2"), join_type="left outer")
+      },
       "SELECT x FROM tbl LEFT OUTER JOIN (SELECT y FROM tbl2)",
       "",
     ),
     (
-      () =>
+      () => {
         @sqlglot.select(["x"])
         .from_("tbl")
         .join_(
           @sqlglot.select(["y"]).from_("tbl2").subquery(alias="aliased"),
           join_type="left outer",
-        ),
+        )
+      },
       "SELECT x FROM tbl LEFT OUTER JOIN (SELECT y FROM tbl2) AS aliased",
       "",
     ),
     (
-      () =>
+      () => {
         @sqlglot.select(["x"])
         .from_("tbl")
         .join_(
           @sqlglot.select(["y"]).from_("tbl2"),
           join_type="left outer",
           join_alias="aliased",
-        ),
+        )
+      },
       "SELECT x FROM tbl LEFT OUTER JOIN (SELECT y FROM tbl2) AS aliased",
       "",
     ),
     (
-      () =>
+      () => {
         @sqlglot.select(["x"])
         .from_("tbl")
-        .join_(@sqlglot.maybe_parse("left join x", into=[Join]), on=["a=b"]),
+        .join_(@sqlglot.maybe_parse("left join x", into=[Join]), on=["a=b"])
+      },
       "SELECT x FROM tbl LEFT JOIN x ON a = b",
       "",
     ),
@@ -330,15 +331,16 @@ test "TestBuild.test_build" {
       "",
     ),
     (
-      () =>
+      () => {
         @sqlglot.select(["x"])
         .from_("tbl")
-        .join_("select b from tbl2", on=["a=b"], join_type="left"),
+        .join_("select b from tbl2", on=["a=b"], join_type="left")
+      },
       "SELECT x FROM tbl LEFT JOIN (SELECT b FROM tbl2) ON a = b",
       "",
     ),
     (
-      () =>
+      () => {
         @sqlglot.select(["x"])
         .from_("tbl")
         .join_(
@@ -346,26 +348,29 @@ test "TestBuild.test_build" {
           on=["a=b"],
           join_type="left",
           join_alias="aliased",
-        ),
+        )
+      },
       "SELECT x FROM tbl LEFT JOIN (SELECT b FROM tbl2) AS aliased ON a = b",
       "",
     ),
     (
-      () =>
+      () => {
         @sqlglot.select(["x", "y", "z"])
         .from_("merged_df")
-        .join_("vte_diagnosis_df", using_=["patient_id", "encounter_id"]),
+        .join_("vte_diagnosis_df", using_=["patient_id", "encounter_id"])
+      },
       "SELECT x, y, z FROM merged_df JOIN vte_diagnosis_df USING (patient_id, encounter_id)",
       "",
     ),
     (
-      () =>
+      () => {
         @sqlglot.select(["x", "y", "z"])
         .from_("merged_df")
         .join_("vte_diagnosis_df", using_=[
           @core.to_identifier("patient_id"),
           @core.to_identifier("encounter_id"),
-        ]),
+        ])
+      },
       "SELECT x, y, z FROM merged_df JOIN vte_diagnosis_df USING (patient_id, encounter_id)",
       "",
     ),
@@ -400,11 +405,12 @@ test "TestBuild.test_build" {
       "",
     ),
     (
-      () =>
+      () => {
         @sqlglot.select(["x", "COUNT(y)"])
         .from_("tbl")
         .group_by(["x"])
-        .having_(["COUNT(y) > 0"]),
+        .having_(["COUNT(y) > 0"])
+      },
       "SELECT x, COUNT(y) FROM tbl GROUP BY x HAVING COUNT(y) > 0",
       "",
     ),
@@ -414,10 +420,11 @@ test "TestBuild.test_build" {
       "",
     ),
     (
-      () =>
+      () => {
         @sqlglot.parse_one("select * from x union select * from y").order_by([
           "y",
-        ]),
+        ])
+      },
       "SELECT * FROM x UNION SELECT * FROM y ORDER BY y",
       "",
     ),
@@ -447,29 +454,32 @@ test "TestBuild.test_build" {
       "hive",
     ),
     (
-      () =>
+      () => {
         @sqlglot.select(["x", "y", "z", "a"])
         .from_("tbl")
         .order_by(["x, y", "z"])
-        .order_by(["a"]),
+        .order_by(["a"])
+      },
       "SELECT x, y, z, a FROM tbl ORDER BY x, y, z, a",
       "",
     ),
     (
-      () =>
+      () => {
         @sqlglot.select(["x", "y", "z", "a"])
         .from_("tbl")
         .cluster_by(["x, y", "z"])
-        .cluster_by(["a"]),
+        .cluster_by(["a"])
+      },
       "SELECT x, y, z, a FROM tbl CLUSTER BY x, y, z, a",
       "hive",
     ),
     (
-      () =>
+      () => {
         @sqlglot.select(["x", "y", "z", "a"])
         .from_("tbl")
         .sort_by(["x, y", "z"])
-        .sort_by(["a"]),
+        .sort_by(["a"])
+      },
       "SELECT x, y, z, a FROM tbl SORT BY x, y, z, a",
       "hive",
     ),
@@ -484,39 +494,41 @@ test "TestBuild.test_build" {
       "",
     ),
     (
-      () =>
-        @sqlglot.select(["x"])
-        .from_("tbl")
-        .with_("tbl", "SELECT x FROM tbl2"),
+      () => {
+        @sqlglot.select(["x"]).from_("tbl").with_("tbl", "SELECT x FROM tbl2")
+      },
       "WITH tbl AS (SELECT x FROM tbl2) SELECT x FROM tbl",
       "",
     ),
     (
-      () =>
+      () => {
         @sqlglot.select(["x"])
         .from_("tbl")
-        .with_("tbl", "SELECT x FROM tbl2", materialized=true),
+        .with_("tbl", "SELECT x FROM tbl2", materialized=true)
+      },
       "WITH tbl AS MATERIALIZED (SELECT x FROM tbl2) SELECT x FROM tbl",
       "",
     ),
     (
-      () =>
+      () => {
         @sqlglot.select(["x"])
         .from_("tbl")
-        .with_("tbl", "SELECT x FROM tbl2", materialized=false),
+        .with_("tbl", "SELECT x FROM tbl2", materialized=false)
+      },
       "WITH tbl AS NOT MATERIALIZED (SELECT x FROM tbl2) SELECT x FROM tbl",
       "",
     ),
     (
-      () =>
+      () => {
         @sqlglot.select(["x"])
         .from_("tbl")
-        .with_("tbl", "SELECT x FROM tbl2", recursive=true),
+        .with_("tbl", "SELECT x FROM tbl2", recursive=true)
+      },
       "WITH RECURSIVE tbl AS (SELECT x FROM tbl2) SELECT x FROM tbl",
       "",
     ),
     (
-      () =>
+      () => {
         @sqlglot.select(["x"])
         .from_("tbl")
         .with_(
@@ -524,12 +536,13 @@ test "TestBuild.test_build" {
           @sqlglot.select(["x"]).from_("tbl2"),
           recursive=true,
           materialized=true,
-        ),
+        )
+      },
       "WITH RECURSIVE tbl AS MATERIALIZED (SELECT x FROM tbl2) SELECT x FROM tbl",
       "",
     ),
     (
-      () =>
+      () => {
         @sqlglot.select(["x"])
         .from_("tbl")
         .with_(
@@ -537,121 +550,135 @@ test "TestBuild.test_build" {
           @sqlglot.select(["x"]).from_("tbl2"),
           recursive=true,
           materialized=false,
-        ),
+        )
+      },
       "WITH RECURSIVE tbl AS NOT MATERIALIZED (SELECT x FROM tbl2) SELECT x FROM tbl",
       "",
     ),
     (
-      () =>
+      () => {
         @sqlglot.select(["x"])
         .from_("tbl")
-        .with_("tbl", @sqlglot.select(["x"]).from_("tbl2")),
+        .with_("tbl", @sqlglot.select(["x"]).from_("tbl2"))
+      },
       "WITH tbl AS (SELECT x FROM tbl2) SELECT x FROM tbl",
       "",
     ),
     (
-      () =>
+      () => {
         @sqlglot.select(["x"])
         .from_("tbl")
-        .with_("tbl (x, y)", @sqlglot.select(["x", "y"]).from_("tbl2")),
+        .with_("tbl (x, y)", @sqlglot.select(["x", "y"]).from_("tbl2"))
+      },
       "WITH tbl(x, y) AS (SELECT x, y FROM tbl2) SELECT x FROM tbl",
       "",
     ),
     (
-      () =>
+      () => {
         @sqlglot.select(["x"])
         .from_("tbl")
         .with_("tbl", @sqlglot.select(["x"]).from_("tbl2"))
-        .with_("tbl2", @sqlglot.select(["x"]).from_("tbl3")),
+        .with_("tbl2", @sqlglot.select(["x"]).from_("tbl3"))
+      },
       "WITH tbl AS (SELECT x FROM tbl2), tbl2 AS (SELECT x FROM tbl3) SELECT x FROM tbl",
       "",
     ),
     (
-      () =>
+      () => {
         @sqlglot.select(["x"])
         .from_("tbl")
         .with_("tbl", @sqlglot.select(["x", "y"]).from_("tbl2"))
-        .select_(["y"]),
+        .select_(["y"])
+      },
       "WITH tbl AS (SELECT x, y FROM tbl2) SELECT x, y FROM tbl",
       "",
     ),
     (
-      () =>
+      () => {
         @sqlglot.select(["x"])
         .with_("tbl", @sqlglot.select(["x"]).from_("tbl2"))
-        .from_("tbl"),
+        .from_("tbl")
+      },
       "WITH tbl AS (SELECT x FROM tbl2) SELECT x FROM tbl",
       "",
     ),
     (
-      () =>
+      () => {
         @sqlglot.select(["x"])
         .with_("tbl", @sqlglot.select(["x"]).from_("tbl2"))
         .from_("tbl")
-        .group_by(["x"]),
+        .group_by(["x"])
+      },
       "WITH tbl AS (SELECT x FROM tbl2) SELECT x FROM tbl GROUP BY x",
       "",
     ),
     (
-      () =>
+      () => {
         @sqlglot.select(["x"])
         .with_("tbl", @sqlglot.select(["x"]).from_("tbl2"))
         .from_("tbl")
-        .order_by(["x"]),
+        .order_by(["x"])
+      },
       "WITH tbl AS (SELECT x FROM tbl2) SELECT x FROM tbl ORDER BY x",
       "",
     ),
     (
-      () =>
+      () => {
         @sqlglot.select(["x"])
         .with_("tbl", @sqlglot.select(["x"]).from_("tbl2"))
         .from_("tbl")
-        .limit_(10),
+        .limit_(10)
+      },
       "WITH tbl AS (SELECT x FROM tbl2) SELECT x FROM tbl LIMIT 10",
       "",
     ),
     (
-      () =>
+      () => {
         @sqlglot.select(["x"])
         .with_("tbl", @sqlglot.select(["x"]).from_("tbl2"))
         .from_("tbl")
-        .offset_(10),
+        .offset_(10)
+      },
       "WITH tbl AS (SELECT x FROM tbl2) SELECT x FROM tbl OFFSET 10",
       "",
     ),
     (
-      () =>
+      () => {
         @sqlglot.select(["x"])
         .with_("tbl", @sqlglot.select(["x"]).from_("tbl2"))
         .from_("tbl")
-        .join_("tbl3"),
+        .join_("tbl3")
+      },
       "WITH tbl AS (SELECT x FROM tbl2) SELECT x FROM tbl, tbl3",
       "",
     ),
     (
-      () =>
+      () => {
         @sqlglot.select(["x"])
         .with_("tbl", @sqlglot.select(["x"]).from_("tbl2"))
         .from_("tbl")
-        .distinct_(),
+        .distinct_()
+      },
       "WITH tbl AS (SELECT x FROM tbl2) SELECT DISTINCT x FROM tbl",
       "",
     ),
     (
-      () =>
+      () => {
         @sqlglot.select(["x"])
         .with_("tbl", @sqlglot.select(["x"]).from_("tbl2"))
         .from_("tbl")
-        .where_(["x > 10"]),
+        .where_(["x > 10"])
+      },
       "WITH tbl AS (SELECT x FROM tbl2) SELECT x FROM tbl WHERE x > 10",
       "",
     ),
     (
-      () =>
+      () => {
         @sqlglot.select(["x"])
         .with_("tbl", @sqlglot.select(["x"]).from_("tbl2"))
         .from_("tbl")
-        .having_(["x > 20"]),
+        .having_(["x > 20"])
+      },
       "WITH tbl AS (SELECT x FROM tbl2) SELECT x FROM tbl HAVING x > 20",
       "",
     ),
@@ -666,19 +693,19 @@ test "TestBuild.test_build" {
       "",
     ),
     (
-      () =>
+      () => {
         @sqlglot.select(["x"]).from_(
           @sqlglot.select(["x"]).from_("tbl").subquery(),
-        ),
+        )
+      },
       "SELECT x FROM (SELECT x FROM tbl)",
       "",
     ),
     (() => @sqlglot.from_("tbl").select_(["x"]), "SELECT x FROM tbl", ""),
     (
-      () =>
-        @sqlglot.parse_one("SELECT a FROM tbl")
-        .assert_is(Select)
-        .select_(["b"]),
+      () => {
+        @sqlglot.parse_one("SELECT a FROM tbl").assert_is(Select).select_(["b"])
+      },
       "SELECT a, b FROM tbl",
       "",
     ),
@@ -688,13 +715,14 @@ test "TestBuild.test_build" {
       "",
     ),
     (
-      () =>
+      () => {
         @sqlglot.parse_one("SELECT * FROM y")
         .assert_is(Select)
         .ctas("foo.x", properties={
           "format": @core.PyStr("parquet"),
           "y": @core.PyStr("2"),
-        }),
+        })
+      },
       "CREATE TABLE foo.x STORED AS PARQUET TBLPROPERTIES ('y'='2') AS SELECT * FROM y",
       "hive",
     ),
@@ -716,11 +744,11 @@ test "TestBuild.test_build" {
       "",
     ),
     (
-      () =>
-        @sqlglot.and_(([
-          "x=1",
-          @sqlglot.and_(["y=1", "z=1"]),
-        ] : Array[&@core.IntoPy])),
+      () => {
+        @sqlglot.and_(
+          (["x=1", @sqlglot.and_(["y=1", "z=1"])] : Array[&@core.IntoPy]),
+        )
+      },
       "x = 1 AND (y = 1 AND z = 1)",
       "",
     ),
@@ -730,8 +758,11 @@ test "TestBuild.test_build" {
       "",
     ),
     (
-      () =>
-        @sqlglot.or_(([@sqlglot.and_(["x=1", "y=1"]), "z=1"] : Array[&@core.IntoPy])),
+      () => {
+        @sqlglot.or_(
+          ([@sqlglot.and_(["x=1", "y=1"]), "z=1"] : Array[&@core.IntoPy]),
+        )
+      },
       "(x = 1 AND y = 1) OR z = 1",
       "",
     ),
@@ -741,20 +772,20 @@ test "TestBuild.test_build" {
       "",
     ),
     (
-      () =>
-        @sqlglot.or_(([
-          "z=1",
-          @sqlglot.and_(["x=1", "y=1"]),
-        ] : Array[&@core.IntoPy])),
+      () => {
+        @sqlglot.or_(
+          (["z=1", @sqlglot.and_(["x=1", "y=1"])] : Array[&@core.IntoPy]),
+        )
+      },
       "z = 1 OR (x = 1 AND y = 1)",
       "",
     ),
     (
-      () =>
-        @sqlglot.or_(([
-          "z=1 OR a=1",
-          @sqlglot.and_(["x=1", "y=1"]),
-        ] : Array[&@core.IntoPy])),
+      () => {
+        @sqlglot.or_(
+          (["z=1 OR a=1", @sqlglot.and_(["x=1", "y=1"])] : Array[&@core.IntoPy]),
+        )
+      },
       "(z = 1 OR a = 1) OR (x = 1 AND y = 1)",
       "",
     ),
@@ -766,40 +797,35 @@ test "TestBuild.test_build" {
       "",
     ),
     (
-      () =>
+      () => {
         @sqlglot.select(["*"])
         .from_("x")
-        .where_([@sqlglot.condition("y=1").and_(["z=1"])]),
+        .where_([@sqlglot.condition("y=1").and_(["z=1"])])
+      },
       "SELECT * FROM x WHERE y = 1 AND z = 1",
       "",
     ),
     (
-      () =>
+      () => {
         @sqlglot.subquery("select x from tbl", alias="foo")
         .select_(["x"])
-        .where_(["x > 0"]),
+        .where_(["x > 0"])
+      },
       "SELECT x FROM (SELECT x FROM tbl) AS foo WHERE x > 0",
       "",
     ),
     (
-      () =>
+      () => {
         @sqlglot.subquery(
           "select x from tbl UNION select x from bar",
           alias="unioned",
-        ).select_(["x"]),
+        ).select_(["x"])
+      },
       "SELECT x FROM (SELECT x FROM tbl UNION SELECT x FROM bar) AS unioned",
       "",
     ),
-    (
-      () => @sqlglot.parse_one("(SELECT 1)").select_(["2"]),
-      "(SELECT 1, 2)",
-      "",
-    ),
-    (
-      () => @sqlglot.parse_one("(SELECT 1)").limit_(1),
-      "(SELECT 1) LIMIT 1",
-      "",
-    ),
+    (() => @sqlglot.parse_one("(SELECT 1)").select_(["2"]), "(SELECT 1, 2)", ""),
+    (() => @sqlglot.parse_one("(SELECT 1)").limit_(1), "(SELECT 1) LIMIT 1", ""),
     (
       () => @sqlglot.parse_one("WITH t AS (SELECT 1) (SELECT 1)").limit_(1),
       "WITH t AS (SELECT 1) SELECT 1 LIMIT 1",
@@ -822,17 +848,19 @@ test "TestBuild.test_build" {
       "",
     ),
     (
-      () =>
-        @sqlglot.parse_one("(select * from foo)").with_("foo", "select 1 as c"),
+      () => {
+        @sqlglot.parse_one("(select * from foo)").with_("foo", "select 1 as c")
+      },
       "WITH foo AS (SELECT 1 AS c) (SELECT * FROM foo)",
       "",
     ),
     (
-      () =>
+      () => {
         @sqlglot.update("tbl", properties={
           "x": @core.PyNone,
           "y": @core.PyDict([(@core.PyStr("x"), @core.PyInt(1))]),
-        }),
+        })
+      },
       "UPDATE tbl SET x = NULL, y = MAP(ARRAY('x'), ARRAY(1))",
       "",
     ),
@@ -842,12 +870,13 @@ test "TestBuild.test_build" {
       "",
     ),
     (
-      () =>
+      () => {
         @sqlglot.update(
           "tbl",
           properties={ "x": 1 },
           where_=@sqlglot.condition("y > 0"),
-        ),
+        )
+      },
       "UPDATE tbl SET x = 1 WHERE y > 0",
       "",
     ),
@@ -857,24 +886,26 @@ test "TestBuild.test_build" {
       "",
     ),
     (
-      () =>
+      () => {
         @sqlglot.update(
           "tbl",
           properties={ "x": 1 },
           from_="tbl2 cross join tbl3",
-        ),
+        )
+      },
       "UPDATE tbl SET x = 1 FROM tbl2 CROSS JOIN tbl3",
       "",
     ),
     (
-      () =>
+      () => {
         @sqlglot.update(
           "my_table",
           properties={ "x": 1 },
           from_="baz",
           where_="my_table.id = baz.id",
           with_={ "baz": "SELECT id FROM foo UNION SELECT id FROM bar" },
-        ),
+        )
+      },
       "WITH baz AS (SELECT id FROM foo UNION SELECT id FROM bar) UPDATE my_table SET x = 1 FROM baz WHERE my_table.id = baz.id",
       "",
     ),
@@ -894,12 +925,13 @@ test "TestBuild.test_build" {
       "",
     ),
     (
-      () =>
+      () => {
         @sqlglot.update("my_table")
         .set_(["x = 1"])
         .where_(["my_table.id = baz.id"])
         .from_("baz")
-        .with_("baz", "SELECT id FROM foo"),
+        .with_("baz", "SELECT id FROM foo")
+      },
       "WITH baz AS (SELECT id FROM foo) UPDATE my_table SET x = 1 FROM baz WHERE my_table.id = baz.id",
       "",
     ),
@@ -919,8 +951,9 @@ test "TestBuild.test_build" {
       "",
     ),
     (
-      () =>
-        @sqlglot.parse_one("SELECT * FROM foo").intersect_("SELECT * FROM bla"),
+      () => {
+        @sqlglot.parse_one("SELECT * FROM foo").intersect_("SELECT * FROM bla")
+      },
       "SELECT * FROM foo INTERSECT SELECT * FROM bla",
       "",
     ),
@@ -935,22 +968,26 @@ test "TestBuild.test_build" {
       "",
     ),
     (
-      () => @sqlglot.parse_one("(SELECT * FROM foo)").union_("SELECT * FROM bla"),
+      () => {
+        @sqlglot.parse_one("(SELECT * FROM foo)").union_("SELECT * FROM bla")
+      },
       "(SELECT * FROM foo) UNION SELECT * FROM bla",
       "",
     ),
     (
-      () =>
+      () => {
         @sqlglot.parse_one("(SELECT * FROM foo)").union_(
           "SELECT * FROM bla",
           distinct=false,
-        ),
+        )
+      },
       "(SELECT * FROM foo) UNION ALL SELECT * FROM bla",
       "",
     ),
     (
-      () =>
-        @sqlglot.alias_(@sqlglot.parse_one("LAG(x) OVER (PARTITION BY y)"), "a"),
+      () => {
+        @sqlglot.alias_(@sqlglot.parse_one("LAG(x) OVER (PARTITION BY y)"), "a")
+      },
       "LAG(x) OVER (PARTITION BY y) AS a",
       "",
     ),
@@ -960,11 +997,12 @@ test "TestBuild.test_build" {
       "",
     ),
     (
-      () =>
+      () => {
         @sqlglot.alias_(
           @sqlglot.parse_one("LAG(x) OVER (PARTITION BY y ORDER BY z)"),
           "a",
-        ),
+        )
+      },
       "LAG(x) OVER (PARTITION BY y ORDER BY z) AS a",
       "",
     ),
@@ -979,25 +1017,27 @@ test "TestBuild.test_build" {
       "",
     ),
     (
-      () =>
+      () => {
         @sqlglot.values(
           [@core.PyTuple([@core.PyStr("1"), @core.PyInt(2)])],
           alias="alias",
-        ),
+        )
+      },
       "(VALUES ('1', 2)) AS alias",
       "",
     ),
     (
-      () =>
+      () => {
         @sqlglot.values([
           @core.PyTuple([@core.PyStr("1"), @core.PyInt(2)]),
           @core.PyTuple([@core.PyStr("2"), @core.PyInt(3)]),
-        ]),
+        ])
+      },
       "VALUES ('1', 2), ('2', 3)",
       "",
     ),
     (
-      () =>
+      () => {
         @sqlglot.values(
           [
             @core.PyTuple([@core.PyStr("1"), @core.PyInt(2), @core.PyNone]),
@@ -1005,7 +1045,8 @@ test "TestBuild.test_build" {
           ],
           alias="alias",
           columns=["col1", "col2", "col3"],
-        ),
+        )
+      },
       "(VALUES ('1', 2, NULL), ('2', 3, NULL)) AS alias(col1, col2, col3)",
       "",
     ),
@@ -1020,27 +1061,30 @@ test "TestBuild.test_build" {
       "",
     ),
     (
-      () =>
+      () => {
         @sqlglot.select(["AVG(a) OVER b"])
         .from_("table")
-        .window(["b AS (PARTITION BY c ORDER BY d)"]),
+        .window(["b AS (PARTITION BY c ORDER BY d)"])
+      },
       "SELECT AVG(a) OVER b FROM table WINDOW b AS (PARTITION BY c ORDER BY d)",
       "",
     ),
     (
-      () =>
+      () => {
         @sqlglot.select(["AVG(a) OVER b", "MIN(c) OVER d"])
         .from_("table")
         .window(["b AS (PARTITION BY e ORDER BY f)"])
-        .window(["d AS (PARTITION BY g ORDER BY h)"]),
+        .window(["d AS (PARTITION BY g ORDER BY h)"])
+      },
       "SELECT AVG(a) OVER b, MIN(c) OVER d FROM table WINDOW b AS (PARTITION BY e ORDER BY f), d AS (PARTITION BY g ORDER BY h)",
       "",
     ),
     (
-      () =>
+      () => {
         @sqlglot.select(["*"])
         .from_("table")
-        .qualify(["row_number() OVER (PARTITION BY a ORDER BY b) = 1"]),
+        .qualify(["row_number() OVER (PARTITION BY a ORDER BY b) = 1"])
+      },
       "SELECT * FROM table QUALIFY ROW_NUMBER() OVER (PARTITION BY a ORDER BY b) = 1",
       "",
     ),
@@ -1061,24 +1105,32 @@ test "TestBuild.test_build" {
       "",
     ),
     (
-      () =>
+      () => {
         @sqlglot.delete("tbl", where_="x = 1").where_([
           @sqlglot.condition("y = 2").or_(["z = 3"]),
-        ]),
+        ])
+      },
       "DELETE FROM tbl WHERE x = 1 AND (y = 2 OR z = 3)",
       "",
     ),
     (
-      () =>
+      () => {
         @sqlglot.delete("tbl")
         .where_(["x = 1"])
-        .returning("*", dialect=postgres),
+        .returning("*", dialect=postgres)
+      },
       "DELETE FROM tbl WHERE x = 1 RETURNING *",
       "postgres",
     ),
     (
-      () =>
-        @sqlglot.delete("tbl", where_="x = 1", returning="*", dialect="postgres"),
+      () => {
+        @sqlglot.delete(
+          "tbl",
+          where_="x = 1",
+          returning="*",
+          dialect="postgres",
+        )
+      },
       "DELETE FROM tbl WHERE x = 1 RETURNING *",
       "postgres",
     ),
@@ -1098,8 +1150,9 @@ test "TestBuild.test_build" {
       "",
     ),
     (
-      () =>
-        @sqlglot.insert("VALUES (1, 2), (3, 4)", "tbl", columns=["cola", "colb"]),
+      () => {
+        @sqlglot.insert("VALUES (1, 2), (3, 4)", "tbl", columns=["cola", "colb"])
+      },
       "INSERT INTO tbl (cola, colb) VALUES (1, 2), (3, 4)",
       "",
     ),
@@ -1109,35 +1162,38 @@ test "TestBuild.test_build" {
       "",
     ),
     (
-      () =>
+      () => {
         @sqlglot.insert("SELECT * FROM cte", "t").with_(
           "cte", "SELECT x FROM tbl",
-        ),
+        )
+      },
       "WITH cte AS (SELECT x FROM tbl) INSERT INTO t SELECT * FROM cte",
       "",
     ),
     (
-      () =>
+      () => {
         @sqlglot.insert("SELECT * FROM cte", "t").with_(
           "cte",
           "SELECT x FROM tbl",
           materialized=true,
-        ),
+        )
+      },
       "WITH cte AS MATERIALIZED (SELECT x FROM tbl) INSERT INTO t SELECT * FROM cte",
       "",
     ),
     (
-      () =>
+      () => {
         @sqlglot.insert("SELECT * FROM cte", "t").with_(
           "cte",
           "SELECT x FROM tbl",
           materialized=false,
-        ),
+        )
+      },
       "WITH cte AS NOT MATERIALIZED (SELECT x FROM tbl) INSERT INTO t SELECT * FROM cte",
       "",
     ),
     (
-      () =>
+      () => {
         @core.convert(
           @core.PyTuple([
             @core.PyExpr(@sqlglot.column("x")),
@@ -1146,7 +1202,8 @@ test "TestBuild.test_build" {
         ).isin(expressions=[
           @core.PyTuple([@core.PyInt(1), @core.PyInt(2)]),
           @core.PyTuple([@core.PyInt(3), @core.PyInt(4)]),
-        ]),
+        ])
+      },
       "(x, y) IN ((1, 2), (3, 4))",
       "postgres",
     ),
@@ -1172,59 +1229,61 @@ test "TestBuild.test_build" {
       "",
     ),
     (
-      () =>
+      () => {
         @sqlglot.merge(
           [
-            "WHEN MATCHED THEN UPDATE SET col1 = source.col1",
-            "WHEN NOT MATCHED THEN INSERT (col1) VALUES (source.col1)",
+            "WHEN MATCHED THEN UPDATE SET col1 = source.col1", "WHEN NOT MATCHED THEN INSERT (col1) VALUES (source.col1)",
           ],
           into="target_table",
           using_="source_table",
           on="target_table.id = source_table.id",
-        ),
+        )
+      },
       "MERGE INTO target_table USING source_table ON target_table.id = source_table.id WHEN MATCHED THEN UPDATE SET col1 = source.col1 WHEN NOT MATCHED THEN INSERT (col1) VALUES (source.col1)",
       "",
     ),
     (
-      () =>
+      () => {
         @sqlglot.merge(
           [
-            "WHEN MATCHED AND source.is_deleted = 1 THEN DELETE",
-            "WHEN MATCHED THEN UPDATE SET val = source.val",
+            "WHEN MATCHED AND source.is_deleted = 1 THEN DELETE", "WHEN MATCHED THEN UPDATE SET val = source.val",
             "WHEN NOT MATCHED THEN INSERT (id, val) VALUES (source.id, source.val)",
           ],
           into="target_table",
           using_="source_table",
           on="target_table.id = source_table.id",
-        ),
+        )
+      },
       "MERGE INTO target_table USING source_table ON target_table.id = source_table.id WHEN MATCHED AND source.is_deleted = 1 THEN DELETE WHEN MATCHED THEN UPDATE SET val = source.val WHEN NOT MATCHED THEN INSERT (id, val) VALUES (source.id, source.val)",
       "",
     ),
     (
-      () =>
+      () => {
         @sqlglot.merge(
           ["WHEN MATCHED THEN UPDATE SET target.name = source.name"],
           into=@sqlglot.table_("target_table").as_("target"),
           using_=@sqlglot.table_("source_table").as_("source"),
           on="target.id = source.id",
-        ),
+        )
+      },
       "MERGE INTO target_table AS target USING source_table AS source ON target.id = source.id WHEN MATCHED THEN UPDATE SET target.name = source.name",
       "",
     ),
     (
-      () =>
+      () => {
         @sqlglot.merge(
           ["WHEN MATCHED THEN UPDATE SET target.name = source.name"],
           into=@sqlglot.table_("target_table").as_("target"),
           using_=@sqlglot.table_("source_table").as_("source"),
           on="target.id = source.id",
           returning="target.*",
-        ),
+        )
+      },
       "MERGE INTO target_table AS target USING source_table AS source ON target.id = source.id WHEN MATCHED THEN UPDATE SET target.name = source.name RETURNING target.*",
       "",
     ),
     (
-      () =>
+      () => {
         @sqlglot.merge(
           [
             @core.mk(When, [
@@ -1248,18 +1307,18 @@ test "TestBuild.test_build" {
           using_=@sqlglot.table_("source_table").as_("source"),
           on="target.id = source.id",
           returning="target.*",
-        ),
+        )
+      },
       "MERGE INTO target_table AS target USING source_table AS source ON target.id = source.id WHEN MATCHED THEN UPDATE SET target.name = source.name RETURNING target.*",
       "",
     ),
     (
-      () =>
-        @sqlglot.union(["SELECT 1", "SELECT 2", "SELECT 3", "SELECT 4"]),
+      () => @sqlglot.union(["SELECT 1", "SELECT 2", "SELECT 3", "SELECT 4"]),
       "SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4",
       "",
     ),
     (
-      () =>
+      () => {
         @sqlglot.select(["x"])
         .with_(
           "var1",
@@ -1267,16 +1326,18 @@ test "TestBuild.test_build" {
           scalar=true,
         )
         .from_("tbl")
-        .where_(["x > var1"]),
+        .where_(["x > var1"])
+      },
       "WITH (SELECT x FROM tbl2) AS var1 SELECT x FROM tbl WHERE x > var1",
       "clickhouse",
     ),
     (
-      () =>
+      () => {
         @sqlglot.select(["x"])
         .with_("var1", @sqlglot.select(["x"]).from_("tbl2"), scalar=true)
         .from_("tbl")
-        .where_(["x > var1"]),
+        .where_(["x > var1"])
+      },
       "WITH (SELECT x FROM tbl2) AS var1 SELECT x FROM tbl WHERE x > var1",
       "clickhouse",
     ),
@@ -1285,7 +1346,7 @@ test "TestBuild.test_build" {
   let failures = []
   for case in cases {
     let (build, sql, dialect) = case
-    let actual = try @sqlglot.generate(build(), dialect~) catch {
+    let actual = @sqlglot.generate(build(), dialect~) catch {
       e => "ERROR: \{e}"
     }
     if actual != sql {

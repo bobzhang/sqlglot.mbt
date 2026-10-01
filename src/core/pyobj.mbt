@@ -20,56 +20,134 @@ pub(all) enum PyObj {
   PyBytes(Bytes)
   /// An object with named attributes (a namedtuple or an object with a `__dict__`).
   PyObject(Array[(String, PyObj)])
+  /// A `datetime.date`.
+  PyDate(year~ : Int, month~ : Int, day~ : Int)
+  /// A `datetime.time`.
+  PyTime(hour~ : Int, minute~ : Int, second~ : Int, microsecond~ : Int)
+  /// A `datetime.datetime`; `tz` is the time zone name (`str(tzinfo)`) and its UTC offset
+  /// in minutes, for aware datetimes.
+  PyDateTime(
+    year~ : Int,
+    month~ : Int,
+    day~ : Int,
+    hour~ : Int,
+    minute~ : Int,
+    second~ : Int,
+    microsecond~ : Int,
+    tz~ : (String, Int)?
+  )
 } derive(Eq)
+
+///|
+fn pad_int(n : Int, width : Int) -> String {
+  let s = n.abs().to_string()
+  let s = if s.length() < width {
+    "0".repeat(width - s.length()) + s
+  } else {
+    s
+  }
+  if n < 0 {
+    "-" + s
+  } else {
+    s
+  }
+}
+
+///|
+/// Python `date.isoformat()`.
+fn iso_date(year : Int, month : Int, day : Int) -> String {
+  "\{pad_int(year, 4)}-\{pad_int(month, 2)}-\{pad_int(day, 2)}"
+}
+
+///|
+/// Python `time.isoformat()` (without a time zone).
+fn iso_time(
+  hour : Int,
+  minute : Int,
+  second : Int,
+  microsecond : Int,
+) -> String {
+  let base = "\{pad_int(hour, 2)}:\{pad_int(minute, 2)}:\{pad_int(second, 2)}"
+  if microsecond != 0 {
+    base + "." + pad_int(microsecond, 6)
+  } else {
+    base
+  }
+}
+
+///|
+/// Python `datetime.isoformat(sep=" ")`.
+fn iso_datetime(
+  year : Int,
+  month : Int,
+  day : Int,
+  hour : Int,
+  minute : Int,
+  second : Int,
+  microsecond : Int,
+  tz : (String, Int)?,
+) -> String {
+  let base = iso_date(year, month, day) +
+    " " +
+    iso_time(hour, minute, second, microsecond)
+  match tz {
+    Some((_, offset)) => {
+      let sign = if offset < 0 { "-" } else { "+" }
+      let o = offset.abs()
+      base + sign + pad_int(o / 60, 2) + ":" + pad_int(o % 60, 2)
+    }
+    None => base
+  }
+}
 
 ///|
 /// Conversion of MoonBit values into host values (`PyObj`).
 pub(open) trait IntoPy {
-  into_py(Self) -> PyObj
+  fn into_py(Self) -> PyObj
 }
 
 ///|
-pub impl IntoPy for PyObj with into_py(self) {
+pub impl IntoPy for PyObj with fn into_py(self) {
   self
 }
 
 ///|
-pub impl IntoPy for Expr with into_py(self) {
+pub impl IntoPy for Expr with fn into_py(self) {
   PyExpr(self)
 }
 
 ///|
-pub impl IntoPy for String with into_py(self) {
+pub impl IntoPy for String with fn into_py(self) {
   PyStr(self)
 }
 
 ///|
-pub impl IntoPy for Int with into_py(self) {
+pub impl IntoPy for Int with fn into_py(self) {
   PyInt(self.to_int64())
 }
 
 ///|
-pub impl IntoPy for Int64 with into_py(self) {
+pub impl IntoPy for Int64 with fn into_py(self) {
   PyInt(self)
 }
 
 ///|
-pub impl IntoPy for Double with into_py(self) {
+pub impl IntoPy for Double with fn into_py(self) {
   PyFloat(self)
 }
 
 ///|
-pub impl IntoPy for Bool with into_py(self) {
+pub impl IntoPy for Bool with fn into_py(self) {
   PyBool(self)
 }
 
 ///|
-pub impl IntoPy for Bytes with into_py(self) {
+pub impl IntoPy for Bytes with fn into_py(self) {
   PyBytes(self)
 }
 
 ///|
-pub impl[T : IntoPy] IntoPy for T? with into_py(self) {
+pub impl[T : IntoPy] IntoPy for T? with fn into_py(self) {
   match self {
     Some(x) => x.into_py()
     None => PyNone
@@ -77,12 +155,12 @@ pub impl[T : IntoPy] IntoPy for T? with into_py(self) {
 }
 
 ///|
-pub impl[T : IntoPy] IntoPy for Array[T] with into_py(self) {
+pub impl[T : IntoPy] IntoPy for Array[T] with fn into_py(self) {
   PyList(self.map(x => x.into_py()))
 }
 
 ///|
-pub impl[V : IntoPy] IntoPy for Map[String, V] with into_py(self) {
+pub impl[V : IntoPy] IntoPy for Map[String, V] with fn into_py(self) {
   PyDict(self.iter().map(kv => (PyStr(kv.0), kv.1.into_py())).collect())
 }
 
@@ -166,6 +244,11 @@ pub fn PyObj::py_str(self : PyObj) -> String {
     }
     PyObject(fields) =>
       "(" + fields.map(kv => "\{kv.0}=\{kv.1.py_repr()}").join(", ") + ")"
+    PyDate(year~, month~, day~) => iso_date(year, month, day)
+    PyTime(hour~, minute~, second~, microsecond~) =>
+      iso_time(hour, minute, second, microsecond)
+    PyDateTime(year~, month~, day~, hour~, minute~, second~, microsecond~, tz~) =>
+      iso_datetime(year, month, day, hour, minute, second, microsecond, tz)
   }
 }
 
@@ -209,7 +292,10 @@ pub fn[T : IntoPy] maybe_parse(
 ///|
 /// Python `exp.convert`: converts a host value into an expression. Raises `ValueError`
 /// when a conversion is not possible.
-pub fn[T : IntoPy] convert(value : T, copy? : Bool = false) -> Expr raise SqlglotError {
+pub fn[T : IntoPy] convert(
+  value : T,
+  copy? : Bool = false,
+) -> Expr raise SqlglotError {
   convert_obj(value.into_py(), copy~)
 }
 
@@ -234,6 +320,20 @@ fn convert_obj(value : PyObj, copy~ : Bool) -> Expr raise SqlglotError {
       }
       mk1(HexString, sb.to_string())
     }
+    PyDateTime(year~, month~, day~, hour~, minute~, second~, microsecond~, tz~) => {
+      let datetime_literal = literal_string(
+        iso_datetime(year, month, day, hour, minute, second, microsecond, tz),
+      )
+      let zone = tz.map(t => literal_string(t.0))
+      mk(TimeStrToTime, [("this", datetime_literal), ("zone", zone)])
+    }
+    PyDate(year~, month~, day~) =>
+      mk1(DateStrToDate, literal_string(iso_date(year, month, day)))
+    PyTime(hour~, minute~, second~, microsecond~) =>
+      mk1(
+        TsOrDsToTime,
+        literal_string(iso_time(hour, minute, second, microsecond)),
+      )
     PyObject(fields) => {
       let exprs = []
       for kv in fields {
@@ -301,10 +401,17 @@ pub fn Expr::to_py(self : Expr) -> PyObj raise SqlglotError {
       match self.this_().to_py() {
         PyInt(i) => PyInt(-i)
         PyDecimal(s) =>
-          PyDecimal(if s.has_prefix("-") { s.view(start_offset=1).to_string() } else { "-" + s })
+          PyDecimal(
+            if s.has_prefix("-") {
+              s.view(start_offset=1).to_string()
+            } else {
+              "-" + s
+            },
+          )
         other => other
       }
-    _ => raise ValueError("\{self.to_s()} cannot be converted to a Python object.")
+    _ =>
+      raise ValueError("\{self.to_s()} cannot be converted to a Python object.")
   }
 }
 
@@ -409,6 +516,6 @@ fn to_s_node(node : Expr, level : Int) -> String {
 ///|
 /// A `DType` converts to its `DataType` expression (Python accepts a `DType` wherever a
 /// `DATA_TYPE` is expected).
-pub impl IntoPy for DType with into_py(self) {
+pub impl IntoPy for DType with fn into_py(self) {
   PyExpr(mk1(DataType, self))
 }

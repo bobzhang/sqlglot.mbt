@@ -503,7 +503,13 @@ pub fn[T : @core.IntoPy] update(
     Some(f) if f.into_py().truthy() =>
       update_expr.set(
         "from_",
-        @core.maybe_parse(f.into_py(), into=[From], dialect=d, prefix="FROM", copy~),
+        @core.maybe_parse(
+          f.into_py(),
+          into=[From],
+          dialect=d,
+          prefix="FROM",
+          copy~,
+        ),
       )
     _ => ()
   }
@@ -606,12 +612,9 @@ pub fn[I : @core.IntoPy, U : @core.IntoPy, O : @core.IntoPy] merge(
   let d = dialect_opt(dialect)
   let expressions = []
   for when_expr in when_exprs {
-    let expression = @core.maybe_parse(
-      when_expr.into_py(),
-      dialect=d,
-      copy~,
-      into=[Whens],
-    )
+    let expression = @core.maybe_parse(when_expr.into_py(), dialect=d, copy~, into=[
+      Whens,
+    ])
     if expression.kind == When {
       expressions.push(expression)
     } else {
@@ -633,11 +636,7 @@ pub fn[I : @core.IntoPy, U : @core.IntoPy, O : @core.IntoPy] merge(
     Some(using_clause) if using_clause.kind == Alias =>
       using_clause.replace(
         Some(
-          alias_(
-            using_clause.this_(),
-            using_clause.arg("alias"),
-            table=true,
-          ),
+          alias_(using_clause.this_(), using_clause.arg("alias"), table=true),
         ),
       )
       |> ignore
@@ -1017,7 +1016,8 @@ pub fn expand(
   dialect? : String,
   copy? : Bool = true,
 ) -> @core.Expr raise @core.SqlglotError {
-  let normalized : Map[String, () -> @core.Expr raise @core.SqlglotError] = Map([])
+  let normalized : Map[String, () -> @core.Expr raise @core.SqlglotError] = Map([],
+  )
   for k, v in sources {
     normalized[normalize_table_name(k, dialect?)] = v
   }

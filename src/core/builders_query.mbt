@@ -288,7 +288,8 @@ pub fn[T : IntoPy] Expr::join_(
 ) -> Expr raise SqlglotError {
   let expression = expression.into_py()
   let parsed = maybe_parse(expression, into=[Join], prefix="JOIN", dialect?) catch {
-    ParseError(_, _) => maybe_parse(expression, into=[Join, Expression], dialect?)
+    ParseError(_, _) =>
+      maybe_parse(expression, into=[Join, Expression], dialect?)
     e => raise e
   }
   let join = if parsed.kind == Join { parsed } else { mk1(Join, parsed) }
@@ -329,10 +330,7 @@ pub fn[T : IntoPy] Expr::join_(
     None => ()
   }
   if !on.is_empty() {
-    join.set(
-      "on",
-      combine_py(on.map(o => o.into_py()), And, dialect?, copy~),
-    )
+    join.set("on", combine_py(on.map(o => o.into_py()), And, dialect?, copy~))
   }
   let join = if !using_.is_empty() {
     apply_list_builder(
@@ -535,7 +533,10 @@ pub fn[T : IntoPy] Expr::eq_(self : Expr, other : T) -> Expr raise SqlglotError 
 
 ///|
 /// `expr.is_(other)`
-pub fn[T : IntoPy] Expr::is__(self : Expr, other : T) -> Expr raise SqlglotError {
+pub fn[T : IntoPy] Expr::is__(
+  self : Expr,
+  other : T,
+) -> Expr raise SqlglotError {
   self.binop(Is, other)
 }
 

@@ -141,10 +141,7 @@ test "TestTime.test_subsecond_precision" {
 
 ///|
 test "TestTime.test_subsecond_precision_python311" {
-  assert_eq(
-    6,
-    @core.subsecond_precision("2023-01-01 12:13:14.123456789+00:00"),
-  )
+  assert_eq(6, @core.subsecond_precision("2023-01-01 12:13:14.123456789+00:00"))
   assert_eq(6, @core.subsecond_precision("2023-01-01 12:13:14.12345+00:00"))
   assert_eq(6, @core.subsecond_precision("2023-01-01 12:13:14.1234+00:00"))
   assert_eq(3, @core.subsecond_precision("2023-01-01 12:13:14.12+00:00"))

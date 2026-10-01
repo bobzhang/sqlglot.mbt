@@ -5,10 +5,9 @@ test "TestHelper.test_tsort" {
   assert_eq(@core.tsort({ "a": [] }), ["a"])
   assert_eq(@core.tsort({ "a": ["b"] }), ["b", "a"])
   assert_eq(@core.tsort({ "a": ["c"], "b": [], "c": [] }), ["b", "c", "a"])
-  assert_eq(
-    @core.tsort({ "a": ["b", "c"], "b": ["c"], "c": [], "d": ["a"] }),
-    ["c", "b", "a", "d"],
-  )
+  assert_eq(@core.tsort({ "a": ["b", "c"], "b": ["c"], "c": [], "d": ["a"] }), [
+    "c", "b", "a", "d",
+  ])
   try @core.tsort({ "a": ["b", "c"], "b": ["a"], "c": [] }) catch {
     @core.ValueError(_) => ()
     e => fail("unexpected error \{e}")

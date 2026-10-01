@@ -21,7 +21,7 @@ pub fn PyObj::truthy(self : PyObj) -> Bool {
     PyTuple(l) | PyList(l) => !l.is_empty()
     PyDict(l) => !l.is_empty()
     PyBytes(b) => b.length() > 0
-    PyObject(_) => true
+    PyObject(_) | PyDate(..) | PyTime(..) | PyDateTime(..) => true
   }
 }
 
@@ -148,9 +148,7 @@ fn apply_conjunction_builder(
   copy~ : Bool,
   dialect? : Dialect,
 ) -> Expr raise SqlglotError {
-  let mut filtered = expressions.filter(e => {
-    !(e is PyNone) && !(e is PyStr(""))
-  })
+  let mut filtered = expressions.filter(e => !(e is PyNone) && !(e is PyStr("")))
   if filtered.is_empty() {
     return instance
   }
@@ -237,11 +235,7 @@ pub fn apply_set_operation(
       match result {
         None => parsed
         Some(r) =>
-          mk(kind, [
-            ("this", r),
-            ("expression", parsed),
-            ("distinct", distinct),
-          ])
+          mk(kind, [("this", r), ("expression", parsed), ("distinct", distinct)])
       },
     )
   }
@@ -376,19 +370,28 @@ pub fn[L : IntoPy, H : IntoPy] Expr::between(
 
 ///|
 /// `Expr.like(other)`
-pub fn[T : IntoPy] Expr::like(self : Expr, other : T) -> Expr raise SqlglotError {
+pub fn[T : IntoPy] Expr::like(
+  self : Expr,
+  other : T,
+) -> Expr raise SqlglotError {
   self.binop(Like, other)
 }
 
 ///|
 /// `Expr.ilike(other)`
-pub fn[T : IntoPy] Expr::ilike(self : Expr, other : T) -> Expr raise SqlglotError {
+pub fn[T : IntoPy] Expr::ilike(
+  self : Expr,
+  other : T,
+) -> Expr raise SqlglotError {
   self.binop(ILike, other)
 }
 
 ///|
 /// `Expr.rlike(other)`
-pub fn[T : IntoPy] Expr::rlike(self : Expr, other : T) -> Expr raise SqlglotError {
+pub fn[T : IntoPy] Expr::rlike(
+  self : Expr,
+  other : T,
+) -> Expr raise SqlglotError {
   self.binop(RegexpLike, other)
 }
 
@@ -478,7 +481,10 @@ pub fn[T : IntoPy] Expr::pow(self : Expr, other : T) -> Expr raise SqlglotError 
 
 ///|
 /// Python `expr & other` (`Expr.__and__`).
-pub fn[T : IntoPy] Expr::land(self : Expr, other : T) -> Expr raise SqlglotError {
+pub fn[T : IntoPy] Expr::land(
+  self : Expr,
+  other : T,
+) -> Expr raise SqlglotError {
   self.binop(And, other)
 }
 
