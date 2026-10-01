@@ -1,8 +1,8 @@
 // Generated using `moon info`, DON'T EDIT IT
-package "hongbozhang/sqlglot/dialects/postgres"
+package "bobzhang/sqlglot/dialects/postgres"
 
 import {
-  "hongbozhang/sqlglot/core",
+  "bobzhang/sqlglot/core",
 }
 
 // Values

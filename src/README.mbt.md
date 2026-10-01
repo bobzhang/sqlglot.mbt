@@ -1,4 +1,4 @@
-# hongbozhang/sqlglot
+# bobzhang/sqlglot
 
 The facade package of the MoonBit port of [sqlglot](https://github.com/tobymao/sqlglot):
 a SQL parser, transpiler, optimizer and engine. Importing only this package is enough
@@ -8,7 +8,7 @@ principal types (`Expr`, `Kind`, `Dialect`, `ErrorLevel`, `SqlglotError`, `DType
 
 ```
 import {
-  "hongbozhang/sqlglot",
+  "bobzhang/sqlglot",
 }
 ```
 

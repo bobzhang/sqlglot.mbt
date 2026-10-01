@@ -1,5 +1,5 @@
 // Public facade of the sqlglot port: all built-in dialects are registered (through the
-// `hongbozhang/sqlglot/dialects` registry) and the main entry points take dialect names.
+// `bobzhang/sqlglot/dialects` registry) and the main entry points take dialect names.
 
 ///|
 /// Parses `sql` (possibly several statements) in dialect `read` and generates it in

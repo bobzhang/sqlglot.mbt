@@ -1,8 +1,8 @@
 import {
-  "hongbozhang/sqlglot/core",
-  "hongbozhang/sqlglot/optimizer",
+  "bobzhang/sqlglot/core",
+  "bobzhang/sqlglot/optimizer",
   "moonbitlang/core/set",
-  "hongbozhang/sqlglot/dialects/hive",
+  "bobzhang/sqlglot/dialects/hive",
 }
 
 warnings = "-79-15"

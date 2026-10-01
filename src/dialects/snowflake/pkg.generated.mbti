@@ -1,8 +1,8 @@
 // Generated using `moon info`, DON'T EDIT IT
-package "hongbozhang/sqlglot/dialects/snowflake"
+package "bobzhang/sqlglot/dialects/snowflake"
 
 import {
-  "hongbozhang/sqlglot/core",
+  "bobzhang/sqlglot/core",
 }
 
 // Values

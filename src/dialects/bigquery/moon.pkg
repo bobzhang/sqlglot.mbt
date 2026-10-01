@@ -1,6 +1,6 @@
 import {
-  "hongbozhang/sqlglot/core",
-  "hongbozhang/sqlglot/optimizer",
+  "bobzhang/sqlglot/core",
+  "bobzhang/sqlglot/optimizer",
   "moonbitlang/core/set",
 }
 

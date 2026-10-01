@@ -1,6 +1,6 @@
 import {
-  "hongbozhang/sqlglot",
-  "hongbozhang/sqlglot/core",
+  "bobzhang/sqlglot",
+  "bobzhang/sqlglot/core",
   "moonbitlang/core/json",
 }
 

@@ -1,8 +1,8 @@
 """Scaffold MoonBit dialect packages (src/dialects/<name>) and the dialect registry.
 
 Existing hand-written files are never overwritten; only moon.pkg, dialect.mbt and the
-dialect registry package `hongbozhang/sqlglot/dialects` (src/dialects/registry.mbt,
-src/dialects/moon.pkg) are regenerated. The facade (`hongbozhang/sqlglot`) re-exports the
+dialect registry package `bobzhang/sqlglot/dialects` (src/dialects/registry.mbt,
+src/dialects/moon.pkg) are regenerated. The facade (`bobzhang/sqlglot`) re-exports the
 registry; packages that need all dialects registered without depending on the facade
 (e.g. the executor) import the registry package directly.
 """
@@ -40,9 +40,9 @@ def main():
     for name in names:
         parent = parent_of(name)
         pkg_dir = os.path.join(DIALECTS, name)
-        imports = ['  "hongbozhang/sqlglot/core",', '  "moonbitlang/core/set",']
+        imports = ['  "bobzhang/sqlglot/core",', '  "moonbitlang/core/set",']
         if parent != "base":
-            imports.append(f'  "hongbozhang/sqlglot/dialects/{parent}",')
+            imports.append(f'  "bobzhang/sqlglot/dialects/{parent}",')
         # Keep any extra imports added by hand (e.g. spark importing hive for explicit
         # super(HiveGenerator, ...) calls); only ensure the required ones are present.
         pkg_path = os.path.join(pkg_dir, "moon.pkg")
@@ -108,8 +108,8 @@ fn configure_{fn.split('_')[1]}(d : @core.Dialect) -> Unit {{
             )
 
     # dialect registry package
-    imports = ['  "hongbozhang/sqlglot/core",'] + [
-        f'  "hongbozhang/sqlglot/dialects/{n}",' for n in names
+    imports = ['  "bobzhang/sqlglot/core",'] + [
+        f'  "bobzhang/sqlglot/dialects/{n}",' for n in names
     ]
     write(os.path.join(DIALECTS, "moon.pkg"), "import {\n" + "\n".join(imports) + "\n}\n")
     regs = "\n".join(f'  @core.register_dialect("{n}", @{n}.dialect)' for n in names)

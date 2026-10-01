@@ -1,10 +1,10 @@
 // Generated using `moon info`, DON'T EDIT IT
-package "hongbozhang/sqlglot/executor"
+package "bobzhang/sqlglot/executor"
 
 import {
-  "hongbozhang/sqlglot/core",
-  "hongbozhang/sqlglot/optimizer",
-  "hongbozhang/sqlglot/planner",
+  "bobzhang/sqlglot/core",
+  "bobzhang/sqlglot/optimizer",
+  "bobzhang/sqlglot/planner",
 }
 
 // Values

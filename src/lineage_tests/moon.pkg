@@ -1,8 +1,8 @@
 import {
-  "hongbozhang/sqlglot",
-  "hongbozhang/sqlglot/core",
-  "hongbozhang/sqlglot/optimizer",
-  "hongbozhang/sqlglot/lineage",
+  "bobzhang/sqlglot",
+  "bobzhang/sqlglot/core",
+  "bobzhang/sqlglot/optimizer",
+  "bobzhang/sqlglot/lineage",
   "moonbitlang/core/json",
 }
 

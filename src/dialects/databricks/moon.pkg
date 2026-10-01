@@ -1,7 +1,7 @@
 import {
-  "hongbozhang/sqlglot/core",
+  "bobzhang/sqlglot/core",
   "moonbitlang/core/set",
-  "hongbozhang/sqlglot/dialects/spark",
+  "bobzhang/sqlglot/dialects/spark",
 }
 
 warnings = "-79-15"

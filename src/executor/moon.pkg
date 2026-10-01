@@ -1,8 +1,8 @@
 import {
-  "hongbozhang/sqlglot/core",
-  "hongbozhang/sqlglot/dialects",
-  "hongbozhang/sqlglot/optimizer",
-  "hongbozhang/sqlglot/planner",
+  "bobzhang/sqlglot/core",
+  "bobzhang/sqlglot/dialects",
+  "bobzhang/sqlglot/optimizer",
+  "bobzhang/sqlglot/planner",
   "moonbitlang/core/bigint",
   "moonbitlang/core/math",
   "moonbitlang/core/double",

@@ -1,9 +1,9 @@
 // Generated using `moon info`, DON'T EDIT IT
-package "hongbozhang/sqlglot/lineage"
+package "bobzhang/sqlglot/lineage"
 
 import {
-  "hongbozhang/sqlglot/core",
-  "hongbozhang/sqlglot/optimizer",
+  "bobzhang/sqlglot/core",
+  "bobzhang/sqlglot/optimizer",
 }
 
 // Values

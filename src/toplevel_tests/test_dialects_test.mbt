@@ -1,6 +1,6 @@
 // Ports of tests/test_dialect_imports.py and tests/test_dialect_entry_points.py,
 // adapted to the MoonBit dialect registry (`@core.register_dialect`, populated by
-// the `hongbozhang/sqlglot` facade), plus registry/settings checks.
+// the `bobzhang/sqlglot` facade), plus registry/settings checks.
 //
 // Not ported (Python packaging specific): tests/test_typing.py (checks for
 // redundant entries between Python `sqlglot.typing` modules; the port generates

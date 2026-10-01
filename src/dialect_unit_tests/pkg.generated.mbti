@@ -1,5 +1,5 @@
 // Generated using `moon info`, DON'T EDIT IT
-package "hongbozhang/sqlglot/dialect_unit_tests"
+package "bobzhang/sqlglot/dialect_unit_tests"
 
 // Values
 

@@ -43,7 +43,7 @@ fn is_rewritten_type(t : @core.TokenType) -> Bool {
 /// (e.g. an unterminated literal) is appended as a blanked `UNKNOWN` token.
 ///
 /// `dialect` is a dialect name as accepted by `Dialect::get_or_raise` (dialects
-/// are registered by the `hongbozhang/sqlglot` facade package).
+/// are registered by the `bobzhang/sqlglot` facade package).
 pub fn anonymize(
   sql : String,
   dialect? : String = "",

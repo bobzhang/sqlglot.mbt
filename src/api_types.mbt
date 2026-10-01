@@ -1,4 +1,4 @@
-// Types re-exported by the facade, so that a user importing only `hongbozhang/sqlglot`
+// Types re-exported by the facade, so that a user importing only `bobzhang/sqlglot`
 // can name the principal types, errors and options (Python's `sqlglot` re-exports
 // `Expr`, `Dialect`, `ErrorLevel`, the errors, `Generator`, `MappingSchema`, ...).
 

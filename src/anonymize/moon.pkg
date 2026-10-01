@@ -1,9 +1,9 @@
 import {
-  "hongbozhang/sqlglot/core",
+  "bobzhang/sqlglot/core",
   "moonbitlang/core/bigint",
   "moonbitlang/core/cmp",
 }
 
 import {
-  "hongbozhang/sqlglot",
+  "bobzhang/sqlglot",
 } for "test"

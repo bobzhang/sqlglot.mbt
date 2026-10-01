@@ -1,8 +1,8 @@
 import {
-  "hongbozhang/sqlglot/core",
-  "hongbozhang/sqlglot/dialects",
-  "hongbozhang/sqlglot/executor",
-  "hongbozhang/sqlglot/optimizer",
+  "bobzhang/sqlglot/core",
+  "bobzhang/sqlglot/dialects",
+  "bobzhang/sqlglot/executor",
+  "bobzhang/sqlglot/optimizer",
 }
 
 warnings = "-79"

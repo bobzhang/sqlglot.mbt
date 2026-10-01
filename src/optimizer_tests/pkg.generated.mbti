@@ -1,5 +1,5 @@
 // Generated using `moon info`, DON'T EDIT IT
-package "hongbozhang/sqlglot/optimizer_tests"
+package "bobzhang/sqlglot/optimizer_tests"
 
 // Values
 

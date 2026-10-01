@@ -2,7 +2,7 @@
 
 A native executable mirroring Python's `python -m sqlglot` (`sqlglot/__main__.py`).
 The argument handling and execution live in the target-independent package
-`hongbozhang/sqlglot/cli` (tested on every backend); this package only connects it
+`bobzhang/sqlglot/cli` (tested on every backend); this package only connects it
 to `argv`, stdin, stdout/stderr and the exit code through libc, so it builds for the
 native backend only.
 
