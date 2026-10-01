@@ -235,7 +235,7 @@ pub fn eliminate_qualify(expression : Expr) -> Expr raise SqlglotError {
         taken.push(alias)
       }
     }
-    fn select_alias_or_name(select : Expr) -> Expr {
+    fn select_alias_or_name(select : Expr) -> Expr raise SqlglotError {
       let alias_or_name = select.alias_or_name()
       let identifier = match select.arg("alias") {
         Some(a) => Some(a)
@@ -306,12 +306,10 @@ pub fn eliminate_qualify(expression : Expr) -> Expr raise SqlglotError {
 }
 
 ///|
-/// Python `exp.column(name)` for a string that may be an arbitrary column name.
-fn column_of_parsed(name : String) -> Expr {
-  // Python passes the raw name to `exp.select`, which parses it (e.g. "*" -> Star).
-  parse_one(name) catch {
-    _ => column_of(name)
-  }
+/// Python passes the plain name string to `exp.select`, which parses it (so that
+/// e.g. `*` becomes a Star rather than a quoted column).
+fn column_of_parsed(name : String) -> Expr raise SqlglotError {
+  maybe_parse_str(name)
 }
 
 ///|

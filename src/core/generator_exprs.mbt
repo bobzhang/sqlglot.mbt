@@ -30,6 +30,8 @@ pub fn gen_annotate_types(
           Some(DType::ARRAY)
         } else if expression.kind == Boolean {
           Some(DType::BOOLEAN)
+        } else if expression.kind is (Map | VarMap) {
+          Some(DType::MAP)
         } else {
           None
         }
