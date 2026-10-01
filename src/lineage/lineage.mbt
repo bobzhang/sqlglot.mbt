@@ -113,8 +113,42 @@ pub fn lineage(
   trim_selects? : Bool = true,
   copy? : Bool = true,
   on_node? : (Node) -> Unit,
+  db? : String,
+  catalog? : String,
+  expand_alias_refs? : Bool,
+  expand_stars? : Bool,
+  infer_schema? : Bool,
+  isolate_tables? : Bool,
+  qualify_columns? : Bool,
+  allow_partial_qualification? : Bool,
+  validate_qualify_columns? : Bool = false,
+  quote_identifiers? : Bool,
+  identify? : Bool = false,
+  canonicalize_table_aliases? : Bool,
 ) -> Node raise @core.SqlglotError {
-  let (scope, schema) = prepare(expression, schema, sources, dialect, scope, copy)
+  // Python's **kwargs: options of the qualify() call (when no scope is given)
+  let qualify = (e : @core.Expr, schema : @optimizer.MappingSchema) => {
+    @optimizer.qualify(
+      e,
+      dialect?,
+      schema~,
+      db?,
+      catalog?,
+      expand_alias_refs?,
+      expand_stars?,
+      infer_schema?,
+      isolate_tables?,
+      qualify_columns?,
+      allow_partial_qualification?,
+      validate_qualify_columns~,
+      quote_identifiers?,
+      identify~,
+      canonicalize_table_aliases?,
+    )
+  }
+  let (scope, schema) = prepare(
+    expression, schema, sources, dialect, scope, copy, qualify,
+  )
   let selectable = scope.expression
   let ctx : Ctx = {
     dialect,
@@ -144,8 +178,42 @@ pub fn lineage_all(
   trim_selects? : Bool = true,
   copy? : Bool = true,
   on_node? : (Node) -> Unit,
+  db? : String,
+  catalog? : String,
+  expand_alias_refs? : Bool,
+  expand_stars? : Bool,
+  infer_schema? : Bool,
+  isolate_tables? : Bool,
+  qualify_columns? : Bool,
+  allow_partial_qualification? : Bool,
+  validate_qualify_columns? : Bool = false,
+  quote_identifiers? : Bool,
+  identify? : Bool = false,
+  canonicalize_table_aliases? : Bool,
 ) -> Map[String, Node] raise @core.SqlglotError {
-  let (scope, schema) = prepare(expression, schema, sources, dialect, scope, copy)
+  // Python's **kwargs: options of the qualify() call (when no scope is given)
+  let qualify = (e : @core.Expr, schema : @optimizer.MappingSchema) => {
+    @optimizer.qualify(
+      e,
+      dialect?,
+      schema~,
+      db?,
+      catalog?,
+      expand_alias_refs?,
+      expand_stars?,
+      infer_schema?,
+      isolate_tables?,
+      qualify_columns?,
+      allow_partial_qualification?,
+      validate_qualify_columns~,
+      quote_identifiers?,
+      identify~,
+      canonicalize_table_aliases?,
+    )
+  }
+  let (scope, schema) = prepare(
+    expression, schema, sources, dialect, scope, copy, qualify,
+  )
   let selectable = scope.expression
   let ctx : Ctx = {
     dialect,
@@ -176,6 +244,7 @@ fn prepare(
   dialect : @core.Dialect?,
   scope : @optimizer.Scope?,
   copy : Bool,
+  qualify : (@core.Expr, @optimizer.MappingSchema) -> @core.Expr raise @core.SqlglotError,
 ) -> (@optimizer.Scope, @optimizer.MappingSchema) raise @core.SqlglotError {
   let mut expression = if copy { expression.copy() } else { expression }
   match sources {
@@ -192,13 +261,7 @@ fn prepare(
   let scope = match scope {
     Some(s) => Some(s)
     None => {
-      expression = @optimizer.qualify(
-        expression,
-        dialect?,
-        schema~,
-        validate_qualify_columns=false,
-        identify=false,
-      )
+      expression = qualify(expression, schema)
       @optimizer.build_scope(expression)
     }
   }

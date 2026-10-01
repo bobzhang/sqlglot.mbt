@@ -2,7 +2,7 @@
 
 Mirrors tests/test_optimizer.py: every rule is driven with the same schema, kwargs,
 dialect and pretty settings, and the Python output is recorded as the expected
-result (errors are recorded as "ERROR: <ExceptionType>").
+result (errors are recorded as "ERROR: <ExceptionType>: <message>").
 
 Run with the scratchpad venv python (needs pytz):
     python tools/gen_optimizer_fixtures.py
@@ -227,7 +227,7 @@ def run_case(func, sql, read, pretty, **kwargs):
         optimized = func(parse_one(sql, read=read), **kwargs)
         return optimized.sql(pretty=pretty, dialect=read)
     except Exception as e:  # noqa: BLE001
-        return f"ERROR: {type(e).__name__}"
+        return f"ERROR: {type(e).__name__}: {e}"
 
 
 def write_fixtures(name, records, consts=()):
@@ -282,7 +282,7 @@ def gen_annotate_types():
             result = annotate_types(parse_one(sql, read=dialect), dialect=dialect)
             actual = result.type.sql(dialect)
         except Exception as e:  # noqa: BLE001
-            actual = f"ERROR: {type(e).__name__}"
+            actual = f"ERROR: {type(e).__name__}: {e}"
         records.append((title, dialect or "", "{}", sql, actual))
     write_fixtures("annotate_types", records)
     return len(records)
@@ -303,7 +303,7 @@ def gen_annotate_functions():
                 )
                 actual = result.type.sql(dialect)
             except Exception as e:  # noqa: BLE001
-                actual = f"ERROR: {type(e).__name__}"
+                actual = f"ERROR: {type(e).__name__}: {e}"
             records.append((title, dialect, "{}", full_sql, actual))
     write_fixtures("annotate_functions", records)
     return len(records)
@@ -317,7 +317,7 @@ def gen_invalid():
             optimizer.qualify_columns.validate_qualify_columns(expression)
             actual = "OK"
         except Exception as e:  # noqa: BLE001
-            actual = f"ERROR: {type(e).__name__}"
+            actual = f"ERROR: {type(e).__name__}: {e}"
         records.append((sql, "", "{}", sql, actual))
     write_fixtures("qualify_columns__invalid", records)
     return len(records)
@@ -348,7 +348,7 @@ def gen_identity_stress():
                     annotated = annotate_types(e)
                     out = annotated.type.sql() if annotated.type else "None"
             except Exception as ex:  # noqa: BLE001
-                out = f"ERROR: {type(ex).__name__}"
+                out = f"ERROR: {type(ex).__name__}: {ex}"
             records.append((mode, "", "{}", sql, out))
     write_fixtures("identity_stress", records)
     return len(records)

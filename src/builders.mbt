@@ -277,8 +277,8 @@ pub fn[T : @core.IntoPy, D : @core.IntoPy] cast(
     let new_cast_type = data_type.datatype_this()
     let types_are_equivalent = match (existing_cast_type, new_cast_type) {
       (Some(a), Some(b)) =>
-        type_mapping.get(a).unwrap_or(a.to_string()) ==
-        type_mapping.get(b).unwrap_or(b.to_string())
+        type_mapping.get(a).unwrap_or(a.value()) ==
+        type_mapping.get(b).unwrap_or(b.value())
       _ => false
     }
     if expr.is_type_expr(data_type) || types_are_equivalent {

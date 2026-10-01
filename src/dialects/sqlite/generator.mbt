@@ -107,6 +107,12 @@ fn offset_to_limit(
 
 ///|
 fn configure_generator(d : @core.Dialect) -> Unit {
+  // AFTER_HAVING_MODIFIER_TRANSFORMS = generator.AFTER_HAVING_MODIFIER_TRANSFORMS
+  // (the module-level table: only WINDOW and QUALIFY)
+  d.gen_fns.after_having_modifier_transforms = d.gen_fns.after_having_modifier_transforms.filter(kv => {
+      kv.0 == "windows" || kv.0 == "qualify"
+    },
+  )
   let cfg = d.gen_cfg
   cfg.type_mapping.remove(BLOB)
   for t in [@core.DType::BOOLEAN, TINYINT, SMALLINT, INT, BIGINT] {

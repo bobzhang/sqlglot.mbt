@@ -4,6 +4,7 @@ package "hongbozhang/sqlglot/optimizer"
 import {
   "hongbozhang/sqlglot/core",
   "moonbitlang/core/debug",
+  "moonbitlang/core/ref",
   "moonbitlang/core/set",
 }
 
@@ -17,6 +18,8 @@ pub fn build_scope(@core.Expr) -> Scope? raise @core.SqlglotError
 pub fn canonicalize(@core.Expr, dialect? : @core.Dialect) -> @core.Expr raise @core.SqlglotError
 
 pub fn canonicalize_internal_names(@core.Expr) -> @core.Expr raise @core.SqlglotError
+
+pub let column_type_trace_calls : @ref.Ref[Int]
 
 pub fn copy_coerces_to(Map[@core.DType, @set.Set[@core.DType]]) -> Map[@core.DType, @set.Set[@core.DType]]
 
@@ -178,6 +181,7 @@ pub fn MappingSchema::copy(Self, schema? : Map[String, SchemaNode]) -> Self rais
 pub fn MappingSchema::depth(Self) -> Int
 pub fn MappingSchema::empty(Self) -> Bool
 pub fn MappingSchema::find(Self, @core.Expr, raise_on_missing? : Bool) -> Map[String, SchemaNode]? raise @core.SqlglotError
+pub fn MappingSchema::find_cache_size(Self) -> Int
 pub fn MappingSchema::find_column_types(Self, @core.Expr) -> Map[String, @core.Expr?]? raise @core.SqlglotError
 pub fn MappingSchema::get_column_type(Self, @core.Expr, @core.Expr, dialect? : @core.Dialect, normalize? : Bool) -> @core.Expr raise @core.SqlglotError
 pub fn MappingSchema::get_column_type_str(Self, @core.Expr, String, dialect? : @core.Dialect, normalize? : Bool) -> @core.Expr raise @core.SqlglotError

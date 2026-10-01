@@ -80,3 +80,11 @@ let dremio_cases : Array[String] = [
   "dremio", "dremio", "", "CAST(x AS ARRAY)", "CAST(x AS LIST)",
   "dremio", "dremio", "", "CAST(x AS BIT)", "CAST(x AS BOOLEAN)",
 ]
+
+///|
+let dremio_error_cases : Array[String] = [
+  "transpile", "", "{\"unsupported_level\":\"IMMEDIATE\",\"write\":\"dremio\"}", "SELECT * FROM t FOR VERSION BETWEEN '1' AND '2'", "UnsupportedError", "Range time travel is not supported in Dremio",
+  "transpile", "oracle", "{\"unsupported_level\":\"IMMEDIATE\",\"write\":\"dremio\"}", "CAST(x AS TIMESTAMPTZ)", "UnsupportedError", "Dremio does not support time-zone-aware TIMESTAMP",
+  "transpile", "oracle", "{\"unsupported_level\":\"IMMEDIATE\",\"write\":\"dremio\"}", "CAST(x AS TIMESTAMPLTZ)", "UnsupportedError", "Dremio does not support time-zone-aware TIMESTAMP",
+  "parse_one", "dremio", "{}", "CAST(x AS MY_CUSTOM_TYPE)", "ParseError", "Expected TYPE after CAST. Line 1, Col: 24.\n  CAST(x AS \u{1b}[4mMY_CUSTOM_TYPE\u{1b}[0m)",
+]

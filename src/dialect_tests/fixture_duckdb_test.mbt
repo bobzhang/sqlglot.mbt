@@ -808,7 +808,7 @@ let duckdb_cases : Array[String] = [
   "duckdb", "duckdb", "", "FORCE INSTALL httpfs", "FORCE INSTALL httpfs",
   "duckdb", "duckdb", "", "FORCE INSTALL httpfs FROM community", "FORCE INSTALL httpfs FROM community",
   "duckdb", "duckdb", "", "FORCE INSTALL httpfs FROM 'https://extensions.duckdb.org'", "FORCE INSTALL httpfs FROM 'https://extensions.duckdb.org'",
-  "duckdb", "duckdb", "", "FORCE CHECKPOINT db", "FORCE CHECKPOINT db",
+  "duckdb", "duckdb", "c", "FORCE CHECKPOINT db", "FORCE CHECKPOINT db",
   "bigquery", "duckdb", "I", "IS_INF(x)", "ISINF(x)",
   "duckdb", "bigquery", "I", "ISINF(x)", "IS_INF(x)",
   "duckdb", "duckdb", "I", "ISINF(x)", "ISINF(x)",
@@ -860,13 +860,13 @@ let duckdb_cases : Array[String] = [
   "duckdb", "snowflake", "I", "ALTER TABLE \"db\".\"t1\" RENAME TO \"db\".\"t2\"", "ALTER TABLE \"db\".\"t1\" RENAME TO \"db\".\"t2\"",
   "duckdb", "duckdb", "I", "ALTER TABLE \"db\".\"t1\" RENAME TO \"db\".\"t2\"", "ALTER TABLE \"db\".\"t1\" RENAME TO \"t2\"",
   "duckdb", "tsql", "I", "ALTER TABLE \"db\".\"t1\" RENAME TO \"db\".\"t2\"", "EXEC sp_rename '[db].[t1]', 't2'",
-  "duckdb", "duckdb", "", "RESET threads", "RESET threads",
-  "duckdb", "duckdb", "", "RESET memory_limit", "RESET memory_limit",
-  "duckdb", "duckdb", "", "RESET default_collation", "RESET default_collation",
-  "duckdb", "duckdb", "", "RESET SESSION threads", "RESET SESSION threads",
-  "duckdb", "duckdb", "", "RESET GLOBAL memory_limit", "RESET GLOBAL memory_limit",
-  "duckdb", "duckdb", "", "RESET LOCAL threads", "RESET LOCAL threads",
-  "duckdb", "duckdb", "", "RESET SESSION default_collation", "RESET SESSION default_collation",
+  "duckdb", "duckdb", "c", "RESET threads", "RESET threads",
+  "duckdb", "duckdb", "c", "RESET memory_limit", "RESET memory_limit",
+  "duckdb", "duckdb", "c", "RESET default_collation", "RESET default_collation",
+  "duckdb", "duckdb", "c", "RESET SESSION threads", "RESET SESSION threads",
+  "duckdb", "duckdb", "c", "RESET GLOBAL memory_limit", "RESET GLOBAL memory_limit",
+  "duckdb", "duckdb", "c", "RESET LOCAL threads", "RESET LOCAL threads",
+  "duckdb", "duckdb", "c", "RESET SESSION default_collation", "RESET SESSION default_collation",
   "duckdb", "duckdb", "I", "a / b", "a / b",
   "duckdb", "mysql", "I", "a / b", "a / b",
   "duckdb", "postgres", "I", "a / b", "CAST(a AS DOUBLE PRECISION) / b",
@@ -1040,4 +1040,9 @@ let duckdb_cases : Array[String] = [
   "duckdb", "duckdb", "", "CREATE MACRO foo(a TINYINT) AS a = 127", "CREATE MACRO foo(a TINYINT) AS a = 127",
   "duckdb", "duckdb", "", "CREATE MACRO is_maximal (a TINYINT) AS a = 127, (a INT) AS a = 2147483647", "CREATE MACRO is_maximal (a TINYINT) AS a = 127, (a INT) AS a = 2147483647",
   "duckdb", "duckdb", "", "CREATE MACRO tbl (a) AS TABLE (SELECT a AS x), (a, b) AS TABLE (SELECT a AS x, b AS y)", "CREATE MACRO tbl (a) AS TABLE (SELECT a AS x), (a, b) AS TABLE (SELECT a AS x, b AS y)",
+]
+
+///|
+let duckdb_error_cases : Array[String] = [
+  "parse_one", "duckdb", "{}", "1 //", "ParseError", "Required keyword: 'expression' missing for <class 'sqlglot.expressions.core.IntDiv'>. Line 1, Col: 4.\n  1 \u{1b}[4m//\u{1b}[0m",
 ]

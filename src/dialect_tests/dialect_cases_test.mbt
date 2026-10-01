@@ -6,8 +6,18 @@ test "dialect athena" {
 }
 
 ///|
+test "dialect errors athena" {
+  run_error_cases("athena", athena_error_cases)
+}
+
+///|
 test "dialect bigquery" {
   run_dialect_cases("bigquery", bigquery_cases)
+}
+
+///|
+test "dialect errors bigquery" {
+  run_error_cases("bigquery", bigquery_error_cases)
 }
 
 ///|
@@ -21,6 +31,11 @@ test "dialect databricks" {
 }
 
 ///|
+test "dialect errors databricks" {
+  run_error_cases("databricks", databricks_error_cases)
+}
+
+///|
 test "dialect dax" {
   run_dialect_cases("dax", dax_cases)
 }
@@ -31,6 +46,11 @@ test "dialect dialect" {
 }
 
 ///|
+test "dialect errors dialect" {
+  run_error_cases("dialect", dialect_error_cases)
+}
+
+///|
 test "dialect doris" {
   run_dialect_cases("doris", doris_cases)
 }
@@ -38,6 +58,11 @@ test "dialect doris" {
 ///|
 test "dialect dremio" {
   run_dialect_cases("dremio", dremio_cases)
+}
+
+///|
+test "dialect errors dremio" {
+  run_error_cases("dremio", dremio_error_cases)
 }
 
 ///|
@@ -56,6 +81,11 @@ test "dialect duckdb" {
 }
 
 ///|
+test "dialect errors duckdb" {
+  run_error_cases("duckdb", duckdb_error_cases)
+}
+
+///|
 test "dialect dune" {
   run_dialect_cases("dune", dune_cases)
 }
@@ -63,6 +93,11 @@ test "dialect dune" {
 ///|
 test "dialect exasol" {
   run_dialect_cases("exasol", exasol_cases)
+}
+
+///|
+test "dialect errors exasol" {
+  run_error_cases("exasol", exasol_error_cases)
 }
 
 ///|
@@ -91,6 +126,11 @@ test "dialect oracle" {
 }
 
 ///|
+test "dialect errors oracle" {
+  run_error_cases("oracle", oracle_error_cases)
+}
+
+///|
 test "dialect pipe_syntax" {
   run_dialect_cases("pipe_syntax", pipe_syntax_cases)
 }
@@ -98,6 +138,11 @@ test "dialect pipe_syntax" {
 ///|
 test "dialect postgres" {
   run_dialect_cases("postgres", postgres_cases)
+}
+
+///|
+test "dialect errors postgres" {
+  run_error_cases("postgres", postgres_error_cases)
 }
 
 ///|
@@ -116,6 +161,11 @@ test "dialect redshift" {
 }
 
 ///|
+test "dialect errors redshift" {
+  run_error_cases("redshift", redshift_error_cases)
+}
+
+///|
 test "dialect risingwave" {
   run_dialect_cases("risingwave", risingwave_cases)
 }
@@ -131,6 +181,11 @@ test "dialect snowflake" {
 }
 
 ///|
+test "dialect errors snowflake" {
+  run_error_cases("snowflake", snowflake_error_cases)
+}
+
+///|
 test "dialect solr" {
   run_dialect_cases("solr", solr_cases)
 }
@@ -141,8 +196,18 @@ test "dialect spark" {
 }
 
 ///|
+test "dialect errors spark" {
+  run_error_cases("spark", spark_error_cases)
+}
+
+///|
 test "dialect sqlite" {
   run_dialect_cases("sqlite", sqlite_cases)
+}
+
+///|
+test "dialect errors sqlite" {
+  run_error_cases("sqlite", sqlite_error_cases)
 }
 
 ///|
@@ -166,6 +231,16 @@ test "dialect trino" {
 }
 
 ///|
+test "dialect errors trino" {
+  run_error_cases("trino", trino_error_cases)
+}
+
+///|
 test "dialect tsql" {
   run_dialect_cases("tsql", tsql_cases)
+}
+
+///|
+test "dialect errors tsql" {
+  run_error_cases("tsql", tsql_error_cases)
 }

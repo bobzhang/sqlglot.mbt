@@ -131,7 +131,11 @@ pub fn Parser::parse_drop_column_base(
   let drop = if self.match_(DROP) { self.parse_drop() } else { None }
   match drop {
     Some(d) if d.kind != Command =>
-      if !d.args.contains("kind") {
+      // drop.set("kind", drop.args.get("kind", "COLUMN")): an explicit None kind is
+      // popped, a missing one becomes COLUMN
+      if d.has_key("kind") {
+        d.set("kind", d.get("kind"))
+      } else {
         d.set("kind", "COLUMN")
       }
     _ => ()

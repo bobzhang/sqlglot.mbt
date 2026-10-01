@@ -161,8 +161,14 @@ pub fn Dialect::subclass(
 ///|
 /// Returns a shallow instance copy (shares class-level configuration) so that
 /// instance settings can be changed without affecting the registered dialect.
+/// Like Python's `Dialect.__init__`, the instance's normalization strategy
+/// defaults to the class-level `NORMALIZATION_STRATEGY` (`cfg`).
 pub fn Dialect::instance(self : Dialect) -> Dialect {
-  { ..self, settings: Map::from_iter(self.settings.iter()), }
+  {
+    ..self,
+    normalization_strategy: self.cfg.normalization_strategy,
+    settings: Map::from_iter(self.settings.iter()),
+  }
 }
 
 ///|
@@ -239,6 +245,25 @@ pub fn dialect_names() -> Array[String] {
 pub fn Dialect::get_or_raise(spec : String) -> Dialect raise SqlglotError {
   let parts = py_split(spec, ",")
   let name = py_strip(parts[0])
+  // kwargs: the values are `to_bool`-ed (Ok(bool)) or kept as strings (Err(str))
+  let kwargs : Map[String, Result[Bool, String]] = Map([])
+  for i in 1..<parts.length() {
+    let kv = py_split(parts[i], "=")
+    let key = py_strip(kv[0])
+    kwargs[key] = match kv.length() {
+      1 => Ok(true)
+      2 =>
+        match py_lower(py_strip(kv[1])) {
+          "true" | "1" => Ok(true)
+          "false" | "0" => Ok(false)
+          _ => Err(py_strip(kv[1]))
+        }
+      _ =>
+        raise ValueError(
+          "Invalid dialect format: '\{spec}'. Please use the correct format: 'dialect [, k1 = v2 [, ...]]'.",
+        )
+    }
+  }
   let d = match get_dialect(name) {
     Some(d) => d
     None => {
@@ -247,55 +272,52 @@ pub fn Dialect::get_or_raise(spec : String) -> Dialect raise SqlglotError {
       suggest_closest_match_and_fail("dialect", name, names)
     }
   }
-  // Python constructs a fresh instance for every string lookup.
+  // Python constructs a fresh instance for every string lookup (`Dialect.__init__`).
   let inst = d.instance()
-  for i in 1..<parts.length() {
-    let kv = py_split(parts[i], "=")
-    let key = py_strip(kv[0])
-    let value = match kv.length() {
-      1 => "true"
-      2 =>
-        match py_lower(py_strip(kv[1])) {
-          "true" | "1" => "true"
-          "false" | "0" => "false"
-          _ => py_strip(kv[1])
-        }
-      _ =>
-        raise ValueError(
-          "Invalid dialect format: '\{spec}'. Please use the correct format: 'dialect [, k1 = v2 [, ...]]'.",
-        )
+  if kwargs.get("version") is Some(value) {
+    kwargs.remove("version")
+    // str(value).split("."), padded to 3 parts
+    let value = match value {
+      Ok(b) => if b { "True" } else { "False" }
+      Err(s) => s
     }
-    if key == "normalization_strategy" {
-      inst.normalization_strategy = match py_upper(value) {
-        "LOWERCASE" => Lowercase
-        "UPPERCASE" => Uppercase
-        "CASE_SENSITIVE" => CaseSensitive
-        "CASE_INSENSITIVE" => CaseInsensitive
-        "CASE_INSENSITIVE_UPPERCASE" => CaseInsensitiveUppercase
-        _ =>
-          raise ValueError(
-            "'\{py_upper(value)}' is not a valid NormalizationStrategy",
-          )
+    let vs = py_split(value, ".")
+    let nums = []
+    for v in vs[:@cmp.minimum(vs.length(), 3)] {
+      match parse_int_str(py_strip(v)) {
+        Some(n) => nums.push(n.to_int())
+        None =>
+          raise ValueError("invalid literal for int() with base 10: '\{v}'")
       }
-    } else if key == "version" {
-      let vs = py_split(value, ".")
-      let nums = []
-      for v in vs {
-        match parse_int_str(py_strip(v)) {
-          Some(n) => nums.push(n.to_int())
-          None =>
-            raise ValueError(
-              "invalid literal for int() with base 10: '\{v}'",
-            )
-        }
-      }
-      while nums.length() < 3 {
-        nums.push(0)
-      }
-      inst.version = (nums[0], nums[1], nums[2])
-    } else {
-      inst.settings[key] = value
     }
+    while nums.length() < 3 {
+      nums.push(0)
+    }
+    inst.version = (nums[0], nums[1], nums[2])
+  }
+  if kwargs.get("normalization_strategy") is Some(value) {
+    kwargs.remove("normalization_strategy")
+    let value = match value {
+      Ok(_) => raise ValueError("'bool' object has no attribute 'upper'")
+      Err(s) => py_upper(s)
+    }
+    inst.normalization_strategy = match value {
+      "LOWERCASE" => Lowercase
+      "UPPERCASE" => Uppercase
+      "CASE_SENSITIVE" => CaseSensitive
+      "CASE_INSENSITIVE" => CaseInsensitive
+      "CASE_INSENSITIVE_UPPERCASE" => CaseInsensitiveUppercase
+      _ => raise ValueError("'\{value}' is not a valid NormalizationStrategy")
+    }
+  }
+  // the port stores the booleans as "true" / "false"
+  for key, value in kwargs {
+    inst.settings[key] = match value {
+      Ok(b) => if b { "true" } else { "false" }
+      Err(s) => s
+    }
+  }
+  for key, _ in kwargs {
     if !d.supported_settings.contains(key) {
       suggest_closest_match_and_fail("setting", key, d.supported_settings)
     }

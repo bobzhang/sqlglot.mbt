@@ -59,6 +59,12 @@ fn is_quantified(e : @core.Expr) -> Bool {
 
 ///|
 fn configure_generator(d : @core.Dialect) -> Unit {
+  // AFTER_HAVING_MODIFIER_TRANSFORMS = generator.AFTER_HAVING_MODIFIER_TRANSFORMS
+  // (the module-level table: only WINDOW and QUALIFY)
+  d.gen_fns.after_having_modifier_transforms = d.gen_fns.after_having_modifier_transforms.filter(kv => {
+      kv.0 == "windows" || kv.0 == "qualify"
+    },
+  )
   let t = d.gen_fns.transforms
   t[CurrentTimestamp] = (_, _) => "CURRENT_TIMESTAMP"
   t[ArrayContains] = @core.rename_func("REPEATED_CONTAINS")

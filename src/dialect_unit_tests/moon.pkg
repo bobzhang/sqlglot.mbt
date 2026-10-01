@@ -1,0 +1,10 @@
+import {
+  "hongbozhang/sqlglot",
+  "hongbozhang/sqlglot/core",
+  "hongbozhang/sqlglot/optimizer",
+  "moonbitlang/core/cmp",
+  "moonbitlang/core/double",
+  "moonbitlang/core/string",
+} for "test"
+
+warnings = "-79"

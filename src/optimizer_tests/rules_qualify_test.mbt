@@ -77,6 +77,7 @@ test "optimizer qualify_columns__invalid" {
       @optimizer.validate_qualify_columns(e)
     },
     output=(_, _) => "OK",
+    check_parents=false,
   )
 }
 

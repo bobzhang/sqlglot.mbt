@@ -520,11 +520,18 @@ fn Resolver::get_unnest_column_type(
 }
 
 ///|
+/// The number of calls of `Resolver::get_column_type_from_scope` (Python
+/// `Resolver._get_column_type_from_scope`) so far; tests use it to check that the
+/// trace is memoized (Python's test patches the method to count its calls).
+pub let column_type_trace_calls : Ref[Int] = Ref(0)
+
+///|
 fn Resolver::get_column_type_from_scope(
   self : Resolver,
   source : Source,
   column : @core.Expr,
 ) -> @core.Expr? raise @core.SqlglotError {
+  column_type_trace_calls.val += 1
   let source_id = match source {
     TableSource(t) => t.uid * 2
     ScopeSource(s) => s.id * 2 + 1

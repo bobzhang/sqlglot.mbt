@@ -51,6 +51,7 @@ fn run_fixtures(
   output? : (@core.Expr, Case) -> String raise,
   max_report? : Int = 15,
   report_dialects? : Bool = false,
+  check_parents? : Bool = true,
 ) -> Unit raise {
   let mut total = 0
   let mut passed = 0
@@ -80,6 +81,12 @@ fn run_fixtures(
       let case_ = { dialect, meta }
       let expression = @core.parse_one(sql, dialect?)
       let optimized = runner(expression, case_)
+      // TestOptimizer.check_file: every expression arg points back to its parent
+      // (assertIs(arg.parent, expression)) under its key
+      // (only for the fixture files Python runs through check_file)
+      if check_parents && parent_link_error(optimized) is Some(e) {
+        raise @core.ValueError(e)
+      }
       match output {
         Some(f) => Ok(f(optimized, case_))
         None => Ok(@optimizer.sql_of(optimized, dialect?, pretty~))
@@ -91,11 +98,7 @@ fn run_fixtures(
       Ok(s) => s
       Err(s) => s
     }
-    let ok = if expected.has_prefix("ERROR:") {
-      got.has_prefix("ERROR:")
-    } else {
-      got == expected
-    }
+    let ok = outcome_matches(got, expected)
     if ok {
       passed += 1
       if dialect_name == "" {
@@ -119,4 +122,67 @@ fn run_fixtures(
     "OPTIMIZER \{name}: total=\{total} passed=\{passed} mismatches=\{mismatches} errors=\{errors} (base dialect: total=\{base_total} passed=\{base_passed})",
   )
   assert_eq(passed, total)
+}
+
+///|
+/// Whether a run's outcome (`got`: the output, or "ERROR: <error>") matches the one
+/// recorded from Python (`expected`: the output, or "ERROR: <Class>: <message>").
+/// sqlglot errors must have the same class and message. Python-internal exceptions
+/// (AssertionError, KeyError, ...: crashes of the Python implementation) can't be
+/// reproduced; any error of the port is accepted for them.
+fn outcome_matches(got : String, expected : String) -> Bool {
+  guard expected.has_prefix("ERROR: ") else { return got == expected }
+  let rest = expected.unsafe_substring(start=7, end=expected.length())
+  let class = match rest.find(":") {
+    Some(i) => rest.unsafe_substring(start=0, end=i)
+    None => rest
+  }
+  if sqlglot_error_classes.contains(class) {
+    got == expected
+  } else {
+    got.has_prefix("ERROR: ")
+  }
+}
+
+///|
+let sqlglot_error_classes : Array[String] = [
+  "TokenError", "ParseError", "UnsupportedError", "OptimizeError", "SchemaError",
+  "ExecuteError", "ValueError",
+]
+
+///|
+/// Checks the parent links of a tree like TestOptimizer.check_file: for every node and
+/// every expression-valued arg, `arg.parent is node` and `arg.arg_key == key`. List
+/// elements are checked too (with their index), which Python's test doesn't do.
+fn parent_link_error(root : @core.Expr) -> String? {
+  for node in root.walk() {
+    for key, value in node.args {
+      let children = match value {
+        Node(e) => [(e, None)]
+        List(l) => {
+          let out = []
+          for i, v in l {
+            if v is Node(e) {
+              out.push((e, Some(i)))
+            }
+          }
+          out
+        }
+        _ => []
+      }
+      for child in children {
+        let (e, index) = child
+        let parent_ok = match e.parent {
+          Some(p) => physical_equal(p, node)
+          None => false
+        }
+        if !parent_ok || e.arg_key != Some(key) || (index is Some(_) && e.index != index) {
+          return Some(
+            "PARENT LINK: \{e.kind} under \{node.kind}.\{key}\{to_repr(index)}: arg_key=\{to_repr(e.arg_key)} index=\{to_repr(e.index)} parent ok=\{parent_ok}",
+          )
+        }
+      }
+    }
+  }
+  None
 }

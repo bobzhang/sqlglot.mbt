@@ -25,6 +25,10 @@ pub struct Expr {
   mut meta : Map[String, Value]?
   /// Unique identity of this node (Python `id(node)`).
   uid : Int
+  /// Keys whose value is an explicit Python `None` (`exp.Foo(key=None)`). The port
+  /// stores no None values in `args`; these keys are only visible to `has_key` and
+  /// `arg_keys` (Python's `key in e.args`), everything else ignores them like Python.
+  priv mut none_keys : Array[String]?
 }
 
 ///|
@@ -143,6 +147,7 @@ pub fn Expr::new(kind : Kind, args : Map[String, Value]) -> Expr {
     type_: None,
     meta: None,
     uid: next_expr_uid(),
+    none_keys: None,
   }
   if kind == DateTrunc {
     normalize_date_trunc_args(args)
@@ -158,13 +163,50 @@ pub fn Expr::new(kind : Kind, args : Map[String, Value]) -> Expr {
 /// Builds an expression, Python style: `mk(Column, [("this", ident), ("table", tbl)])`.
 pub fn mk(kind : Kind, args : ArrayView[(String, &IntoValue)]) -> Expr {
   let m : Map[_, _] = Map([], capacity=args.length())
+  let none_keys = []
   for kv in args {
     match kv.1.into_value() {
       Some(v) => m[kv.0] = v
-      None => ()
+      None => if !none_keys.contains(kv.0) { none_keys.push(kv.0) }
     }
   }
-  Expr::new(kind, m)
+  let e = Expr::new(kind, m)
+  // a later non-None value for the same key wins, as in a Python kwargs dict
+  let none_keys = none_keys.filter(k => !m.contains(k))
+  if !none_keys.is_empty() {
+    e.none_keys = Some(none_keys)
+  }
+  e
+}
+
+///|
+/// Python `key in e.args`: whether the argument is set, including to an explicit `None`
+/// (see `Expr::none_keys`). Use `has` for Python's truthiness of `e.args.get(key)`.
+pub fn Expr::has_key(self : Expr, key : String) -> Bool {
+  self.args.contains(key) ||
+  (match self.none_keys {
+    Some(keys) => keys.contains(key)
+    None => false
+  })
+}
+
+///|
+/// Python `list(e.args)`: the argument keys, including those set to an explicit `None`
+/// (which come last here).
+pub fn Expr::arg_keys(self : Expr) -> Array[String] {
+  let keys = self.args.keys().collect()
+  if self.none_keys is Some(none_keys) {
+    keys.append(none_keys)
+  }
+  keys
+}
+
+///|
+fn Expr::forget_none_key(self : Expr, key : String) -> Unit {
+  if self.none_keys is Some(keys) {
+    let rest = keys.filter(k => k != key)
+    self.none_keys = if rest.is_empty() { None } else { Some(rest) }
+  }
 }
 
 ///|
@@ -793,6 +835,10 @@ fn Expr::copy_shell(self : Expr) -> Expr {
       None => None
     },
     uid: next_expr_uid(),
+    none_keys: match self.none_keys {
+      Some(keys) => Some(keys.copy())
+      None => None
+    },
   }
 }
 
@@ -904,6 +950,7 @@ pub fn Expr::append(self : Expr, arg_key : String, value : &IntoValue) -> Unit {
     Some(v) => v
     None => return
   }
+  self.forget_none_key(arg_key)
   let values = match self.args.get(arg_key) {
     Some(List(l)) => l
     _ => {
@@ -926,6 +973,8 @@ pub fn Expr::append(self : Expr, arg_key : String, value : &IntoValue) -> Unit {
 ///|
 /// Sets arg_key to value. `None` removes the argument.
 pub fn Expr::set(self : Expr, arg_key : String, value : &IntoValue) -> Unit {
+  // Python: set(key, None) pops the key, set(key, value) replaces a None value
+  self.forget_none_key(arg_key)
   match value.into_value() {
     None => self.args.remove(arg_key)
     Some(v) => {

@@ -25,7 +25,8 @@ fn configure_generator(d : @core.Dialect) -> Unit {
     }
   }
   m[StrPosition] = (g, e) => {
-    let has_occurrence = e.args.contains("occurrence")
+    // Python: "occurrence" in expression.args (true for an explicit None too)
+    let has_occurrence = e.has_key("occurrence")
     @core.strposition_sql(
       g,
       e,

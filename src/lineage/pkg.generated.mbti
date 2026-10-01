@@ -7,9 +7,9 @@ import {
 }
 
 // Values
-pub fn lineage(String, @core.Expr, schema? : @optimizer.MappingSchema, sources? : Map[String, @core.Expr], dialect? : @core.Dialect, scope? : @optimizer.Scope, trim_selects? : Bool, copy? : Bool, on_node? : (Node) -> Unit) -> Node raise @core.SqlglotError
+pub fn lineage(String, @core.Expr, schema? : @optimizer.MappingSchema, sources? : Map[String, @core.Expr], dialect? : @core.Dialect, scope? : @optimizer.Scope, trim_selects? : Bool, copy? : Bool, on_node? : (Node) -> Unit, db? : String, catalog? : String, expand_alias_refs? : Bool, expand_stars? : Bool, infer_schema? : Bool, isolate_tables? : Bool, qualify_columns? : Bool, allow_partial_qualification? : Bool, validate_qualify_columns? : Bool, quote_identifiers? : Bool, identify? : Bool, canonicalize_table_aliases? : Bool) -> Node raise @core.SqlglotError
 
-pub fn lineage_all(@core.Expr, schema? : @optimizer.MappingSchema, sources? : Map[String, @core.Expr], dialect? : @core.Dialect, scope? : @optimizer.Scope, trim_selects? : Bool, copy? : Bool, on_node? : (Node) -> Unit) -> Map[String, Node] raise @core.SqlglotError
+pub fn lineage_all(@core.Expr, schema? : @optimizer.MappingSchema, sources? : Map[String, @core.Expr], dialect? : @core.Dialect, scope? : @optimizer.Scope, trim_selects? : Bool, copy? : Bool, on_node? : (Node) -> Unit, db? : String, catalog? : String, expand_alias_refs? : Bool, expand_stars? : Bool, infer_schema? : Bool, isolate_tables? : Bool, qualify_columns? : Bool, allow_partial_qualification? : Bool, validate_qualify_columns? : Bool, quote_identifiers? : Bool, identify? : Bool, canonicalize_table_aliases? : Bool) -> Map[String, Node] raise @core.SqlglotError
 
 // Errors
 

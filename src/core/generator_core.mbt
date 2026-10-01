@@ -587,7 +587,12 @@ pub fn Generator::sql_value(
       } else {
         ""
       }
-    Int(i) => if i == 0 { "" } else { i.to_string() }
+    Int(i) =>
+      if i == 0 {
+        ""
+      } else {
+        raise ValueError("Unsupported expression type int")
+      }
     DT(d) => raise ValueError("Unsupported expression type \{d}")
   }
 }

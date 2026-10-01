@@ -16,6 +16,7 @@ test "optimizer annotate_types" {
     pretty=false,
     (e, c) => @optimizer.annotate_types(e, dialect?=c.dialect),
     output=type_sql,
+    check_parents=false,
   )
 }
 
@@ -33,5 +34,6 @@ test "optimizer annotate_functions" {
       @optimizer.annotate_types(e, schema~, dialect?=c.dialect).expressions()[0]
     },
     output=type_sql,
+    check_parents=false,
   )
 }

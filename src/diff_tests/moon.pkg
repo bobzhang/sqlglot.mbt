@@ -1,4 +1,5 @@
 import {
+  "hongbozhang/sqlglot",
   "hongbozhang/sqlglot/core",
   "hongbozhang/sqlglot/diff",
   "moonbitlang/core/json",

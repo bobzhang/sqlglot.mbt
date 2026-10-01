@@ -5,8 +5,8 @@ let athena_cases : Array[String] = [
   "athena", "athena", "", "SELECT '\\d+'", "SELECT '\\d+'",
   "athena", "athena", "", "SELECT 'foo''bar'", "SELECT 'foo''bar'",
   "athena", "athena", "", "CREATE TABLE IF NOT EXISTS t (name STRING) LOCATION 's3://bucket/tmp/mytable/' TBLPROPERTIES ('table_type'='iceberg', 'FORMAT'='parquet')", "CREATE TABLE IF NOT EXISTS t (name STRING) LOCATION 's3://bucket/tmp/mytable/' TBLPROPERTIES ('table_type'='iceberg', 'FORMAT'='parquet')",
-  "athena", "athena", "", "UNLOAD (SELECT name1, address1, comment1, key1 FROM table1) TO 's3://amzn-s3-demo-bucket/ partitioned/' WITH (format = 'TEXTFILE', partitioned_by = ARRAY['key1'])", "UNLOAD (SELECT name1, address1, comment1, key1 FROM table1) TO 's3://amzn-s3-demo-bucket/ partitioned/' WITH (format = 'TEXTFILE', partitioned_by = ARRAY['key1'])",
-  "athena", "athena", "", "USING EXTERNAL FUNCTION some_function(input VARBINARY)\n            RETURNS VARCHAR\n                LAMBDA 'some-name'\n            SELECT\n            some_function(1)", "USING EXTERNAL FUNCTION some_function(input VARBINARY)\n            RETURNS VARCHAR\n                LAMBDA 'some-name'\n            SELECT\n            some_function(1)",
+  "athena", "athena", "c", "UNLOAD (SELECT name1, address1, comment1, key1 FROM table1) TO 's3://amzn-s3-demo-bucket/ partitioned/' WITH (format = 'TEXTFILE', partitioned_by = ARRAY['key1'])", "UNLOAD (SELECT name1, address1, comment1, key1 FROM table1) TO 's3://amzn-s3-demo-bucket/ partitioned/' WITH (format = 'TEXTFILE', partitioned_by = ARRAY['key1'])",
+  "athena", "athena", "c", "USING EXTERNAL FUNCTION some_function(input VARBINARY)\n            RETURNS VARCHAR\n                LAMBDA 'some-name'\n            SELECT\n            some_function(1)", "USING EXTERNAL FUNCTION some_function(input VARBINARY)\n            RETURNS VARCHAR\n                LAMBDA 'some-name'\n            SELECT\n            some_function(1)",
   "athena", "athena", "i", "/* leading comment */CREATE SCHEMA foo", "/* leading comment */ CREATE SCHEMA `foo`",
   "athena", "athena", "i", "/* leading comment */SELECT * FROM foo", "/* leading comment */ SELECT * FROM \"foo\"",
   "athena", "athena", "", "CREATE EXTERNAL TABLE foo (id INT) COMMENT 'test comment'", "CREATE EXTERNAL TABLE foo (id INT) COMMENT 'test comment'",
@@ -56,4 +56,10 @@ let athena_cases : Array[String] = [
   "athena", "athena", "", "DELETE FROM \"foo\" WHERE \"id\" > 10", "DELETE FROM \"foo\" WHERE \"id\" > 10",
   "athena", "athena", "", "WITH foo AS (SELECT a, b FROM bar) SELECT * FROM foo", "WITH foo AS (SELECT a, b FROM bar) SELECT * FROM foo",
   "athena", "athena", "i", "WITH foo AS (SELECT a, b FROM bar) SELECT * FROM foo", "WITH \"foo\" AS (SELECT \"a\", \"b\" FROM \"bar\") SELECT * FROM \"foo\"",
+]
+
+///|
+let athena_error_cases : Array[String] = [
+  "parse_one", "athena", "{\"max_nodes\":3}", "SELECT a + b + c FROM t", "ParseError", "Maximum number of AST nodes (3) exceeded. Line 1, Col: 23.\n  SELECT a + b + c FROM \u{1b}[4mt\u{1b}[0m",
+  "parse_one", "athena", "{\"max_nodes\":3}", "ALTER TABLE t ADD COLUMNS (a INT, b INT)", "ParseError", "Maximum number of AST nodes (3) exceeded. Line 1, Col: 40.\n  ALTER TABLE t ADD COLUMNS (a INT, b INT\u{1b}[4m)\u{1b}[0m",
 ]

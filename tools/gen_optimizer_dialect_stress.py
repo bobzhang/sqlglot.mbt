@@ -60,7 +60,7 @@ def main():
         try:
             out = optimize(expression, dialect=read).sql(dialect=read)
         except Exception as e:  # noqa: BLE001
-            out = f"ERROR: {type(e).__name__}"
+            out = f"ERROR: {type(e).__name__}: {e}"
         records.append((read, sql, out))
 
     with open(os.path.join(OUT, "fixture_dialect_stress_test.mbt"), "w") as f:

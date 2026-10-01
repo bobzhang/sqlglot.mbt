@@ -2698,3 +2698,21 @@ let dialect_cases : Array[String] = [
   "", "sqlite", "I", "SELECT SUM(X) OVER (PARTITION BY x RANGE BETWEEN 1 PRECEDING AND CURRENT ROW)", "SELECT SUM(X) OVER (PARTITION BY x RANGE BETWEEN 1 PRECEDING AND CURRENT ROW)",
   "", "oracle", "I", "SELECT SUM(X) OVER (PARTITION BY x RANGE BETWEEN 1 PRECEDING AND CURRENT ROW)", "SELECT SUM(X) OVER (PARTITION BY x RANGE BETWEEN 1 PRECEDING AND CURRENT ROW)",
 ]
+
+///|
+let dialect_error_cases : Array[String] = [
+  "parse_one", "presto", "{}", "SELECT 1 'foo'", "ParseError", "Invalid expression / Unexpected token. Line 1, Col: 14.\n  SELECT 1 \u{1b}[4m'foo'\u{1b}[0m",
+  "parse_one", "hive", "{}", "SELECT 1 'foo'", "ParseError", "Invalid expression / Unexpected token. Line 1, Col: 14.\n  SELECT 1 \u{1b}[4m'foo'\u{1b}[0m",
+  "parse_one", "postgres", "{}", "SELECT 1 'foo'", "ParseError", "Invalid expression / Unexpected token. Line 1, Col: 14.\n  SELECT 1 \u{1b}[4m'foo'\u{1b}[0m",
+  "parse_one", "clickhouse", "{}", "SELECT 1 'foo'", "ParseError", "Invalid expression / Unexpected token. Line 1, Col: 14.\n  SELECT 1 \u{1b}[4m'foo'\u{1b}[0m",
+  "parse_one", "bigquery", "{}", "SELECT 1 'foo'", "ParseError", "Invalid expression / Unexpected token. Line 1, Col: 14.\n  SELECT 1 \u{1b}[4m'foo'\u{1b}[0m",
+  "parse_one", "snowflake", "{}", "SELECT 1 'foo'", "ParseError", "Invalid expression / Unexpected token. Line 1, Col: 14.\n  SELECT 1 \u{1b}[4m'foo'\u{1b}[0m",
+  "parse_one", "duckdb", "{}", "SELECT 1 'foo'", "ParseError", "Invalid expression / Unexpected token. Line 1, Col: 14.\n  SELECT 1 \u{1b}[4m'foo'\u{1b}[0m",
+  "parse_one", "bigquery", "{}", "CAST(x AS some_udt)", "ParseError", "Expected TYPE after CAST. Line 1, Col: 18.\n  CAST(x AS \u{1b}[4msome_udt\u{1b}[0m)",
+  "parse_one", "clickhouse", "{}", "SELECT $tag1$invalid heredoc string$tag2$", "TokenError", "Error tokenizing 'SELECT $tag1$invalid heredoc string$tag2'",
+  "parse_one", "clickhouse", "{}", "SELECT $tag1$invalid heredoc string", "TokenError", "Error tokenizing 'SELECT $tag1$invalid heredoc strin'",
+  "parse_one", "postgres", "{}", "SELECT $tag1$invalid heredoc string$tag2$", "TokenError", "Error tokenizing 'SELECT $tag1$invalid heredoc string$tag2'",
+  "parse_one", "postgres", "{}", "SELECT $tag1$invalid heredoc string", "TokenError", "Error tokenizing 'SELECT $tag1$invalid heredoc strin'",
+  "parse_one", "redshift", "{}", "SELECT $tag1$invalid heredoc string$tag2$", "TokenError", "Error tokenizing 'SELECT $tag1$invalid heredoc string$tag2'",
+  "parse_one", "redshift", "{}", "SELECT $tag1$invalid heredoc string", "TokenError", "Error tokenizing 'SELECT $tag1$invalid heredoc strin'",
+]

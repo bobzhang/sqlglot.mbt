@@ -225,3 +225,9 @@ let databricks_cases : Array[String] = [
   "databricks", "databricks", "I", "CREATE TABLE x (SELECT 1)", "CREATE TABLE x AS (SELECT 1)",
   "databricks", "databricks", "I", "WITH x (select 1) SELECT * FROM x", "WITH x AS (SELECT 1) SELECT * FROM x",
 ]
+
+///|
+let databricks_error_cases : Array[String] = [
+  "transpile", "databricks", "{}", "CREATE FUNCTION add_one(x INT) RETURNS INT LANGUAGE PYTHON AS $foo$def add_one(x):\n  return x+1$$", "ParseError", "No closing $FOO$ found. Line 2, Col: 14.\n  CREATE FUNCTION add_one(x INT) RETURNS INT LANGUAGE PYTHON AS $foo$def add_one(x):\n  return x+1$\u{1b}[4m$\u{1b}[0m",
+  "transpile", "databricks", "{}", "CREATE FUNCTION add_one(x INT) RETURNS INT LANGUAGE PYTHON AS $foo bar$def add_one(x):\n  return x+1$foo bar$", "ParseError", "No closing $ found. Line 1, Col: 70.\n  CREATE FUNCTION add_one(x INT) RETURNS INT LANGUAGE PYTHON AS $foo \u{1b}[4mbar\u{1b}[0m$def add_one(x):\n  return x+1$foo bar$",
+]
