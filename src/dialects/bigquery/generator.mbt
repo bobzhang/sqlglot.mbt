@@ -79,7 +79,7 @@ fn create_sql(
       e.set("kind", "TABLE FUNCTION")
       match e.expression() {
         Some(x) if x.kind == Subquery || x.kind == Literal =>
-          e.set("expression", x.this())
+          e.set("expression", x.get("this"))
         _ => ()
       }
     }

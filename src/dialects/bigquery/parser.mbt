@@ -889,7 +889,17 @@ fn parse_unnest(
           Some(t) => t.expressions()
           None => []
         }
-        if elems.iter().any(elem => elem.is_type([STRUCT])) {
+        // Until the optimizer's annotate_types is available, the element type of an
+        // array literal is approximated by its first non-NULL element.
+        let first_elem = unnest_expr
+          .expressions()
+          .iter()
+          .find_first(x => x.kind != Null)
+        let literal_struct_elems = unnest_expr.kind == Array &&
+          first_elem is Some(first) &&
+          first.kind == Struct
+        if elems.iter().any(elem => elem.is_type([STRUCT])) ||
+          (elems.is_empty() && literal_struct_elems) {
           u.set("explode_array", true)
         }
       }
@@ -957,7 +967,11 @@ fn parse_generate(
   } else {
     p.parse_bitwise()
   }
-  let params_struct = if p.match_(COMMA) { p.parse_bitwise() } else { None }
+  let params_struct : @core.Value? = if p.match_(COMMA) {
+    p.parse_bitwise().map(e => @core.Value::Node(e))
+  } else {
+    Some(Bool(false))
+  }
   p.expression(
     @core.mk(kind, [
       ("this", this),
@@ -1070,10 +1084,10 @@ fn parse_vector_search(p : @core.Parser) -> @core.Expr raise @core.SqlglotError 
 ///|
 fn parse_export_data(p : @core.Parser) -> @core.Expr raise @core.SqlglotError {
   p.match_text_seq(["DATA"]) |> ignore
-  let connection = if p.match_text_seq(["WITH", "CONNECTION"]) {
-    p.parse_table_parts()
+  let connection : @core.Value? = if p.match_text_seq(["WITH", "CONNECTION"]) {
+    p.parse_table_parts().map(e => @core.Value::Node(e))
   } else {
-    None
+    Some(Bool(false))
   }
   let options = p.parse_properties()
   let this = if p.match_text_seq(["AS"]) {

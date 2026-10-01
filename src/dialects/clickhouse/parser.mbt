@@ -535,7 +535,11 @@ fn parse_assignment(p : @core.Parser) -> @core.Expr? raise @core.SqlglotError {
   let this = p.parse_assignment_base()
   if p.match_(PLACEHOLDER) {
     let true_ = p.parse_assignment()
-    let false_ = if p.match_(COLON) { p.parse_assignment() } else { None }
+    let false_ : @core.Value? = if p.match_(COLON) {
+      p.parse_assignment().map(e => @core.Value::Node(e))
+    } else {
+      Some(Bool(false))
+    }
     return Some(
       p.expression(
         @core.mk(If, [("this", this), ("true", true_), ("false", false_)]),
@@ -966,18 +970,18 @@ fn parse_index_constraint(
   // INDEX name1 expr TYPE type1(args) GRANULARITY value
   let this = p.parse_id_var()
   let expression = p.parse_assignment()
-  let index_type = if p.match_text_seq(["TYPE"]) {
+  let index_type : @core.Value? = if p.match_text_seq(["TYPE"]) {
     match p.parse_function() {
-      Some(f) => Some(f)
-      None => p.parse_var()
+      Some(f) => Some(Node(f))
+      None => p.parse_var().map(e => @core.Value::Node(e))
     }
   } else {
-    None
+    Some(Bool(false))
   }
-  let granularity = if p.match_text_seq(["GRANULARITY"]) {
-    p.parse_term()
+  let granularity : @core.Value? = if p.match_text_seq(["GRANULARITY"]) {
+    p.parse_term().map(e => @core.Value::Node(e))
   } else {
-    None
+    Some(Bool(false))
   }
   p.expression(
     @core.mk(IndexColumnConstraint, [
@@ -1121,10 +1125,10 @@ fn parse_value(
 
 ///|
 fn parse_detach(p : @core.Parser) -> @core.Expr raise @core.SqlglotError {
-  let kind = if p.match_set(p.cfg.db_creatables) {
-    Some(@core.py_upper(p.prev.text))
+  let kind : @core.Value = if p.match_set(p.cfg.db_creatables) {
+    Str(@core.py_upper(p.prev.text))
   } else {
-    None
+    Bool(false)
   }
   let exists = p.parse_exists()
   let this = p.parse_table_parts()

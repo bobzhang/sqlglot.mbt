@@ -274,45 +274,10 @@ pub fn apply_index_offset(
   offset : Int,
   dialect : Dialect,
 ) -> Array[Expr] {
-  if offset == 0 || expressions.length() != 1 {
-    return expressions
-  }
-  let annotate = match annotate_types_hook.val {
-    Some(f) => f
-    None => return expressions
-  }
-  let expression = expressions[0]
-  if this.get_type() is None {
-    (annotate(this, dialect) catch { _ => return expressions }) |> ignore
-  }
-  match this.get_type() {
-    Some(t) =>
-      match t.args.get("this") {
-        Some(DT(DType::UNKNOWN)) | Some(DT(DType::ARRAY)) => ()
-        _ => return expressions
-      }
-    None => return expressions
-  }
-  if expression.get_type() is None {
-    (annotate(expression, dialect) catch { _ => return expressions }) |> ignore
-  }
-  match expression.get_type() {
-    Some(t) =>
-      match t.args.get("this") {
-        Some(DT(d)) if dtype_integer_types.contains(d) => {
-          let added = mk(Add, [
-            ("this", expression),
-            ("expression", literal_int(offset)),
-          ])
-          let simplified = match simplify_hook.val {
-            Some(s) => s(added, dialect) catch { _ => added }
-            None => added
-          }
-          [simplified]
-        }
-        _ => expressions
-      }
-    None => expressions
+  // Shares the generator's implementation (including its type-annotation fallback until
+  // the optimizer is available), so that parsing and generation stay symmetric.
+  gen_apply_index_offset(this, expressions, offset, dialect) catch {
+    _ => expressions
   }
 }
 

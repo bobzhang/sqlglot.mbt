@@ -256,6 +256,11 @@ fn is_type_check_nullable(dt : @core.Expr, dtypes : Array[@core.DType]) -> Bool 
 
 ///|
 fn configure_generator(d : @core.Dialect) -> Unit {
+  // AFTER_HAVING_MODIFIER_TRANSFORMS = generator.AFTER_HAVING_MODIFIER_TRANSFORMS (the
+  // module-level table: WINDOW and QUALIFY only)
+  let ah = d.gen_fns.after_having_modifier_transforms
+  d.gen_fns.after_having_modifier_transforms = ah.filter(kv => kv.0 == "windows") +
+    ah.filter(kv => kv.0 == "qualify")
   let t = d.gen_fns.transforms
   t.remove(AutoRefreshProperty)
   t[AnyValue] = @core.rename_func("any")
