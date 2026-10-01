@@ -176,27 +176,62 @@ pub fn py_float_repr(d : Double) -> String {
   if d.is_neg_inf() {
     return "-inf"
   }
-  let abs = d.abs()
-  if d == d.floor() && abs < 1.0e16 {
-    return d.to_int64().to_string() + ".0"
+  if d == 0.0 {
+    return if (1.0 / d).is_neg_inf() { "-0.0" } else { "0.0" }
   }
-  let s = d.to_string()
-  // MoonBit prints exponents as e.g. `1e+20` / `1e-7`; Python pads to two digits.
-  match s.find("e") {
+  // decompose MoonBit's shortest representation into digits and a decimal exponent
+  let s = d.abs().to_string()
+  let (mantissa, exp) = match s.find("e") {
     Some(i) => {
-      let mantissa = s.view(end_offset=i).to_string()
-      let exp = s.view(start_offset=i + 1).to_string()
-      let (sign, digits) = if exp.has_prefix("-") {
-        ("-", exp.view(start_offset=1).to_string())
-      } else if exp.has_prefix("+") {
-        ("+", exp.view(start_offset=1).to_string())
-      } else {
-        ("+", exp)
-      }
-      let digits = if digits.length() < 2 { "0" + digits } else { digits }
-      "\{mantissa}e\{sign}\{digits}"
+      let m = s.view(end_offset=i).to_string()
+      let e = s.view(start_offset=i + 1).to_string()
+      let e = if e.has_prefix("+") { e.substring(start=1) } else { e }
+      (m, parse_int_str(e).map(x => x.to_int()).unwrap_or(0))
     }
-    None => s
+    None => (s, 0)
+  }
+  let (int_part, frac_part) = match mantissa.find(".") {
+    Some(i) =>
+      (
+        mantissa.view(end_offset=i).to_string(),
+        mantissa.view(start_offset=i + 1).to_string(),
+      )
+    None => (mantissa, "")
+  }
+  let mut digits = int_part + frac_part
+  // value = 0.<digits> * 10^decpt
+  let mut decpt = int_part.length() + exp
+  // strip leading zeros
+  let mut lead = 0
+  while lead < digits.length() - 1 && digits[lead] == '0' {
+    lead += 1
+  }
+  digits = digits.substring(start=lead)
+  decpt -= lead
+  // strip trailing zeros
+  let mut end = digits.length()
+  while end > 1 && digits[end - 1] == '0' {
+    end -= 1
+  }
+  digits = digits.substring(end~)
+  let sign = if d < 0.0 { "-" } else { "" }
+  let n = digits.length()
+  if decpt <= -4 || decpt > 16 {
+    let e = decpt - 1
+    let mant = if n == 1 {
+      digits
+    } else {
+      digits.substring(end=1) + "." + digits.substring(start=1)
+    }
+    let es = e.abs().to_string()
+    let es = if es.length() < 2 { "0" + es } else { es }
+    sign + mant + "e" + (if e < 0 { "-" } else { "+" }) + es
+  } else if decpt <= 0 {
+    sign + "0." + "0".repeat(-decpt) + digits
+  } else if decpt >= n {
+    sign + digits + "0".repeat(decpt - n) + ".0"
+  } else {
+    sign + digits.substring(end=decpt) + "." + digits.substring(start=decpt)
   }
 }
 
