@@ -1,0 +1,8 @@
+import {
+  "hongbozhang/sqlglot/core",
+  "hongbozhang/sqlglot/optimizer",
+  "moonbitlang/core/set",
+  "moonbitlang/core/json",
+}
+
+warnings = "-79-15-20-82-29"

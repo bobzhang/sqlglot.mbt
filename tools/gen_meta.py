@@ -166,11 +166,12 @@ def gen_kinds():
         vals = []
         for c in classes:
             owner = -1
+            # Python attribute lookup: the first class in the MRO that defines it; the
+            # base Expr/Expression implementations are the default (-1)
             for a in c.__mro__:
-                if a in (exp.Expr, exp.Expression):
-                    break
                 if prop in a.__dict__:
-                    owner = idx.get(a, -1)
+                    if a not in (exp.Expr, exp.Expression):
+                        owner = idx.get(a, -1)
                     break
             vals.append(owner)
         for i in range(0, len(vals), 16):

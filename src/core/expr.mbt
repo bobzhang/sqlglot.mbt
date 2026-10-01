@@ -1656,6 +1656,23 @@ pub fn Expr::selects(self : Expr) -> Array[Expr] {
         _ => []
       }
     Some(k) if k == Values || k == Query => []
+    // Classes whose MRO puts `Expression` before the trait defining `selects`
+    // (e.g. `Values(Expression, UDTF)`, `Subquery`, `CTE`) resolve to that trait in Python.
+    None if self.kind.is_a(UDTF) =>
+      match self.arg("alias") {
+        Some(a) => a.list("columns")
+        None => []
+      }
+    None if self.kind.is_a(DerivedTable) =>
+      match self.this() {
+        Some(t) if t.kind.is_a(Query) => t.selects()
+        _ => []
+      }
+    None if self.kind.is_a(DDL) =>
+      match self.expression() {
+        Some(e) if e.kind.is_a(Query) => e.selects()
+        _ => []
+      }
     _ => []
   }
 }
