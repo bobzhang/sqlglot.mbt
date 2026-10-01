@@ -150,7 +150,7 @@ pub fn exp_cast_to(
 ) -> Expr {
   let expr = maybe_copy(expression, copy)
   let data_type = maybe_copy(to, copy)
-  if expr.kind == Cast {
+  if expr.kind.is_a(Cast) {
     let target_dialect = match dialect {
       Some(d) => d
       None => base_dialect()

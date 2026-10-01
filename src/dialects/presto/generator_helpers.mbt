@@ -138,7 +138,6 @@ fn ts_or_ds_to_date_sql(
           @core.exp_cast(
             @core.mk1(Var, str_to_time_sql(g, e)),
             DATE,
-            dialect=g.dialect,
           ),
         ),
       )
@@ -147,9 +146,8 @@ fn ts_or_ds_to_date_sql(
   g.sql(
     Some(
       @core.exp_cast(
-        @core.exp_cast(e.this_(), TIMESTAMP, dialect=g.dialect),
+        @core.exp_cast(e.this_(), TIMESTAMP),
         DATE,
-        dialect=g.dialect,
       ),
     ),
   )
