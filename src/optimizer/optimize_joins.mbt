@@ -231,10 +231,10 @@ pub fn eliminate_joins(
       if is_semi_or_anti_join(join) {
         continue
       }
-      let alias = join.alias_or_name()
-      if should_eliminate_join(scope, join, alias) {
+      let alias_ = join.alias_or_name()
+      if should_eliminate_join(scope, join, alias_) {
         join.pop() |> ignore
-        scope.remove_source(alias)
+        scope.remove_source(alias_)
       }
     }
   }
@@ -242,10 +242,10 @@ pub fn eliminate_joins(
 }
 
 ///|
-fn should_eliminate_join(scope : Scope, join : @core.Expr, alias : String) -> Bool {
-  match scope.sources.get(alias) {
+fn should_eliminate_join(scope : Scope, join : @core.Expr, alias_ : String) -> Bool {
+  match scope.sources.get(alias_) {
     Some(ScopeSource(inner)) =>
-      !join_is_used(scope, join, alias) &&
+      !join_is_used(scope, join, alias_) &&
       ((@core.py_upper(join.text("side")) == "LEFT" &&
       is_joined_on_all_unique_outputs(inner, join)) ||
       (!join.has("on") && has_single_output_row(inner)))
@@ -254,13 +254,13 @@ fn should_eliminate_join(scope : Scope, join : @core.Expr, alias : String) -> Bo
 }
 
 ///|
-fn join_is_used(scope : Scope, join : @core.Expr, alias : String) -> Bool {
+fn join_is_used(scope : Scope, join : @core.Expr, alias_ : String) -> Bool {
   let on_ids : @set.Set[Int] = @set.new()
   match join.arg("on") {
     Some(on) => for c in on.find_all([Column]) { on_ids.add(c.uid) }
     None => ()
   }
-  scope.source_columns(alias).iter().any(c => !on_ids.contains(c.uid))
+  scope.source_columns(alias_).iter().any(c => !on_ids.contains(c.uid))
 }
 
 ///|

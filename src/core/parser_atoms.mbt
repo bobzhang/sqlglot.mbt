@@ -40,7 +40,7 @@ pub fn Parser::parse_alias_base(
     self.match_r_paren(expression=aliases)
     return Some(aliases)
   }
-  let alias = match
+  let alias_ = match
     self.parse_id_var(any_token~, tokens=self.cfg.alias_tokens) {
     Some(a) => Some(a)
     None =>
@@ -50,7 +50,7 @@ pub fn Parser::parse_alias_base(
         None
       }
   }
-  match alias {
+  match alias_ {
     Some(a) => {
       let comments = comments + a.pop_comments()
       let e = self.expression(
@@ -264,9 +264,9 @@ pub fn Parser::parse_star_op(
 ///|
 pub fn Parser::parse_select_or_expression(
   self : Parser,
-  alias? : Bool = false,
+  alias_? : Bool = false,
 ) -> Expr? raise SqlglotError {
-  let first = if alias {
+  let first = if alias_ {
     self.parse_alias(self.parse_assignment(), explicit=true)
   } else {
     self.parse_assignment()

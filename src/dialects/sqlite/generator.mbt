@@ -331,11 +331,11 @@ fn generateseries_sql(
   g : @core.Generator,
   e : @core.Expr,
 ) -> String raise @core.SqlglotError {
-  let alias = match e.parent {
+  let alias_ = match e.parent {
     Some(p) => p.arg("alias")
     None => None
   }
-  match alias {
+  match alias_ {
     Some(a) if a.kind == TableAlias && !a.list("columns").is_empty() => {
       let column_alias = a.list("columns")[0]
       a.set("columns", (None : @core.Expr?))

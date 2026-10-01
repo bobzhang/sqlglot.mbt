@@ -170,7 +170,7 @@ pub fn Parser::parse_insert(self : Parser) -> Expr? raise SqlglotError {
   let hint = self.parse_hint()
   let overwrite = self.match_(OVERWRITE)
   let ignore_ = self.match_(IGNORE)
-  let local = self.match_text("LOCAL")
+  let local_ = self.match_text("LOCAL")
   let mut alternative : Value? = None
   let mut is_function : Bool? = None
   let mut this : Expr? = None
@@ -180,7 +180,7 @@ pub fn Parser::parse_insert(self : Parser) -> Expr? raise SqlglotError {
       self.expression(
         mk(Directory, [
           ("this", t),
-          ("local", local),
+          ("local", local_),
           ("row_format", self.parse_row_format(match_row=true)),
         ]),
       ),
@@ -240,12 +240,12 @@ pub fn Parser::parse_insert(self : Parser) -> Expr? raise SqlglotError {
     this = Some(
       self.expression(mk(Schema, [("this", this), ("expressions", columns)])),
     )
-    let alias = self.parse_table_alias()
+    let alias_ = self.parse_table_alias()
     set_values = Some(
       self.expression(
         mk(Values, [
           ("expressions", [mk(Tuple, [("expressions", values)])]),
-          ("alias", alias),
+          ("alias", alias_),
         ]),
       ),
     )
@@ -471,7 +471,7 @@ pub fn Parser::parse_row_format(
 ///|
 pub fn Parser::parse_load(self : Parser) -> Expr? raise SqlglotError {
   if self.match_text("DATA") {
-    let local = self.match_text("LOCAL")
+    let local_ = self.match_text("LOCAL")
     self.match_text("INPATH") |> ignore
     let inpath = self.parse_string()
     let overwrite = self.match_(OVERWRITE)
@@ -493,7 +493,7 @@ pub fn Parser::parse_load(self : Parser) -> Expr? raise SqlglotError {
       self.expression(
         mk(LoadData, [
           ("this", this),
-          ("local", local),
+          ("local", local_),
           ("overwrite", overwrite),
           ("temp", temp),
           ("inpath", inpath),
@@ -654,7 +654,7 @@ pub fn Parser::parse_uncache(self : Parser) -> Expr? raise SqlglotError {
 
 ///|
 pub fn Parser::parse_cache(self : Parser) -> Expr? raise SqlglotError {
-  let lazy = self.match_text("LAZY")
+  let lazy_ = self.match_text("LAZY")
   self.match_(TABLE) |> ignore
   let table = self.parse_table(schema=true)
   let options : Array[Expr?] = []
@@ -672,7 +672,7 @@ pub fn Parser::parse_cache(self : Parser) -> Expr? raise SqlglotError {
     self.expression(
       mk(Cache, [
         ("this", table),
-        ("lazy", lazy),
+        ("lazy", lazy_),
         ("options", options.filter_map(x => x)),
         ("expression", self.parse_select(nested=true)),
       ]),
@@ -796,9 +796,9 @@ pub fn Parser::parse_wrapped_select_base(
       self.parse_select(nested=true, parse_set_operation=false)
     }
     match this {
-      Some(t) if table && t.kind == Values && !t.alias().is_empty() => {
-        let alias = t.arg("alias").unwrap().pop()
-        this = Some(mk(Table, [("this", t), ("alias", alias)]))
+      Some(t) if table && t.kind == Values && !t.alias_().is_empty() => {
+        let alias_ = t.arg("alias").unwrap().pop()
+        this = Some(mk(Table, [("this", t), ("alias", alias_)]))
       }
       _ => ()
     }

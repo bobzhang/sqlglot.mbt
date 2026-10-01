@@ -460,7 +460,7 @@ fn PythonExecutor::scan(
   let source : String? = match step.source {
     Some(s) => {
       let n = s.name()
-      Some(if n != "" { n } else { s.alias() })
+      Some(if n != "" { n } else { s.alias_() })
     }
     None => None
   }

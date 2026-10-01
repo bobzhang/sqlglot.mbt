@@ -38,8 +38,8 @@ pub fn expand(
       let name = normalize_table_name(node, dialect?)
       match normalized_sources.get(name) {
         Some(source) => {
-          let alias = if node.alias() != "" { node.alias() } else { name }
-          let subquery = source.subquery(alias~)
+          let alias_ = if node.alias_() != "" { node.alias_() } else { name }
+          let subquery = source.subquery(alias_~)
           subquery.add_comments(Some(["source: \{name}"]))
           return Some(subquery.transform(expand_node, copy=false))
         }

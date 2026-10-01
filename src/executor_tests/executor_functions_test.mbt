@@ -851,7 +851,7 @@ test "agg_order" {
       ),
     ),
   )
-  assert_eq(plan.root.aggregations.map(agg => agg.alias()), [
+  assert_eq(plan.root.aggregations.map(agg => agg.alias_()), [
     "avg_bill_length", "avg_bill_depth",
   ])
 }

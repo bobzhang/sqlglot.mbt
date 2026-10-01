@@ -225,7 +225,7 @@ fn add_rename_columns(
   }
   let columns : Map[String, String] = {}
   for e in rename {
-    columns[e.this_().name()] = e.alias()
+    columns[e.this_().name()] = e.alias_()
   }
   for table in tables {
     rename_columns[table] = columns
@@ -244,7 +244,7 @@ fn add_replace_columns(
   }
   let columns : Map[String, @core.Expr] = {}
   for e in replace {
-    columns[e.alias()] = e
+    columns[e.alias_()] = e
   }
   for table in tables {
     replace_columns[table] = columns
@@ -327,12 +327,12 @@ fn expand_stars_impl(
           }
           let replaced : Map[String, @core.Expr] = {}
           for e in star.list("replace") {
-            replaced[e.alias()] = e
+            replaced[e.alias_()] = e
           }
           for f in struct_fields {
-            if !excluded.contains(f.alias()) {
+            if !excluded.contains(f.alias_()) {
               new_selections.push(
-                match replaced.get(f.alias()) {
+                match replaced.get(f.alias_()) {
                   Some(r) => r
                   None => f
                 },
@@ -359,7 +359,7 @@ fn expand_stars_impl(
             (Some(a), Some(b)) => physical_equal(a, b)
             _ => false
           }) &&
-          chain[chain.length() - 1].alias() == table {
+          chain[chain.length() - 1].alias_() == table {
           chain[chain.length() - 1].parent
         } else {
           None
@@ -457,7 +457,7 @@ fn expand_stars_impl(
             }
           }
           if !pivot_columns.is_empty() {
-            let last_alias = pv[pv.length() - 1].alias()
+            let last_alias = pv[pv.length() - 1].alias_()
             for name in pivot_columns {
               if !columns_to_exclude.contains(name) {
                 new_selections.push(

@@ -418,7 +418,7 @@ test "optimize: no pseudocolumn expansion (bigquery schema)" {
 test "qualify: semistructured (snowflake)" {
   let query = parse_sql("select a.b:c from d", read="snowflake")
   let qualified = @optimizer.qualify(query)
-  assert_eq(qualified.expressions()[0].alias(), "c")
+  assert_eq(qualified.expressions()[0].alias_(), "c")
 }
 
 ///|

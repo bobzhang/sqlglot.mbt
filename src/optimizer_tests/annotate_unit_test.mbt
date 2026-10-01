@@ -58,7 +58,7 @@ fn type_equals(
 ///|
 test "annotate_types: set operation with a VALUES operand" {
   @optimizer.annotate_types(
-    @core.select_star_from(Some(select_1_union_values().subquery(alias="s"))),
+    @core.select_star_from(Some(select_1_union_values().subquery(alias_="s"))),
   )
   |> ignore
 }

@@ -993,7 +993,7 @@ fn parse_window(
   this : @core.Expr?,
   alias_ : Bool,
 ) -> @core.Expr? raise @core.SqlglotError {
-  let result = p.parse_window_base(this, alias=alias_)
+  let result = p.parse_window_base(this, alias_=alias_)
   // Set default window frame for ranking functions if not present
   match result {
     Some(r) if r.kind == Window && is_ranking_with_frame(this) && !r.has("spec") => {

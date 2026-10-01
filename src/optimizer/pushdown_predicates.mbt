@@ -350,7 +350,7 @@ fn replace_aliases(source : @core.Expr, predicate : @core.Expr) -> @core.Expr {
   let aliases : Map[String, @core.Expr] = {}
   for select in source.selects() {
     if select.kind.is_a(Alias) {
-      aliases[select.alias()] = select.this_()
+      aliases[select.alias_()] = select.this_()
     } else {
       aliases[select.name()] = select
     }

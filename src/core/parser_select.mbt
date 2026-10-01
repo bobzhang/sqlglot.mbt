@@ -283,8 +283,8 @@ pub fn Parser::parse_cte(self : Parser) -> Expr? raise SqlglotError {
 ///|
 pub fn Parser::parse_cte_base(self : Parser) -> Expr? raise SqlglotError {
   let index = self.index
-  let alias = self.parse_table_alias(alias_tokens=self.cfg.id_var_tokens)
-  match alias {
+  let alias_ = self.parse_table_alias(alias_tokens=self.cfg.id_var_tokens)
+  match alias_ {
     Some(a) if a.this() is Some(_) => ()
     _ => self.raise_error("Expected CTE to have alias")
   }
@@ -309,7 +309,7 @@ pub fn Parser::parse_cte_base(self : Parser) -> Expr? raise SqlglotError {
   let cte = self.expression(
     mk(CTE, [
       ("this", this),
-      ("alias", alias),
+      ("alias", alias_),
       ("materialized", materialized),
       ("key_expressions", key_expressions),
     ]),
@@ -326,7 +326,7 @@ pub fn Parser::parse_cte_base(self : Parser) -> Expr? raise SqlglotError {
 ///|
 pub fn Parser::values_to_select(self : Parser, values : Expr) -> Expr {
   ignore(self)
-  if !values.alias().is_empty() {
+  if !values.alias_().is_empty() {
     return select_star_from(Some(values))
   }
   select_star_from(Some(alias_table(values, "_values")))
@@ -348,7 +348,7 @@ pub fn Parser::parse_table_alias(
     Some(t) => t
     None => self.cfg.table_alias_tokens
   }
-  let alias = expr_or(self.parse_id_var(any_token~, tokens~), () => {
+  let alias_ = expr_or(self.parse_id_var(any_token~, tokens~), () => {
     self.parse_string_as_identifier()
   })
   let index = self.index
@@ -367,13 +367,13 @@ pub fn Parser::parse_table_alias(
     Some(c) => !c.is_empty()
     None => false
   }
-  if alias is None && !has_columns {
+  if alias_ is None && !has_columns {
     return None
   }
   let table_alias = self.expression(
-    mk(TableAlias, [("this", alias), ("columns", columns)]),
+    mk(TableAlias, [("this", alias_), ("columns", columns)]),
   )
-  match alias {
+  match alias_ {
     Some(a) if a.kind == Identifier =>
       table_alias.add_comments(Some(a.pop_comments()))
     _ => ()
@@ -392,14 +392,14 @@ pub fn Parser::parse_subquery(
     None => return None
   }
   let pivots = self.parse_pivots()
-  let alias = if parse_alias { self.parse_table_alias() } else { None }
+  let alias_ = if parse_alias { self.parse_table_alias() } else { None }
   let sample = self.parse_table_sample()
   Some(
     self.expression(
       mk(Subquery, [
         ("this", this),
         ("pivots", pivots),
-        ("alias", alias),
+        ("alias", alias_),
         ("sample", sample),
       ]),
     ),

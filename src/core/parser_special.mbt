@@ -893,7 +893,7 @@ pub fn Parser::parse_window_clause(
 
 ///|
 pub fn Parser::parse_named_window(self : Parser) -> Expr? raise SqlglotError {
-  self.parse_window(self.parse_id_var(), alias=true)
+  self.parse_window(self.parse_id_var(), alias_=true)
 }
 
 ///|
@@ -937,11 +937,11 @@ pub fn Parser::parse_having_max(
 pub fn Parser::parse_window(
   self : Parser,
   this : Expr?,
-  alias? : Bool = false,
+  alias_? : Bool = false,
 ) -> Expr? raise SqlglotError {
   match self.fns.hooks.parse_window {
-    Some(f) => f(self, this, alias)
-    None => self.parse_window_base(this, alias~)
+    Some(f) => f(self, this, alias_)
+    None => self.parse_window_base(this, alias_~)
   }
 }
 
@@ -949,7 +949,7 @@ pub fn Parser::parse_window(
 pub fn Parser::parse_window_base(
   self : Parser,
   this : Expr?,
-  alias? : Bool = false,
+  alias_? : Bool = false,
 ) -> Expr? raise SqlglotError {
   let func = this
   let comments = match func {
@@ -997,7 +997,7 @@ pub fn Parser::parse_window_base(
   }
   this = self.parse_respect_or_ignore_nulls(this)
   let mut over : String? = None
-  if alias {
+  if alias_ {
     over = None
     self.match_(ALIAS) |> ignore
   } else if !self.match_set(self.cfg.window_before_paren_tokens) {
@@ -1079,7 +1079,7 @@ pub fn Parser::parse_window_base(
     comments~,
   )
   if self.match_set(self.cfg.window_before_paren_tokens, advance=false) {
-    return self.parse_window(Some(window), alias~)
+    return self.parse_window(Some(window), alias_~)
   }
   Some(window)
 }
@@ -1126,7 +1126,7 @@ pub fn Parser::parse_window_spec(
 fn is_derived_table(e : Expr) -> Bool {
   e.kind.is_a(Subquery) &&
   (
-    !e.alias().is_empty() ||
+    !e.alias_().is_empty() ||
     (match e.this() {
       Some(t) => t.kind.is_any([Select, SetOperation])
       None => false

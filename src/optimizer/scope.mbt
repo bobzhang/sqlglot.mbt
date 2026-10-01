@@ -924,7 +924,7 @@ fn traverse_set_operation(
 fn traverse_ctes(scope : Scope, out : Array[Scope]) -> Unit raise @core.SqlglotError {
   let sources : Map[String, Source] = {}
   for cte in scope.ctes() {
-    let cte_name = cte.alias()
+    let cte_name = cte.alias_()
     match scope.expression.arg("with_") {
       Some(w) if w.has("recursive") =>
         match cte.this() {
@@ -962,7 +962,7 @@ fn traverse_ctes(scope : Scope, out : Array[Scope]) -> Unit raise @core.SqlglotE
 /// We represent (tbl1 JOIN tbl2) as a Subquery, but it's not really a "derived table".
 fn is_derived_table(expression : @core.Expr) -> Bool {
   expression.kind.is_a(Subquery) &&
-  (expression.alias() != "" ||
+  (expression.alias_() != "" ||
   (match expression.this() {
     Some(t) => is_unwrapped_query(t)
     None => false
@@ -1017,7 +1017,7 @@ fn traverse_tables(scope : Scope, out : Array[Scope]) -> Unit raise @core.Sqlglo
       if scope.sources.contains(table_name) && expression.db() == "" {
         let pivots = expression.list("pivots")
         if !pivots.is_empty() {
-          sources[pivots[pivots.length() - 1].alias()] = TableSource(expression)
+          sources[pivots[pivots.length() - 1].alias_()] = TableSource(expression)
         } else {
           sources[source_name] = scope.sources[table_name]
         }
@@ -1219,7 +1219,7 @@ pub fn find_in_scope(
 
 ///|
 fn get_source_alias(expression : @core.Expr) -> String {
-  let alias_name = expression.alias()
+  let alias_name = expression.alias_()
   if alias_name == "" {
     match expression.arg("alias") {
       Some(a) if a.kind.is_a(TableAlias) && a.list("columns").length() == 1 =>

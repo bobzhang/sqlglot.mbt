@@ -624,7 +624,7 @@ fn is_self_referencing_cte(scope : Scope) -> Bool {
         Some(w) if w.kind.is_a(With) && w.has("recursive") =>
           scope.expression
           .find_all([Table])
-          .any(table => table.db() == "" && table.name() == cte.alias())
+          .any(table => table.db() == "" && table.name() == cte.alias_())
         _ => false
       }
     _ => false
@@ -711,7 +711,7 @@ pub fn projection_has_aggregate(
         Some(t) if t.kind.is_a(AggFunc) => windowed_aggregates.add(t.uid)
         _ => ()
       }
-      let mut name = node.alias()
+      let mut name = node.alias_()
       while name != "" {
         let window = match remaining_windows.get(name) {
           Some(w) => w
@@ -729,7 +729,7 @@ pub fn projection_has_aggregate(
         if has_aggregate {
           return true
         }
-        name = window.alias()
+        name = window.alias_()
       }
     } else if node.kind.is_a(AggFunc) && !windowed_aggregates.contains(node.uid) {
       return true

@@ -784,7 +784,7 @@ fn connect_by_to_recursive_cte(
 
   // Avoid colliding with any CTE names already on the query.
   let taken : Array[String] = match base_with {
-    Some(w) => w.expressions().map(cte => cte.alias())
+    Some(w) => w.expressions().map(cte => cte.alias_())
     None => []
   }
   let cte_name = @core.find_new_name(n => taken.contains(n), "_rootcte")

@@ -238,10 +238,10 @@ test "TestTransforms.test_eliminate_join_marks" {
       t, "SELECT * FROM a, b, c WHERE a.id = b.id AND b.id(+) = c.id", "SELECT * FROM a LEFT JOIN b ON b.id = c.id CROSS JOIN c WHERE a.id = b.id",
       dialect~,
     )
-    let alias = if dialect != "oracle" { "AS " } else { "" }
+    let alias_ = if dialect != "oracle" { "AS " } else { "" }
     validate_transform(
       t, "SELECT table1.id, table2.cloumn1, table3.id FROM table1, table2, (SELECT tableInner1.id FROM tableInner1, tableInner2 WHERE tableInner1.id = tableInner2.id(+)) AS table3 WHERE table1.id = table2.id(+) and table1.id = table3.id(+)",
-      "SELECT table1.id, table2.cloumn1, table3.id FROM table1 LEFT JOIN table2 ON table1.id = table2.id LEFT JOIN (SELECT tableInner1.id FROM tableInner1 LEFT JOIN tableInner2 ON tableInner1.id = tableInner2.id) \{alias}table3 ON table1.id = table3.id",
+      "SELECT table1.id, table2.cloumn1, table3.id FROM table1 LEFT JOIN table2 ON table1.id = table2.id LEFT JOIN (SELECT tableInner1.id FROM tableInner1 LEFT JOIN tableInner2 ON tableInner1.id = tableInner2.id) \{alias_}table3 ON table1.id = table3.id",
       dialect~,
     )
     // if multiple conditions, we check that after transformations the tree remains consistent

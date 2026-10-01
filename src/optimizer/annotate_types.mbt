@@ -724,7 +724,7 @@ fn TypeAnnotator::fixup_order_by_aliases(
   for sel in selects_of(query) {
     if sel.kind.is_a(Alias) {
       match sel.this_().get_type() {
-        Some(t) if !sel.this_().is_type([UNKNOWN]) => alias_types[sel.alias()] = t
+        Some(t) if !sel.this_().is_type([UNKNOWN]) => alias_types[sel.alias_()] = t
         _ => ()
       }
     }

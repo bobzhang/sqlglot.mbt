@@ -208,7 +208,7 @@ test "qualify_columns: programmatic set operation with VALUES operand" {
     distinct=false,
   )
   union.set("side", "LEFT")
-  let expression = @core.select_star_from(Some(union.subquery(alias="s")))
+  let expression = @core.select_star_from(Some(union.subquery(alias_="s")))
   try @optimizer.qualify(expression) catch {
     @core.OptimizeError(_) => ()
     err => fail("expected OptimizeError, got \{err}")

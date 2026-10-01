@@ -153,7 +153,7 @@ pub fn[T : @core.IntoPy] to_identifier(
 /// `table_columns` adds its column names (Python `table=[...]`).
 pub fn[T : @core.IntoPy, A : @core.IntoPy] alias_(
   expression : T,
-  alias : A,
+  alias_name : A,
   table? : Bool = false,
   table_columns? : Array[String] = [],
   quoted? : Bool,
@@ -161,16 +161,16 @@ pub fn[T : @core.IntoPy, A : @core.IntoPy] alias_(
   copy? : Bool = true,
 ) -> @core.Expr raise @core.SqlglotError {
   let exp = @core.maybe_parse(expression, dialect=dialect_opt(dialect), copy~)
-  let alias = to_identifier(alias, quoted?)
+  let alias_id = to_identifier(alias_name, quoted?)
   if table || !table_columns.is_empty() {
-    let table_alias = @core.mk(TableAlias, [("this", alias)])
+    let table_alias = @core.mk(TableAlias, [("this", alias_id)])
     exp.set("alias", table_alias)
     for column in table_columns {
       table_alias.append("columns", @core.to_identifier(column, quoted?))
     }
     return exp
   }
-  @core.alias_expr(exp, alias, copy=false)
+  @core.alias_expr(exp, alias_id, copy=false)
 }
 
 ///|
@@ -356,9 +356,9 @@ pub fn func(
   }
   let upper = @core.py_upper(name)
   let function = match d.parser_fns.functions.get(upper) {
-    Some(constructor) =>
+    Some(constructor_) =>
       if !converted.is_empty() {
-        constructor(converted, d.parser())
+        constructor_(converted, d.parser())
       } else {
         let mut kind : @core.Kind? = None
         for kv in @core.function_by_name {
@@ -535,12 +535,12 @@ pub fn[T : @core.IntoPy] update(
   }
   if !with_.is_empty() {
     let cte_list = []
-    for alias, qry in with_ {
+    for cte_name, qry in with_ {
       let cte = @core.mk1(
         CTE,
         @core.maybe_parse(qry.into_py(), dialect=d, copy~),
       )
-      cte_list.push(alias_(cte, alias, table=true))
+      cte_list.push(alias_(cte, cte_name, table=true))
     }
     update_expr.set("with_", @core.mk(With, [("expressions", cte_list)]))
   }
@@ -773,14 +773,14 @@ pub fn[T : @core.IntoPy] to_column(
 /// `exp.subquery(expression, alias)`: a new `Select` from the given query as a subquery.
 pub fn[T : @core.IntoPy] subquery(
   expression : T,
-  alias? : String,
+  alias_? : String,
   dialect? : String,
   copy? : Bool = true,
 ) -> @core.Expr raise @core.SqlglotError {
   let d = dialect_opt(dialect)
   let expr = @core.maybe_parse(expression, dialect=d)
     .assert_is(Query)
-    .subquery(alias?, copy~)
+    .subquery(alias_?, copy~)
   @core.mk0(Select).from_(expr, dialect=d)
 }
 
@@ -791,7 +791,7 @@ pub fn table_(
   db? : String,
   catalog? : String,
   quoted? : Bool,
-  alias? : String,
+  alias_? : String,
 ) -> @core.Expr {
   let ident = fn(s : String?) {
     match s {
@@ -805,7 +805,7 @@ pub fn table_(
     ("catalog", ident(catalog)),
     (
       "alias",
-      match alias {
+      match alias_ {
         Some(a) if !a.is_empty() =>
           Some(@core.mk1(TableAlias, @core.to_identifier(a)))
         _ => None
@@ -818,10 +818,10 @@ pub fn table_(
 /// `exp.values(values, alias=..., columns=...)`: builds a VALUES statement.
 pub fn values(
   values : Array[@core.PyObj],
-  alias? : String,
+  alias_? : String,
   columns? : Array[String] = [],
 ) -> @core.Expr raise @core.SqlglotError {
-  if !columns.is_empty() && alias.unwrap_or("").is_empty() {
+  if !columns.is_empty() && alias_.unwrap_or("").is_empty() {
     raise @core.ValueError("Alias is required when providing columns")
   }
   let exprs = []
@@ -831,12 +831,12 @@ pub fn values(
   let table_alias = if !columns.is_empty() {
     Some(
       @core.mk(TableAlias, [
-        ("this", @core.to_identifier(alias.unwrap())),
+        ("this", @core.to_identifier(alias_.unwrap())),
         ("columns", columns.map(c => @core.to_identifier(c))),
       ]),
     )
   } else {
-    match alias {
+    match alias_ {
       Some(a) if !a.is_empty() =>
         Some(@core.mk1(TableAlias, @core.to_identifier(a)))
       _ => None
@@ -1032,9 +1032,9 @@ pub fn expand(
       match normalized.get(name) {
         Some(source) => {
           let parsed_source = source()
-          let alias = node.alias()
+          let alias_ = node.alias_()
           let subquery = parsed_source.subquery(
-            alias=if alias.is_empty() { name } else { alias },
+            alias_=if alias_.is_empty() { name } else { alias_ },
           )
           subquery.add_comments(Some(["source: \{name}"]))
           return Some(subquery.transform(expand_node, copy=false))

@@ -259,7 +259,7 @@ pub fn Parser::parse_is(
 pub fn Parser::parse_in(
   self : Parser,
   this : Expr?,
-  alias? : Bool = false,
+  alias_? : Bool = false,
 ) -> Expr? raise SqlglotError {
   let mut this = this
   match self.parse_unnest(with_alias=false) {
@@ -269,7 +269,7 @@ pub fn Parser::parse_in(
       if self.match_any([L_PAREN, L_BRACKET]) {
         let matched_l_paren = self.prev.token_type == L_PAREN
         let expressions = self.parse_csv(() => {
-          self.parse_select_or_expression(alias~)
+          self.parse_select_or_expression(alias_~)
         })
         if expressions.length() == 1 && expressions[0].kind.is_a(Query) {
           let query = expressions[0]

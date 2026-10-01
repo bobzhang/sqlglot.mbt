@@ -694,7 +694,7 @@ pub fn pivot_column_names(
   let names = []
   for agg in aggregations {
     if agg.kind.is_a(Alias) {
-      names.push(agg.alias())
+      names.push(agg.alias_())
     } else {
       // Aggregations without aliases are used as suffixes (e.g. col_avg(foo)). Identifiers
       // are unquoted because they're quoted later by the parser's `_parse_pivot`.

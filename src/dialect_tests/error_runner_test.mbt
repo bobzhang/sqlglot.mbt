@@ -77,9 +77,9 @@ fn run_error_call(
 }
 
 ///|
-fn run_error_cases(module : String, cases : Array[String]) -> Unit raise {
+fn run_error_cases(module_name : String, cases : Array[String]) -> Unit raise {
   if cases.length() % 6 != 0 {
-    fail("malformed error fixture for \{module}: \{cases.length()} strings")
+    fail("malformed error fixture for \{module_name}: \{cases.length()} strings")
   }
   let total = cases.length() / 6
   let failures = []
@@ -109,9 +109,9 @@ fn run_error_cases(module : String, cases : Array[String]) -> Unit raise {
     println(f)
   }
   println(
-    "DIALECT ERRORS \{module}: total=\{total} passed=\{total - failures.length()}",
+    "DIALECT ERRORS \{module_name}: total=\{total} passed=\{total - failures.length()}",
   )
   if !failures.is_empty() {
-    fail("\{module}: \{failures.length()} error-case mismatches")
+    fail("\{module_name}: \{failures.length()} error-case mismatches")
   }
 }

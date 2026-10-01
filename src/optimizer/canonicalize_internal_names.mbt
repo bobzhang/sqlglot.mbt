@@ -183,14 +183,14 @@ pub fn canonicalize_internal_names(
       match alias_holder {
         Some(holder) => {
           match holder.arg("alias") {
-            Some(alias) => {
-              match alias.this() {
+            Some(alias_) => {
+              match alias_.this() {
                 Some(t) if t.kind == Identifier => canon_ident(t, canon_t)
                 _ => ()
               }
-              let cols = alias.list("columns")
+              let cols = alias_.list("columns")
               if !cols.is_empty() {
-                alias.set(
+                alias_.set(
                   "columns",
                   cols.map(c => @core.to_identifier(
                     name_map.get(c.name()).unwrap_or(c.name()),
@@ -253,15 +253,15 @@ pub fn canonicalize_internal_names(
         _ => ()
       }
       match table.arg("alias") {
-        Some(alias) => {
-          match alias.this() {
+        Some(alias_) => {
+          match alias_.this() {
             Some(t) if t.kind == Identifier => canon_ident(t, ref_alias)
             _ => ()
           }
-          let cols = alias.list("columns")
+          let cols = alias_.list("columns")
           if !cols.is_empty() {
             let tc = table_columns.get(expr_key(table)).unwrap_or({})
-            alias.set(
+            alias_.set(
               "columns",
               cols.map(c => @core.to_identifier(
                 tc.get(c.name()).unwrap_or(c.name()),
@@ -276,8 +276,8 @@ pub fn canonicalize_internal_names(
     let mut output_map : Map[String, String] = {}
     if scope_expr.kind.is_a(Select) {
       for sel in scope_expr.selects() {
-        if sel.kind.is_any([Alias, Subquery]) && sel.alias() != "" {
-          let old_alias = sel.alias()
+        if sel.kind.is_any([Alias, Subquery]) && sel.alias_() != "" {
+          let old_alias = sel.alias_()
           let new_name = if is_output_scope {
             old_alias
           } else {

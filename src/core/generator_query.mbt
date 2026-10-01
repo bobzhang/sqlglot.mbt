@@ -622,7 +622,7 @@ pub fn Generator::pivot_in_value_aliases(
       expression.expressions().length() > 1 ||
       tgt_pivot_column_naming != "agg_name_if_multiple"
     ) &&
-    expression.expressions().iter().any(a => a.alias() != "")
+    expression.expressions().iter().any(a => a.alias_() != "")
   let source_has_suffix = suffix != ""
   let new_exprs = []
   let mut modified = false
@@ -2297,7 +2297,7 @@ pub fn Generator::merge_sql(
   let mut table_alias = ""
   let hints = table.list("hints")
   if !hints.is_empty() &&
-    table.alias() != "" &&
+    table.alias_() != "" &&
     hints[0].kind.is_a(WithTableHint) {
     match table.arg("alias") {
       Some(a) => table_alias = " AS " + self.sql(Some(a.pop()))

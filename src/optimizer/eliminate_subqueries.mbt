@@ -35,9 +35,9 @@ fn CteState::existing_set(
 
 ///|
 /// `exp.alias_(exp.table_(name), alias=alias)`
-fn aliased_table(name : String, alias : String) -> @core.Expr {
+fn aliased_table(name : String, alias_ : String) -> @core.Expr {
   let table = @core.mk1(Table, @core.to_identifier(name))
-  table.set("alias", @core.to_identifier(alias))
+  table.set("alias", @core.to_identifier(alias_))
   table
 }
 
@@ -61,7 +61,7 @@ pub fn eliminate_subqueries(
   }
   for scope in root.cte_scopes {
     match scope.expression.parent {
-      Some(p) => state.taken[p.alias()] = true
+      Some(p) => state.taken[p.alias_()] = true
       None => ()
     }
   }
@@ -78,7 +78,7 @@ pub fn eliminate_subqueries(
     Some(with_) => {
       recursive = with_.get("recursive")
       for cte in with_.expressions() {
-        state.existing_set(cte.this_(), cte.alias())
+        state.existing_set(cte.this_(), cte.alias_())
       }
     }
     None => ()
@@ -157,8 +157,8 @@ fn eliminate_derived_table(scope : Scope, state : CteState) -> @core.Expr? {
   }
   let to_replace = expr_parent.unwrap_subquery()
   let (name, cte) = new_cte(scope, state)
-  let alias = if to_replace.alias() != "" { to_replace.alias() } else { name }
-  let table = aliased_table(name, alias)
+  let alias_ = if to_replace.alias_() != "" { to_replace.alias_() } else { name }
+  let table = aliased_table(name, alias_)
   match to_replace.get("joins") {
     Some(j) => table.set("joins", j)
     None => ()
@@ -204,7 +204,7 @@ fn eliminate_cte(
 fn new_cte(scope : Scope, state : CteState) -> (String, @core.Expr?) {
   let duplicate_cte_alias = state.existing_get(scope.expression)
   let mut name = match scope.expression.parent {
-    Some(p) => p.alias()
+    Some(p) => p.alias_()
     None => ""
   }
   if name == "" {

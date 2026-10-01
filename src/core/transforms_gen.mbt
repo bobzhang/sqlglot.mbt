@@ -123,7 +123,7 @@ pub fn gen_walk_in_scope(expression : Expr, out : Array[Expr]) -> Unit {
       }
       let is_derived_table = node.kind.is_a(Subquery) &&
         (
-          node.alias() != "" ||
+          node.alias_() != "" ||
           (match node.this() {
             Some(t) => t.kind.is_any([Select, SetOperation])
             None => false

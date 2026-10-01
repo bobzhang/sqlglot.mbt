@@ -83,9 +83,9 @@ pub fn replace_tables(@core.Expr, Map[String, String], dialect? : String, copy? 
 
 pub fn[T : @core.IntoPy] select(Array[T], dialect? : String, copy? : Bool) -> @core.Expr raise @core.SqlglotError
 
-pub fn[T : @core.IntoPy] subquery(T, alias? : String, dialect? : String, copy? : Bool) -> @core.Expr raise @core.SqlglotError
+pub fn[T : @core.IntoPy] subquery(T, alias_? : String, dialect? : String, copy? : Bool) -> @core.Expr raise @core.SqlglotError
 
-pub fn table_(String, db? : String, catalog? : String, quoted? : Bool, alias? : String) -> @core.Expr
+pub fn table_(String, db? : String, catalog? : String, quoted? : Bool, alias_? : String) -> @core.Expr
 
 pub fn[T : @core.IntoPy] table_name(T, dialect? : String, identify? : Bool) -> String raise @core.SqlglotError
 
@@ -105,7 +105,7 @@ pub fn[T : @core.IntoPy] union(Array[T], distinct? : Bool, dialect? : String, co
 
 pub fn[T : @core.IntoPy] update(T, properties? : Map[String, &@core.IntoPy], where_? : &@core.IntoPy, from_? : &@core.IntoPy, with_? : Map[String, &@core.IntoPy], dialect? : String, copy? : Bool) -> @core.Expr raise @core.SqlglotError
 
-pub fn values(Array[@core.PyObj], alias? : String, columns? : Array[String]) -> @core.Expr raise @core.SqlglotError
+pub fn values(Array[@core.PyObj], alias_? : String, columns? : Array[String]) -> @core.Expr raise @core.SqlglotError
 
 pub fn[T : @core.IntoPy] var_(T) -> @core.Expr raise @core.SqlglotError
 

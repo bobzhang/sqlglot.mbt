@@ -4,9 +4,9 @@
 ///|
 pub fn Parser::parse_function_args(
   self : Parser,
-  alias? : Bool = false,
+  alias_? : Bool = false,
 ) -> Array[Expr] raise SqlglotError {
-  self.parse_csv(() => self.parse_lambda(alias~))
+  self.parse_csv(() => self.parse_lambda(alias_~))
 }
 
 ///|
@@ -14,7 +14,7 @@ pub fn Parser::parse_connector_function(
   self : Parser,
   connector : Kind,
 ) -> Expr? raise SqlglotError {
-  let args = self.parse_function_args(alias=false)
+  let args = self.parse_function_args(alias_=false)
   if args.is_empty() {
     self.raise_error("Expected at least one argument")
   }
@@ -118,9 +118,9 @@ pub fn Parser::parse_function_call_base(
       }
       let function = functions.get(upper)
       let mut known_function = function is Some(_) && !anonymous
-      let alias = !known_function ||
+      let alias_ = !known_function ||
         self.cfg.functions_with_aliased_args.contains(upper)
-      let mut args = self.parse_function_args(alias~)
+      let mut args = self.parse_function_args(alias_~)
       let post_func_comments = if self.curr.ok() {
         Some(self.curr.comments)
       } else {
@@ -133,7 +133,7 @@ pub fn Parser::parse_function_call_base(
           }
         _ => ()
       }
-      if alias && known_function {
+      if alias_ && known_function {
         args = self.kv_to_prop_eq(args)
       }
       if known_function {
@@ -412,18 +412,18 @@ pub fn Parser::parse_lambda_arg(self : Parser) -> Expr? raise SqlglotError {
 ///|
 pub fn Parser::parse_lambda(
   self : Parser,
-  alias? : Bool = false,
+  alias_? : Bool = false,
 ) -> Expr? raise SqlglotError {
   match self.fns.hooks.parse_lambda {
-    Some(f) => f(self, alias)
-    None => self.parse_lambda_base(alias~)
+    Some(f) => f(self, alias_)
+    None => self.parse_lambda_base(alias_~)
   }
 }
 
 ///|
 pub fn Parser::parse_lambda_base(
   self : Parser,
-  alias? : Bool = false,
+  alias_? : Bool = false,
 ) -> Expr? raise SqlglotError {
   let next_token_type = self.next.token_type
   if self.cfg.lambda_arg_terminators.contains(next_token_type) {
@@ -460,7 +460,7 @@ pub fn Parser::parse_lambda_base(
     )
   } else {
     self.match_(ALL) |> ignore
-    self.parse_select_or_expression(alias~)
+    self.parse_select_or_expression(alias_~)
   }
   self.parse_limit(
     this=self.parse_respect_or_ignore_nulls(
@@ -1159,14 +1159,14 @@ pub fn Parser::parse_primary_key_base(
     () => self.parse_primary_key_part(),
     optional=wrapped_optional,
   )
-  let include = self.parse_index_params()
+  let include_ = self.parse_index_params()
   let options = self.parse_key_constraint_options()
   Some(
     self.expression(
       mk(PrimaryKey, [
         ("this", this),
         ("expressions", expressions),
-        ("include", include),
+        ("include", include_),
         ("options", options),
       ]),
     ),

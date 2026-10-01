@@ -85,8 +85,8 @@ fn string_agg_sql(
 pub fn qualify_derived_table_outputs(
   expression : @core.Expr,
 ) -> @core.Expr raise @core.SqlglotError {
-  let alias = expression.arg("alias")
-  match alias {
+  let alias_ = expression.arg("alias")
+  match alias_ {
     Some(a) if expression.kind.is_any([CTE, Subquery]) &&
       a.kind == TableAlias &&
       a.list("columns").is_empty() => {
@@ -96,7 +96,7 @@ pub fn qualify_derived_table_outputs(
       guard expression.this() is Some(query) else { return expression }
       let unaliased_column_indexes : Array[Int] = []
       for i, c in query.selects() {
-        if c.kind.is_a(Column) && c.alias() == "" {
+        if c.kind.is_a(Column) && c.alias_() == "" {
           unaliased_column_indexes.push(i)
         }
       }
@@ -104,12 +104,12 @@ pub fn qualify_derived_table_outputs(
       // Preserve the quoting information of columns for newly added Alias nodes
       let query_selects = query.selects()
       for select_index in unaliased_column_indexes {
-        let alias = query_selects[select_index]
-        match alias.this() {
+        let alias_ = query_selects[select_index]
+        match alias_.this() {
           Some(column) =>
             match column.this() {
               Some(ci) if ci.kind == Identifier =>
-                alias.arg("alias").unwrap().set("quoted", ci.has("quoted"))
+                alias_.arg("alias").unwrap().set("quoted", ci.has("quoted"))
               _ => ()
             }
           None => ()
@@ -599,7 +599,7 @@ fn select_sql(
       return g.sql(
         Some(
           @core.select_([@core.mk0(Star)]).from_(
-            e.subquery(alias="_l_0", copy=false),
+            e.subquery(alias_="_l_0", copy=false),
             copy=false,
           ),
         ),
@@ -648,7 +648,7 @@ fn set_operations(
     (order is None && (offset is Some(_) || limit_is_fetch)) {
     let select = g.move_ctes_to_top_level(
       @core.select_([@core.mk0(Star)]).from_(
-        e.subquery(alias="_l_0", copy=false),
+        e.subquery(alias_="_l_0", copy=false),
       ),
     )
     for arg in set_op_modifiers {

@@ -92,14 +92,14 @@ pub fn qualify_tables(
     normalize : Bool,
     columns : Array[@core.Expr]?,
   ) -> Unit {
-    let alias = match expression.arg("alias") {
+    let alias_ = match expression.arg("alias") {
       Some(a) => a
       None => @core.mk0(TableAlias)
     }
     let new_alias_name = if canonicalize_table_aliases {
       let n = next_alias_name()
-      let key = if alias.name() != "" {
-        alias.name()
+      let key = if alias_.name() != "" {
+        alias_.name()
       } else {
         match target_alias {
           Some(t) => t
@@ -108,7 +108,7 @@ pub fn qualify_tables(
       }
       canonical_aliases[key] = n
       n
-    } else if alias.name() == "" {
+    } else if alias_.name() == "" {
       match target_alias {
         Some(t) if t != "" =>
           if normalize {
@@ -121,12 +121,12 @@ pub fn qualify_tables(
     } else {
       return
     }
-    alias.set("this", @core.to_identifier(new_alias_name))
+    alias_.set("this", @core.to_identifier(new_alias_name))
     match columns {
-      Some(cols) if !cols.is_empty() => alias.set("columns", cols)
+      Some(cols) if !cols.is_empty() => alias_.set("columns", cols)
       _ => ()
     }
-    expression.set("alias", alias)
+    expression.set("alias", alias_)
     match scope {
       Some(s) => s.rename_source(None, new_alias_name)
       None => ()
@@ -257,7 +257,7 @@ pub fn qualify_tables(
           match pivot {
             Some(pivot) => {
               let target_alias = if pivot.has("unpivot") {
-                Some(source.alias())
+                Some(source.alias_())
               } else {
                 None
               }
@@ -305,7 +305,7 @@ pub fn qualify_tables(
       }
     }
     for table in scope.tables() {
-      if table.alias() == "" && parent_is(table, [From, Join]) {
+      if table.alias_() == "" && parent_is(table, [From, Join]) {
         set_alias(
           table,
           canonical_aliases,

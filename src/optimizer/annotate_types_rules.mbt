@@ -348,7 +348,7 @@ fn annotate_struct_value(expression : @core.Expr) -> @core.Expr? {
   let mut this : @core.Expr? = None
   let mut kind = expression.get_type()
   match expression.arg("alias") {
-    Some(alias) => this = Some(alias.copy())
+    Some(alias_) => this = Some(alias_.copy())
     None =>
       match expression.expression() {
         Some(e) => {

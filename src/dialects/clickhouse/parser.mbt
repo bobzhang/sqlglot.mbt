@@ -297,12 +297,12 @@ fn configure_parser(d : @core.Dialect) -> Unit {
   fp["MEDIAN"] = parse_quantile
   fp["COLUMNS"] = parse_columns
   fp["TUPLE"] = p => {
-    Some(@core.from_arg_list(Struct, p.parse_function_args(alias=true)))
+    Some(@core.from_arg_list(Struct, p.parse_function_args(alias_=true)))
   }
   fp["AND"] = p => p.parse_connector_function(And)
   fp["OR"] = p => p.parse_connector_function(Or)
   fp["XOR"] = p => {
-    Some(@core.combine_conditions(p.parse_function_args(alias=false), Xor))
+    Some(@core.combine_conditions(p.parse_function_args(alias_=false), Xor))
   }
   fp["VIEW"] = p => {
     let select = p.parse_select()
@@ -661,9 +661,9 @@ fn parse_table(
   match this {
     Some(t) if t.kind == Table =>
       match (t.this(), t.arg("alias")) {
-        (Some(inner), Some(alias)) if inner.kind.is_a(GenerateSeries) &&
-          alias.list("columns").is_empty() =>
-          alias.set("columns", [@core.to_identifier("generate_series")])
+        (Some(inner), Some(alias_)) if inner.kind.is_a(GenerateSeries) &&
+          alias_.list("columns").is_empty() =>
+          alias_.set("columns", [@core.to_identifier("generate_series")])
         _ => ()
       }
     _ => ()
@@ -683,10 +683,10 @@ fn parse_cte(p : @core.Parser) -> @core.Expr? raise @core.SqlglotError {
     None => {
       // WITH <expression> AS <identifier>
       let this = p.parse_assignment()
-      let alias = p.parse_table_alias()
+      let alias_ = p.parse_table_alias()
       Some(
         p.expression(
-          @core.mk(CTE, [("this", this), ("alias", alias), ("scalar", true)]),
+          @core.mk(CTE, [("this", this), ("alias", alias_), ("scalar", true)]),
         ),
       )
     }
@@ -730,9 +730,9 @@ fn parse_join(
   )
   match join {
     Some(j) => {
-      let method = j.get("method")
+      let method_ = j.get("method")
       j.set("method", (None : @core.Expr?))
-      j.set("global_", method)
+      j.set("global_", method_)
       // tbl ARRAY JOIN arr <-- this should be a `Column` reference, not a `Table`
       // https://clickhouse.com/docs/en/sql-reference/statements/select/array-join
       if j.text("kind") == "ARRAY" {

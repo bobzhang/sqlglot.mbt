@@ -100,7 +100,7 @@ fn Resolver::get_table_impl(
     Some((node, _)) => {
       let mut node = node
       if node.kind.is_a(Query) {
-        while node.alias() != table_name && node.parent is Some(p) {
+        while node.alias_() != table_name && node.parent is Some(p) {
           node = p
         }
       }

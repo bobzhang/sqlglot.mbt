@@ -1237,8 +1237,8 @@ pub fn base_parser_fns() -> ParserFns {
   let pipe : Map[String, (Parser, Expr) -> Expr? raise SqlglotError] = {
     "AGGREGATE": (p, q) => p.parse_pipe_syntax_aggregate(q),
     "AS": (p, q) => {
-      let alias = p.parse_table_alias()
-      Some(p.build_pipe_cte(q, [mk0(Star)], alias_cte?=alias))
+      let alias_ = p.parse_table_alias()
+      Some(p.build_pipe_cte(q, [mk0(Star)], alias_cte?=alias_))
     },
     "DISTINCT": (p, q) => {
       p.advance()

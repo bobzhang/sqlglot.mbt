@@ -510,7 +510,7 @@ fn is_star_query(expression : Expr) -> Bool {
 
 ///|
 /// The alias of the expression, or an empty string if it's not aliased.
-pub fn Expr::alias(self : Expr) -> String {
+pub fn Expr::alias_(self : Expr) -> String {
   match self.args.get("alias") {
     Some(Node(a)) => a.name()
     _ => self.text("alias")
@@ -579,7 +579,7 @@ pub fn Expr::alias_or_name(self : Expr) -> String {
         None => ""
       }
     _ => {
-      let a = self.alias()
+      let a = self.alias_()
       if a.is_empty() {
         self.name()
       } else {
@@ -594,8 +594,8 @@ pub fn Expr::alias_or_name(self : Expr) -> String {
 pub fn Expr::output_name(self : Expr) -> String {
   match self.kind.owner_output_name() {
     None => ""
-    Some(Alias) => self.alias()
-    Some(Subquery) => self.alias()
+    Some(Alias) => self.alias_()
+    Some(Subquery) => self.alias_()
     Some(Bracket) => {
       let exprs = self.expressions()
       if exprs.length() == 1 {

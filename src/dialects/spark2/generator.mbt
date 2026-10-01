@@ -92,7 +92,7 @@ fn unalias_pivot(
     let pivots = this.list("pivots")
     if !pivots.is_empty() {
       let pivot = pivots[0]
-      if pivot.alias() != "" {
+      if pivot.alias_() != "" {
         let alias_ = pivot.arg("alias").unwrap().pop()
         let sub = @core.exp_subquery_with_alias_expr(
           @core.select_([@core.mk0(Star)]).from_(this.copy(), copy=false),

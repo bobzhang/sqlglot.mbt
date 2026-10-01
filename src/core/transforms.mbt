@@ -74,10 +74,10 @@ pub fn unnest_generate_date_array_using_recursive_cte(
         (Some(s), Some(e), Some(st)) if st.kind == Interval => (s, e, st)
         _ => continue
       }
-      let alias = unnest.arg("alias")
+      let alias_ = unnest.arg("alias")
       // Python: `alias.columns[0]` is an Identifier (keeping its quoting) that is reused
       // as-is below; the "date_value" fallback is a plain string.
-      let column_ident = match alias {
+      let column_ident = match alias_ {
         Some(a) if a.kind == TableAlias => a.list("columns").get(0)
         _ => None
       }
@@ -114,7 +114,7 @@ pub fn unnest_generate_date_array_using_recursive_cte(
         table_of(cte_name),
       )
       unnest.replace(
-        Some(generate_dates_query.subquery(alias=cte_name, copy=false)),
+        Some(generate_dates_query.subquery(alias_=cte_name, copy=false)),
       )
       |> ignore
       let cte = alias_table(mk1(CTE, cte_query), cte_name)
@@ -150,9 +150,9 @@ pub fn unnest_generate_series(expression : Expr) -> Expr raise SqlglotError {
   match expression.this() {
     Some(this) if expression.kind == Table && this.kind.is_a(GenerateSeries) => {
       let unnest = mk(Unnest, [("expressions", [this])])
-      let alias = expression.alias()
-      if !alias.is_empty() {
-        return alias_table(unnest, "_u", columns=[alias], copy=false)
+      let alias_ = expression.alias_()
+      if !alias_.is_empty() {
+        return alias_table(unnest, "_u", columns=[alias_], copy=false)
       }
       unnest
     }
@@ -213,7 +213,7 @@ pub fn eliminate_distinct_on(expression : Expr) -> Expr raise SqlglotError {
         } else {
           select.output_name()
         }
-        let alias = find_new_name(n => taken_names.contains(n), base)
+        let new_alias = find_new_name(n => taken_names.contains(n), base)
         let quoted : Bool? = if select.kind.is_a(Column) {
           match select.this() {
             Some(t) =>
@@ -226,13 +226,13 @@ pub fn eliminate_distinct_on(expression : Expr) -> Expr raise SqlglotError {
         } else {
           None
         }
-        select = select.replace(Some(alias_(select, alias, quoted?))).unwrap()
+        select = select.replace(Some(alias_(select, new_alias, quoted?))).unwrap()
       }
       taken_names.push(select.output_name())
       new_selects.push(select.arg("alias").unwrap())
     }
     return select_(new_selects, copy=false)
-      .from_(expression.subquery(alias="_t", copy=false), copy=false)
+      .from_(expression.subquery(alias_="_t", copy=false), copy=false)
       .where_(
         [column_of(row_number_window_alias).eq_(literal_int(1))],
         copy=false,
@@ -248,9 +248,9 @@ pub fn eliminate_qualify(expression : Expr) -> Expr raise SqlglotError {
     let taken = expression.named_selects()
     for select in expression.selects() {
       if select.alias_or_name().is_empty() {
-        let alias = find_new_name(n => taken.contains(n), "_c")
-        select.replace(Some(alias_(select, alias))) |> ignore
-        taken.push(alias)
+        let new_alias = find_new_name(n => taken.contains(n), "_c")
+        select.replace(Some(alias_(select, new_alias))) |> ignore
+        taken.push(new_alias)
       }
     }
     fn select_alias_or_name(select : Expr) -> Expr raise SqlglotError {
@@ -284,7 +284,7 @@ pub fn eliminate_qualify(expression : Expr) -> Expr raise SqlglotError {
     let expression_by_alias : Map[String, Expr] = Map([])
     for select in expression.selects() {
       if select.kind.is_a(Alias) {
-        expression_by_alias[select.alias()] = select.this().unwrap()
+        expression_by_alias[select.alias_()] = select.this().unwrap()
       }
     }
     let select_candidates = if expression.is_star() {
@@ -304,10 +304,10 @@ pub fn eliminate_qualify(expression : Expr) -> Expr raise SqlglotError {
           }
         }
         let named = expression.named_selects()
-        let alias = find_new_name(n => named.contains(n), "_w")
-        expression.select_([alias_(select_candidate, alias)], copy=false)
+        let new_alias = find_new_name(n => named.contains(n), "_w")
+        expression.select_([alias_(select_candidate, new_alias)], copy=false)
         |> ignore
-        let column = column_of(alias)
+        let column = column_of(new_alias)
         match select_candidate.parent {
           Some(p) if p.kind == Qualify => qualify_filters = column
           _ => select_candidate.replace(Some(column)) |> ignore
@@ -318,7 +318,7 @@ pub fn eliminate_qualify(expression : Expr) -> Expr raise SqlglotError {
       }
     }
     return outer_selects
-      .from_(expression.subquery(alias="_t", copy=false), copy=false)
+      .from_(expression.subquery(alias_="_t", copy=false), copy=false)
       .where_([qualify_filters], copy=false)
   }
   expression
@@ -353,7 +353,7 @@ pub fn unqualify_unnest(expression : Expr) -> Expr raise SqlglotError {
     for unnest in find_all_in_scope(expression, [Unnest]) {
       match unnest.parent {
         Some(p) if p.kind.is_any([From, Join]) =>
-          unnest_aliases.push(unnest.alias())
+          unnest_aliases.push(unnest.alias_())
         _ => ()
       }
     }
@@ -413,11 +413,11 @@ pub fn unnest_to_explode(unnest_using_arrays_zip? : Bool = true) -> Transform {
         Some(from_) =>
           match from_.this() {
             Some(unnest) if unnest.kind == Unnest => {
-              let alias = unnest.arg("alias")
+              let alias_ = unnest.arg("alias")
               let exprs = unnest.expressions()
               let has_multi_expr = exprs.length() > 1
               let this = unnest_zip_exprs(unnest, exprs, has_multi_expr)[0]
-              let columns = match alias {
+              let columns = match alias_ {
                 Some(a) => a.list("columns")
                 None => []
               }
@@ -426,7 +426,7 @@ pub fn unnest_to_explode(unnest_using_arrays_zip? : Bool = true) -> Transform {
                 Some(v) if v.truthy() => columns.insert(0, to_identifier("pos"))
                 _ => ()
               }
-              let table_alias = match alias {
+              let table_alias = match alias_ {
                 Some(a) =>
                   Some(
                     mk(TableAlias, [("this", a.this()), ("columns", columns)]),
@@ -463,12 +463,12 @@ pub fn unnest_to_explode(unnest_using_arrays_zip? : Bool = true) -> Transform {
           join_expr
         }
         if unnest.kind == Unnest {
-          let alias = if is_lateral {
+          let alias_ = if is_lateral {
             join_expr.arg("alias")
           } else {
             unnest.arg("alias")
           }
-          let alias = match alias {
+          let alias_ = match alias_ {
             Some(a) => a
             None =>
               raise UnsupportedError(
@@ -479,7 +479,7 @@ pub fn unnest_to_explode(unnest_using_arrays_zip? : Bool = true) -> Transform {
           let has_multi_expr = exprs.length() > 1
           let exprs = unnest_zip_exprs(unnest, exprs, has_multi_expr)
           join.pop() |> ignore
-          let alias_cols = alias.list("columns")
+          let alias_cols = alias_.list("columns")
           if !has_multi_expr &&
             alias_cols.length() != 1 &&
             alias_cols.length() != 2 {
@@ -502,7 +502,7 @@ pub fn unnest_to_explode(unnest_using_arrays_zip? : Bool = true) -> Transform {
                 (
                   "alias",
                   mk(TableAlias, [
-                    ("this", alias.this()),
+                    ("this", alias_.this()),
                     ("columns", alias_cols),
                   ]),
                 ),
@@ -568,13 +568,13 @@ pub fn add_recursive_cte_column_names(
   if expression.kind == With && expression.has("recursive") {
     let next_name = name_sequence("_c_")
     for cte in expression.expressions() {
-      let alias = cte.arg("alias").unwrap()
-      if alias.list("columns").is_empty() {
+      let alias_ = cte.arg("alias").unwrap()
+      if alias_.list("columns").is_empty() {
         let mut query = cte.this().unwrap()
         if query.kind.is_a(SetOperation) {
           query = query.this().unwrap()
         }
-        alias.set(
+        alias_.set(
           "columns",
           query
           .selects()
@@ -894,7 +894,7 @@ pub fn eliminate_window_clause(expression : Expr) -> Expr raise SqlglotError {
       expression.set("windows", null_arg)
       let window_expression : Map[String, Expr] = Map([])
       fn inline_inherited_window(window : Expr) -> Unit {
-        match window_expression.get(py_lower(window.alias())) {
+        match window_expression.get(py_lower(window.alias_())) {
           Some(inherited_window) => {
             window.set("alias", null_arg)
             for key in ["partition_by", "order", "spec"] {

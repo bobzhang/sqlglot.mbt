@@ -1102,7 +1102,7 @@ pub struct Expr {
 }
 pub fn[T : IntoPy] Expr::add(Self, T) -> Self raise SqlglotError
 pub fn Expr::add_comments(Self, Array[String]?, prepend? : Bool) -> Unit
-pub fn Expr::alias(Self) -> String
+pub fn Expr::alias_(Self) -> String
 pub fn Expr::alias_column_names(Self) -> Array[String]
 pub fn Expr::alias_or_name(Self) -> String
 pub fn[T : IntoPy] Expr::and_(Self, Array[T], dialect? : Dialect, copy? : Bool, wrap? : Bool) -> Self raise SqlglotError
@@ -1171,7 +1171,7 @@ pub fn Expr::is_type_expr(Self, Self) -> Bool
 pub fn Expr::is_wrapper(Self) -> Bool
 pub fn Expr::isin(Self, expressions? : Array[&IntoPy], query? : &IntoPy, unnest? : Array[&IntoPy], dialect? : Dialect, copy? : Bool) -> Self raise SqlglotError
 pub fn Expr::iter_expressions(Self, reverse? : Bool) -> Array[Self]
-pub fn[T : IntoPy] Expr::join_(Self, T, on? : Array[&IntoPy], using_? : Array[&IntoPy], append? : Bool, join_type? : String, join_alias? : String, side? : String, kind? : String, method? : String, dialect? : Dialect, copy? : Bool) -> Self raise SqlglotError
+pub fn[T : IntoPy] Expr::join_(Self, T, on? : Array[&IntoPy], using_? : Array[&IntoPy], append? : Bool, join_type? : String, join_alias? : String, side? : String, kind? : String, method_? : String, dialect? : Dialect, copy? : Bool) -> Self raise SqlglotError
 pub fn[T : IntoPy] Expr::land(Self, T) -> Self raise SqlglotError
 pub fn[T : IntoPy] Expr::lateral(Self, Array[T], append? : Bool, dialect? : Dialect, copy? : Bool) -> Self raise SqlglotError
 pub fn[T : IntoPy] Expr::le(Self, T) -> Self raise SqlglotError
@@ -1222,7 +1222,7 @@ pub fn Expr::set_type(Self, Self?) -> Unit
 pub fn[T : IntoPy] Expr::sort_by(Self, Array[T], append? : Bool, dialect? : Dialect, copy? : Bool) -> Self raise SqlglotError
 pub fn Expr::str_arg(Self, String) -> String?
 pub fn[T : IntoPy] Expr::sub(Self, T) -> Self raise SqlglotError
-pub fn Expr::subquery(Self, alias? : String, copy? : Bool) -> Self
+pub fn Expr::subquery(Self, alias_? : String, copy? : Bool) -> Self
 pub fn[T : IntoPy] Expr::table(Self, T, dialect? : Dialect, copy? : Bool) -> Self raise SqlglotError
 pub fn Expr::table_name(Self) -> String
 pub fn Expr::text(Self, String) -> String
@@ -3315,7 +3315,7 @@ pub fn Parser::parse_freespace(Self) -> Expr raise SqlglotError
 pub fn Parser::parse_from(Self, joins? : Bool, skip_from_token? : Bool, consume_pipe? : Bool) -> Expr? raise SqlglotError
 pub fn Parser::parse_from_base(Self, joins? : Bool, skip_from_token? : Bool, consume_pipe? : Bool) -> Expr? raise SqlglotError
 pub fn Parser::parse_function(Self, functions? : Map[String, (Array[Expr], Self) -> Expr raise SqlglotError], anonymous? : Bool, optional_parens? : Bool, any_token? : Bool) -> Expr? raise SqlglotError
-pub fn Parser::parse_function_args(Self, alias? : Bool) -> Array[Expr] raise SqlglotError
+pub fn Parser::parse_function_args(Self, alias_? : Bool) -> Array[Expr] raise SqlglotError
 pub fn Parser::parse_function_base(Self, functions? : Map[String, (Array[Expr], Self) -> Expr raise SqlglotError], anonymous? : Bool, optional_parens? : Bool, any_token? : Bool) -> Expr? raise SqlglotError
 pub fn Parser::parse_function_call(Self, functions? : Map[String, (Array[Expr], Self) -> Expr raise SqlglotError], anonymous? : Bool, optional_parens? : Bool, any_token? : Bool) -> Expr? raise SqlglotError
 pub fn Parser::parse_function_call_base(Self, functions? : Map[String, (Array[Expr], Self) -> Expr raise SqlglotError], anonymous? : Bool, optional_parens? : Bool, any_token? : Bool) -> Expr? raise SqlglotError
@@ -3347,7 +3347,7 @@ pub fn Parser::parse_id_var_base(Self, any_token? : Bool, tokens? : TokenSet) ->
 pub fn Parser::parse_identifier(Self) -> Expr? raise SqlglotError
 pub fn Parser::parse_if(Self) -> Expr? raise SqlglotError
 pub fn Parser::parse_if_base(Self) -> Expr? raise SqlglotError
-pub fn Parser::parse_in(Self, Expr?, alias? : Bool) -> Expr? raise SqlglotError
+pub fn Parser::parse_in(Self, Expr?, alias_? : Bool) -> Expr? raise SqlglotError
 pub fn Parser::parse_index(Self, index? : Expr?, anonymous? : Bool) -> Expr? raise SqlglotError
 pub fn Parser::parse_index_params(Self) -> Expr? raise SqlglotError
 pub fn Parser::parse_index_params_base(Self) -> Expr? raise SqlglotError
@@ -3383,9 +3383,9 @@ pub fn Parser::parse_json_value(Self) -> Expr? raise SqlglotError
 pub fn Parser::parse_key_constraint_options(Self) -> Array[String] raise SqlglotError
 pub fn Parser::parse_key_value_property(Self, parse_value? : () -> Expr? raise SqlglotError) -> Expr? raise SqlglotError
 pub fn Parser::parse_kill(Self) -> Expr? raise SqlglotError
-pub fn Parser::parse_lambda(Self, alias? : Bool) -> Expr? raise SqlglotError
+pub fn Parser::parse_lambda(Self, alias_? : Bool) -> Expr? raise SqlglotError
 pub fn Parser::parse_lambda_arg(Self) -> Expr? raise SqlglotError
-pub fn Parser::parse_lambda_base(Self, alias? : Bool) -> Expr? raise SqlglotError
+pub fn Parser::parse_lambda_base(Self, alias_? : Bool) -> Expr? raise SqlglotError
 pub fn Parser::parse_lateral(Self) -> Expr? raise SqlglotError
 pub fn Parser::parse_lateral_base(Self) -> Expr? raise SqlglotError
 pub fn Parser::parse_limit(Self, this? : Expr?, top? : Bool, skip_limit_token? : Bool) -> Expr? raise SqlglotError
@@ -3489,7 +3489,7 @@ pub fn Parser::parse_row(Self) -> Expr? raise SqlglotError
 pub fn Parser::parse_row_format(Self, match_row? : Bool) -> Expr? raise SqlglotError
 pub fn Parser::parse_schema(Self, this? : Expr?) -> Expr? raise SqlglotError
 pub fn Parser::parse_select(Self, nested? : Bool, table? : Bool, parse_subquery_alias? : Bool, parse_set_operation? : Bool, consume_pipe? : Bool, from_? : Expr) -> Expr? raise SqlglotError
-pub fn Parser::parse_select_or_expression(Self, alias? : Bool) -> Expr? raise SqlglotError
+pub fn Parser::parse_select_or_expression(Self, alias_? : Bool) -> Expr? raise SqlglotError
 pub fn Parser::parse_select_query(Self, nested? : Bool, table? : Bool, parse_subquery_alias? : Bool, parse_set_operation? : Bool) -> Expr? raise SqlglotError
 pub fn Parser::parse_sequence_properties(Self) -> Expr? raise SqlglotError
 pub fn Parser::parse_serde_properties(Self, with_? : Bool) -> Expr? raise SqlglotError
@@ -3589,8 +3589,8 @@ pub fn Parser::parse_volatile_property(Self) -> Expr raise SqlglotError
 pub fn Parser::parse_when_matched(Self) -> Expr? raise SqlglotError
 pub fn Parser::parse_where(Self, skip_where_token? : Bool) -> Expr? raise SqlglotError
 pub fn Parser::parse_whileblock(Self) -> Expr raise SqlglotError
-pub fn Parser::parse_window(Self, Expr?, alias? : Bool) -> Expr? raise SqlglotError
-pub fn Parser::parse_window_base(Self, Expr?, alias? : Bool) -> Expr? raise SqlglotError
+pub fn Parser::parse_window(Self, Expr?, alias_? : Bool) -> Expr? raise SqlglotError
+pub fn Parser::parse_window_base(Self, Expr?, alias_? : Bool) -> Expr? raise SqlglotError
 pub fn Parser::parse_window_clause(Self) -> Array[Expr]? raise SqlglotError
 pub fn Parser::parse_window_spec(Self) -> (Value?, String?) raise SqlglotError
 pub fn Parser::parse_with(Self, skip_with_token? : Bool) -> Expr? raise SqlglotError

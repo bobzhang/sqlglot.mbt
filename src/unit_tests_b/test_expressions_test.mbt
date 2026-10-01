@@ -312,7 +312,7 @@ test "TestExprs.test_table_name" {
 ///|
 test "TestExprs.test_table" {
   assert_true(
-    @sqlglot.table_("a", alias="b") ==
+    @sqlglot.table_("a", alias_="b") ==
     p1("select * from a b").find([Table]).unwrap(),
   )
   assert_eq(sql(@sqlglot.table_("a", db="")), "a")
@@ -1114,7 +1114,7 @@ test "TestExprs.test_alias_with_placeholder" {
   )
   let select = expr.selects()[0]
   assert_true(select.arg("alias").unwrap().kind.is_a(Placeholder))
-  assert_eq(select.alias(), "userInfo")
+  assert_eq(select.alias_(), "userInfo")
   assert_eq(select.alias_or_name(), "userInfo")
   assert_eq(select.output_name(), "userInfo")
 }
@@ -1429,13 +1429,13 @@ test "TestExprs.test_values" {
     @core.PyTuple([@core.PyInt(3), @core.PyInt(4)]),
   ]
   assert_eq(
-    sql(@sqlglot.values(rows, alias="t", columns=["a", "b"])),
+    sql(@sqlglot.values(rows, alias_="t", columns=["a", "b"])),
     "(VALUES (1, 2), (3, 4)) AS t(a, b)",
   )
   // Python passes `{"a": DataType.build("TEXT"), "b": DataType.build("TEXT")}`; only the
   // (ordered) column names are used
   assert_eq(
-    sql(@sqlglot.values(rows, alias="t", columns=["a", "b"])),
+    sql(@sqlglot.values(rows, alias_="t", columns=["a", "b"])),
     "(VALUES (1, 2), (3, 4)) AS t(a, b)",
   )
   assert_eq(

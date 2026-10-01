@@ -476,7 +476,7 @@ fn to_node(
       Some(cs) if !cs.is_empty() && cs[0].has_prefix("source: ") => {
         let parts = @core.py_split_ws(cs[0])
         if parts.length() > 1 {
-          source_names[dt.alias()] = parts[1]
+          source_names[dt.alias_()] = parts[1]
         }
       }
       _ => ()

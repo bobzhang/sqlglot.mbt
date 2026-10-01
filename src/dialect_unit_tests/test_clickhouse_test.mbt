@@ -82,7 +82,7 @@ test "TestClickhouse.test_clickhouse_values" {
   let ast = t.parse_one("SELECT * FROM VALUES (1, 2, 3)")
   t.eq(ast.find_all([Tuple]).collect().length(), 4)
   let values = @sqlglot.select(["*"]).from_(
-    @sqlglot.values([@core.PyExpr(@sqlglot.tuple_([1, 2, 3]))], alias="subq", columns=[
+    @sqlglot.values([@core.PyExpr(@sqlglot.tuple_([1, 2, 3]))], alias_="subq", columns=[
       "a", "b", "c",
     ]),
   )
@@ -102,7 +102,7 @@ test "TestClickhouse.test_cte" {
   )
   let cte = query.arg("with_").unwrap().expressions()[0]
   t.ok(cte.this_().kind.is_a(Subquery))
-  t.eq(cte.alias(), "y")
+  t.eq(cte.alias_(), "y")
   let query = "WITH 1 AS var SELECT var"
   for error_level in [@core.ErrorLevel::Ignore, Raise, Immediate] {
     t.eqf(() => sql(t.parse_one(query, error_level~), dialect=t.dialect), query)
