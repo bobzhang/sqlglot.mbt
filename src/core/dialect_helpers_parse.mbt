@@ -269,18 +269,20 @@ pub fn build_json_extract_path(
         ])
       }
       let text = a.name()
-      match parse_int_str(text) {
-        Some(index) if is_int_str(text) &&
-          (!arrow_req_json_type || !a.is_string()) => {
-          let index = index.to_int()
+      match
+        (if is_int_str(text) && (!arrow_req_json_type || !a.is_string()) {
+          parse_int_checked(text)
+        } else {
+          None
+        }) {
+        Some(index) => {
+          if !zero_based_indexing && index == -9223372036854775807L - 1L {
+            raise int64_range_error("\{text} - 1")
+          }
           segments.push(
             mk1(
               JSONPathSubscript,
-              if zero_based_indexing {
-                index
-              } else {
-                index - 1
-              },
+              Value::Int(if zero_based_indexing { index } else { index - 1L }),
             ),
           )
         }

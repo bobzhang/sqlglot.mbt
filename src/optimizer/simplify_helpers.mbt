@@ -275,7 +275,7 @@ fn extract_interval(expression : @core.Expr) -> RelDelta? {
     Literal =>
       if this.is_number() {
         match expr_to_pynum(this) {
-          Some(PInt(i)) => i.to_int()
+          Some(PInt(i)) => i
           Some(PDec(d)) =>
             // int(Decimal) truncates
             {
@@ -285,7 +285,7 @@ fn extract_interval(expression : @core.Expr) -> RelDelta? {
               } else {
                 v / pow10(-d.exp)
               }
-              let t = truncated.to_int()
+              let t = truncated
               if d.neg {
                 -t
               } else {
@@ -296,13 +296,13 @@ fn extract_interval(expression : @core.Expr) -> RelDelta? {
         }
       } else {
         match parse_py_int(this.text("this")) {
-          Some(i) => i.to_int()
+          Some(i) => i
           None => return None
         }
       }
     Neg =>
       match expr_to_pynum(this) {
-        Some(PInt(i)) => i.to_int()
+        Some(PInt(i)) => i
         _ => return None
       }
     _ => return None
@@ -325,7 +325,7 @@ fn is_exact_interval_move(
     Some(v) => v
     None => return false
   }
-  if delta.months == 0 && delta.years == 0 {
+  if !delta.moves_months() {
     return true
   }
   if op.kind.is_any([Sub, DateSub, DatetimeSub]) {

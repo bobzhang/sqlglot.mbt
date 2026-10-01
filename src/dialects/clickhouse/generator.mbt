@@ -320,9 +320,10 @@ fn configure_generator(d : @core.Dialect) -> Unit {
   t[JSONPathRoot] = (_, _) => ""
   t[JSONPathSubscript] = (g, e) => {
     let this = g.json_path_part(e.get("this"))
-    match @core.parse_int_str(this) {
-      Some(i) if @core.is_int_str(this) => (i + 1L).to_string()
-      _ => this
+    // str(int(this) + 1): Python ints are unbounded
+    match @core.py_int_text_add(this, 1) {
+      Some(s) => s
+      None => this
     }
   }
   t[Length] = @core.length_or_char_length_sql

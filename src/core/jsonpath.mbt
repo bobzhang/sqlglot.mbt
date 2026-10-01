@@ -96,9 +96,13 @@ fn JsonPathParser::parse_literal(
     None => ()
   }
   if !number.is_empty() {
-    return match parse_int_str(number) {
+    // Python `int(number)`: a ValueError (not a ParseError) for non-integers.
+    return match parse_int_checked(number) {
       Some(n) => Int(n)
-      None => raise ParseError(self.error("Invalid number \{number}"), [])
+      None =>
+        raise ValueError(
+          "invalid literal for int() with base 10: \{py_repr_str(number)}",
+        )
     }
   }
   Bool(false)
@@ -226,7 +230,10 @@ pub fn parse_json_path(
 
 ///|
 /// `Dialect.to_json_path(path)`: parses string/number literals into JSONPath expressions.
-pub fn Dialect::to_json_path(self : Dialect, path : Expr?) -> Expr? {
+pub fn Dialect::to_json_path(
+  self : Dialect,
+  path : Expr?,
+) -> Expr? raise SqlglotError {
   match self.hooks.to_json_path {
     Some(f) => f(self, path)
     None => self.to_json_path_base(path)
@@ -235,7 +242,10 @@ pub fn Dialect::to_json_path(self : Dialect, path : Expr?) -> Expr? {
 
 ///|
 /// The base `Dialect.to_json_path` implementation.
-pub fn Dialect::to_json_path_base(self : Dialect, path : Expr?) -> Expr? {
+pub fn Dialect::to_json_path_base(
+  self : Dialect,
+  path : Expr?,
+) -> Expr? raise SqlglotError {
   match path {
     Some(p) if p.kind == Literal => {
       let mut path_text = p.name()
@@ -243,6 +253,8 @@ pub fn Dialect::to_json_path_base(self : Dialect, path : Expr?) -> Expr? {
         path_text = "[\{path_text}]"
       }
       Some(parse_json_path(path_text, self)) catch {
+        // Python only catches ParseError and TokenError here
+        e if !(e is (ParseError(_) | TokenError(_))) => raise e
         e => {
           let stripped = path_text.trim_start().to_string()
           if self.cfg.strict_json_path_syntax &&

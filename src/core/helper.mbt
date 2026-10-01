@@ -225,7 +225,48 @@ pub fn is_float_str(text : String) -> Bool {
 }
 
 ///|
-/// Parses a Python-style integer string (allowing `_` separators and sign).
+/// The error raised where Python would hold an integer outside the Int64 range: the
+/// port's AST integers (`Value::Int`), host ints (`PyInt`) and executor integers are
+/// 64-bit, so such values are refused instead of wrapping or being silently changed.
+pub fn int64_range_error(what : String) -> SqlglotError {
+  ValueError(
+    "integer \{what} is outside the Int64 range supported by this port (Python ints are unbounded)",
+  )
+}
+
+///|
+/// Python `int(text)` as an Int64: `None` when `text` isn't an integer literal, and
+/// `int64_range_error` when it is one outside the Int64 range.
+pub fn parse_int_checked(text : String) -> Int64? raise SqlglotError {
+  if !is_int_str(text) {
+    return None
+  }
+  match parse_int_str(text) {
+    Some(v) => Some(v)
+    None => raise int64_range_error(py_strip(text))
+  }
+}
+
+///|
+/// `str(int(text) + delta)` for an integer literal `text` of any size, else `None`.
+pub fn py_int_text_add(text : String, delta : Int) -> String? {
+  if !is_int_str(text) {
+    return None
+  }
+  let t = py_strip(to_ascii_decimal(text)).replace_all(old="_", new="")
+  let (neg, digits) = if t.has_prefix("-") || t.has_prefix("+") {
+    (t.has_prefix("-"), t.unsafe_substring(start=1, end=t.length()))
+  } else {
+    (false, t)
+  }
+  let v = @bigint.BigInt::from_string(digits)
+  let v = if neg { -v } else { v }
+  Some((v + @bigint.BigInt::from_int(delta)).to_string())
+}
+
+///|
+/// Parses a Python-style integer string (allowing `_` separators and sign); `None` when
+/// it isn't an integer or is outside the Int64 range (see `parse_int_checked`).
 pub fn parse_int_str(text : String) -> Int64? {
   if !is_int_str(text) {
     return None

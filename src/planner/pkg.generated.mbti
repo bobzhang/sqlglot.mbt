@@ -36,8 +36,8 @@ pub struct Step {
   dependencies : Array[Step]
   dependents : Array[Step]
   mut projections : Array[@core.Expr]
-  mut limit : Int?
-  mut offset : Int
+  mut limit : Int64?
+  mut offset : Int64
   mut condition : @core.Expr?
   mut source : @core.Expr?
   mut source_name : String?

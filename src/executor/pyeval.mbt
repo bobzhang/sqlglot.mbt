@@ -272,7 +272,9 @@ fn read_number(
       }
       match hex_val(c) {
         Some(h) if h < base => {
-          v = v * base.to_int64() + h.to_int64()
+          v = checked_add(checked_mul(v, base.to_int64()), h.to_int64()) catch {
+            _ => raise int64_overflow("an integer literal")
+          }
           any = true
           i += 1
         }
@@ -362,6 +364,8 @@ fn read_number(
   }
   match @core.parse_int_str(int_text) {
     Some(v) => (Int(v), i)
+    None if @core.is_int_str(int_text) =>
+      raise int64_overflow("the literal \{int_text}")
     None => raise syntax_error("invalid integer literal")
   }
 }

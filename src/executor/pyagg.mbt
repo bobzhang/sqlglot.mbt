@@ -10,15 +10,39 @@ pub fn py_sum(values : Array[Value]) -> Value raise PyException {
   let mut int_result = 0L
   let mut result : Value = Int(0L)
   let mut in_int = true
-  // integer fast path
+  // integer fast path; intermediate sums may leave Int64 (Python ints are unbounded),
+  // so overflow switches to a big integer accumulator and only the result must fit
+  let mut big_result : @bigint.BigInt? = None
   while i < n && in_int {
     match values[i] {
       Int(_) | Bool(_) => {
-        int_result += as_int(values[i]).unwrap()
+        let x = as_int(values[i]).unwrap()
+        match big_result {
+          Some(b) => big_result = Some(b + @bigint.BigInt::from_int64(x))
+          None => {
+            let r = int_result + x
+            if ((int_result ^ r) & (x ^ r)) < 0L {
+              big_result = Some(
+                @bigint.BigInt::from_int64(int_result) +
+                @bigint.BigInt::from_int64(x),
+              )
+            } else {
+              int_result = r
+            }
+          }
+        }
         i += 1
       }
       _ => in_int = false
     }
+  }
+  if big_result is Some(b) {
+    let lo = @bigint.BigInt::from_int64(int64_min)
+    let hi = @bigint.BigInt::from_int64(9223372036854775807L)
+    if b < lo || b > hi {
+      raise int64_overflow("sum(...)")
+    }
+    int_result = b.to_int64()
   }
   result = Int(int_result)
   if i == n {

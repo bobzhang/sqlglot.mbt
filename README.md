@@ -65,6 +65,18 @@ Python runtime features, such as defining new expression classes at runtime, are
 - **Overridden methods** go through typed hook tables, `ParserHooks` and `GeneratorHooks`.
 - **`super()`:** a child dialect captures its parent's implementation when it is configured.
   See `docs/review-02-dialects.md`.
+- **Unicode:** `str.upper/lower/casefold` (full mappings, `ß` -> `SS`, Final_Sigma) and the
+  `str.is*` / `re` (`\w`, `\d`, `\s`, `re.IGNORECASE`) character classes use tables generated
+  from Python's Unicode database (`tools/gen_unicode_tables.py` -> `src/core/gen_unicode.mbt`,
+  helpers in `src/core/unicode.mbt`). Strings are indexed by code point, as in Python.
+- **Integers:** SQL number literals stay text, and constant folding uses big integers (as do
+  `relativedelta` date shifts), so they behave like Python at any size. Integers that are
+  *stored* as host values are Int64: AST arguments (`Value::Int`, e.g. JSON path subscripts and
+  serde payloads), `PyInt` (`Expr.to_py()`) and the executor's ints. Where Python would hold an
+  integer outside Int64 there, the port raises an error whose message mentions "Int64 range"
+  (`@core.int64_range_error`; an `OverflowError` in the executor) instead of wrapping.
+  `src/robust_tests` checks both against Python (`tools/gen_unicode_fixtures.py`,
+  `tools/gen_numeric_fixtures.py`).
 
 ## Development
 

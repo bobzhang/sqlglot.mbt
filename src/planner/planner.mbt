@@ -28,8 +28,8 @@ pub struct Step {
   dependents : Array[Step]
   mut projections : Array[@core.Expr]
   /// `None` means no limit (Python `math.inf`)
-  mut limit : Int?
-  mut offset : Int
+  mut limit : Int64?
+  mut offset : Int64
   mut condition : @core.Expr?
   // Scan
   mut source : @core.Expr?
@@ -70,7 +70,7 @@ fn Step::new(
     dependents: [],
     projections: [],
     limit: None,
-    offset: 0,
+    offset: 0L,
     condition: None,
     source: None,
     source_name: None,
@@ -231,7 +231,7 @@ pub fn Step::to_s(self : Step, level? : Int = 0) -> String {
     Some(l) => lines.push("\{nested}Limit: \{l}")
     None => ()
   }
-  if self.offset != 0 {
+  if self.offset != 0L {
     lines.push("\{nested}Offset: \{self.offset}")
   }
   if !self.dependencies.is_empty() {
@@ -582,16 +582,16 @@ pub fn step_from_expression(
   step.projections = projections
   match expression.arg("limit") {
     Some(limit) =>
-      step.limit = match @core.parse_int_str(limit.text("expression")) {
-        Some(v) => Some(v.to_int())
+      step.limit = match @core.parse_int_checked(limit.text("expression")) {
+        Some(v) => Some(v)
         None => raise @core.ValueError("invalid literal for int()")
       }
     None => ()
   }
   match expression.arg("offset") {
     Some(offset) =>
-      step.offset = match @core.parse_int_str(offset.text("expression")) {
-        Some(v) => v.to_int()
+      step.offset = match @core.parse_int_checked(offset.text("expression")) {
+        Some(v) => v
         None => raise @core.ValueError("invalid literal for int()")
       }
     None => ()

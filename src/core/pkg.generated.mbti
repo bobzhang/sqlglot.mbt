@@ -392,6 +392,8 @@ pub fn inline_array_sql(Generator, Expr) -> String raise SqlglotError
 
 pub fn inline_array_unless_query(Generator, Expr) -> String raise SqlglotError
 
+pub fn int64_range_error(String) -> SqlglotError
+
 pub fn int_str_from_base(String, Int) -> String raise SqlglotError
 
 pub fn interval_day_time_match(String) -> Bool
@@ -558,6 +560,8 @@ pub fn parse(String, dialect? : Dialect, error_level? : ErrorLevel, error_messag
 
 pub fn parse_identifier(String, dialect? : Dialect) -> Expr
 
+pub fn parse_int_checked(String) -> Int64? raise SqlglotError
+
 pub fn parse_int_str(String) -> Int64?
 
 pub fn parse_json_path(String, Dialect) -> Expr raise SqlglotError
@@ -581,6 +585,8 @@ pub fn py_casefold(String) -> String
 pub fn py_decimal_str(String) -> String
 
 pub fn py_float_repr(Double) -> String
+
+pub fn py_int_text_add(String, Int) -> String?
 
 pub fn py_len(String) -> Int
 
@@ -953,8 +959,8 @@ pub fn Dialect::parse_into(Self, Array[Kind], String, error_level? : ErrorLevel,
 pub fn Dialect::parser(Self, error_level? : ErrorLevel, error_message_context? : Int, max_errors? : Int, max_nodes? : Int) -> Parser
 pub fn Dialect::quote_identifier(Self, Expr, identify? : Bool) -> Expr
 pub fn Dialect::subclass(Self, String, (Self) -> Unit) -> Self
-pub fn Dialect::to_json_path(Self, Expr?) -> Expr?
-pub fn Dialect::to_json_path_base(Self, Expr?) -> Expr?
+pub fn Dialect::to_json_path(Self, Expr?) -> Expr? raise SqlglotError
+pub fn Dialect::to_json_path_base(Self, Expr?) -> Expr? raise SqlglotError
 pub fn Dialect::tokenize(Self, String) -> Array[Token] raise SqlglotError
 pub fn Dialect::tokenize_base(Self, String) -> Array[Token] raise SqlglotError
 pub impl Eq for Dialect
@@ -1067,7 +1073,7 @@ pub(all) struct DialectHooks {
   mut generate_values_aliases : ((Dialect, Expr) -> Array[Expr])?
   mut tokenize : ((Dialect, String) -> Array[Token] raise SqlglotError)?
   mut can_quote : ((Dialect, Expr, String) -> Bool)?
-  mut to_json_path : ((Dialect, Expr?) -> Expr?)?
+  mut to_json_path : ((Dialect, Expr?) -> Expr? raise SqlglotError)?
   mut extra : Map[String, (Dialect, Expr) -> Expr?]
 }
 pub fn DialectHooks::copy(Self) -> Self

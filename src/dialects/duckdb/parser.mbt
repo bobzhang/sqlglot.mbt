@@ -258,7 +258,10 @@ fn configure_parser(d : @core.Dialect) -> Unit {
 }
 
 ///|
-fn to_json_path(d : @core.Dialect, path : @core.Expr?) -> @core.Expr? {
+fn to_json_path(
+  d : @core.Dialect,
+  path : @core.Expr?,
+) -> @core.Expr? raise @core.SqlglotError {
   match path {
     Some(p) if p.kind == Literal => {
       // DuckDB also supports the JSON pointer syntax, where every path starts with a `/`.

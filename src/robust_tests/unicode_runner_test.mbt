@@ -34,7 +34,7 @@ fn Report::finish(self : Report) -> Unit raise {
   let total = self.passed + self.failures.length()
   println("ROBUST \{self.name}: \{self.passed}/\{total}")
   if !self.failures.is_empty() {
-    let shown = self.failures.length().min(20)
+    let shown = self.failures.length().min(400)
     fail(self.failures[:shown].join("\n"))
   }
 }
@@ -167,7 +167,20 @@ fn error_name(e : Error) -> String {
     @core.SqlglotError::ParseError(_) => "error:ParseError"
     @core.SqlglotError::TokenError(_) => "error:TokenError"
     @core.SqlglotError::UnsupportedError(_) => "error:UnsupportedError"
-    @core.SqlglotError::ValueError(_) => "error:ValueError"
+    // Python exceptions without a SqlglotError variant are ValueErrors whose message
+    // starts with the Python type (e.g. "OverflowError: ...", "decimal.DivisionByZero").
+    @core.SqlglotError::ValueError(m) =>
+      if m.has_prefix("decimal.") {
+        "error:" + m.view(start_offset=8).to_owned()
+      } else {
+        match m.find(":") {
+          Some(k) if k > 0 && m.view(end_offset=k).has_suffix("Error") =>
+            "error:" + m.view(end_offset=k).to_owned()
+          _ => "error:ValueError"
+        }
+      }
+    @core.SqlglotError::OptimizeError(_) => "error:OptimizeError"
+    @core.SqlglotError::SchemaError(_) => "error:SchemaError"
     _ => "error:\{e}"
   }
 }
