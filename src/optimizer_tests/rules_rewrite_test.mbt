@@ -33,6 +33,22 @@ test "optimizer eliminate_subqueries" {
 }
 
 ///|
+test "optimizer merge_subqueries" {
+  run_fixtures("merge_subqueries", merge_subqueries_fixtures, pretty=false, (
+    e,
+    c,
+  ) => {
+    let schema = c.schema(test_schema_json)
+    let e = @optimizer.qualify_tables(e.copy(), dialect?=c.dialect)
+    let e = @optimizer.qualify_columns(e, schema)
+    @optimizer.merge_subqueries(
+      e,
+      leave_tables_isolated=c.meta_bool("leave_tables_isolated").unwrap_or(false),
+    )
+  })
+}
+
+///|
 test "optimizer eliminate_ctes" {
   run_fixtures("eliminate_ctes", eliminate_ctes_fixtures, pretty=true, (e, _) => @optimizer.eliminate_ctes(
     e,
