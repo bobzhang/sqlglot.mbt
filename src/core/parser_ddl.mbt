@@ -455,10 +455,14 @@ pub fn Parser::parse_create_base(self : Parser) -> Expr? raise SqlglotError {
     let (deferrable, initially) = self.parse_trigger_deferrable()
     let referencing = self.parse_trigger_referencing()
     let for_each = self.parse_trigger_for_each()
-    let when = if self.match_text("WHEN") {
-      self.parse_wrapped(() => self.parse_disjunction(), optional=true)
+    // Python: `self._match_text_seq("WHEN") and self._parse_wrapped(...)` -> False if no WHEN
+    let when : Value? = if self.match_text("WHEN") {
+      match self.parse_wrapped(() => self.parse_disjunction(), optional=true) {
+        Some(w) => Some(Node(w))
+        None => None
+      }
     } else {
-      None
+      Some(Bool(false))
     }
     let execute = self.parse_trigger_execute()
     if execute is None {

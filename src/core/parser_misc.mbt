@@ -417,6 +417,8 @@ pub fn Parser::build_pipe_cte(
   expressions : Array[Expr],
   alias_cte? : Expr,
 ) -> Expr {
+  // Python passes either the TableAlias (used as-is by `from_`) or a name string
+  // (parsed into a Table by `from_`).
   let new_cte : Expr = match alias_cte {
     Some(a) => a
     None => {
@@ -433,7 +435,10 @@ pub fn Parser::build_pipe_cte(
     Some(i) => i.copy()
     None => to_identifier("")
   }
-  new_select.set("from_", mk1(From, mk1(Table, table_name)))
+  new_select.set("from_", match alias_cte {
+    Some(a) => mk1(From, a.copy())
+    None => mk1(From, mk1(Table, table_name))
+  })
   match ctes {
     Some(c) => new_select.set("with_", c)
     None => ()
