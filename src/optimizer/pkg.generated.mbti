@@ -337,6 +337,12 @@ pub(all) enum ScopeType {
   SetOperationScope
   UdtfScope
 } derive(Eq, @debug.Debug)
+#deprecated
+pub fn ScopeType::equal(Self, Self) -> Bool
+#deprecated
+pub fn ScopeType::not_equal(Self, Self) -> Bool
+#deprecated
+pub fn ScopeType::to_repr(Self) -> @debug.Repr
 
 pub struct Simplifier {
   dialect : @core.Dialect

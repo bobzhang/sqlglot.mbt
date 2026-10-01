@@ -120,12 +120,24 @@ pub(all) enum Identify {
   Safe
   Unsafe
 } derive(Eq, @debug.Debug)
+#deprecated
+pub fn Identify::equal(Self, Self) -> Bool
+#deprecated
+pub fn Identify::not_equal(Self, Self) -> Bool
+#deprecated
+pub fn Identify::to_repr(Self) -> @debug.Repr
 
 pub(all) enum NormalizeFunctions {
   Upper
   Lower
   Keep
 } derive(Eq, @debug.Debug)
+#deprecated
+pub fn NormalizeFunctions::equal(Self, Self) -> Bool
+#deprecated
+pub fn NormalizeFunctions::not_equal(Self, Self) -> Bool
+#deprecated
+pub fn NormalizeFunctions::to_repr(Self) -> @debug.Repr
 
 // Type aliases
 pub using @core {type DType}

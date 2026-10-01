@@ -781,6 +781,9 @@ pub(all) suberror SqlglotError {
   ValueError(String)
 }
 pub fn SqlglotError::message(Self) -> String
+#deprecated
+pub fn SqlglotError::output(Self, &Logger) -> Unit
+pub fn SqlglotError::to_string(Self) -> String
 pub impl Show for SqlglotError
 
 // Types and methods
@@ -913,10 +916,37 @@ pub(all) enum DType {
   XML
   YEAR
   TDIGEST
-} derive(Compare, Eq, Hash)
+} derive(Compare, Eq, Hash, @debug.Debug)
+#deprecated
+pub fn DType::compare(Self, Self) -> Int
+#deprecated
+pub fn DType::equal(Self, Self) -> Bool
+#deprecated
+pub fn DType::hash(Self) -> Int
+#deprecated
+pub fn DType::hash_combine(Self, Hasher) -> Unit
 pub fn DType::id(Self) -> Int
 pub fn DType::into_expr(Self) -> Expr
+#deprecated
+pub fn DType::into_py(Self) -> PyObj
+#deprecated
+pub fn DType::into_value(Self) -> Value?
 pub fn DType::name(Self) -> String
+#deprecated
+pub fn DType::not_equal(Self, Self) -> Bool
+#deprecated
+pub fn DType::op_ge(Self, Self) -> Bool
+#deprecated
+pub fn DType::op_gt(Self, Self) -> Bool
+#deprecated
+pub fn DType::op_le(Self, Self) -> Bool
+#deprecated
+pub fn DType::op_lt(Self, Self) -> Bool
+#deprecated
+pub fn DType::output(Self, &Logger) -> Unit
+#deprecated
+pub fn DType::to_repr(Self) -> @debug.Repr
+pub fn DType::to_string(Self) -> String
 pub fn DType::value(Self) -> String
 pub impl IntoPy for DType
 pub impl IntoValue for DType
@@ -947,6 +977,8 @@ pub fn Dialect::base() -> Self
 pub fn Dialect::can_quote(Self, Expr, identify? : String) -> Bool
 pub fn Dialect::can_quote_base(Self, Expr, identify? : String) -> Bool
 pub fn Dialect::case_sensitive(Self, String) -> Bool
+#deprecated
+pub fn Dialect::equal(Self, Self) -> Bool
 pub fn Dialect::finalize(Self) -> Self
 pub fn Dialect::format_time(Self, Expr?) -> Expr?
 pub fn Dialect::format_time_str(Self, String) -> Expr
@@ -956,6 +988,10 @@ pub fn Dialect::get_or_raise(String) -> Self raise SqlglotError
 pub fn Dialect::instance(Self) -> Self
 pub fn Dialect::normalize_identifier(Self, Expr) -> Expr
 pub fn Dialect::normalize_identifier_base(Self, Expr) -> Expr
+#deprecated
+pub fn Dialect::not_equal(Self, Self) -> Bool
+#deprecated
+pub fn Dialect::output(Self, &Logger) -> Unit
 pub fn Dialect::parse(Self, String, error_level? : ErrorLevel, error_message_context? : Int, max_errors? : Int, max_nodes? : Int) -> Array[Expr?] raise SqlglotError
 pub fn Dialect::parse_into(Self, Array[Kind], String, error_level? : ErrorLevel, error_message_context? : Int, max_errors? : Int, max_nodes? : Int, into_is_list? : Bool) -> Array[Expr?] raise SqlglotError
 pub fn Dialect::parser(Self, error_level? : ErrorLevel, error_message_context? : Int, max_errors? : Int, max_nodes? : Int) -> Parser
@@ -963,6 +999,7 @@ pub fn Dialect::quote_identifier(Self, Expr, identify? : Bool) -> Expr
 pub fn Dialect::subclass(Self, String, (Self) -> Unit) -> Self
 pub fn Dialect::to_json_path(Self, Expr?) -> Expr? raise SqlglotError
 pub fn Dialect::to_json_path_base(Self, Expr?) -> Expr? raise SqlglotError
+pub fn Dialect::to_string(Self) -> String
 pub fn Dialect::tokenize(Self, String) -> Array[Token] raise SqlglotError
 pub fn Dialect::tokenize_base(Self, String) -> Array[Token] raise SqlglotError
 pub impl Eq for Dialect
@@ -1086,7 +1123,13 @@ pub(all) enum ErrorLevel {
   Warn
   Raise
   Immediate
-} derive(Eq, Show)
+} derive(Eq, @debug.Debug)
+#deprecated
+pub fn ErrorLevel::equal(Self, Self) -> Bool
+#deprecated
+pub fn ErrorLevel::not_equal(Self, Self) -> Bool
+#deprecated
+pub fn ErrorLevel::to_repr(Self) -> @debug.Repr
 
 pub struct Expr {
   kind : Kind
@@ -1110,6 +1153,8 @@ pub fn Expr::append(Self, String, &IntoValue) -> Unit
 pub fn Expr::apply(Self, (Self) -> Unit raise?) -> Self raise?
 pub fn Expr::arg(Self, String) -> Self?
 pub fn Expr::arg_keys(Self) -> Array[String]
+#deprecated
+pub fn Expr::arg_sql(Self, Generator) -> String? raise SqlglotError
 pub fn Expr::as_(Self, String, quoted? : Bool, copy? : Bool, table? : Array[String]) -> Self
 pub fn Expr::asc(Self, nulls_first? : Bool) -> Self
 pub fn Expr::assert_is(Self, Kind) -> Self raise SqlglotError
@@ -1135,6 +1180,7 @@ pub fn[T : IntoPy] Expr::div(Self, T, typed? : Bool, safe? : Bool) -> Self raise
 pub fn Expr::dump(Self) -> Json
 pub fn[T : IntoPy] Expr::else_(Self, T, dialect? : Dialect, copy? : Bool) -> Self raise SqlglotError
 pub fn[T : IntoPy] Expr::eq_(Self, T) -> Self raise SqlglotError
+pub fn Expr::equal(Self, Self) -> Bool
 pub fn Expr::error_messages(Self, nargs? : Int) -> Array[String]
 pub fn[T : IntoPy] Expr::except_(Self, T, distinct? : Bool, dialect? : Dialect, copy? : Bool) -> Self raise SqlglotError
 pub fn Expr::expression(Self) -> Self?
@@ -1155,10 +1201,17 @@ pub fn[T : IntoPy] Expr::group_by(Self, Array[T], append? : Bool, dialect? : Dia
 pub fn[T : IntoPy] Expr::gt(Self, T) -> Self raise SqlglotError
 pub fn Expr::has(Self, String) -> Bool
 pub fn Expr::has_key(Self, String) -> Bool
+pub fn Expr::hash(Self) -> Int
+#deprecated
+pub fn Expr::hash_combine(Self, Hasher) -> Unit
 pub fn[T : IntoPy] Expr::having_(Self, Array[T], append? : Bool, dialect? : Dialect, copy? : Bool) -> Self raise SqlglotError
 pub fn[T : IntoPy] Expr::hint(Self, Array[T], dialect? : Dialect, copy? : Bool) -> Self raise SqlglotError
 pub fn[T : IntoPy] Expr::ilike(Self, T) -> Self raise SqlglotError
 pub fn[T : IntoPy] Expr::intersect_(Self, T, distinct? : Bool, dialect? : Dialect, copy? : Bool) -> Self raise SqlglotError
+#deprecated
+pub fn Expr::into_py(Self) -> PyObj
+#deprecated
+pub fn Expr::into_value(Self) -> Value?
 pub fn Expr::invert(Self) -> Self raise SqlglotError
 pub fn[T : IntoPy] Expr::is__(Self, T) -> Self raise SqlglotError
 pub fn Expr::is_int(Self) -> Bool
@@ -1192,6 +1245,8 @@ pub fn Expr::neg(Self) -> Self
 pub fn[T : IntoPy] Expr::neq(Self, T) -> Self raise SqlglotError
 pub fn Expr::new(Kind, Map[String, Value]) -> Self
 pub fn Expr::not_(Self, copy? : Bool) -> Self raise SqlglotError
+#deprecated
+pub fn Expr::not_equal(Self, Self) -> Bool
 pub fn[T : IntoPy] Expr::offset_(Self, T, dialect? : Dialect, copy? : Bool) -> Self raise SqlglotError
 pub fn[T : IntoPy] Expr::on(Self, Array[T], append? : Bool, dialect? : Dialect, copy? : Bool) -> Self raise SqlglotError
 pub fn[T : IntoPy] Expr::or_(Self, Array[T], dialect? : Dialect, copy? : Bool, wrap? : Bool) -> Self raise SqlglotError
@@ -1495,7 +1550,7 @@ pub fn Generator::hexstring_sql(Self, Expr, binary_function_repr? : String) -> S
 pub fn Generator::hexstring_sql_v(Self, Expr, binary_function_repr? : String) -> String raise SqlglotError
 pub fn Generator::hint_sql(Self, Expr) -> String raise SqlglotError
 pub fn Generator::historicaldata_sql(Self, Expr) -> String raise SqlglotError
-pub fn Generator::identifier_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::identifier_sql(Self, Expr) -> String
 pub fn Generator::if_sql(Self, Expr) -> String raise SqlglotError
 pub fn Generator::ifblock_sql(Self, Expr) -> String raise SqlglotError
 pub fn Generator::ignorenulls_sql(Self, Expr) -> String raise SqlglotError
@@ -1642,12 +1697,12 @@ pub fn Generator::periodforsystemtimeconstraint_sql(Self, Expr) -> String raise 
 pub fn Generator::pivot_in_value_aliases(Self, Expr) -> Array[Expr]? raise SqlglotError
 pub fn Generator::pivot_sql(Self, Expr) -> String raise SqlglotError
 pub fn Generator::pivotalias_sql(Self, Expr) -> String raise SqlglotError
-pub fn Generator::placeholder_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::placeholder_sql(Self, Expr) -> String
 pub fn Generator::pragma_sql(Self, Expr) -> String raise SqlglotError
 pub fn Generator::predict_sql(Self, Expr) -> String raise SqlglotError
 pub fn Generator::prepend_ctes(Self, Expr, String) -> String raise SqlglotError
 pub fn Generator::preprocess(Self, Expr) -> Expr raise SqlglotError
-pub fn Generator::preprocess_base(Self, Expr) -> Expr raise SqlglotError
+pub fn Generator::preprocess_base(Self, Expr) -> Expr
 pub fn Generator::prewhere_sql(Self, Expr) -> String
 pub fn Generator::primarykey_sql(Self, Expr) -> String raise SqlglotError
 pub fn Generator::primarykeycolumnconstraint_sql(Self, Expr) -> String raise SqlglotError
@@ -1666,7 +1721,7 @@ pub fn Generator::queryband_sql(Self, Expr) -> String raise SqlglotError
 pub fn Generator::queryoption_sql(Self, Expr) -> String raise SqlglotError
 pub fn Generator::querytransform_sql(Self, Expr) -> String raise SqlglotError
 pub fn Generator::rand_sql(Self, Expr) -> String raise SqlglotError
-pub fn Generator::rawstring_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::rawstring_sql(Self, Expr) -> String
 pub fn Generator::recursivewithsearch_sql(Self, Expr) -> String raise SqlglotError
 pub fn Generator::reference_sql(Self, Expr) -> String raise SqlglotError
 pub fn Generator::refresh_sql(Self, Expr) -> String raise SqlglotError
@@ -3036,7 +3091,13 @@ pub(all) enum Kind {
 } derive(Eq, Hash)
 pub fn Kind::arg_types(Self) -> FixedArray[(String, Bool)]
 pub fn Kind::class_path(Self) -> String
+#deprecated
+pub fn Kind::equal(Self, Self) -> Bool
 pub fn Kind::has_arg(Self, String) -> Bool
+#deprecated
+pub fn Kind::hash(Self) -> Int
+#deprecated
+pub fn Kind::hash_combine(Self, Hasher) -> Unit
 pub fn Kind::hash_raw_args(Self) -> Bool
 pub fn Kind::id(Self) -> Int
 pub fn Kind::is_a(Self, Self) -> Bool
@@ -3050,6 +3111,10 @@ pub fn Kind::is_var_len_args(Self) -> Bool
 pub fn Kind::key(Self) -> String
 pub fn Kind::module_name(Self) -> String
 pub fn Kind::name(Self) -> String
+#deprecated
+pub fn Kind::not_equal(Self, Self) -> Bool
+#deprecated
+pub fn Kind::output(Self, &Logger) -> Unit
 pub fn Kind::owner_alias(Self) -> Self?
 pub fn Kind::owner_alias_or_name(Self) -> Self?
 pub fn Kind::owner_catalog(Self) -> Self?
@@ -3079,6 +3144,7 @@ pub fn Kind::owner_unit(Self) -> Self?
 pub fn Kind::owner_unnest(Self) -> Self?
 pub fn Kind::sql_name(Self) -> String
 pub fn Kind::sql_names(Self) -> FixedArray[String]
+pub fn Kind::to_string(Self) -> String
 pub fn Kind::var_len_arg_key(Self) -> String
 pub impl Show for Kind
 
@@ -3089,6 +3155,16 @@ pub(all) enum NormalizationStrategy {
   CaseInsensitive
   CaseInsensitiveUppercase
 } derive(Eq, Hash, @debug.Debug)
+#deprecated
+pub fn NormalizationStrategy::equal(Self, Self) -> Bool
+#deprecated
+pub fn NormalizationStrategy::hash(Self) -> Int
+#deprecated
+pub fn NormalizationStrategy::hash_combine(Self, Hasher) -> Unit
+#deprecated
+pub fn NormalizationStrategy::not_equal(Self, Self) -> Bool
+#deprecated
+pub fn NormalizationStrategy::to_repr(Self) -> @debug.Repr
 
 pub(all) struct NumericEscape {
   base : Int
@@ -3106,6 +3182,8 @@ pub(all) struct ParseErrorInfo {
   end_context : String
   into_expression : String?
 } derive(@debug.Debug)
+#deprecated
+pub fn ParseErrorInfo::to_repr(Self) -> @debug.Repr
 
 pub(all) struct Parser {
   dialect : Dialect
@@ -3295,7 +3373,7 @@ pub fn Parser::parse_drop_column_base(Self) -> Expr? raise SqlglotError
 pub fn Parser::parse_drop_partition(Self, exists? : Bool?) -> Expr? raise SqlglotError
 pub fn Parser::parse_equality(Self) -> Expr? raise SqlglotError
 pub fn Parser::parse_escape(Self, Expr?) -> Expr? raise SqlglotError
-pub fn Parser::parse_exists(Self, not_? : Bool) -> Bool? raise SqlglotError
+pub fn Parser::parse_exists(Self, not_? : Bool) -> Bool?
 pub fn Parser::parse_exponent(Self) -> Expr? raise SqlglotError
 pub fn Parser::parse_expression(Self) -> Expr? raise SqlglotError
 pub fn Parser::parse_expressions(Self) -> Array[Expr] raise SqlglotError
@@ -3339,7 +3417,7 @@ pub fn Parser::parse_having_max(Self, Expr?) -> Expr? raise SqlglotError
 pub fn Parser::parse_heredoc(Self) -> Expr? raise SqlglotError
 pub fn Parser::parse_hint(Self) -> Expr? raise SqlglotError
 pub fn Parser::parse_hint_body(Self) -> Expr? raise SqlglotError
-pub fn Parser::parse_hint_fallback_to_string(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_hint_fallback_to_string(Self) -> Expr?
 pub fn Parser::parse_hint_function_call(Self) -> Expr? raise SqlglotError
 pub fn Parser::parse_historical_data(Self) -> Expr? raise SqlglotError
 pub fn Parser::parse_id_var(Self, any_token? : Bool, tokens? : TokenSet) -> Expr? raise SqlglotError
@@ -3517,7 +3595,7 @@ pub fn Parser::parse_stored(Self) -> Expr raise SqlglotError
 pub fn Parser::parse_stream(Self) -> Expr? raise SqlglotError
 pub fn Parser::parse_string(Self) -> Expr? raise SqlglotError
 pub fn Parser::parse_string_agg(Self) -> Expr? raise SqlglotError
-pub fn Parser::parse_string_as_identifier(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_string_as_identifier(Self) -> Expr?
 pub fn Parser::parse_struct_types(Self, type_required? : Bool) -> Expr? raise SqlglotError
 pub fn Parser::parse_struct_types_base(Self, type_required? : Bool) -> Expr? raise SqlglotError
 pub fn Parser::parse_subquery(Self, Expr?, parse_alias? : Bool) -> Expr? raise SqlglotError
@@ -3544,7 +3622,7 @@ pub fn Parser::parse_transaction_base(Self) -> Expr? raise SqlglotError
 pub fn Parser::parse_trigger_deferrable(Self) -> (String?, String?) raise SqlglotError
 pub fn Parser::parse_trigger_events(Self) -> Array[Expr] raise SqlglotError
 pub fn Parser::parse_trigger_execute(Self) -> Expr? raise SqlglotError
-pub fn Parser::parse_trigger_for_each(Self) -> String? raise SqlglotError
+pub fn Parser::parse_trigger_for_each(Self) -> String?
 pub fn Parser::parse_trigger_referencing(Self) -> Expr? raise SqlglotError
 pub fn Parser::parse_trigger_referencing_clause(Self, String) -> Expr? raise SqlglotError
 pub fn Parser::parse_trim(Self) -> Expr? raise SqlglotError
@@ -3908,6 +3986,16 @@ pub(all) enum PropertiesLocation {
   PostIndex
   Unsupported
 } derive(Eq, Hash, @debug.Debug)
+#deprecated
+pub fn PropertiesLocation::equal(Self, Self) -> Bool
+#deprecated
+pub fn PropertiesLocation::hash(Self) -> Int
+#deprecated
+pub fn PropertiesLocation::hash_combine(Self, Hasher) -> Unit
+#deprecated
+pub fn PropertiesLocation::not_equal(Self, Self) -> Bool
+#deprecated
+pub fn PropertiesLocation::to_repr(Self) -> @debug.Repr
 
 pub(all) enum PyObj {
   PyExpr(Expr)
@@ -3926,6 +4014,12 @@ pub(all) enum PyObj {
   PyTime(hour~ : Int, minute~ : Int, second~ : Int, microsecond~ : Int)
   PyDateTime(year~ : Int, month~ : Int, day~ : Int, hour~ : Int, minute~ : Int, second~ : Int, microsecond~ : Int, tz~ : (String, Int)?)
 } derive(Eq)
+#deprecated
+pub fn PyObj::equal(Self, Self) -> Bool
+#deprecated
+pub fn PyObj::into_py(Self) -> Self
+#deprecated
+pub fn PyObj::not_equal(Self, Self) -> Bool
 pub fn PyObj::py_repr(Self) -> String
 pub fn PyObj::py_str(Self) -> String
 pub fn PyObj::truthy(Self) -> Bool
@@ -3940,6 +4034,12 @@ pub(all) enum StrOrBool {
   S(String)
   B(Bool)
 } derive(Eq, @debug.Debug)
+#deprecated
+pub fn StrOrBool::equal(Self, Self) -> Bool
+#deprecated
+pub fn StrOrBool::not_equal(Self, Self) -> Bool
+#deprecated
+pub fn StrOrBool::to_repr(Self) -> @debug.Repr
 
 pub(all) struct TableArgs {
   schema : Bool
@@ -3964,7 +4064,10 @@ pub fn Token::identifier(String) -> Self
 pub fn Token::new(TokenType, String, line? : Int, col? : Int, start? : Int, end? : Int, comments? : Array[String]) -> Self
 pub fn Token::number(Int) -> Self
 pub fn Token::ok(Self) -> Bool
+#deprecated
+pub fn Token::output(Self, &Logger) -> Unit
 pub fn Token::string(String) -> Self
+pub fn Token::to_string(Self) -> String
 pub fn Token::var_(String) -> Self
 pub impl Show for Token
 
@@ -4428,8 +4531,29 @@ pub(all) enum TokenType {
   HIVE_TOKEN_STREAM
   SENTINEL
 } derive(Compare, Eq, Hash)
+#deprecated
+pub fn TokenType::compare(Self, Self) -> Int
+#deprecated
+pub fn TokenType::equal(Self, Self) -> Bool
+#deprecated
+pub fn TokenType::hash(Self) -> Int
+#deprecated
+pub fn TokenType::hash_combine(Self, Hasher) -> Unit
 pub fn TokenType::id(Self) -> Int
 pub fn TokenType::name(Self) -> String
+#deprecated
+pub fn TokenType::not_equal(Self, Self) -> Bool
+#deprecated
+pub fn TokenType::op_ge(Self, Self) -> Bool
+#deprecated
+pub fn TokenType::op_gt(Self, Self) -> Bool
+#deprecated
+pub fn TokenType::op_le(Self, Self) -> Bool
+#deprecated
+pub fn TokenType::op_lt(Self, Self) -> Bool
+#deprecated
+pub fn TokenType::output(Self, &Logger) -> Unit
+pub fn TokenType::to_string(Self) -> String
 pub impl Show for TokenType
 
 pub struct Tokenizer {
@@ -4511,6 +4635,12 @@ pub(all) enum TrieResult {
   Prefix
   Exists
 } derive(Eq, @debug.Debug)
+#deprecated
+pub fn TrieResult::equal(Self, Self) -> Bool
+#deprecated
+pub fn TrieResult::not_equal(Self, Self) -> Bool
+#deprecated
+pub fn TrieResult::to_repr(Self) -> @debug.Repr
 
 pub(all) enum Value {
   Node(Expr)
@@ -4520,8 +4650,12 @@ pub(all) enum Value {
   Int(Int64)
   DT(DType)
 }
+#deprecated
+pub fn Value::arg_sql(Self, Generator) -> String? raise SqlglotError
 pub fn Value::as_node(Self) -> Expr?
 pub fn Value::as_str(Self) -> String?
+#deprecated
+pub fn Value::into_value(Self) -> Self?
 pub fn Value::truthy(Self) -> Bool
 pub impl IntoValue for Value
 pub impl SqlArg for Value
