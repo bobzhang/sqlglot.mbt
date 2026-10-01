@@ -117,7 +117,7 @@ moon test -p hongbozhang/sqlglot/tests            # base parser/generator confor
 moon test -p hongbozhang/sqlglot/generator_tests  # generator conformance
 moon test -p hongbozhang/sqlglot/dialect_tests    # per-dialect conformance (prints DIALECT <module>: ...)
 moon test -p hongbozhang/sqlglot/dialect_tests -F "*dialect snowflake*"
-moon test                                         # everything (537 tests)
+moon test                                         # everything (845 tests)
 ```
 
 Scaling benchmarks (not part of `moon test`) time adversarial shapes at doubling sizes
