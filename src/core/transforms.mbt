@@ -308,7 +308,10 @@ pub fn eliminate_qualify(expression : Expr) -> Expr raise SqlglotError {
 ///|
 /// Python `exp.column(name)` for a string that may be an arbitrary column name.
 fn column_of_parsed(name : String) -> Expr {
-  column_of(name)
+  // Python passes the bare string to `exp.select`, which parses it (e.g. `*` -> Star)
+  parse_one(name) catch {
+    _ => column_of(name)
+  }
 }
 
 ///|
