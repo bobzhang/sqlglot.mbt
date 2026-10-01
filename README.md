@@ -20,11 +20,12 @@ let out = @sqlglot.generate(ast, dialect="snowflake", pretty=true)
 
 | Component | Status |
 |---|---|
-| Tokenizer, parser, generator (base dialect) | Complete. Identical ASTs and SQL to Python on all base fixtures (5,501 ASTs and 5,962 round trips) |
-| Dialects (34) | Complete. 15,752 of 15,775 cases extracted from `tests/dialects` match Python; the rest need the optimizer |
-| Expression API, builders, transforms | Ported; unit-test port in progress |
-| Optimizer, schema, lineage | In progress |
-| Executor, planner, diff, serde | Not yet ported |
+| Tokenizer, parser, generator (base dialect) | Complete: identical ASTs and SQL to Python on all base fixtures (5,501 ASTs, 5,962 round trips) |
+| Dialects (34) | Complete: all 15,775 cases extracted from `tests/dialects` match Python |
+| Optimizer (qualify, annotate_types, simplify, all rules), schema | Complete: all optimizer fixtures, TPC-H and TPC-DS match Python |
+| Lineage, diff, planner | Complete: lineage 80/80, diff 24/24, planner 27/27 recorded Python results |
+| Expression API, builders, transforms | Ported, plus unit tests ported from test_expressions/build/transforms/parser/transpile/... |
+| Executor, serde, anonymize, CLI | In progress |
 
 ## Layout
 
@@ -37,6 +38,9 @@ let out = @sqlglot.generate(ast, dialect="snowflake", pretty=true)
   - `tokenizer.mbt`, `parser.mbt` and `generator.mbt` hold the hand-ported callables and
     method overrides.
   - `dialect.mbt` (generated) derives the dialect from its parent and registers it.
+- `src/optimizer`: schema, scope, the optimizer rules, `optimize`, and per-dialect type annotators
+  (`sqlglot/typing`). It installs the real `annotate_types` and `simplify` into core's hooks.
+- `src/lineage`, `src/diff`, `src/planner`: ports of the corresponding Python modules.
 - `src/` (package `hongbozhang/sqlglot`): the facade (`transpile`, `parse_one`, `parse`,
   `generate`, `dialect`). It imports and registers all dialects.
 - `src/tests`, `src/generator_tests`, `src/dialect_tests`: conformance suites generated
