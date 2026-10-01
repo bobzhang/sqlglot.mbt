@@ -408,6 +408,7 @@ pub fn Parser::parse_into(
   expression_types : ArrayView[Kind],
   raw_tokens : Array[Token],
   sql? : String = "",
+  into_is_list? : Bool = false,
 ) -> Array[Expr?] raise SqlglotError {
   let errors : Array[ParseErrorInfo] = []
   let mut last_message = ""
@@ -436,11 +437,14 @@ pub fn Parser::parse_into(
     }
   }
   ignore(last_message)
-  let names = expression_types.iter().map(k => k.name()).collect()
-  raise ParseError(
-    "Failed to parse '\{sql}' into \{if names.length() == 1 { names[0] } else { names.to_string() }}",
-    errors,
-  )
+  // Python formats `expression_types` with str(): a class or a list of classes
+  let paths = expression_types.iter().map(k => k.class_path()).collect()
+  let into = if paths.length() == 1 && !into_is_list {
+    paths[0]
+  } else {
+    "[" + paths.join(", ") + "]"
+  }
+  raise ParseError("Failed to parse '\{sql}' into \{into}", errors)
 }
 
 ///|
@@ -448,7 +452,7 @@ pub fn Parser::parse_into(
 pub fn Parser::check_errors(self : Parser) -> Unit raise SqlglotError {
   if self.error_level == Warn {
     for e in self.errors {
-      log_error(e.to_string())
+      log_error(e.message())
     }
   } else if self.error_level == Raise && !self.errors.is_empty() {
     let msgs = self.errors.map(e => e.message())
@@ -792,6 +796,11 @@ let log_messages : Array[String] = []
 ///|
 pub fn log_warning(msg : String) -> Unit {
   log_messages.push("WARNING: " + msg)
+}
+
+///|
+pub fn log_info(msg : String) -> Unit {
+  log_messages.push("INFO: " + msg)
 }
 
 ///|

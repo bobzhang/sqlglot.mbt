@@ -68,20 +68,28 @@ fn identify_value(identify : Bool, identify_mode : String?) -> String {
 
 ///|
 /// Parses a single SQL statement in dialect `read` (Python `sqlglot.parse_one`).
-/// `into` restricts parsing to the given expression type(s).
+/// `into` (Python `into=exp.X`) parses into the given expression type; `into_any`
+/// (Python `into=[exp.X, exp.Y]`) tries each type in turn.
 pub fn parse_one(
   sql : String,
   read? : String = "",
-  into? : Array[@core.Kind],
+  into? : @core.Kind,
+  into_any? : Array[@core.Kind],
   error_level? : @core.ErrorLevel = Immediate,
   error_message_context? : Int = 100,
   max_errors? : Int = 3,
   max_nodes? : Int = -1,
 ) -> @core.Expr raise @core.SqlglotError {
+  let (into, into_is_list) = match (into, into_any) {
+    (Some(k), _) => (Some([k]), false)
+    (None, Some(ks)) => (Some(ks), true)
+    (None, None) => (None, false)
+  }
   @core.parse_one(
     sql,
     dialect=@core.Dialect::get_or_raise(read),
     into?,
+    into_is_list~,
     error_level~,
     error_message_context~,
     max_errors~,

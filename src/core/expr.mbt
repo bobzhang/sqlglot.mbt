@@ -1405,7 +1405,7 @@ pub fn Expr::error_messages(self : Expr, nargs? : Int = 0) -> Array[String] {
 
 ///|
 fn class_path(kind : Kind) -> String {
-  "<class 'sqlglot.expressions.\{kind.name()}'>"
+  kind.class_path()
 }
 
 ///|

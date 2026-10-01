@@ -136,7 +136,7 @@ pub fn gen_apply_index_offset(
 
 ///|
 fn g_log_info(msg : String) -> Unit {
-  ignore(msg)
+  log_info(msg)
 }
 
 // ---------------------------------------------------------------------------

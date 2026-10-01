@@ -55,7 +55,12 @@ pub fn Dialect::parse(
   max_errors? : Int = 3,
   max_nodes? : Int = -1,
 ) -> Array[Expr?] raise SqlglotError {
-  let p = self.parser(error_level~, error_message_context~, max_errors~, max_nodes~)
+  let p = self.parser(
+    error_level~,
+    error_message_context~,
+    max_errors~,
+    max_nodes~,
+  )
   match self.parser_fns.hooks.parse {
     Some(f) => f(p, self.tokenize(sql), sql)
     None => p.parse(self.tokenize(sql), sql)
@@ -72,11 +77,17 @@ pub fn Dialect::parse_into(
   error_message_context? : Int = 100,
   max_errors? : Int = 3,
   max_nodes? : Int = -1,
+  into_is_list? : Bool = false,
 ) -> Array[Expr?] raise SqlglotError {
-  let p = self.parser(error_level~, error_message_context~, max_errors~, max_nodes~)
+  let p = self.parser(
+    error_level~,
+    error_message_context~,
+    max_errors~,
+    max_nodes~,
+  )
   match self.parser_fns.hooks.parse_into {
     Some(f) => f(p, into, self.tokenize(sql), sql)
-    None => p.parse_into(into, self.tokenize(sql), sql~)
+    None => p.parse_into(into, self.tokenize(sql), sql~, into_is_list~)
   }
 }
 
@@ -90,14 +101,25 @@ pub fn parse_one(
   error_message_context? : Int = 100,
   max_errors? : Int = 3,
   max_nodes? : Int = -1,
+  into_is_list? : Bool = false,
 ) -> Expr raise SqlglotError {
   let d = match dialect {
     Some(d) => d
     None => base_dialect()
   }
   let result = match into {
-    Some(i) => d.parse_into(i, sql, error_level~, error_message_context~, max_errors~, max_nodes~)
-    None => d.parse(sql, error_level~, error_message_context~, max_errors~, max_nodes~)
+    Some(i) =>
+      d.parse_into(
+        i,
+        sql,
+        error_level~,
+        error_message_context~,
+        max_errors~,
+        max_nodes~,
+        into_is_list~,
+      )
+    None =>
+      d.parse(sql, error_level~, error_message_context~, max_errors~, max_nodes~)
   }
   if result.is_empty() || result[0] is None {
     raise ParseError("No expression was parsed from '\{sql}'", [])

@@ -144,6 +144,15 @@ fn err_msg(e : Error) -> String {
 }
 
 ///|
+/// `str(ctx.exception)` for a caught sqlglot error ("" when nothing was raised).
+fn msg_of(e : @core.SqlglotError?) -> String {
+  match e {
+    Some(e) => e.message()
+    None => ""
+  }
+}
+
+///|
 fn T::done(self : T) -> Unit raise {
   if !self.fails.is_empty() {
     fail(
