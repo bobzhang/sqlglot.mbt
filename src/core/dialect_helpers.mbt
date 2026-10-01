@@ -1321,3 +1321,9 @@ pub fn jarowinkler_similarity(func : String) -> GenFn {
     g.func(func, [this, expr])
   }
 }
+
+///|
+/// Python `concat_to_dpipe_sql` (same as `Generator::concat_to_dpipe_sql`).
+pub fn concat_to_dpipe_sql(g : Generator, e : Expr) -> String raise SqlglotError {
+  g.concat_to_dpipe_sql(e)
+}
