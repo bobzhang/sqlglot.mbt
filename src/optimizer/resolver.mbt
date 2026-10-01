@@ -288,13 +288,7 @@ pub fn Resolver::get_source_columns(
           Some(t) => t.kind.is_a(Query)
           None => false
         }) {
-        // `Subquery.named_selects` are its inner query's (`DerivedTable.selects`)
-        let query = source_expr.this_()
-        columns = if query.kind == Subquery {
-          query.unnest().named_selects()
-        } else {
-          query.named_selects()
-        }
+        columns = named_selects_of(source_expr.this_())
       }
       columns
     }
@@ -302,13 +296,13 @@ pub fn Resolver::get_source_columns(
       self.get_source_columns_from_set_op(s.expression)
     ScopeSource(s) => {
       let selectable = s.expression
-      match selectable.selects().get(0) {
+      match selects_of(selectable).get(0) {
         Some(select) if select.kind.is_a(QueryTransform) =>
           match select.arg("schema") {
             Some(schema) => schema.expressions().map(c => c.name())
             None => ["key", "value"]
           }
-        _ => selectable.named_selects()
+        _ => named_selects_of(selectable)
       }
     }
   }

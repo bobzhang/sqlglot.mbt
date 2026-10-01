@@ -17,6 +17,30 @@ fn is_semi_or_anti_join(join : @core.Expr) -> Bool {
 }
 
 ///|
+/// Python `expression.selects`, including a `Subquery`'s (`DerivedTable.selects`: those of
+/// the wrapped query), which `@core.Expr::selects` doesn't cover.
+fn selects_of(e : @core.Expr) -> Array[@core.Expr] {
+  if e.kind == Subquery {
+    match e.this() {
+      Some(q) if q.kind.is_a(Query) => selects_of(q)
+      _ => []
+    }
+  } else {
+    e.selects()
+  }
+}
+
+///|
+/// Python `expression.named_selects`, including a `Subquery`'s (see `selects_of`).
+fn named_selects_of(e : @core.Expr) -> Array[String] {
+  if e.kind == Subquery {
+    selects_of(e).map(s => s.output_name())
+  } else {
+    e.named_selects()
+  }
+}
+
+///|
 /// Python `str(expression)` (best effort).
 fn expr_sql(e : @core.Expr) -> String {
   @core.expr_to_sql(e) catch {

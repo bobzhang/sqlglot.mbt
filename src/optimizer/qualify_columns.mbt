@@ -926,7 +926,7 @@ fn qualify_positional_column(
       if !source_expression.kind.is_a(Query) {
         return true
       }
-      let source_selects = source_expression.selects()
+      let source_selects = selects_of(source_expression)
       let selection = source_selects.get(position_value - 1)
       match output_identifier(selection) {
         Some(si) if si.name() == positional_name => si.copy()

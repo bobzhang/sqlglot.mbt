@@ -415,7 +415,7 @@ fn expand_stars_impl(
       let quoted_columns : @set.Set[String] = @set.new()
       match source {
         ScopeSource(s) if s.expression.kind.is_a(Query) =>
-          for sel in s.expression.selects() {
+          for sel in selects_of(s.expression) {
             if is_output_identifier_quoted(sel) {
               quoted_columns.add(sel.output_name())
             }
