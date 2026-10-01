@@ -9,8 +9,18 @@ pub struct Token {
   col : Int
   start : Int
   end : Int
-  comments : Array[String]
+  mut comments : Array[String]
 }
+
+///|
+/// Comments of tokens that have none. Shared to save an allocation per token; it
+/// must never be mutated (see `Tokenizer::append_comments`).
+let no_comments : Array[String] = []
+
+///|
+/// One-character ASCII strings, so single-character token texts aren't allocated
+/// once per token.
+let ascii_strings : FixedArray[String] = FixedArray::makei(128, i => Int::unsafe_to_char(i).to_string())
 
 ///|
 pub fn Token::new(
@@ -412,12 +422,21 @@ fn[T] ignore_err(x : T, _e : Error) -> T {
 }
 
 ///|
+/// Python: `token.comments.extend(self._comments)`. Copies instead of appending in
+/// place because tokens without comments share `no_comments`.
+fn Tokenizer::append_comments(self : Tokenizer, token : Token) -> Unit {
+  token.comments = [..token.comments, ..self.comments]
+}
+
+///|
 fn Tokenizer::slice(self : Tokenizer, start : Int, end : Int) -> String {
   let n = self.size
   let a = if start < 0 { 0 } else if start > n { n } else { start }
   let b = if end < 0 { 0 } else if end > n { n } else { end }
   if a >= b {
     ""
+  } else if b == a + 1 && self.sql[a].to_int() < 128 {
+    ascii_strings[self.sql[a].to_int()]
   } else {
     String::from_array(self.sql[a:b])
   }
@@ -464,7 +483,7 @@ fn Tokenizer::scan(
     }
   }
   if !self.tokens.is_empty() && !self.comments.is_empty() {
-    self.tokens[self.tokens.length() - 1].comments.append(self.comments)
+    self.append_comments(self.tokens[self.tokens.length() - 1])
   }
 }
 
@@ -539,7 +558,7 @@ fn Tokenizer::add(
   if !self.comments.is_empty() &&
     token_type == SEMICOLON &&
     !self.tokens.is_empty() {
-    self.tokens[self.tokens.length() - 1].comments.append(self.comments)
+    self.append_comments(self.tokens[self.tokens.length() - 1])
     self.comments = []
   }
   let text = match text {
@@ -553,9 +572,11 @@ fn Tokenizer::add(
     col: self.col,
     start: self.start,
     end: self.current - 1,
-    comments: self.comments,
+    comments: if self.comments.is_empty() { no_comments } else { self.comments },
   })
-  self.comments = []
+  if !self.comments.is_empty() {
+    self.comments = []
+  }
   if self.settings.commands_set.contains(token_type) &&
     self.peek != ';' &&
     (
@@ -715,7 +736,7 @@ fn Tokenizer::scan_comment(
     self.add(HINT)
   }
   if comment_start_line == self.prev_token_line {
-    self.tokens[self.tokens.length() - 1].comments.append(self.comments)
+    self.append_comments(self.tokens[self.tokens.length() - 1])
     self.comments = []
     self.prev_token_line = self.line
   }

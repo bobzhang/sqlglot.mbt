@@ -197,7 +197,7 @@ fn CanonParser::node(self : CanonParser) -> @core.Expr {
     // the stored unit is already normalized (e.g. Oracle keeps abbreviations)
     args["unabbreviate"] = Bool(false)
   }
-  let e = @core.Expr::new(kind, args)
+  let e = @core.Expr::new(kind, @core.Args::from_map(args))
   match comments {
     Some(cs) => e.add_comments(Some(cs))
     None => ()

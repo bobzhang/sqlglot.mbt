@@ -632,7 +632,7 @@ fn parse_execute(p : @core.Parser) -> @core.Expr? raise @core.SqlglotError {
   )
   if @core.py_lower(execute.name()) == "sp_executesql" {
     execute = p.expression(
-      @core.Expr::new(ExecuteSql, Map::from_iter(execute.args.iter())),
+      @core.Expr::new(ExecuteSql, @core.Args::from_iter(execute.args.iter())),
     )
   }
   Some(execute)

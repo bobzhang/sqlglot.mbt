@@ -16,19 +16,31 @@ pub(all) enum Value {
 /// A node of the SQL syntax tree.
 pub struct Expr {
   kind : Kind
-  args : Map[String, Value]
+  args : Args
   mut parent : Expr?
   mut arg_key : String?
   mut index : Int?
   mut comments : Array[String]?
   mut type_ : Expr?
-  mut meta : Map[String, Value]?
+  mut meta : Args?
   /// Unique identity of this node (Python `id(node)`).
   uid : Int
   /// Keys whose value is an explicit Python `None` (`exp.Foo(key=None)`). The port
   /// stores no None values in `args`; these keys are only visible to `has_key` and
   /// `arg_keys` (Python's `key in e.args`), everything else ignores them like Python.
   priv mut none_keys : Array[String]?
+  /// Source positions (`line`, `col`, `start`, `end` meta entries) stored compactly:
+  /// most parsed nodes carry only these, and a full meta map per node is expensive.
+  /// Only set while `meta` is `None`; `get_meta` moves them into the map.
+  priv mut pos : Pos?
+}
+
+///|
+priv struct Pos {
+  line : Int
+  col : Int
+  start : Int
+  end : Int
 }
 
 ///|
@@ -148,7 +160,7 @@ pub fn Value::as_str(self : Value) -> String? {
 
 ///|
 /// Creates a new expression of `kind` with the given arguments. `None` arguments are skipped.
-pub fn Expr::new(kind : Kind, args : Map[String, Value]) -> Expr {
+pub fn Expr::new(kind : Kind, args : Args) -> Expr {
   let e = {
     kind,
     args,
@@ -160,6 +172,7 @@ pub fn Expr::new(kind : Kind, args : Map[String, Value]) -> Expr {
     meta: None,
     uid: next_expr_uid(),
     none_keys: None,
+    pos: None,
   }
   if kind == DateTrunc {
     normalize_date_trunc_args(args)
@@ -174,19 +187,36 @@ pub fn Expr::new(kind : Kind, args : Map[String, Value]) -> Expr {
 ///|
 /// Builds an expression, Python style: `mk(Column, [("this", ident), ("table", tbl)])`.
 pub fn mk(kind : Kind, args : ArrayView[(String, &IntoValue)]) -> Expr {
-  let m : Map[_, _] = Map([], capacity=args.length())
-  let none_keys = []
-  for kv in args {
-    match kv.1.into_value() {
+  // Convert first so the map is sized by the arguments actually present: callers
+  // often pass many optional arguments that are None, and every AST node keeps its map.
+  let values = FixedArray::make(args.length(), None)
+  let mut present = 0
+  for i, kv in args {
+    let v = kv.1.into_value()
+    if v is Some(_) {
+      present += 1
+    }
+    values[i] = v
+  }
+  let m = Args::new(capacity=present)
+  let mut none_keys : Array[String]? = None
+  for i, kv in args {
+    match values[i] {
       Some(v) => m[kv.0] = v
-      None => if !none_keys.contains(kv.0) { none_keys.push(kv.0) }
+      None =>
+        match none_keys {
+          Some(keys) => if !keys.contains(kv.0) { keys.push(kv.0) }
+          None => none_keys = Some([kv.0])
+        }
     }
   }
   let e = Expr::new(kind, m)
   // a later non-None value for the same key wins, as in a Python kwargs dict
-  let none_keys = none_keys.filter(k => !m.contains(k))
-  if !none_keys.is_empty() {
-    e.none_keys = Some(none_keys)
+  if none_keys is Some(keys) {
+    let keys = keys.filter(k => !m.contains(k))
+    if !keys.is_empty() {
+      e.none_keys = Some(keys)
+    }
   }
   e
 }
@@ -224,7 +254,7 @@ fn Expr::forget_none_key(self : Expr, key : String) -> Unit {
 ///|
 /// Builds an expression with no arguments.
 pub fn mk0(kind : Kind) -> Expr {
-  Expr::new(kind, Map([]))
+  Expr::new(kind, Args::new())
 }
 
 ///|
@@ -269,7 +299,7 @@ fn is_var_like_unit(unit : Expr) -> Bool {
 
 ///|
 /// `DateTrunc.__init__`: normalizes the unit before parents are attached.
-fn normalize_date_trunc_args(args : Map[String, Value]) -> Unit {
+fn normalize_date_trunc_args(args : Args) -> Unit {
   let unabbreviate = match args.get("unabbreviate") {
     Some(Bool(b)) => b
     _ => true
@@ -751,11 +781,22 @@ pub fn Expr::is_leaf(self : Expr) -> Bool {
 }
 
 ///|
-pub fn Expr::get_meta(self : Expr) -> Map[String, Value] {
+pub fn Expr::get_meta(self : Expr) -> Args {
   match self.meta {
     Some(m) => m
     None => {
-      let m : Map[_, _] = Map([])
+      let m = match self.pos {
+        Some(p) => {
+          self.pos = None
+          Args::from_array([
+            ("line", Int(p.line.to_int64())),
+            ("col", Int(p.col.to_int64())),
+            ("start", Int(p.start.to_int64())),
+            ("end", Int(p.end.to_int64())),
+          ])
+        }
+        None => Args::new()
+      }
       self.meta = Some(m)
       m
     }
@@ -763,10 +804,31 @@ pub fn Expr::get_meta(self : Expr) -> Map[String, Value] {
 }
 
 ///|
+/// The meta map if the node has any meta (Python: `self._meta`), including positions.
+pub fn Expr::meta_view(self : Expr) -> Args? {
+  if self.pos is Some(_) {
+    Some(self.get_meta())
+  } else {
+    self.meta
+  }
+}
+
+///|
 pub fn Expr::meta_get(self : Expr, key : String) -> Value? {
   match self.meta {
     Some(m) => m.get(key)
-    None => None
+    None =>
+      match self.pos {
+        Some(p) =>
+          match key {
+            "line" => Some(Int(p.line.to_int64()))
+            "col" => Some(Int(p.col.to_int64()))
+            "start" => Some(Int(p.start.to_int64()))
+            "end" => Some(Int(p.end.to_int64()))
+            _ => None
+          }
+        None => None
+      }
   }
 }
 
@@ -824,7 +886,7 @@ pub fn Expr::copy(self : Expr) -> Expr {
 fn Expr::copy_shell(self : Expr) -> Expr {
   {
     kind: self.kind,
-    args: Map([], capacity=self.args.length()),
+    args: Args::new(capacity=self.args.length()),
     parent: None,
     arg_key: None,
     index: None,
@@ -838,7 +900,7 @@ fn Expr::copy_shell(self : Expr) -> Expr {
     },
     meta: match self.meta {
       Some(m) => {
-        let m2 : Map[_, _] = Map([])
+        let m2 = Args::new(capacity=m.length())
         for k, v in m {
           m2[k] = copy_value(v)
         }
@@ -851,6 +913,7 @@ fn Expr::copy_shell(self : Expr) -> Expr {
       Some(keys) => Some(keys.copy())
       None => None
     },
+    pos: self.pos,
   }
 }
 
@@ -1455,15 +1518,20 @@ pub fn Expr::transform(
 pub fn Expr::update_positions(self : Expr, other : Expr?) -> Expr {
   match other {
     Some(o) =>
-      match o.meta {
-        Some(m) =>
-          for k in ["line", "col", "start", "end"] {
-            match m.get(k) {
-              Some(v) => self.get_meta()[k] = v
-              None => ()
-            }
+      match (o.pos, self.meta) {
+        // fast path: positions only, and no meta map to merge into
+        (Some(p), None) => self.pos = Some(p)
+        _ =>
+          match o.meta {
+            Some(m) =>
+              for k in ["line", "col", "start", "end"] {
+                match m.get(k) {
+                  Some(v) => self.get_meta()[k] = v
+                  None => ()
+                }
+              }
+            None => ()
           }
-        None => ()
       }
     None => ()
   }
@@ -1473,6 +1541,15 @@ pub fn Expr::update_positions(self : Expr, other : Expr?) -> Expr {
 ///|
 /// Updates position meta from a token.
 pub fn Expr::update_positions_from_token(self : Expr, token : Token) -> Expr {
+  if self.meta is None {
+    self.pos = Some({
+      line: token.line,
+      col: token.col,
+      start: token.start,
+      end: token.end,
+    })
+    return self
+  }
   let m = self.get_meta()
   m["line"] = Int(token.line.to_int64())
   m["col"] = Int(token.col.to_int64())

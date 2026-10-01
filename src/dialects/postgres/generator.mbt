@@ -645,7 +645,7 @@ fn unnest_sql(
   if arg.kind.is_a(GenerateDateArray) {
     let mut generate_series = @core.Expr::new(
       GenerateSeries,
-      Map::from_iter(arg.args.iter()),
+      @core.Args::from_iter(arg.args.iter()),
     )
     match e.parent {
       Some(parent) if parent.kind.is_any([From, Join]) => {

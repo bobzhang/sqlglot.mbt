@@ -1635,7 +1635,7 @@ test "TestParser.test_quoted_identifier_meta" {
   let ast = po(sql)
   let table = ast.arg("from_").unwrap().this().unwrap()
   let db_meta = table.arg("db").unwrap().get_meta()
-  let slice = (m : Map[String, @core.Value]) => {
+  let slice = (m : @core.Args) => {
     match (m.get("start"), m.get("end")) {
       (Some(@core.Int(s)), Some(@core.Int(e))) =>
         sql.unsafe_substring(start=s.to_int(), end=e.to_int() + 1)

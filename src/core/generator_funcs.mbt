@@ -1584,7 +1584,7 @@ pub fn Generator::explodinggenerateseries_sql(
 ) -> String raise SqlglotError {
   let generate_series = Expr::new(
     GenerateSeries,
-    Map::from_iter(expression.args.iter()),
+    Args::from_iter(expression.args.iter()),
   )
   let mut parent = expression.parent
   match parent {

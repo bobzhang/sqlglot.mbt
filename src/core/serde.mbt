@@ -140,7 +140,7 @@ pub fn Expr::dump(self : Expr) -> Json {
             payload[serde_comments] = Json::array(c.map(Json::string))
           _ => ()
         }
-        match e.meta {
+        match e.meta_view() {
           Some(m) => {
             let obj : Map[String, Json] = Map([])
             for k, v in m {
@@ -291,7 +291,7 @@ fn serde_load_node(payload : Map[String, Json]) -> Value raise SqlglotError {
   }
   expression.meta = match payload.get(serde_meta) {
     Some(Object(m)) => {
-      let meta : Map[String, Value] = Map([])
+      let meta = Args::new()
       for k, v in m {
         meta[k] = serde_leaf_from_json(v)
       }

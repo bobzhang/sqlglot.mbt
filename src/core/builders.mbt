@@ -183,7 +183,7 @@ pub fn Expr::subquery(
 /// `Func.from_arg_list(args)`
 pub fn from_arg_list(kind : Kind, args : Array[Expr]) -> Expr {
   let arg_types = kind.arg_types()
-  let m : Map[String, Value] = Map([])
+  let m = Args::new()
   if kind.is_var_len_args() {
     let var_key = kind.var_len_arg_key()
     let mut var_len_index = arg_types.length()

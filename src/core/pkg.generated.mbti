@@ -787,6 +787,30 @@ pub fn SqlglotError::to_string(Self) -> String
 pub impl Show for SqlglotError
 
 // Types and methods
+pub struct Args {
+  // private fields
+}
+#alias("_[_]")
+pub fn Args::at(Self, String) -> Value
+pub fn Args::clear(Self) -> Unit
+pub fn Args::contains(Self, String) -> Bool
+pub fn Args::copy(Self) -> Self
+pub fn Args::from_array(ArrayView[(String, Value)]) -> Self
+pub fn Args::from_iter(Iter[(String, Value)]) -> Self
+pub fn Args::from_map(Map[String, Value]) -> Self
+pub fn Args::get(Self, String) -> Value?
+pub fn Args::is_empty(Self) -> Bool
+pub fn Args::iter(Self) -> Iter[(String, Value)]
+pub fn Args::iter2(Self) -> Iter2[String, Value]
+pub fn Args::keys(Self) -> Iter[String]
+pub fn Args::length(Self) -> Int
+pub fn Args::new(capacity? : Int) -> Self
+pub fn Args::remove(Self, String) -> Unit
+#alias("_[_]=_")
+pub fn Args::set(Self, String, Value) -> Unit
+pub fn Args::to_array(Self) -> Array[(String, Value)]
+pub fn Args::values(Self) -> Iter[Value]
+
 pub(all) enum DType {
   ARRAY
   AGGREGATEFUNCTION
@@ -1133,13 +1157,13 @@ pub fn ErrorLevel::to_repr(Self) -> @debug.Repr
 
 pub struct Expr {
   kind : Kind
-  args : Map[String, Value]
+  args : Args
   mut parent : Expr?
   mut arg_key : String?
   mut index : Int?
   mut comments : Array[String]?
   mut type_ : Expr?
-  mut meta : Map[String, Value]?
+  mut meta : Args?
   uid : Int
   // private fields
 }
@@ -1194,7 +1218,7 @@ pub fn[T : IntoPy] Expr::floordiv(Self, T) -> Self raise SqlglotError
 pub fn[T : IntoPy] Expr::from_(Self, T, dialect? : Dialect, copy? : Bool) -> Self raise SqlglotError
 pub fn[T : IntoPy] Expr::ge(Self, T) -> Self raise SqlglotError
 pub fn Expr::get(Self, String) -> Value?
-pub fn Expr::get_meta(Self) -> Map[String, Value]
+pub fn Expr::get_meta(Self) -> Args
 pub fn Expr::get_type(Self) -> Self?
 pub fn Expr::getitem(Self, Array[&IntoPy]) -> Self raise SqlglotError
 pub fn[T : IntoPy] Expr::group_by(Self, Array[T], append? : Bool, dialect? : Dialect, copy? : Bool) -> Self raise SqlglotError
@@ -1237,13 +1261,14 @@ pub fn[T : IntoPy] Expr::lor(Self, T) -> Self raise SqlglotError
 pub fn[T : IntoPy] Expr::lt(Self, T) -> Self raise SqlglotError
 pub fn Expr::meta_bool(Self, String) -> Bool
 pub fn Expr::meta_get(Self, String) -> Value?
+pub fn Expr::meta_view(Self) -> Args?
 pub fn[T : IntoPy] Expr::mod(Self, T) -> Self raise SqlglotError
 pub fn[T : IntoPy] Expr::mul(Self, T) -> Self raise SqlglotError
 pub fn Expr::name(Self) -> String
 pub fn Expr::named_selects(Self) -> Array[String]
 pub fn Expr::neg(Self) -> Self
 pub fn[T : IntoPy] Expr::neq(Self, T) -> Self raise SqlglotError
-pub fn Expr::new(Kind, Map[String, Value]) -> Self
+pub fn Expr::new(Kind, Args) -> Self
 pub fn Expr::not_(Self, copy? : Bool) -> Self raise SqlglotError
 #deprecated
 pub fn Expr::not_equal(Self, Self) -> Bool
@@ -4058,7 +4083,7 @@ pub struct Token {
   col : Int
   start : Int
   end : Int
-  comments : Array[String]
+  mut comments : Array[String]
 }
 pub fn Token::identifier(String) -> Self
 pub fn Token::new(TokenType, String, line? : Int, col? : Int, start? : Int, end? : Int, comments? : Array[String]) -> Self

@@ -282,7 +282,7 @@ pub fn Parser::build_cast_base(
   kwargs : Array[(String, Value?)],
 ) -> Expr raise SqlglotError {
   let kind = if strict { Cast } else { TryCast }
-  let args : Map[String, Value] = Map([])
+  let args = Args::new()
   for kv in kwargs {
     match kv.1 {
       Some(v) => args[kv.0] = v
