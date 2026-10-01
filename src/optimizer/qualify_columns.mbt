@@ -894,7 +894,7 @@ fn qualify_positional_column(
     }
     return true
   }
-  let position_value = position.to_py_int().unwrap().to_int()
+  let position_value = position.to_py_int().unwrap()
   let (alias_columns, source_columns_incomplete) = match column_source {
     TableSource(t) => {
       let without = resolver.schema.column_names(t, only_visible=true)
@@ -903,7 +903,7 @@ fn qualify_positional_column(
     _ => ([], false)
   }
   if !alias_columns.is_empty() &&
-    position_value > alias_columns.length() &&
+    position_value > alias_columns.length().to_int64() &&
     source_columns_incomplete {
     return true
   }
@@ -911,7 +911,10 @@ fn qualify_positional_column(
     column_table,
     only_visible=true,
   )
-  if !(1 <= position_value && position_value <= positional_columns.length()) {
+  if !(
+      1L <= position_value &&
+      position_value <= positional_columns.length().to_int64()
+    ) {
     if allow_partial_qualification {
       return true
     }
@@ -919,7 +922,9 @@ fn qualify_positional_column(
       "Positional reference $\{position_value} is out of range for source '\{column_table}'",
     )
   }
-  let positional_name = positional_columns[position_value - 1]
+  // in range, so it fits an Int
+  let position_index = position_value.to_int() - 1
+  let positional_name = positional_columns[position_index]
   if positional_columns.filter(c => c == positional_name).length() > 1 {
     return true
   }
@@ -930,7 +935,7 @@ fn qualify_positional_column(
         return true
       }
       let source_selects = selects_of(source_expression)
-      let selection = source_selects.get(position_value - 1)
+      let selection = source_selects.get(position_index)
       match output_identifier(selection) {
         Some(si) if si.name() == positional_name => si.copy()
         _ => return true
