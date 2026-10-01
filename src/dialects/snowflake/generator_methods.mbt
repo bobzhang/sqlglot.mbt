@@ -182,7 +182,7 @@ fn dynamicidentifier_sql(
   e : @core.Expr,
 ) -> String raise @core.SqlglotError {
   let this = g.func("IDENTIFIER", [e.this()])
-  if e.args.contains("expressions") {
+  if e.has_key("expressions") {
     // `IDENTIFIER(...)` invoked as a function, e.g. `IDENTIFIER('my_func')(1, 2)`
     return g.func(
       this,

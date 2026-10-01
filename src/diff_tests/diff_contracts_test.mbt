@@ -96,11 +96,14 @@ test "TestDiff.test_none_args_are_not_treated_as_leaves" {
     ("this", @core.to_identifier("b")),
     ("table", @core.to_identifier("a")),
   ])
-  // KNOWN DIFFERENCE: Python keeps the explicit None args as keys
-  // ({"this", "table", "db", "catalog"}); the port stores no None values
-  // (README "Known differences").
-  assert_eq(expr_src.args.keys().collect(), ["this", "table"])
-  assert_eq(expr_tgt.args.keys().collect(), ["this", "table"])
+  // set(expr.args): the explicit None args are keys (Expr::arg_keys)
+  let keys = (e : @core.Expr) => {
+    let ks = e.arg_keys()
+    ks.sort_by((a, b) => py_cmp(a, b))
+    ks
+  }
+  assert_eq(keys(expr_src), ["catalog", "db", "table", "this"])
+  assert_eq(keys(expr_tgt), ["table", "this"])
   validate_delta_only(diff_delta_only(expr_src, expr_tgt), [])
 }
 

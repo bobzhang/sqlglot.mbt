@@ -2588,7 +2588,7 @@ pub fn Generator::dynamicidentifier_sql(
   match this {
     Some(t) if t.is_string() => {
       let resolved = self.dialect.generate_sql(maybe_parse_str(t.name()))
-      if expression.args.contains("expressions") {
+      if expression.has_key("expressions") {
         self.unsupported(
           "Transpiling dynamically-invoked IDENTIFIER() functions is unsupported",
         )

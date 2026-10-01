@@ -33,10 +33,12 @@ let out = @sqlglot.generate(ast, dialect="snowflake", pretty=true)
 - Integers are 64-bit (Python's are unbounded).
 - Things that need Python runtime features aren't supported, such as defining new expression
   classes at runtime.
-- **The port stores no `None` argument values.** An argument set to `None` is absent, whether it
-  was set at construction (`mk(Column, [("db", null_arg)])`), through `set`, or loaded from serde.
-  Python keeps the key, so `"db" in e.args` and `set(e.args)` differ. Equality, hashing, copy,
-  serde and SQL generation are unaffected, because Python ignores `None` values in all of them.
+- **The port stores no `None` argument values in `Expr::args`.** An argument given as `None` at
+  construction (`mk(Column, [("db", null_arg)])`) is remembered only as a key. Python's
+  `"db" in e.args` is `Expr::has_key`, and `list(e.args)` is `Expr::arg_keys`. `get`, `has`,
+  equality, hashing, serde and SQL generation ignore the key, as Python ignores `None` values.
+  `set(key, None)` removes the key, as in Python. Use `has` for Python's truthiness of
+  `e.args.get(key)`, `get(key) is None` for `is None`, and `has_key` for `in`.
   `False`, `0`, `""` and `[]` are stored and behave as in Python: `False` and `[]` compare equal
   to a missing argument, while `0` and `""` don't (except in `Literal` and `Identifier`, which
   hash raw values).

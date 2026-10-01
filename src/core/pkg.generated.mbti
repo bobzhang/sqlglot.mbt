@@ -1062,6 +1062,7 @@ pub struct Expr {
   mut type_ : Expr?
   mut meta : Map[String, Value]?
   uid : Int
+  // private fields
 }
 pub fn[T : IntoPy] Expr::add(Self, T) -> Self raise SqlglotError
 pub fn Expr::add_comments(Self, Array[String]?, prepend? : Bool) -> Unit
@@ -1072,6 +1073,7 @@ pub fn[T : IntoPy] Expr::and_(Self, Array[T], dialect? : Dialect, copy? : Bool, 
 pub fn Expr::append(Self, String, &IntoValue) -> Unit
 pub fn Expr::apply(Self, (Self) -> Unit raise?) -> Self raise?
 pub fn Expr::arg(Self, String) -> Self?
+pub fn Expr::arg_keys(Self) -> Array[String]
 pub fn Expr::as_(Self, String, quoted? : Bool, copy? : Bool, table? : Array[String]) -> Self
 pub fn Expr::asc(Self, nulls_first? : Bool) -> Self
 pub fn Expr::assert_is(Self, Kind) -> Self raise SqlglotError
@@ -1116,6 +1118,7 @@ pub fn Expr::getitem(Self, Array[&IntoPy]) -> Self raise SqlglotError
 pub fn[T : IntoPy] Expr::group_by(Self, Array[T], append? : Bool, dialect? : Dialect, copy? : Bool) -> Self raise SqlglotError
 pub fn[T : IntoPy] Expr::gt(Self, T) -> Self raise SqlglotError
 pub fn Expr::has(Self, String) -> Bool
+pub fn Expr::has_key(Self, String) -> Bool
 pub fn[T : IntoPy] Expr::having_(Self, Array[T], append? : Bool, dialect? : Dialect, copy? : Bool) -> Self raise SqlglotError
 pub fn[T : IntoPy] Expr::hint(Self, Array[T], dialect? : Dialect, copy? : Bool) -> Self raise SqlglotError
 pub fn[T : IntoPy] Expr::ilike(Self, T) -> Self raise SqlglotError

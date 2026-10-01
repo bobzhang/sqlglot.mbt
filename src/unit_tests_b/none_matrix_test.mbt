@@ -2,32 +2,16 @@
 // observations are compared with the ones recorded from Python by
 // tools/gen_none_matrix.py (see that file for the list of observations).
 //
-// The port stores no `None` values: an argument set to None (at construction, through
-// `set`, or as a list element) is absent. Python keeps the key (`"db" in e.args`) or
-// the list element, but ignores them in equality/hashing, serde and SQL generation,
-// except for None list elements, which Python's generator renders as empty strings
-// (`Tuple(expressions=[1, None])` gives "(1, )", the port "(1)"). Those observations are
-// listed in `port_differences` (see README "Known differences").
+// The port stores no `None` values in `args`: an argument set to None at construction
+// is only remembered as a key (`Expr::has_key` / `Expr::arg_keys`, Python's
+// `key in e.args`), which equality/hashing, serde and SQL generation ignore like Python.
+// None *list elements* are dropped, while Python keeps them (and renders them as empty
+// strings: `Tuple(expressions=[1, None])` gives "(1, )", the port "(1)"). Those
+// observations are listed in `port_differences` (see README "Known differences").
 
 ///|
 /// "<case>|<value>|<observation>" -> the port's value, where it can't match Python.
 let port_differences : Map[String, String] = {
-  // explicit None: the key is absent in the port
-  "column.db|None|keys": "table,this",
-  "column.db|None|get": "missing",
-  "column.db|None|copy_keys": "table,this",
-  "ordered.desc|None|keys": "nulls_first,this",
-  "ordered.desc|None|get": "missing",
-  "ordered.desc|None|copy_keys": "nulls_first,this",
-  "identifier.quoted|None|keys": "this",
-  "identifier.quoted|None|get": "missing",
-  "identifier.quoted|None|copy_keys": "this",
-  "literal.is_string|None|keys": "this",
-  "literal.is_string|None|get": "missing",
-  "literal.is_string|None|copy_keys": "this",
-  "tuple.expressions|None|keys": "",
-  "tuple.expressions|None|get": "missing",
-  "tuple.expressions|None|copy_keys": "",
   // None list elements are dropped: [None] is [], [1, None] is [1]
   "tuple.expressions|[None]|get": "[]",
   "tuple.expressions|[None]|truthy": "False",
@@ -116,6 +100,15 @@ fn none_matrix_show(v : Value?) -> String {
 }
 
 ///|
+/// `e.args.get(key, MISSING)`: "None" for a key set to an explicit None.
+fn show_arg(e : @core.Expr, key : String) -> String {
+  match e.get(key) {
+    None if e.has_key(key) => "None"
+    v => none_matrix_show(v)
+  }
+}
+
+///|
 /// Python's `repr` of a simple string.
 fn py_repr(s : String) -> String {
   "'\{s}'"
@@ -132,7 +125,7 @@ fn py_bool(b : Bool) -> String {
 
 ///|
 fn sorted_keys(e : @core.Expr) -> String {
-  let keys = e.args.keys().collect()
+  let keys = e.arg_keys()
   // Python's lexicographic order (MoonBit's String order compares lengths first)
   keys.sort_by(py_str_compare)
   keys.join(",")
@@ -156,7 +149,7 @@ fn none_matrix_observe(case_ : String, key : String, tag : String) -> String {
   let base = none_matrix_build(case_, [])
   let obs = []
   obs.push(("keys", sorted_keys(e)))
-  obs.push(("get", none_matrix_show(e.get(key))))
+  obs.push(("get", show_arg(e, key)))
   obs.push(("truthy", py_bool(e.has(key))))
   obs.push(("text", py_repr(e.text(key))))
   obs.push(("eq_missing", py_bool(e == base)))
@@ -166,7 +159,7 @@ fn none_matrix_observe(case_ : String, key : String, tag : String) -> String {
   obs.push(("copy_eq", py_bool(c == e)))
   let loaded = try! @core.Expr::load(e.dump()).unwrap()
   obs.push(("serde_keys", sorted_keys(loaded)))
-  obs.push(("serde_get", none_matrix_show(loaded.get(key))))
+  obs.push(("serde_get", show_arg(loaded, key)))
   obs.push(("serde_eq", py_bool(loaded == e)))
   let sql = @sqlglot.generate(e) catch {
     @core.ValueError(_) => "<ValueError>"
@@ -177,7 +170,7 @@ fn none_matrix_observe(case_ : String, key : String, tag : String) -> String {
     let s = none_matrix_build(case_, [])
     s.set(key, none_matrix_value(tag))
     obs.push(("set_keys", sorted_keys(s)))
-    obs.push(("set_get", none_matrix_show(s.get(key))))
+    obs.push(("set_get", show_arg(s, key)))
   }
   obs
   .map(o => {
@@ -228,4 +221,90 @@ test "none/missing/falsy argument matrix" {
   if !fails.is_empty() {
     fail(fails.join("\n"))
   }
+}
+
+///|
+/// Explicit None keys are observable through `key in e.args` in Python's generators:
+/// Tableau picks FINDNTH over FIND when StrPosition has an `occurrence` key, even a
+/// None one (e.g. Presto's STRPOS and Tableau's own 2-argument FINDNTH set it).
+/// Expected outputs recorded from Python.
+test "explicit None keys: StrPosition to tableau" {
+  let cases = [
+    ("tableau", "FINDNTH(a, b)", "FINDNTH(a, b)"),
+    ("tableau", "FINDNTH(a, b, 2)", "FINDNTH(a, b, 2)"),
+    ("tableau", "FIND(a, b)", "FIND(a, b)"),
+    (
+      "tableau", "FIND(a, b, 3)", "IF FIND(SUBSTRING(a, 3), b) = 0 THEN 0 ELSE FIND(SUBSTRING(a, 3), b) + 3 - 1 END",
+    ),
+    ("oracle", "INSTR(a, b)", "FIND(a, b)"),
+    (
+      "oracle", "INSTR(a, b, 1)", "IF FIND(SUBSTRING(a, 1), b) = 0 THEN 0 ELSE FIND(SUBSTRING(a, 1), b) + 1 - 1 END",
+    ),
+    (
+      "oracle", "INSTR(a, b, 1, 2)", "IF FINDNTH(SUBSTRING(a, 1), b, 2) = 0 THEN 0 ELSE FINDNTH(SUBSTRING(a, 1), b, 2) + 1 - 1 END",
+    ),
+    ("mysql", "INSTR(a, b)", "FIND(a, b)"),
+    ("mysql", "LOCATE(b, a)", "FIND(a, b)"),
+    (
+      "mysql", "LOCATE(b, a, 3)", "IF FIND(SUBSTRING(a, 3), b) = 0 THEN 0 ELSE FIND(SUBSTRING(a, 3), b) + 3 - 1 END",
+    ),
+    ("mysql", "POSITION(b IN a)", "FIND(a, b)"),
+    ("hive", "INSTR(a, b)", "FIND(a, b)"),
+    ("hive", "LOCATE(b, a)", "FIND(a, b)"),
+    ("spark", "INSTR(a, b)", "FIND(a, b)"),
+    ("spark", "LOCATE(b, a)", "FIND(a, b)"),
+    ("spark", "POSITION(b, a)", "FIND(a, b)"),
+    ("bigquery", "INSTR(a, b)", "FIND(a, b)"),
+    (
+      "bigquery", "INSTR(a, b, 1, 2)", "IF FINDNTH(SUBSTRING(a, 1), b, 2) = 0 THEN 0 ELSE FINDNTH(SUBSTRING(a, 1), b, 2) + 1 - 1 END",
+    ),
+    ("bigquery", "STRPOS(a, b)", "FIND(a, b)"),
+    ("presto", "STRPOS(a, b)", "FINDNTH(a, b)"),
+    ("presto", "STRPOS(a, b, 2)", "FINDNTH(a, b, 2)"),
+    ("presto", "POSITION(b IN a)", "FIND(a, b)"),
+    ("postgres", "STRPOS(a, b)", "FIND(a, b)"),
+    ("duckdb", "STRPOS(a, b)", "FIND(a, b)"),
+    ("duckdb", "INSTR(a, b)", "FIND(a, b)"),
+    ("tsql", "CHARINDEX(b, a)", "FIND(a, b)"),
+    ("snowflake", "CHARINDEX(b, a)", "FIND(a, b)"),
+    ("snowflake", "POSITION(b, a)", "FIND(a, b)"),
+    ("clickhouse", "position(a, b)", "FIND(a, b)"),
+    ("clickhouse", "locate(a, b)", "FIND(b, a)"),
+    ("sqlite", "INSTR(a, b)", "FIND(a, b)"),
+    ("", "STR_POSITION(a, b)", "FIND(a, b)"),
+    (
+      "", "STR_POSITION(a, b, 1, 2)", "IF FINDNTH(SUBSTRING(a, 1), b, 2) = 0 THEN 0 ELSE FINDNTH(SUBSTRING(a, 1), b, 2) + 1 - 1 END",
+    ),
+  ]
+  let fails = []
+  for c in cases {
+    let (read, sql, expected) = c
+    let got = @sqlglot.generate(@sqlglot.parse_one(sql, read~), dialect="tableau")
+    if got != expected {
+      fails.push("[\{read}] \{sql}\n  got: \{got}\n  exp: \{expected}")
+    }
+  }
+  if !fails.is_empty() {
+    fail(fails.join("\n"))
+  }
+}
+
+///|
+test "explicit None keys: has_key, set, copy, serde" {
+  let e = @core.mk(Column, [
+    ("this", @core.to_identifier("b") as &IntoValue),
+    ("db", @core.null_arg),
+  ])
+  inspect(e.has_key("db"), content="true")
+  inspect(e.has("db"), content="false")
+  inspect(e.get("db") is None, content="true")
+  inspect(e.copy().has_key("db"), content="true")
+  // serde skips None values (like Python)
+  inspect(@core.Expr::load(e.dump()).unwrap().has_key("db"), content="false")
+  // set(key, None) pops the key; set(key, value) replaces the None
+  e.set("db", @core.null_arg)
+  inspect(e.has_key("db"), content="false")
+  let e = @core.mk(Column, [("db", @core.null_arg)])
+  e.set("db", @core.to_identifier("d"))
+  inspect(e.arg_keys().join(","), content="db")
 }
