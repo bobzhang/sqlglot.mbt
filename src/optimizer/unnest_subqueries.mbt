@@ -27,7 +27,7 @@ fn select_join(
     _ => ()
   }
   if !on.is_empty() {
-    join.set("on", @core.and_(on))
+    join.set("on", @core.and_(on, copy=false))
   }
   if join_alias != "" {
     let aliased = join.this_().copy()
@@ -198,7 +198,7 @@ fn unnest(
   match clause {
     Some(c) if c.kind.is_a(Join) => {
       replace_with_condition(predicate, @core.true_()) |> ignore
-      parent_select.where_([join_key_not_null]) |> ignore
+      parent_select.where_([join_key_not_null], copy=false) |> ignore
     }
     _ => replace_with_condition(predicate, join_key_not_null) |> ignore
   }
@@ -212,15 +212,15 @@ fn unnest(
         select = @core.select_([
             @core.alias_(column_with_table(value.alias(), table="_q"), value.alias()),
           ])
-          .from_(sub)
-          .group_by([column_with_table(value.alias(), table="_q")])
+          .from_(sub, copy=false)
+          .group_by([column_with_table(value.alias(), table="_q")], copy=false)
       }
     }
     None =>
       match value.this() {
         Some(vt) =>
           if find_in_scope(vt, [AggFunc]) is None {
-            select = select.group_by([vt])
+            select = select.group_by([vt], copy=false)
           }
         None => raise @core.OptimizeError("AttributeError: value.this is None")
       }
@@ -425,6 +425,7 @@ fn decorrelate(
     select.select_(
       [@core.alias_(agg, value.alias(), quoted=false, copy=true)],
       append=false,
+      copy=false,
     )
     |> ignore
   }
@@ -436,7 +437,10 @@ fn decorrelate(
   }
   for key in group_by {
     if is_exists || Some(key) != value_this {
-      select.select_([@core.alias_(key, assoc_get(key_aliases, key).unwrap())])
+      select.select_(
+        [@core.alias_(key, assoc_get(key_aliases, key).unwrap())],
+        copy=false,
+      )
       |> ignore
     }
   }
@@ -463,9 +467,10 @@ fn decorrelate(
     } else {
       array_keys[0].copy()
     }
-    select.select_([
-      @core.alias_(@core.mk1(ArrayAgg, array_item), array_alias, quoted=false),
-    ])
+    select.select_(
+      [@core.alias_(@core.mk1(ArrayAgg, array_item), array_alias, quoted=false)],
+      copy=false,
+    )
     |> ignore
   }
   let mut alias = column_with_table(value.alias(), table=table_alias)
@@ -591,7 +596,7 @@ fn decorrelate(
       ArrayAny,
       column_with_table(array_alias, table=table_alias),
       @core.mk(Lambda, [
-        ("this", @core.and_(array_predicates)),
+        ("this", @core.and_(array_predicates, copy=false)),
         ("expressions", [@core.to_identifier("_x")]),
       ]),
     )
@@ -599,11 +604,11 @@ fn decorrelate(
     parent_predicate = Some(
       replace_with_condition(
         pp,
-        @core.paren(@core.and_([pp.copy(), right])),
+        @core.paren(@core.and_([pp.copy(), right], copy=false)),
       ),
     )
   }
-  let grouped = select.group_by(group_by)
+  let grouped = select.group_by(group_by, copy=false)
   select_join(
     parent_select,
     grouped,

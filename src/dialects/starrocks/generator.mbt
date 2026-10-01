@@ -24,6 +24,7 @@ fn eliminate_between_in_delete(
                   ("expression", between.arg("high")),
                 ]),
               ],
+              copy=false,
               wrap=true,
             ),
           ),

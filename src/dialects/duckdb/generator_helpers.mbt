@@ -791,7 +791,7 @@ fn connect_by_to_recursive_cte(
     }),
   ).from_(source_table.copy())
   match connect.arg("start") {
-    Some(start) => anchor = anchor.where_([start.copy()])
+    Some(start) => anchor = anchor.where_([start])
     None => ()
   }
   // Recursive arm: carry all child columns + increment level + forward each root value.
@@ -808,9 +808,9 @@ fn connect_by_to_recursive_cte(
         ..inner_root_cols,
       ].map(x => x.copy()),
     )
-    .from_(@core.alias_table(source_table.copy(), "_child_row"))
+    .from_(@core.alias_table(source_table, "_child_row"))
     .join_(@core.alias_table(@core.to_table(cte_name), "_parent_row"), on=[
-      qualify_connect_pred(connect_pred).copy(),
+      qualify_connect_pred(connect_pred),
     ])
   // Outer SELECT re-projects from the CTE.
   let outer_select_exprs = if has_star {
@@ -831,7 +831,7 @@ fn connect_by_to_recursive_cte(
     @core.to_table(cte_name),
   )
   match base_where {
-    Some(w) => outer_query = outer_query.where_([this_of(w).copy()])
+    Some(w) => outer_query = outer_query.where_([this_of(w)])
     None => ()
   }
   match base_with {
@@ -842,6 +842,7 @@ fn connect_by_to_recursive_cte(
     cte_name,
     @core.exp_union(anchor, inner_query, distinct=false),
     recursive=true,
+    copy=false,
   )
   for arg, val in expression.args {
     if val.truthy() &&

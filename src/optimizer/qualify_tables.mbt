@@ -164,7 +164,10 @@ pub fn qualify_tables(
       if unnested.kind.is_a(Table) {
         let joins = unnested.get("joins")
         unnested.set("joins", @core.null_arg)
-        let sel = @core.select_([@core.mk0(Star)]).from_(unnested.copy())
+        let sel = @core.select_([@core.mk0(Star)]).from_(
+          unnested.copy(),
+          copy=false,
+        )
         derived_table.this_().replace(Some(sel)) |> ignore
         match joins {
           Some(j) => derived_table.this_().set("joins", j)

@@ -34,7 +34,7 @@ pub fn[T : @core.IntoPy] except_(Array[T], distinct? : Bool, dialect? : String, 
 
 pub fn expand(@core.Expr, Map[String, () -> @core.Expr raise @core.SqlglotError], dialect? : String, copy? : Bool) -> @core.Expr raise @core.SqlglotError
 
-pub fn[T : @core.IntoPy] from_(T, dialect? : String) -> @core.Expr raise @core.SqlglotError
+pub fn[T : @core.IntoPy] from_(T, dialect? : String, copy? : Bool) -> @core.Expr raise @core.SqlglotError
 
 pub fn func(String, args? : Array[&@core.IntoPy], kwargs? : Map[String, &@core.IntoPy], copy? : Bool, dialect? : String) -> @core.Expr raise @core.SqlglotError
 
@@ -74,7 +74,7 @@ pub fn replace_placeholders(@core.Expr, args? : Array[&@core.IntoPy], kwargs? : 
 
 pub fn replace_tables(@core.Expr, Map[String, String], dialect? : String, copy? : Bool) -> @core.Expr raise @core.SqlglotError
 
-pub fn[T : @core.IntoPy] select(Array[T], dialect? : String) -> @core.Expr raise @core.SqlglotError
+pub fn[T : @core.IntoPy] select(Array[T], dialect? : String, copy? : Bool) -> @core.Expr raise @core.SqlglotError
 
 pub fn[T : @core.IntoPy] subquery(T, alias? : String, dialect? : String, copy? : Bool) -> @core.Expr raise @core.SqlglotError
 

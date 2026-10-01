@@ -270,9 +270,9 @@ pub fn Simplifier::rewrite_between(
   let mut result = @core.and_([
     @core.mk2(GTE, expression.this_().copy(), expression.arg("low")),
     @core.mk2(LTE, expression.this_().copy(), expression.arg("high")),
-  ])
+  ], copy=false)
   if negate {
-    result = @core.paren(result)
+    result = @core.paren(result, copy=false)
   }
   self.changed(expression, result)
 }
@@ -289,7 +289,7 @@ pub fn Simplifier::simplify_not(
 ///|
 fn null_and_true(parent : @core.Expr?) -> @core.Expr {
   parenthesize_nested_connector(
-    @core.and_([@core.null_(), @core.true_()]),
+    @core.and_([@core.null_(), @core.true_()], copy=false),
     parent,
   )
 }
@@ -314,7 +314,7 @@ fn Simplifier::simplify_not_impl(
         Any => right = @core.mk1(All, right.this())
         _ => ()
       }
-      return @core.paren(@core.mk2(complement, this.this(), right))
+      return @core.paren(@core.mk2(complement, this.this(), right), copy=false)
     }
     None => ()
   }
@@ -323,17 +323,19 @@ fn Simplifier::simplify_not_impl(
     if condition.kind.is_a(And) {
       return @core.paren(
         @core.or_([
-          @core.not_(condition.this_()),
-          @core.not_(condition.expression_()),
-        ]),
+          @core.not_(condition.this_(), copy=false),
+          @core.not_(condition.expression_(), copy=false),
+        ], copy=false),
+        copy=false,
       )
     }
     if condition.kind.is_a(Or) {
       return @core.paren(
         @core.and_([
-          @core.not_(condition.this_()),
-          @core.not_(condition.expression_()),
-        ]),
+          @core.not_(condition.this_(), copy=false),
+          @core.not_(condition.expression_(), copy=false),
+        ], copy=false),
+        copy=false,
       )
     }
     if is_null(Some(condition)) {
@@ -377,7 +379,7 @@ pub fn Simplifier::simplify_connectors(
           Some(p) if p.kind.is_a(Connector) => break
           Some(p) if p.kind.is_a(Paren) => original_parent = p.parent
           _ => {
-            expression = @core.and_([expression, @core.true_()])
+            expression = @core.and_([expression, @core.true_()], copy=false)
             break
           }
         }
@@ -639,11 +641,11 @@ pub fn Simplifier::uniq_sort(
     let is_xor = expression.kind.is_a(Xor)
     let combine = fn(xs : Array[@core.Expr]) -> @core.Expr {
       if is_xor {
-        @core.combine_conditions(xs, Xor)
+        @core.combine_conditions(xs, Xor, copy=false)
       } else if original.kind.is_a(And) {
-        @core.and_(xs)
+        @core.and_(xs, copy=false)
       } else {
-        @core.or_(xs)
+        @core.or_(xs, copy=false)
       }
     }
     let arr : Array[(String, @core.Expr)] = []
@@ -684,7 +686,7 @@ pub fn Simplifier::uniq_sort(
     } else if !is_xor && deduped_len < flattened.length() {
       let unique_operand = flattened[0]
       if deduped_len == 1 {
-        expression = @core.and_([unique_operand, @core.true_()])
+        expression = @core.and_([unique_operand, @core.true_()], copy=false)
       } else {
         expression = combine(arr.map(kv => kv.1))
       }
@@ -1148,11 +1150,12 @@ fn Simplifier::simplify_coalesce_impl(
   @core.paren(
     @core.or_([
       @core.and_([
-        @core.not_(binop(Is, this, @core.null_())),
+        @core.not_(binop(Is, this, @core.null_()), copy=false),
         expression.copy(),
-      ]),
-      @core.and_([binop(Is, this, @core.null_()), substituted]),
-    ]),
+      ], copy=false),
+      @core.and_([binop(Is, this, @core.null_()), substituted], copy=false),
+    ], copy=false),
+    copy=false,
   )
 }
 
@@ -1264,7 +1267,7 @@ fn simplify_conditionals_impl(expression : @core.Expr) -> @core.Expr {
         None => ()
       }
       if always_true(Some(cond)) {
-        return @core.paren(case.arg("true").unwrap())
+        return @core.paren(case.arg("true").unwrap(), copy=false)
       }
       if always_false(Some(cond)) {
         case.pop() |> ignore
@@ -1274,13 +1277,14 @@ fn simplify_conditionals_impl(expression : @core.Expr) -> @core.Expr {
               Some(d) => d
               None => @core.null_()
             },
+            copy=false,
           )
         }
       }
     }
   } else if expression.kind.is_a(If) && !parent_is(expression, [Case]) {
     if always_true(expression.this()) {
-      return @core.paren(expression.arg("true").unwrap())
+      return @core.paren(expression.arg("true").unwrap(), copy=false)
     }
     if always_false(expression.this()) {
       return @core.paren(
@@ -1288,6 +1292,7 @@ fn simplify_conditionals_impl(expression : @core.Expr) -> @core.Expr {
           Some(d) => d
           None => @core.null_()
         },
+        copy=false,
       )
     }
   }
@@ -1402,7 +1407,7 @@ fn Simplifier::simplify_datetrunc_impl(
         datetrunc_range(date, unit, dialect).map(dr => @core.or_([
           lt_(trunc_arg, date_literal(dr.0, target_type)),
           ge_(trunc_arg, date_literal(dr.1, target_type)),
-        ]))
+        ], copy=false))
       _ => None
     }
     return match simplified {
@@ -1433,6 +1438,7 @@ fn Simplifier::simplify_datetrunc_impl(
       let target_type = extract_type(rs)
       let simplified = @core.or_(
         merged.map(dr => datetrunc_eq_expression(l, dr, target_type)),
+        copy=false,
       )
       return parenthesize_nested_connector(simplified, expression.parent)
     }

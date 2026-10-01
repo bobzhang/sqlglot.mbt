@@ -478,10 +478,13 @@ fn datetrunc_eq_expression(
   drange : (PyDT, PyDT),
   target_type : @core.Expr?,
 ) -> @core.Expr {
-  @core.and_([
-    ge_(left, date_literal(drange.0, target_type)),
-    lt_(left, date_literal(drange.1, target_type)),
-  ])
+  @core.and_(
+    [
+      ge_(left, date_literal(drange.0, target_type)),
+      lt_(left, date_literal(drange.1, target_type)),
+    ],
+    copy=false,
+  )
 }
 
 ///|

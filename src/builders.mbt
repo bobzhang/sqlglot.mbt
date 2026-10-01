@@ -30,8 +30,9 @@ pub fn[T : @core.IntoPy] maybe_parse(
 pub fn[T : @core.IntoPy] select(
   expressions : Array[T],
   dialect? : String,
+  copy? : Bool = true,
 ) -> @core.Expr raise @core.SqlglotError {
-  @core.select_(expressions, dialect=dialect_opt(dialect))
+  @core.select_(expressions, dialect=dialect_opt(dialect), copy~)
 }
 
 ///|
@@ -39,8 +40,9 @@ pub fn[T : @core.IntoPy] select(
 pub fn[T : @core.IntoPy] from_(
   expression : T,
   dialect? : String,
+  copy? : Bool = true,
 ) -> @core.Expr raise @core.SqlglotError {
-  @core.mk0(Select).from_(expression, dialect=dialect_opt(dialect))
+  @core.mk0(Select).from_(expression, dialect=dialect_opt(dialect), copy~)
 }
 
 ///|
@@ -111,7 +113,10 @@ pub fn[T : @core.IntoPy] not_(
   dialect? : String,
   copy? : Bool = true,
 ) -> @core.Expr raise @core.SqlglotError {
-  @core.not_(@core.condition(expression, dialect=dialect_opt(dialect), copy~))
+  @core.not_(
+    @core.condition(expression, dialect=dialect_opt(dialect), copy~),
+    copy=false,
+  )
 }
 
 ///|
@@ -535,7 +540,7 @@ pub fn[T : @core.IntoPy] update(
         CTE,
         @core.maybe_parse(qry.into_py(), dialect=d, copy~),
       )
-      cte_list.push(alias_(cte, alias, table=true, copy=false))
+      cte_list.push(alias_(cte, alias, table=true))
     }
     update_expr.set("with_", @core.mk(With, [("expressions", cte_list)]))
   }
@@ -551,15 +556,15 @@ pub fn[T : @core.IntoPy] delete(
   dialect? : String,
 ) -> @core.Expr raise @core.SqlglotError {
   let d = dialect_opt(dialect)
-  let mut delete_expr = @core.mk0(Delete).delete(table, dialect=d)
+  let mut delete_expr = @core.mk0(Delete).delete(table, dialect=d, copy=false)
   match where_ {
     Some(w) if w.into_py().truthy() =>
-      delete_expr = delete_expr.where_([w.into_py()], dialect=d)
+      delete_expr = delete_expr.where_([w.into_py()], dialect=d, copy=false)
     _ => ()
   }
   match returning {
     Some(r) if r.into_py().truthy() =>
-      delete_expr = delete_expr.returning(r.into_py(), dialect=d)
+      delete_expr = delete_expr.returning(r.into_py(), dialect=d, copy=false)
     _ => ()
   }
   delete_expr
@@ -592,7 +597,7 @@ pub fn[T : @core.IntoPy, I : @core.IntoPy] insert(
   ])
   match returning {
     Some(r) if r.into_py().truthy() =>
-      insert = insert.returning(r.into_py(), dialect=d)
+      insert = insert.returning(r.into_py(), dialect=d, copy=false)
     _ => ()
   }
   insert
@@ -629,7 +634,7 @@ pub fn[I : @core.IntoPy, U : @core.IntoPy, O : @core.IntoPy] merge(
   ])
   match returning {
     Some(r) if r.into_py().truthy() =>
-      merge = merge.returning(r.into_py(), dialect=d)
+      merge = merge.returning(r.into_py(), dialect=d, copy=false)
     _ => ()
   }
   match merge.arg("using") {

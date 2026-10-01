@@ -86,7 +86,8 @@ pub fn optimize_joins(
             if @core.column_table_names(predicate).contains(name) {
               predicate.replace(Some(@core.true_())) |> ignore
               let combined = match join.arg("on") {
-                Some(existing) => @core.combine_conditions([existing, predicate], And)
+                Some(existing) =>
+                  @core.combine_conditions([existing, predicate], And, copy=false)
                 None => predicate
               }
               join.set("on", combined)
@@ -356,7 +357,7 @@ pub fn join_condition(
 
   if normalized(on) {
     if !on.kind.is_a(And) {
-      on = @core.and_([on, @core.true_()])
+      on = @core.and_([on, @core.true_()], copy=false)
     }
     let it = on.flatten()
     while it.next() is Some(condition) {

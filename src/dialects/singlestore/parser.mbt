@@ -101,6 +101,7 @@ fn configure_parser(d : @core.Dialect) -> Unit {
             @core.mk1(DayOfWeek, @mysql.seq_get(args, 0)),
             @core.literal_number("5"),
           ),
+          copy=false,
         ),
       ),
       ("expression", @core.literal_number("7")),

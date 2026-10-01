@@ -305,7 +305,7 @@ fn expand_using(
       }
     }
     join.set("using", @core.null_arg)
-    join.set("on", @core.and_(conditions))
+    join.set("on", @core.and_(conditions, copy=false))
   }
   if !column_tables.map.is_empty() {
     for column in scope.columns() {

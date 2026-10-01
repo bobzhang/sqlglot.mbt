@@ -150,9 +150,9 @@ pub fn explode_projection_to_unnest(
             [map_key_alias, map_value_alias],
           )
           if expression.has("from_") {
-            expression.join_(unnest, kind="CROSS") |> ignore
+            expression.join_(unnest, kind="CROSS", copy=false) |> ignore
           } else {
-            expression.from_(unnest) |> ignore
+            expression.from_(unnest, copy=false) |> ignore
           }
           continue
         }
@@ -189,7 +189,7 @@ pub fn explode_projection_to_unnest(
               ]),
               @core.literal_int(0),
             ),
-            @core.array_([bracket]),
+            @core.array_([bracket], copy=false),
             explode_arg,
           ])
         }
@@ -245,9 +245,9 @@ pub fn explode_projection_to_unnest(
         }
         if arrays.is_empty() {
           if expression.has("from_") {
-            expression.join_(series, kind="CROSS") |> ignore
+            expression.join_(series, kind="CROSS", copy=false) |> ignore
           } else {
-            expression.from_(series) |> ignore
+            expression.from_(series, copy=false) |> ignore
           }
         }
         let mut size = @core.mk1(ArraySize, explode_arg.copy())
@@ -265,12 +265,14 @@ pub fn explode_projection_to_unnest(
             [explode_alias],
           ),
           kind="CROSS",
+          copy=false,
         )
         |> ignore
         if index_offset != 1 {
           size = @core.exp_binop(Sub, size, @core.literal_int(1))
         }
-        expression.where_([
+        expression.where_(
+          [
           @core.exp_or([
             @core.exp_eq(
               transforms_column(Str(series_alias), series_table_alias),
@@ -288,7 +290,9 @@ pub fn explode_projection_to_unnest(
               ),
             ]),
           ]),
-        ])
+          ],
+          copy=false,
+        )
         |> ignore
       }
       if !arrays.is_empty() {
