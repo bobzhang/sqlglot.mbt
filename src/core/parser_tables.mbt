@@ -27,10 +27,7 @@ pub fn base_parser_fns() -> ParserFns {
     type_converters: Map([]),
     pipe_syntax_transform_parsers: Map([]),
     analyze_expression_parsers: Map([]),
-    hooks0: Map([]),
-    hooks1: Map([]),
-    hooks_list: Map([]),
-    hooks_any: Map([]),
+    hooks: ParserHooks::new(),
     show_trie: WordTrie::new(),
     set_trie: WordTrie::new(),
   }

@@ -60,15 +60,8 @@ pub(all) struct ParserFns {
     (Parser, Expr) -> Expr? raise SqlglotError,
   ]
   mut analyze_expression_parsers : Map[String, ParseFn]
-  /// Overrides of zero-argument parse methods, keyed by Python method name
-  /// without the leading underscore (e.g. "parse_primary").
-  mut hooks0 : Map[String, ParseFn]
-  /// Overrides of parse methods taking a single `this` expression.
-  mut hooks1 : Map[String, ParseFn1]
-  /// Overrides of methods returning lists.
-  mut hooks_list : Map[String, (Parser) -> Array[Expr] raise SqlglotError]
-  /// Other overrides with custom signatures (see each call site).
-  mut hooks_any : Map[String, (Parser, Array[Value]) -> Value? raise SqlglotError]
+  /// Method overrides (see parser_hooks.mbt).
+  mut hooks : ParserHooks
   // derived
   mut show_trie : WordTrie
   mut set_trie : WordTrie
@@ -106,10 +99,7 @@ pub fn ParserFns::copy(self : ParserFns) -> ParserFns {
     analyze_expression_parsers: Map::from_iter(
       self.analyze_expression_parsers.iter(),
     ),
-    hooks0: Map::from_iter(self.hooks0.iter()),
-    hooks1: Map::from_iter(self.hooks1.iter()),
-    hooks_list: Map::from_iter(self.hooks_list.iter()),
-    hooks_any: Map::from_iter(self.hooks_any.iter()),
+    hooks: self.hooks.copy(),
     show_trie: self.show_trie,
     set_trie: self.set_trie,
   }
