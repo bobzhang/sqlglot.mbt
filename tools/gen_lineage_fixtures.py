@@ -109,7 +109,7 @@ def mbt_str_split(s, chunk=2000):
     more than 65535 columns triggers the compiler's text_segment_excceed warning)."""
     if len(s) <= chunk:
         return mbt_str(s)
-    return " +\n    ".join(mbt_str(s[i : i + chunk]) for i in range(0, len(s), chunk))
+    return " +\n  ".join(mbt_str(s[i : i + chunk]) for i in range(0, len(s), chunk))
 
 
 def main():
