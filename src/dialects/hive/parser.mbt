@@ -230,6 +230,11 @@ fn decimal_as_tuple(text : String) -> (Array[Int], Int) {
     if c == 'e' || c == 'E' {
       mantissa = text.unsafe_substring(start=0, end=i)
       let exp_text = text.unsafe_substring(start=i + 1, end=text.length())
+      let exp_text = if exp_text.has_prefix("+") {
+        exp_text.unsafe_substring(start=1, end=exp_text.length())
+      } else {
+        exp_text
+      }
       exponent = match @core.parse_int_str(exp_text) {
         Some(v) => v.to_int()
         None => 0
