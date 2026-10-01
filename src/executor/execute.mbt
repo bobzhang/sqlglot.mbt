@@ -56,7 +56,7 @@ fn nested_set(
   let sub = match d.get(keys[0]) {
     Some(Dict(m)) => m
     _ => {
-      let m : Map[String, @optimizer.SchemaNode] = {}
+      let m : Map[String, @optimizer.SchemaNode] = Map([])
       d[keys[0]] = Dict(m)
       m
     }
@@ -90,7 +90,7 @@ pub fn[T : @core.IntoPy] execute(
   let schema = if mapping_schema is Some(_) || !schema.is_empty() {
     schema
   } else {
-    let inferred : Map[String, @optimizer.SchemaNode] = {}
+    let inferred : Map[String, @optimizer.SchemaNode] = Map([])
     for keys in tables_.flatten() {
       let table = tables_.get(keys).unwrap()
       for column in table.columns {

@@ -35,7 +35,7 @@ pub fn CopyBudget::consume(
     self.remaining = Some(@core.max_int(factor * size, self.min_copy_budget))
   }
   let remaining = self.remaining.unwrap()
-  let references : Map[String, Int] = {}
+  let references : Map[String, Int] = Map([])
   for c in outer_scope.columns() {
     if c.table_name() == alias_ {
       references[c.name()] = references.get_or_default(c.name(), 0) + 1
@@ -106,7 +106,7 @@ pub fn merge_ctes(
     Some(s) => s
     None => traverse_scope(expression)
   }
-  let cte_selections : Map[Int, Array[(Scope, Scope, @core.Expr)]] = {}
+  let cte_selections : Map[Int, Array[(Scope, Scope, @core.Expr)]] = Map([])
   for outer_scope in scopes {
     for _, v in outer_scope.selected_sources() {
       let (table, source) = v
@@ -234,7 +234,7 @@ fn mergeable(
   }
   let window_aliases = []
   let number_literal_aliases = []
-  let projections : Map[String, @core.Expr] = {}
+  let projections : Map[String, @core.Expr] = Map([])
   for s in inner_select.selects() {
     let name = s.alias_or_name()
     projections[name] = s
@@ -474,7 +474,7 @@ fn merge_expressions(
   inner_scope : Scope,
   alias_ : String,
 ) -> Unit {
-  let outer_columns : Map[String, Array[@core.Expr]] = {}
+  let outer_columns : Map[String, Array[@core.Expr]] = Map([])
   for column in outer_scope.columns() {
     if column.table_name() == alias_ {
       if !outer_columns.contains(column.name()) {

@@ -189,7 +189,7 @@ fn flat_simplify_indexed(
       prev[next[i]] = prev[i]
     }
   }
-  let buckets : Map[Int, Array[Int]] = {}
+  let buckets : Map[Int, Array[Int]] = Map([])
   for i, item in items {
     for k in (index.keys)(item) {
       match buckets.get(k) {
@@ -199,7 +199,7 @@ fn flat_simplify_indexed(
     }
   }
   // per bucket: the first position that may still be alive
-  let starts : Map[Int, Int] = {}
+  let starts : Map[Int, Int] = Map([])
   let operands = []
   let mut pending : @core.Expr? = None
   for ;; {

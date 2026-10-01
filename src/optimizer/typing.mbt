@@ -48,7 +48,7 @@ let timestamp_expressions : Array[@core.Kind] = [
 
 ///|
 fn build_base_expression_metadata() -> ExprMetadata {
-  let m : ExprMetadata = {}
+  let m : ExprMetadata = Map([])
   annotate_all(m, subclasses([Binary]), (s, e) => s.annotate_binary(e))
   annotate_all(m, subclasses([Unary, Alias, IgnoreNulls, RespectNulls]), (s, e) => s.annotate_unary(
     e,
@@ -239,20 +239,20 @@ pub let base_expression_metadata : ExprMetadata = build_base_expression_metadata
 
 ///|
 /// Builders of per-dialect expression metadata, keyed by dialect name.
-let expression_metadata_builders : Map[String, () -> ExprMetadata] = {}
+let expression_metadata_builders : Map[String, () -> ExprMetadata] = Map([])
 
 ///|
-let expression_metadata_cache : Map[String, ExprMetadata] = {}
+let expression_metadata_cache : Map[String, ExprMetadata] = Map([])
 
 ///|
 /// Per-dialect `COERCES_TO`, keyed by dialect name.
 let coerces_to_builders : Map[
   String,
   () -> Map[@core.DType, @set.Set[@core.DType]],
-] = {}
+] = Map([])
 
 ///|
-let coerces_to_cache : Map[String, Map[@core.DType, @set.Set[@core.DType]]] = {}
+let coerces_to_cache : Map[String, Map[@core.DType, @set.Set[@core.DType]]] = Map([])
 
 ///|
 /// Registers the expression metadata of a dialect (by name). Dialects that don't register

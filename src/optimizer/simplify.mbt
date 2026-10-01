@@ -727,7 +727,7 @@ pub fn Simplifier::uniq_sort(
       }
     } else {
       // dict {gen(e): e}: first position, last value
-      let positions : Map[String, Int] = {}
+      let positions : Map[String, Int] = Map([])
       for e in flattened {
         let key = gen(e)
         match positions.get(key) {
@@ -815,7 +815,7 @@ pub fn Simplifier::absorb_and_eliminate(
     let pairs : Map[
       Int,
       Array[(@core.Expr, @core.Expr, Array[(@core.Expr, @core.Expr)])],
-    ] = {}
+    ] = Map([])
     fn pair_hash(a : @core.Expr, b : @core.Expr) -> Int {
       let ha = a.hash()
       let hb = b.hash()

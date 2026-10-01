@@ -188,7 +188,7 @@ fn add_except_columns(
     return
   }
   let columns = []
-  let qualified_columns : Map[String, Array[String]] = {}
+  let qualified_columns : Map[String, Array[String]] = Map([])
   for e in except_ {
     if e.kind.is_a(Column) && e.table_name() != "" {
       if !qualified_columns.contains(e.table_name()) {
@@ -223,7 +223,7 @@ fn add_rename_columns(
   if rename.is_empty() {
     return
   }
-  let columns : Map[String, String] = {}
+  let columns : Map[String, String] = Map([])
   for e in rename {
     columns[e.this_().name()] = e.alias_()
   }
@@ -242,7 +242,7 @@ fn add_replace_columns(
   if replace.is_empty() {
     return
   }
-  let columns : Map[String, @core.Expr] = {}
+  let columns : Map[String, @core.Expr] = Map([])
   for e in replace {
     columns[e.alias_()] = e
   }
@@ -261,9 +261,9 @@ fn expand_stars_impl(
   annotator : TypeAnnotator,
 ) -> Unit raise @core.SqlglotError {
   let new_selections : Array[@core.Expr] = []
-  let except_columns : Map[String, Array[String]] = {}
-  let replace_columns : Map[String, Map[String, @core.Expr]] = {}
-  let rename_columns : Map[String, Map[String, String]] = {}
+  let except_columns : Map[String, Array[String]] = Map([])
+  let replace_columns : Map[String, Map[String, @core.Expr]] = Map([])
+  let rename_columns : Map[String, Map[String, String]] = Map([])
   let mut ilike_pattern : String? = None
   let coalesced_columns : @set.Set[String] = @set.new()
   let dialect = resolver.dialect
@@ -325,7 +325,7 @@ fn expand_stars_impl(
           for e in star.list("except_") {
             excluded.add(e.name())
           }
-          let replaced : Map[String, @core.Expr] = {}
+          let replaced : Map[String, @core.Expr] = Map([])
           for e in star.list("replace") {
             replaced[e.alias_()] = e
           }

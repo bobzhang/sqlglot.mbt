@@ -223,7 +223,7 @@ pub fn lineage_all(
     scope_meta: {},
     on_node,
   }
-  let result : Map[String, Node] = {}
+  let result : Map[String, Node] = Map([])
   for sel in selectable.selects() {
     let name = sel.alias_or_name()
     if name == "" {
@@ -249,7 +249,7 @@ fn prepare(
   let mut expression = if copy { expression.copy() } else { expression }
   match sources {
     Some(s) if !s.is_empty() => {
-      let srcs : Map[String, @core.Expr] = {}
+      let srcs : Map[String, @core.Expr] = Map([])
       for k, v in s {
         srcs[k] = if copy { v.copy() } else { v }
       }
@@ -324,7 +324,7 @@ fn to_node(
       let meta = match ctx.scope_meta.get(scope.id) {
         Some(m) => m
         None => {
-          let by_name : Map[String, @core.Expr] = {}
+          let by_name : Map[String, @core.Expr] = Map([])
           for sel in selectable.selects() {
             if !by_name.contains(sel.alias_or_name()) {
               by_name[sel.alias_or_name()] = sel
@@ -418,7 +418,7 @@ fn to_node(
     Some(u) => u.downstream.push(node)
     None => ()
   }
-  let subquery_scopes : Map[Int, @optimizer.Scope] = {}
+  let subquery_scopes : Map[Int, @optimizer.Scope] = Map([])
   for s in scope.subquery_scopes {
     subquery_scopes[s.expression.uid] = s
   }
@@ -470,7 +470,7 @@ fn to_node(
   } else {
     scope.derived_tables()
   }
-  let source_names : Map[String, String] = {}
+  let source_names : Map[String, String] = Map([])
   for dt in derived_tables {
     match dt.comments {
       Some(cs) if !cs.is_empty() && cs[0].has_prefix("source: ") => {
@@ -689,7 +689,7 @@ fn pivot_chain_mapping(
   schema : @optimizer.MappingSchema?,
 ) -> (Map[String, String], Array[(String, Array[@core.Expr])]) raise @core.SqlglotError {
   let mut available = pre_pivot_columns(pivots[0], scope, schema)
-  let mut renames : Map[String, String] = {}
+  let mut renames : Map[String, String] = Map([])
   let mut mapping : Array[(String, Array[@core.Expr])] = []
   for pivot in pivots {
     let step_renames = if !pivot.alias_column_names().is_empty() &&
@@ -738,7 +738,7 @@ fn pivot_chain_mapping(
         consumed.add(col.name())
       }
     }
-    let pre_to_post : Map[String, String] = {}
+    let pre_to_post : Map[String, String] = Map([])
     for kv in step_renames {
       pre_to_post[kv.1] = kv.0
     }
@@ -751,7 +751,7 @@ fn pivot_chain_mapping(
       }
     }
     if !step_renames.is_empty() {
-      let nr : Map[String, String] = {}
+      let nr : Map[String, String] = Map([])
       for kv in step_renames {
         nr[kv.0] = renames.get(kv.1).unwrap_or(kv.1)
       }

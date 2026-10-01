@@ -215,7 +215,7 @@ fn SetSim::merge(self : SetSim, other : SetSim) -> Unit {
 ///|
 /// Distinct values, first occurrence wins.
 fn dedupe(values : Array[Value]) -> Array[Value] raise PyException {
-  let seen : Map[String, Unit] = {}
+  let seen : Map[String, Unit] = Map([])
   let unique = []
   for v in values {
     let k = hash_key(v)

@@ -96,7 +96,7 @@ fn node_mappings(
   old_nodes : Array[@core.Expr],
   new_nodes : Array[@core.Expr],
 ) -> Map[Int, @core.Expr] {
-  let m : Map[Int, @core.Expr] = {}
+  let m : Map[Int, @core.Expr] = Map([])
   let n = @core.min_int(old_nodes.length(), new_nodes.length())
   for i in 0..<n {
     m[old_nodes[old_nodes.length() - 1 - i].uid] = new_nodes[new_nodes.length() - 1 -
@@ -159,7 +159,7 @@ pub fn ChangeDistiller::diff(
   matchings? : Array[(@core.Expr, @core.Expr)] = [],
   delta_only? : Bool = false,
 ) -> Array[Edit] {
-  let pre_matched : Map[Int, Int] = {}
+  let pre_matched : Map[Int, Int] = Map([])
   for m in matchings {
     pre_matched[m.0.uid] = m.1.uid
   }
@@ -200,7 +200,7 @@ pub fn ChangeDistiller::diff(
     }
   }
   // dict(matching_set), ordered by the source's BFS order
-  let matchings_map : Map[Int, Int] = {}
+  let matchings_map : Map[Int, Int] = Map([])
   for k, _ in self.source_index {
     for p in matching_set {
       if p.0 == k {
@@ -499,7 +499,7 @@ fn ChangeDistiller::bigram_histo(
     _ => ""
   }
   let chars = s.to_array()
-  let histo : Map[String, Int] = {}
+  let histo : Map[String, Int] = Map([])
   for i in 0..<(chars.length() - 1) {
     let g = String::from_array([chars[i], chars[i + 1]])
     histo[g] = histo.get_or_default(g, 0) + 1

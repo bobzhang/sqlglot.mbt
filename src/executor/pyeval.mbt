@@ -826,7 +826,7 @@ fn eval_in(
               "<lambda>() takes \{params.length()} positional arguments but \{args.length()} were given",
             )
           }
-          let locals : Map[String, Value] = {}
+          let locals : Map[String, Value] = Map([])
           for i, p in params {
             locals[p] = args[i]
           }

@@ -36,8 +36,8 @@ pub fn Context::new(
       deduped.push(kv)
     }
   }
-  let range_readers : Map[String?, Reader] = {}
-  let row_readers : Map[String?, Reader] = {}
+  let range_readers : Map[String?, Reader] = Map([])
+  let row_readers : Map[String?, Reader] = Map([])
   match outer {
     Some(o) =>
       for k, v in o {

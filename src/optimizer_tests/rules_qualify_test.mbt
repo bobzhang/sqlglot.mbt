@@ -40,7 +40,7 @@ test "optimizer qualify_columns__with_invisible" {
     qualify_columns__with_invisible_fixtures,
     pretty=false,
     (e, c) => {
-      let visible : Map[String, @optimizer.SchemaNode] = {}
+      let visible : Map[String, @optimizer.SchemaNode] = Map([])
       match @json.parse(invisible_json) {
         Object(m) =>
           for k, v in m {

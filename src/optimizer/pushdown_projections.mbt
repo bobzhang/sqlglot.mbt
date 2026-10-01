@@ -117,14 +117,14 @@ pub fn projection_reachability(
       return r
     }
   }
-  let scope_nodes : Map[Int, DepNode] = {}
-  let output_names : Map[Int, Array[String]] = {}
-  let output_nodes : Map[Int, Array[DepNode]] = {}
-  let outputs_by_name : Map[Int, Map[String, Array[DepNode]]] = {}
-  let owners : Map[Int, DepNode] = {}
-  let scopes_by_expression : Map[Int, Scope] = {}
-  let is_agg : Map[Int, Bool] = {}
-  let group_by_ordinals : Map[Int, Array[(@core.Expr, @core.Expr)]] = {}
+  let scope_nodes : Map[Int, DepNode] = Map([])
+  let output_names : Map[Int, Array[String]] = Map([])
+  let output_nodes : Map[Int, Array[DepNode]] = Map([])
+  let outputs_by_name : Map[Int, Map[String, Array[DepNode]]] = Map([])
+  let owners : Map[Int, DepNode] = Map([])
+  let scopes_by_expression : Map[Int, Scope] = Map([])
+  let is_agg : Map[Int, Bool] = Map([])
+  let group_by_ordinals : Map[Int, Array[(@core.Expr, @core.Expr)]] = Map([])
   for scope in scopes {
     let query = scope.expression
     if query.kind.is_a(Select) && query.is_star() {
@@ -153,7 +153,7 @@ pub fn projection_reachability(
     }
     let outputs = output_names[scope.id].map(_ => DepNode::new())
     output_nodes[scope.id] = outputs
-    let by_name : Map[String, Array[DepNode]] = {}
+    let by_name : Map[String, Array[DepNode]] = Map([])
     outputs_by_name[scope.id] = by_name
     for i, name in output_names[scope.id] {
       if !by_name.contains(name) {
@@ -424,7 +424,7 @@ pub fn projection_reachability(
   let r = empty_reachability(scopes)
   // `named_selects` of a set operation is that of its left operand: memoized by
   // expression so that a long left-deep chain isn't walked once per set operation
-  let set_names_by_expr : Map[Int, Array[String]] = {}
+  let set_names_by_expr : Map[Int, Array[String]] = Map([])
   for scope in scopes {
     r.live[scope.id] = scope_nodes[scope.id].required_by
     r.selections[scope.id] = output_nodes[scope.id].map(o => o.required_by)
@@ -544,7 +544,7 @@ pub fn prune_projections(
     }
     expression.set("expressions", subset)
     if !ordinal_refs.is_empty() {
-      let new_pos : Map[Int, Int] = {}
+      let new_pos : Map[Int, Int] = Map([])
       for i, selection in subset {
         new_pos[selection.uid] = i + 1
       }
@@ -697,7 +697,7 @@ pub fn projection_has_aggregate(
   windows : Array[@core.Expr],
 ) -> Bool {
   let windowed_aggregates : @set.Set[Int] = @set.new()
-  let remaining_windows : Map[String, @core.Expr] = {}
+  let remaining_windows : Map[String, @core.Expr] = Map([])
   for w in windows {
     remaining_windows[w.name()] = w
   }

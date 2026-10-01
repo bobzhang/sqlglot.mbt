@@ -619,7 +619,7 @@ fn attr_of(this : Value, name : String) -> Value raise {
 
 ///|
 fn build_env() -> Map[String, Value] {
-  let env : Map[String, Value] = {}
+  let env : Map[String, Value] = Map([])
   let set = fn(v : Value) {
     match v {
       Func(f) => env[f.name] = v

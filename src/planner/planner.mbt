@@ -422,7 +422,7 @@ pub fn step_from_expression(
     }
     agg.group = group_exprs.mapi((i, e) => ("_g\{i}", e))
     let intermediate_exprs : Array[(@core.Expr, String)] = []
-    let intermediate_names : Map[String, String] = {}
+    let intermediate_names : Map[String, String] = Map([])
     for kv in agg.group {
       let (k, v) = kv
       intermediate_exprs.push((v, k))

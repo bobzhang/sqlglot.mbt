@@ -43,7 +43,7 @@ pub fn RowReader::new(
   columns? : Array[String],
   column_range? : (Int, Int),
 ) -> RowReader {
-  let m : Map[String, Int] = {}
+  let m : Map[String, Int] = Map([])
   match columns {
     Some(cols) =>
       for i, c in cols {
@@ -396,7 +396,7 @@ fn ensure_tables_map(
     return {}
   }
   let depth = data_depth(d)
-  let result : Map[String, TableData] = {}
+  let result : Map[String, TableData] = Map([])
   if depth > 1 {
     for k, v in d {
       let name = @optimizer.normalize_name(k, dialect?, is_table=true).name()

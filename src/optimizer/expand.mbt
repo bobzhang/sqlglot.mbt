@@ -29,7 +29,7 @@ pub fn expand(
   dialect? : @core.Dialect,
   copy? : Bool = true,
 ) -> @core.Expr raise @core.SqlglotError {
-  let normalized_sources : Map[String, @core.Expr] = {}
+  let normalized_sources : Map[String, @core.Expr] = Map([])
   for k, v in sources {
     normalized_sources[normalize_table_name_str(k, dialect?)] = v
   }

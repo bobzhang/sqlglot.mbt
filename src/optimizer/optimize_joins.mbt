@@ -55,7 +55,7 @@ pub fn optimize_joins(
     if !is_reorderable(joins) {
       continue
     }
-    let references : Map[String, Array[@core.Expr]] = {}
+    let references : Map[String, Array[@core.Expr]] = Map([])
     let cross_joins : Array[(String, @core.Expr)] = []
     for join in joins {
       let tables = other_table_names(join)
@@ -122,7 +122,7 @@ pub fn reorder_joins(
     if !is_reorderable(joins) {
       continue
     }
-    let joins_by_name : Map[String, @core.Expr] = {}
+    let joins_by_name : Map[String, @core.Expr] = Map([])
     for join in joins {
       joins_by_name[join.alias_or_name()] = join
     }

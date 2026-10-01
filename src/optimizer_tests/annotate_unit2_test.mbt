@@ -64,7 +64,7 @@ test "annotate_types: unnest struct fields (bigquery)" {
   let select_type = expression.selects()[0].get_type().unwrap()
   assert_true(select_type.is_type([STRUCT]))
   assert_eq(select_type.expressions().length(), 2)
-  let fields : Map[String, @core.Expr] = {}
+  let fields : Map[String, @core.Expr] = Map([])
   for col_def in select_type.expressions() {
     fields[col_def.name()] = col_def.arg("kind").unwrap()
   }

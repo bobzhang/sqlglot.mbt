@@ -105,7 +105,7 @@ test "TestJsonpath.test_union_preserves_falsey_members" {
 ///|
 test "TestJsonpath.test_cts_file" {
   // sqlglot json path generator rewrites to a normal form
-  let overrides : Map[String, String] = {}
+  let overrides : Map[String, String] = Map([])
   for i = 0; i < cts_overrides.length(); i = i + 2 {
     overrides[cts_overrides[i]] = cts_overrides[i + 1]
   }

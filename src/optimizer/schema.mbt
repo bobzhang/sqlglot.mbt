@@ -32,7 +32,7 @@ pub fn SchemaNode::from_json(json : Json) -> SchemaNode raise @core.SqlglotError
           _ => ()
         }
       }
-      let out : Map[String, SchemaNode] = {}
+      let out : Map[String, SchemaNode] = Map([])
       for k, v in m {
         out[k] = SchemaNode::from_json(v)
       }
@@ -163,7 +163,7 @@ fn nested_set(
       Some(Dict(m)) => m
       Some(_) => return
       None => {
-        let m : Map[String, SchemaNode] = {}
+        let m : Map[String, SchemaNode] = Map([])
         subd[key] = Dict(m)
         m
       }
@@ -516,7 +516,7 @@ fn MappingSchema::find_column_types_uncached(
 ) -> Map[String, @core.Expr?]? raise @core.SqlglotError {
   match self.find_uncached(table, raise_on_missing=false) {
     Some(cols) => {
-      let out : Map[String, @core.Expr?] = {}
+      let out : Map[String, @core.Expr?] = Map([])
       for col, dtype in cols {
         out[col] = match dtype {
           Type(s) => Some(self.to_data_type(s))
@@ -549,7 +549,7 @@ pub fn MappingSchema::add_table(
       "Table \{gen.generate(normalized_table)} must match the schema's nesting level: \{self.depth()}.",
     )
   }
-  let normalized_column_mapping : Map[String, SchemaNode] = {}
+  let normalized_column_mapping : Map[String, SchemaNode] = Map([])
   for key, value in column_mapping {
     normalized_column_mapping[self.normalize_name(key, dialect?, normalize?)] = value
   }
@@ -753,7 +753,7 @@ fn MappingSchema::normalize_mapping(
   self : MappingSchema,
   schema : Map[String, SchemaNode],
 ) -> Map[String, SchemaNode] raise @core.SqlglotError {
-  let normalized_mapping : Map[String, SchemaNode] = {}
+  let normalized_mapping : Map[String, SchemaNode] = Map([])
   let flattened_schema = flatten_schema(schema)
   for keys in flattened_schema {
     let columns = nested_get(schema, keys.map(k => (k, k)))
@@ -797,7 +797,7 @@ fn MappingSchema::normalize_udfs(
   self : MappingSchema,
   udfs : Map[String, SchemaNode],
 ) -> Map[String, SchemaNode] raise @core.SqlglotError {
-  let normalized_mapping : Map[String, SchemaNode] = {}
+  let normalized_mapping : Map[String, SchemaNode] = Map([])
   for keys in flatten_schema(udfs, depth=map_depth(udfs)) {
     match nested_get(udfs, keys.map(k => (k, k))) {
       Some(udf_type) => {

@@ -136,7 +136,7 @@ pub fn qualify_tables(
   for scope in traverse_scope(expression) {
     let parent = scope.parent
     let local_columns = scope.local_columns()
-    let canonical_aliases : Map[String, String] = {}
+    let canonical_aliases : Map[String, String] = Map([])
     let queries = scope.subqueries().copy()
     if scope.is_root() && scope.expression.kind.is_a(Subquery) {
       queries.push(scope.expression.unnest())
@@ -180,7 +180,7 @@ pub fn qualify_tables(
         None => ()
       }
     }
-    let table_aliases : Map[String, @core.Expr] = {}
+    let table_aliases : Map[String, @core.Expr] = Map([])
     for name, source in scope.sources.copy() {
       match parent {
         Some(p) =>

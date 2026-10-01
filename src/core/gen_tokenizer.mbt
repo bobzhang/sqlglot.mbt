@@ -354,8 +354,8 @@ pub fn base_tokenizer_settings_raw() -> TokenizerSettings {
     "VACUUM": COMMAND,
     "USER-DEFINED": USERDEFINED,
   }
-  let numeric_escapes : Map[String, NumericEscape] = {}
-  let numeric_literals : Map[String, String] = {}
+  let numeric_escapes : Map[String, NumericEscape] = Map([])
+  let numeric_literals : Map[String, String] = Map([])
   {
     single_tokens,
     bit_strings: [],
@@ -429,8 +429,8 @@ pub fn base_jsonpath_tokenizer_settings_raw() -> TokenizerSettings {
     '*': STAR,
   }
   let keywords : Map[String, TokenType] = { "..": DOT }
-  let numeric_escapes : Map[String, NumericEscape] = {}
-  let numeric_literals : Map[String, String] = {}
+  let numeric_escapes : Map[String, NumericEscape] = Map([])
+  let numeric_literals : Map[String, String] = Map([])
   {
     single_tokens,
     bit_strings: [],

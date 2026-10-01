@@ -337,7 +337,7 @@ fn Resolver::get_all_source_columns(
     Some(s) => return s
     None => ()
   }
-  let result : Map[String, Array[String]] = {}
+  let result : Map[String, Array[String]] = Map([])
   for source_name, _ in self.scope.selected_sources() {
     result[source_name] = self.get_source_columns(source_name)
   }
@@ -402,7 +402,7 @@ fn Resolver::get_available_source_columns(
     Some(f) => f.alias_or_name()
     None => raise @core.OptimizeError("KeyError: from_")
   }
-  let available : Map[String, Array[String]] = {}
+  let available : Map[String, Array[String]] = Map([])
   available[from_name] = self.get_source_columns(from_name)
   let joins = e.list("joins")
   let upto = match join_ancestor.index {
@@ -426,14 +426,14 @@ fn Resolver::get_unambiguous_columns(
   }
   let pairs = source_columns.to_array()
   let (first_table, first_columns) = pairs[0]
-  let unambiguous_columns : Map[String, String] = {}
+  let unambiguous_columns : Map[String, String] = Map([])
   for col in first_columns {
     unambiguous_columns[col] = first_table
   }
   if pairs.length() == 1 {
     return unambiguous_columns
   }
-  let unnest_original_aliases : Map[String, String] = {}
+  let unnest_original_aliases : Map[String, String] = Map([])
   if self.dialect.cfg.unnest_column_only {
     for source_name, source in self.scope.sources {
       match source.expression() {

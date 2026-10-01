@@ -317,16 +317,23 @@ def tokenizer_settings_full(cls, fn_name, pub=True):
     for k, v in cls.KEYWORDS.items():
         L.append(f"    {mbt_str(k)}: {v.name},")
     L.append("  }")
-    L.append("  let numeric_escapes : Map[String, NumericEscape] = {")
-    for k, v in cls.NUMERIC_ESCAPES.items():
-        L.append(
-            f"    {mbt_str(k)}: {{ base: {v[0]}, min_digits: {v[1]}, max_digits: {v[2]}, max_value: {v[3]} }},"
-        )
-    L.append("  }")
-    L.append("  let numeric_literals : Map[String, String] = {")
-    for k, v in cls.NUMERIC_LITERALS.items():
-        L.append(f"    {mbt_str(k)}: {mbt_str(v)},")
-    L.append("  }")
+    # An empty `{}` literal is ambiguous (warning 82), so empty maps are written `Map([])`.
+    if cls.NUMERIC_ESCAPES:
+        L.append("  let numeric_escapes : Map[String, NumericEscape] = {")
+        for k, v in cls.NUMERIC_ESCAPES.items():
+            L.append(
+                f"    {mbt_str(k)}: {{ base: {v[0]}, min_digits: {v[1]}, max_digits: {v[2]}, max_value: {v[3]} }},"
+            )
+        L.append("  }")
+    else:
+        L.append("  let numeric_escapes : Map[String, NumericEscape] = Map([])")
+    if cls.NUMERIC_LITERALS:
+        L.append("  let numeric_literals : Map[String, String] = {")
+        for k, v in cls.NUMERIC_LITERALS.items():
+            L.append(f"    {mbt_str(k)}: {mbt_str(v)},")
+        L.append("  }")
+    else:
+        L.append("  let numeric_literals : Map[String, String] = Map([])")
     bse = cls.__dict__.get("BYTE_STRING_ESCAPES")
     L.append("  {")
     L.append("    single_tokens,")

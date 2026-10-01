@@ -767,7 +767,7 @@ test "TestDialect.test_regexp_replace" {
 ///|
 test "TestDialect.test_initcap" {
   let t = t()
-  let delimiter_chars : Map[String, String] = {}
+  let delimiter_chars : Map[String, String] = Map([])
   for
     item in [
       ("", ""),

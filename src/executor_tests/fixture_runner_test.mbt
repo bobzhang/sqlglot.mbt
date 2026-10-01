@@ -143,7 +143,7 @@ fn typed_field(code : Char, v : String) -> @executor.Value raise {
 
 ///|
 fn tpcds_data() -> Map[String, @executor.Table] raise {
-  let out : Map[String, @executor.Table] = {}
+  let out : Map[String, @executor.Table] = Map([])
   for entry in tpcds_tables {
     let (name, columns, codes, text) = entry
     let codes = codes.to_array()
@@ -170,7 +170,7 @@ test "fixture: tpc-ds" {
     let (number, sql, kind, x, y, ordered) = case
     s.check("tpc-ds \{number}", () => {
       let expression = @sqlglot.parse_one(sql)
-      let tables : Map[String, @executor.TableData] = {}
+      let tables : Map[String, @executor.TableData] = Map([])
       for t in @core.find_tables(expression) {
         match data.get(t.name()) {
           Some(table) => tables[t.name()] = Tbl(table)

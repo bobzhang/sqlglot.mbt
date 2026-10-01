@@ -72,7 +72,7 @@ fn run_call(key : String) -> String raise {
   }
   let sources = match call.get("sources") {
     Some(Object(m)) => {
-      let out : Map[String, @core.Expr] = {}
+      let out : Map[String, @core.Expr] = Map([])
       for k, v in m {
         match v {
           String(s) => out[k] = @core.parse_one(s, dialect?)

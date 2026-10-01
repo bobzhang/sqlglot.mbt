@@ -125,7 +125,7 @@ pub fn Scope::new(
     // (the common case of a branched scope: a copy of the CTE sources)
     None if lateral_sources.is_empty() => cte_sources.copy()
     None => {
-      let s = {}
+      let s = Map([])
       for k, v in lateral_sources {
         s[k] = v
       }
@@ -499,7 +499,7 @@ pub fn Scope::selected_sources(
     Some(s) => return s
     None => ()
   }
-  let result : Map[String, (@core.Expr, Source)] = {}
+  let result : Map[String, (@core.Expr, Source)] = Map([])
   for r in self.references() {
     let (name, node) = r
     if self.semi_anti_join_tables_.contains(name) {
@@ -730,7 +730,7 @@ pub fn Scope::key(self : Scope) -> Int {
 /// Count the number of times each source in this tree is referenced
 /// (keyed by `Source::key`).
 pub fn Scope::ref_count(self : Scope) -> Map[Int, Int] {
-  let counts : Map[Int, Int] = {}
+  let counts : Map[Int, Int] = Map([])
   fn bump(s : Source) {
     let k = s.key()
     counts[k] = counts.get_or_default(k, 0) + 1
@@ -922,7 +922,7 @@ fn traverse_set_operation(
 
 ///|
 fn traverse_ctes(scope : Scope, out : Array[Scope]) -> Unit raise @core.SqlglotError {
-  let sources : Map[String, Source] = {}
+  let sources : Map[String, Source] = Map([])
   for cte in scope.ctes() {
     let cte_name = cte.alias_()
     match scope.expression.arg("with_") {
@@ -984,7 +984,7 @@ fn is_from_or_join(expression : @core.Expr) -> Bool {
 
 ///|
 fn traverse_tables(scope : Scope, out : Array[Scope]) -> Unit raise @core.SqlglotError {
-  let sources : Map[String, Source] = {}
+  let sources : Map[String, Source] = Map([])
   let expressions : Array[@core.Expr] = []
   match scope.expression.arg("from_") {
     Some(f) =>
@@ -1103,7 +1103,7 @@ fn traverse_udtfs(scope : Scope, out : Array[Scope]) -> Unit raise @core.Sqlglot
   } else {
     []
   }
-  let sources : Map[String, Source] = {}
+  let sources : Map[String, Source] = Map([])
   for expression in udtf_expressions {
     if expression.kind.is_a(Subquery) {
       let child_out = []

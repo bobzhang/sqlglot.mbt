@@ -97,7 +97,7 @@ fn tables_of_value(
   v : @executor.Value,
 ) -> Map[String, @executor.TableData] raise {
   guard v is Dict(kvs) else { fail("not a dict") }
-  let out : Map[String, @executor.TableData] = {}
+  let out : Map[String, @executor.TableData] = Map([])
   for kv in kvs {
     guard kv.0 is Str(k) else { fail("bad key") }
     out[k] = records_of(kv.1)
@@ -115,7 +115,7 @@ fn mk_tables(src : String) -> Map[String, @executor.TableData] raise {
 fn schema_of_value(v : @executor.Value) -> @optimizer.SchemaNode raise {
   match v {
     Dict(kvs) => {
-      let out : Map[String, @optimizer.SchemaNode] = {}
+      let out : Map[String, @optimizer.SchemaNode] = Map([])
       for kv in kvs {
         guard kv.0 is Str(k) else { fail("bad key") }
         out[k] = schema_of_value(kv.1)

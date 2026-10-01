@@ -17,7 +17,7 @@ pub fn qualify_columns(
   }
   let dialect = schema.dialect
   let pseudocolumns = dialect.cfg.pseudocolumns
-  let ancestry : Map[Int, (Scope?, Bool?)] = {}
+  let ancestry : Map[Int, (Scope?, Bool?)] = Map([])
   for scope in traverse_scope(expression) {
     if dialect.cfg.prefer_cte_alias_column {
       pushdown_cte_alias_columns(scope)
@@ -186,7 +186,7 @@ fn expand_using(
   scope : Scope,
   resolver : Resolver,
 ) -> ColumnTables raise @core.SqlglotError {
-  let columns : Map[String, String] = {}
+  let columns : Map[String, String] = Map([])
   fn update_source_columns(source_name : String) raise @core.SqlglotError {
     for column_name in resolver.get_source_columns(source_name) {
       if !columns.contains(column_name) {
@@ -414,7 +414,7 @@ fn expand_alias_refs_impl(
   if !expression.kind.is_a(Select) || dialect.cfg.disables_alias_ref_expansion {
     return
   }
-  let alias_to_expression : Map[String, (@core.Expr, Int)] = {}
+  let alias_to_expression : Map[String, (@core.Expr, Int)] = Map([])
   let projections : @set.Set[String] = @set.new()
   for s in expression.selects() {
     projections.add(s.alias_or_name())
@@ -610,7 +610,7 @@ fn expand_order_by_and_distinct_on(
     match alias_names_ {
       Some(a) => a
       None => {
-        let counts : Map[String, Int] = {}
+        let counts : Map[String, Int] = Map([])
         for n in expression.named_selects() {
           counts[n] = counts.get_or_default(n, 0) + 1
         }
@@ -1194,7 +1194,7 @@ pub fn pivot_output_columns(
   }
   // dict(zip(post_rename, pre_rename))
   let keys = []
-  let values : Map[String, String] = {}
+  let values : Map[String, String] = Map([])
   for i in 0..<@core.min_int(post_rename.length(), pre_rename.length()) {
     let k = post_rename[i]
     if !values.contains(k) {
