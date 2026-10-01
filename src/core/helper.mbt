@@ -476,3 +476,21 @@ pub fn is_safe_identifier(text : String) -> Bool {
   }
   !first
 }
+
+///|
+pub fn min_int(a : Int, b : Int) -> Int {
+  if a < b {
+    a
+  } else {
+    b
+  }
+}
+
+///|
+pub fn max_int(a : Int, b : Int) -> Int {
+  if a > b {
+    a
+  } else {
+    b
+  }
+}

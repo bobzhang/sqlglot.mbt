@@ -167,6 +167,8 @@ def gen_kinds():
         for c in classes:
             owner = -1
             for a in c.__mro__:
+                if a in (exp.Expr, exp.Expression):
+                    break
                 if prop in a.__dict__:
                     owner = idx.get(a, -1)
                     break

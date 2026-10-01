@@ -272,7 +272,7 @@ pub fn Parser::parse_exists(
   not_? : Bool = false,
 ) -> Bool? raise SqlglotError {
   if !self.match_text("IF") {
-    return None
+    return Some(false)
   }
   if not_ && !self.match_(NOT) {
     return Some(false)

@@ -20,8 +20,18 @@ test "parser matches python AST on identity fixtures" {
     let got = e.canonical()
     if got != expected {
       failures += 1
-      if failures <= 15 {
-        println("MISMATCH \{sql}\n  got: \{got}\n  exp: \{expected}")
+      if failures <= 60 {
+        // show the first differing region
+        let g = got.to_array()
+        let x = expected.to_array()
+        let mut k = 0
+        while k < g.length() && k < x.length() && g[k] == x[k] {
+          k += 1
+        }
+        let s0 = if k > 40 { k - 40 } else { 0 }
+        let ge = if k + 80 < g.length() { k + 80 } else { g.length() }
+        let xe = if k + 80 < x.length() { k + 80 } else { x.length() }
+        println("MISMATCH \{sql}\n  got: ...\{String::from_array(g[s0:ge])}\n  exp: ...\{String::from_array(x[s0:xe])}")
       }
     }
   }

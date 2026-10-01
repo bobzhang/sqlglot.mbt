@@ -1545,3 +1545,125 @@ pub impl Hash for Expr with hash_combine(self, hasher) {
     hash_value(hasher, self.args[k], raw)
   }
 }
+
+// ---------------------------------------------------------------------------
+// Selectable / Query properties
+
+///|
+/// `Selectable.selects`: the projections of a query-like expression.
+pub fn Expr::selects(self : Expr) -> Array[Expr] {
+  match self.kind.owner_selects() {
+    Some(Select) => self.expressions()
+    Some(SetOperation) => {
+      let mut e = self
+      while e.kind.is_a(SetOperation) {
+        match e.this() {
+          Some(t) => e = t.unnest()
+          None => break
+        }
+      }
+      if e.kind.owner_selects() is Some(_) {
+        e.selects()
+      } else {
+        []
+      }
+    }
+    Some(Table) => []
+    Some(DDL) =>
+      match self.expression() {
+        Some(e) if e.kind.is_a(Query) => e.selects()
+        _ => []
+      }
+    Some(UDTF) =>
+      match self.arg("alias") {
+        Some(a) => a.list("columns")
+        None => []
+      }
+    Some(Unnest) => {
+      let columns = match self.arg("alias") {
+        Some(a) => a.list("columns")
+        None => []
+      }
+      match self.get("offset") {
+        Some(Node(o)) => columns + [o]
+        Some(Bool(true)) => columns + [to_identifier("offset")]
+        _ => columns
+      }
+    }
+    Some(Lateral) => {
+      let columns = match self.arg("alias") {
+        Some(a) => a.list("columns")
+        None => []
+      }
+      match self.this() {
+        Some(t) if t.kind == Unnest =>
+          match t.arg("offset") {
+            Some(o) if o.kind == Identifier => columns + [o]
+            _ => columns
+          }
+        _ => columns
+      }
+    }
+    Some(DerivedTable) =>
+      match self.this() {
+        Some(t) if t.kind.is_a(Query) => t.selects()
+        _ => []
+      }
+    Some(k) if k == Values || k == Query => []
+    _ => []
+  }
+}
+
+///|
+/// `Selectable.named_selects`: output names of the projections.
+pub fn Expr::named_selects(self : Expr) -> Array[String] {
+  match self.kind.owner_named_selects() {
+    Some(Select) => {
+      let out = []
+      for e in self.expressions() {
+        if !e.alias_or_name().is_empty() {
+          out.push(e.output_name())
+        } else if e.kind == Aliases {
+          for a in e.expressions() {
+            out.push(a.name())
+          }
+        }
+      }
+      out
+    }
+    Some(SetOperation) => {
+      let mut expr = self
+      while expr.kind.is_a(SetOperation) {
+        if expr.has("by_name") {
+          let left = expr.this().unwrap().unnest().named_selects()
+          let right = expr.expression().unwrap().unnest().named_selects()
+          let out = []
+          for n in left + right {
+            if !out.contains(n) {
+              out.push(n)
+            }
+          }
+          return out
+        }
+        expr = expr.this().unwrap().unnest()
+      }
+      expr.selects().map(s => s.output_name())
+    }
+    Some(Table) => []
+    Some(DDL) =>
+      match self.expression() {
+        Some(e) if e.kind.is_a(Query) => e.named_selects()
+        _ => []
+      }
+    _ => self.selects().map(s => s.output_name())
+  }
+}
+
+///|
+/// `Query.ctes`
+pub fn Expr::ctes(self : Expr) -> Array[Expr] {
+  match self.arg("with_") {
+    Some(w) => w.expressions()
+    None => []
+  }
+}
