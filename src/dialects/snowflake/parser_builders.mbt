@@ -413,7 +413,7 @@ fn build_generator(args : Array[@core.Expr]) -> @core.Expr {
 
 ///|
 /// `build_object_construct` (shared by the parser and the generator).
-pub fn build_object_construct(args : Array[@core.Expr]) -> @core.Expr {
+fn build_object_construct(args : Array[@core.Expr]) -> @core.Expr {
   let expression = @core.build_var_map(args)
   if expression.kind == StarMap {
     return expression
