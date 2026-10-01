@@ -2189,7 +2189,7 @@ pub fn Generator::getextract_sql(
     Some(
       mk(JSONExtract, [
         ("this", Some(this)),
-        ("expression", gen_to_json_path(self.dialect, expr)),
+        ("expression", self.dialect.to_json_path(expr)),
       ]),
     ),
   )

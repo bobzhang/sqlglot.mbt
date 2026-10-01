@@ -11,12 +11,6 @@ pub let simplify_hook : Ref[((Expr, Dialect) -> Expr raise SqlglotError)?] = Ref
 )
 
 ///|
-/// `sqlglot.jsonpath.parse(path, dialect)`; used by `gen_to_json_path`.
-pub let parse_json_path_hook : Ref[
-  ((String, Dialect) -> Expr raise SqlglotError)?,
-] = Ref(None)
-
-///|
 /// Annotates types using `annotate_types_hook`, or a minimal fallback that only
 /// types integer literals.
 pub fn gen_annotate_types(
@@ -26,8 +20,23 @@ pub fn gen_annotate_types(
   match annotate_types_hook.val {
     Some(f) => f(expression, dialect)
     None => {
-      if expression.get_type() is None && expression.is_int() {
-        expression.set_type(Some(datatype_of(DType::INT)))
+      // Minimal fallback until the optimizer's annotate_types is available.
+      if expression.get_type() is None {
+        let dtype = if expression.is_int() {
+          Some(DType::INT)
+        } else if expression.is_string() {
+          Some(DType::VARCHAR)
+        } else if expression.kind == Kind::Array {
+          Some(DType::ARRAY)
+        } else if expression.kind == Boolean {
+          Some(DType::BOOLEAN)
+        } else {
+          None
+        }
+        match dtype {
+          Some(d) => expression.set_type(Some(datatype_of(d)))
+          None => ()
+        }
       }
       expression
     }
@@ -56,37 +65,6 @@ fn gen_simplify(
       }
       expression
     }
-  }
-}
-
-///|
-/// Python `Dialect.to_json_path(path)`.
-pub fn gen_to_json_path(dialect : Dialect, path : Expr?) -> Expr? {
-  match path {
-    Some(p) if p.kind.is_a(Literal) => {
-      let mut path_text = p.name()
-      if p.is_number() {
-        path_text = "[" + path_text + "]"
-      }
-      match parse_json_path_hook.val {
-        Some(f) =>
-          try f(path_text, dialect) catch {
-            err => {
-              if dialect.cfg.strict_json_path_syntax {
-                let stripped = py_lstrip(path_text)
-                if !stripped.has_prefix("lax") && !stripped.has_prefix("strict") {
-                  log_warning("Invalid JSON path syntax. " + err.message())
-                }
-              }
-              path
-            }
-          } noraise {
-            r => Some(r)
-          }
-        None => path
-      }
-    }
-    _ => path
   }
 }
 
