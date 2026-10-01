@@ -108,7 +108,15 @@ test "simplify: gen" {
   let forged = parse_sql("v IN (r'x')", read="spark")
   forged.find([RawString]).unwrap().set("this", "a,RAWSTRING :this,b")
   assert_not_eq(@optimizer.gen(raw_in), @optimizer.gen(forged))
-  // SKIPPED: `gen(exp.Anonymous(this=5))` raising a ValueError is a Python type check.
+  try @optimizer.gen(@core.mk(Anonymous, [("this", 5)])) catch {
+    @core.ValueError(msg) =>
+      assert_true(
+        msg.contains("Anonymous.this expects a str or an Identifier, got 'int'."),
+      )
+    e => fail("expected ValueError, got \{e}")
+  } noraise {
+    _ => fail("expected ValueError")
+  }
 }
 
 ///|
@@ -155,11 +163,12 @@ test "simplify: nested" {
 ///|
 test "simplify: gen of every function" {
   let mut n = 0
+  // `exp.ALL_FUNCTIONS` excludes the AggFunc, Anonymous and Func base classes
   for kind in @core.all_kinds {
-    if kind.is_a(Func) {
+    if kind.is_a(Func) && !(kind is (AggFunc | Anonymous | Func)) {
       @optimizer.gen(@core.mk0(kind)) |> ignore
       n += 1
     }
   }
-  assert_true(n > 0)
+  assert_eq(n, 566)
 }
