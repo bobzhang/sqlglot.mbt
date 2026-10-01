@@ -1,6 +1,6 @@
-// Generator overrides for the dune dialect.
+// Port of sqlglot/generators/dune.py
 
 ///|
 fn configure_generator(d : @core.Dialect) -> Unit {
-  ignore(d)
+  d.gen_fns.transforms[HexString] = (_, e) => "0x\{e.text("this")}"
 }
