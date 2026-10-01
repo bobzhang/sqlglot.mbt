@@ -93,7 +93,7 @@ pub fn build_hex(args : Array[Expr], p : Parser) -> Expr {
 ///|
 pub fn build_lower(args : Array[Expr]) -> Expr {
   match arg(args, 0) {
-    Some(a) if a.kind == Hex => mk1(LowerHex, a.this())
+    Some(a) if a.kind.is_a(Hex) => mk1(LowerHex, a.this())
     a => mk1(Lower, a)
   }
 }
@@ -101,7 +101,7 @@ pub fn build_lower(args : Array[Expr]) -> Expr {
 ///|
 pub fn build_upper(args : Array[Expr]) -> Expr {
   match arg(args, 0) {
-    Some(a) if a.kind == Hex => mk1(Hex, a.this())
+    Some(a) if a.kind.is_a(Hex) => mk1(Hex, a.this())
     a => mk1(Upper, a)
   }
 }
