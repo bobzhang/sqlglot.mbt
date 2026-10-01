@@ -88,7 +88,7 @@ fn column_with_table(name : String, table? : String, quoted? : Bool) -> @core.Ex
 ///|
 /// `exp.column(identifier, table=identifier)`.
 fn column_with_ident(name : @core.Expr, table? : @core.Expr) -> @core.Expr {
-  @core.mk(Column, [("this", name), ("table", table)])
+  @core.mk(Column, [("this", name.copy()), ("table", table.map(t => t.copy()))])
 }
 
 ///|
