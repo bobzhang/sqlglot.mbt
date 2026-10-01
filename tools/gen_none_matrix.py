@@ -55,6 +55,11 @@ LISTS = {
     "[1, None]": ["1", None],
     "[False]": [False],
     "[1]": ["1"],
+    # elements that generate no SQL: Python's generator skips them but still counts
+    # them when placing separators
+    "[1, '']": ["1", ""],
+    "['', 1]": ["", "1"],
+    "[1, NULL]": ["1", "NULL"],
 }
 
 
@@ -63,7 +68,9 @@ def value_of(tag, table):
     if tag == "NULL":
         return exp.Null()
     if isinstance(v, list):
-        return [exp.Literal.number(1) if x == "1" else x for x in v]
+        return [
+            exp.Literal.number(1) if x == "1" else exp.Null() if x == "NULL" else x for x in v
+        ]
     return v
 
 

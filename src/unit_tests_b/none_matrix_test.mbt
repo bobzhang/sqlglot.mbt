@@ -61,6 +61,9 @@ fn none_matrix_value(tag : String) -> Value? {
     "[1, None]" => IntoValue::into_value([Some(@core.literal_number("1")), None])
     "[False]" => Some(List([Bool(false)]))
     "[1]" => Some(List([Node(@core.literal_number("1"))]))
+    "[1, '']" => Some(List([Node(@core.literal_number("1")), Str("")]))
+    "['', 1]" => Some(List([Str(""), Node(@core.literal_number("1"))]))
+    "[1, NULL]" => Some(List([Node(@core.literal_number("1")), Node(@core.null_())]))
     _ => abort("unknown value \{tag}")
   }
 }
