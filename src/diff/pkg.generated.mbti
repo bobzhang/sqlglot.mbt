@@ -1,0 +1,35 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "hongbozhang/sqlglot/diff"
+
+import {
+  "hongbozhang/sqlglot/core",
+}
+
+// Values
+pub fn diff(@core.Expr, @core.Expr, matchings? : Array[(@core.Expr, @core.Expr)], delta_only? : Bool, f? : Double, t? : Double, dialect? : @core.Dialect) -> Array[Edit]
+
+// Errors
+
+// Types and methods
+pub struct ChangeDistiller {
+  f : Double
+  t : Double
+  dialect : @core.Dialect
+  // private fields
+}
+pub fn ChangeDistiller::diff(Self, @core.Expr, @core.Expr, matchings? : Array[(@core.Expr, @core.Expr)], delta_only? : Bool) -> Array[Edit]
+pub fn ChangeDistiller::new(f? : Double, t? : Double, dialect? : @core.Dialect) -> Self
+
+pub(all) enum Edit {
+  Insert(@core.Expr)
+  Remove(@core.Expr)
+  Move(source~ : @core.Expr, target~ : @core.Expr)
+  Update(source~ : @core.Expr, target~ : @core.Expr)
+  Keep(source~ : @core.Expr, target~ : @core.Expr)
+}
+pub fn Edit::to_string(Self) -> String
+pub impl Eq for Edit
+
+// Type aliases
+
+// Traits

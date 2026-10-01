@@ -1,0 +1,4547 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "hongbozhang/sqlglot/core"
+
+import {
+  "moonbitlang/core/debug",
+  "moonbitlang/core/ref",
+  "moonbitlang/core/set",
+}
+
+// Values
+pub fn add_(Expr, Expr) -> Expr
+
+pub fn add_recursive_cte_column_names(Expr) -> Expr raise SqlglotError
+
+pub fn add_within_group_for_percentiles(Expr) -> Expr raise SqlglotError
+
+pub fn alias_(Expr, String, quoted? : Bool, copy? : Bool) -> Expr
+
+pub fn alias_expr(Expr, Expr?, copy? : Bool) -> Expr
+
+pub fn alias_table(Expr, String, columns? : Array[String]) -> Expr
+
+pub let all_dtypes : FixedArray[DType]
+
+pub let all_json_path_parts : Array[Kind]
+
+pub let all_kinds : FixedArray[Kind]
+
+pub let all_token_types : FixedArray[TokenType]
+
+pub fn and_(Array[Expr], wrap? : Bool) -> Expr
+
+pub let annotate_types_hook : @ref.Ref[((Expr, Dialect) -> Expr raise SqlglotError)?]
+
+pub fn any_to_exists(Expr) -> Expr raise SqlglotError
+
+pub fn any_value_to_max_sql(Generator, Expr) -> String raise SqlglotError
+
+pub fn apply_index_offset(Expr, Array[Expr], Int, Dialect) -> Array[Expr]
+
+pub fn apply_set_operation(Array[PyObj], Kind, distinct? : Bool, dialect? : Dialect, copy? : Bool) -> Expr raise SqlglotError
+
+pub fn approx_count_distinct_sql(Generator, Expr) -> String raise SqlglotError
+
+pub fn arg_max_or_min_no_count(String) -> (Generator, Expr) -> String raise SqlglotError
+
+pub fn array_(Array[Expr]) -> Expr
+
+pub fn array_append_sql(String, swap_params? : Bool) -> (Generator, Expr) -> String raise SqlglotError
+
+pub fn array_compact_sql(Generator, Expr) -> String raise SqlglotError
+
+pub fn array_concat_sql(String) -> (Generator, Expr) -> String raise SqlglotError
+
+pub fn arrow_json_extract_sql(Generator, Expr, op? : String) -> String raise SqlglotError
+
+pub fn base_after_having_modifier_transforms() -> Array[(String, (Generator, Expr) -> String raise SqlglotError)]
+
+pub fn base_dialect() -> Dialect
+
+pub fn base_dialect_config() -> DialectConfig
+
+pub fn base_generator_config() -> GeneratorConfig
+
+pub fn base_generator_fns() -> GeneratorFns
+
+pub fn base_generator_transforms() -> Map[Kind, (Generator, Expr) -> String raise SqlglotError]
+
+pub fn base_jsonpath_tokenizer_settings_raw() -> TokenizerSettings
+
+pub fn base_parser_config() -> ParserConfig
+
+pub fn base_parser_fns() -> ParserFns
+
+pub fn base_tokenizer_settings_raw() -> TokenizerSettings
+
+pub fn binary_from_function(Kind) -> (Array[Expr], Parser) -> Expr raise SqlglotError
+
+pub fn binary_range_parser(Kind, reverse_args? : Bool) -> (Parser, Expr?) -> Expr? raise SqlglotError
+
+pub fn bool_xor_sql(Generator, Expr) -> String raise SqlglotError
+
+pub fn boolean(Bool) -> Expr
+
+pub fn bracket_to_element_at_sql(Generator, Expr) -> String raise SqlglotError
+
+pub fn build_array_append(Array[Expr], Parser) -> Expr
+
+pub fn build_array_concat(Array[Expr], Parser) -> Expr
+
+pub fn build_array_constructor(Kind, Array[Expr], TokenType, Dialect) -> Expr
+
+pub fn build_array_prepend(Array[Expr], Parser) -> Expr
+
+pub fn build_array_remove(Array[Expr], Parser) -> Expr
+
+pub fn build_coalesce(Array[Expr], is_nvl? : Bool, is_null? : Bool) -> Expr
+
+pub fn build_convert_timezone(Array[Expr], default_source_tz? : String) -> Expr
+
+pub fn build_date_delta(Kind, unit_mapping? : Map[String, String], default_unit? : String, supports_timezone? : Bool) -> (Array[Expr], Parser) -> Expr raise SqlglotError
+
+pub fn build_date_delta_with_interval(Kind, default_unit? : String) -> (Array[Expr], Parser) -> Expr raise SqlglotError
+
+pub fn build_default_decimal_type(precision? : Int, scale? : Int) -> (Expr) -> Expr
+
+pub fn build_extract_json_with_path(Kind) -> (Array[Expr], Parser) -> Expr raise SqlglotError
+
+pub fn build_formatted_time(Kind, dialect_override? : String, default? : Bool, default_format? : String) -> (Array[Expr], Parser) -> Expr raise SqlglotError
+
+pub fn build_formatted_time_expr(Kind, Array[Expr], Dialect, dialect_override? : String, default? : Bool, default_format? : String) -> Expr raise SqlglotError
+
+pub fn build_hex(Array[Expr], Parser) -> Expr
+
+pub fn build_json_extract_op(Parser, Expr?, Expr?) -> Expr? raise SqlglotError
+
+pub fn build_json_extract_path(Kind, zero_based_indexing? : Bool, arrow_req_json_type? : Bool, json_type? : String) -> (Array[Expr], Parser) -> Expr raise SqlglotError
+
+pub fn build_json_extract_scalar_op(Parser, Expr?, Expr?) -> Expr? raise SqlglotError
+
+pub fn build_jsonb_contains_top_key_op(Parser, Expr?, Expr?) -> Expr? raise SqlglotError
+
+pub fn build_jsonb_extract_op(Parser, Expr?, Expr?) -> Expr? raise SqlglotError
+
+pub fn build_jsonb_extract_scalar_op(Parser, Expr?, Expr?) -> Expr? raise SqlglotError
+
+pub fn build_like(Array[Expr]) -> Expr
+
+pub fn build_like_fn(Kind, not_like? : Bool) -> (Array[Expr], Parser) -> Expr raise SqlglotError
+
+pub fn build_locate_strposition(Array[Expr]) -> Expr
+
+pub fn build_logarithm(Array[Expr], Parser) -> Expr
+
+pub fn build_lower(Array[Expr]) -> Expr
+
+pub fn build_mod(Array[Expr]) -> Expr
+
+pub fn build_pad(Array[Expr], is_left? : Bool) -> Expr
+
+pub fn build_regexp_extract(Kind) -> (Array[Expr], Parser) -> Expr raise SqlglotError
+
+pub fn build_replace_with_optional_replacement(Array[Expr]) -> Expr
+
+pub fn build_timestamp_from_parts(Array[Expr]) -> Expr
+
+pub fn build_timestamp_trunc(Array[Expr]) -> Expr
+
+pub fn build_timetostr_or_tochar(Array[Expr], Dialect) -> Expr raise SqlglotError
+
+pub fn build_trim(Array[Expr], is_left? : Bool, reverse_args? : Bool) -> Expr
+
+pub fn build_trunc(Array[Expr], Dialect, date_trunc_unabbreviate? : Bool, default_date_trunc_unit? : String, date_trunc_requires_part? : Bool, fractions_supported? : Bool) -> Expr raise SqlglotError
+
+pub fn build_upper(Array[Expr]) -> Expr
+
+pub fn build_var_map(Array[Expr]) -> Expr
+
+pub fn camel_to_snake_case(String) -> String
+
+pub fn case_(this? : Expr) -> Expr
+
+pub fn case_else(Expr, Expr, copy? : Bool) -> Expr
+
+pub fn case_when(Expr, Expr, Expr, copy? : Bool) -> Expr
+
+pub fn cast_(Expr, DType, copy? : Bool) -> Expr
+
+pub fn cast_to(Expr, Expr, copy? : Bool) -> Expr
+
+pub fn cast_to_type(Expr, Expr) -> Expr
+
+pub fn char_lower(Char) -> Char
+
+pub fn char_upper(Char) -> Char
+
+pub fn column_from_parts(Expr, table? : Expr?, db? : Expr?, catalog? : Expr?, fields? : Array[Expr]) -> Expr
+
+pub fn column_of(String, table? : String, quoted? : Bool) -> Expr
+
+pub fn column_table_names(Expr, exclude? : String) -> Array[String]
+
+pub fn combine_conditions(Array[Expr], Kind, wrap? : Bool) -> Expr
+
+pub fn combine_py(Array[PyObj], Kind, dialect? : Dialect, copy? : Bool, wrap? : Bool) -> Expr raise SqlglotError
+
+pub fn concat_messages(Array[String], Int) -> String
+
+pub fn concat_to_dpipe_sql(Generator, Expr) -> String raise SqlglotError
+
+pub fn concat_ws_to_dpipe_sql(Generator, Expr) -> String raise SqlglotError
+
+pub fn[T : IntoPy] condition(T, dialect? : Dialect, copy? : Bool) -> Expr raise SqlglotError
+
+pub fn[T : IntoPy] convert(T, copy? : Bool) -> Expr raise SqlglotError
+
+pub fn count_if_to_sum(Generator, Expr) -> String raise SqlglotError
+
+pub fn csv(Array[String], sep? : String) -> String
+
+pub fn ctas_with_tmp_tables_to_create_tmp_view(tmp_storage_provider? : (Expr) -> Expr raise SqlglotError) -> (Expr) -> Expr raise SqlglotError
+
+pub fn datatype_build(DType, kwargs? : ArrayView[(String, &IntoValue)]) -> Expr
+
+pub fn datatype_from_str(String, dialect? : Dialect, udt? : Bool) -> Expr raise SqlglotError
+
+pub fn datatype_is_type(Expr, ArrayView[DType]) -> Bool
+
+pub fn datatype_is_type_expr(Expr, Expr) -> Bool
+
+pub fn datatype_of(DType) -> Expr
+
+pub fn date_add_interval_sql(String, String) -> (Generator, Expr) -> String raise SqlglotError
+
+pub fn date_delta_sql(String, cast? : Bool) -> (Generator, Expr) -> String raise SqlglotError
+
+pub fn date_delta_to_binary_interval_op(cast? : Bool) -> (Generator, Expr) -> String raise SqlglotError
+
+pub fn date_trunc_to_time(Array[Expr]) -> Expr
+
+pub fn datestrtodate_sql(Generator, Expr) -> String raise SqlglotError
+
+pub let default_pretty : @ref.Ref[Bool]
+
+pub fn dialect_class_name(Dialect) -> String
+
+pub fn dialect_names() -> Array[String]
+
+pub fn div_(Expr, Expr) -> Expr
+
+pub fn dot_build(Array[Expr]) -> Expr
+
+pub let dtype_array_types : Array[DType]
+
+pub let dtype_binary_types : Array[DType]
+
+pub let dtype_float_types : Array[DType]
+
+pub fn dtype_from_name(String) -> DType?
+
+pub fn dtype_from_value(String) -> DType?
+
+pub let dtype_integer_types : Array[DType]
+
+pub let dtype_nested_types : Array[DType]
+
+pub let dtype_numeric_types : Array[DType]
+
+pub let dtype_real_types : Array[DType]
+
+pub let dtype_signed_integer_types : Array[DType]
+
+pub let dtype_struct_types : Array[DType]
+
+pub let dtype_temporal_types : Array[DType]
+
+pub let dtype_text_types : Array[DType]
+
+pub let dtype_unsigned_integer_types : Array[DType]
+
+pub fn eliminate_distinct_on(Expr) -> Expr raise SqlglotError
+
+pub fn eliminate_full_outer_join(Expr) -> Expr raise SqlglotError
+
+pub fn eliminate_qualify(Expr) -> Expr raise SqlglotError
+
+pub fn eliminate_semi_and_anti_joins(Expr) -> Expr raise SqlglotError
+
+pub fn eliminate_window_clause(Expr) -> Expr raise SqlglotError
+
+pub fn encode_decode_sql(Generator, Expr, String, replace? : Bool) -> String raise SqlglotError
+
+pub fn ends_with(String, String) -> Bool
+
+pub fn ensure_bools(Expr) -> Expr
+
+pub fn epoch_cast_to_ts(Expr) -> Expr raise SqlglotError
+
+pub fn exp_add(Expr, Expr) -> Expr
+
+pub fn exp_alias(Expr, Value, quoted? : Bool, copy? : Bool) -> Expr raise SqlglotError
+
+pub fn exp_and(Array[Expr], copy? : Bool, wrap? : Bool) -> Expr
+
+pub fn exp_binop(Kind, Expr, Expr) -> Expr
+
+pub fn exp_case() -> Expr
+
+pub fn exp_cast(Expr, DType, copy? : Bool, dialect? : Dialect) -> Expr
+
+pub fn exp_cast_to(Expr, Expr, copy? : Bool, dialect? : Dialect) -> Expr
+
+pub fn exp_div(Expr, Expr) -> Expr
+
+pub fn exp_eq(Expr, Expr) -> Expr
+
+pub fn exp_is(Expr, Expr) -> Expr
+
+pub fn exp_neq(Expr, Expr) -> Expr
+
+pub fn exp_not(Expr, copy? : Bool) -> Expr
+
+pub fn exp_or(Array[Expr], copy? : Bool, wrap? : Bool) -> Expr
+
+pub fn exp_paren(Expr, copy? : Bool) -> Expr
+
+pub fn exp_select_from(Array[Expr], Expr) -> Expr
+
+pub fn exp_subquery_of(Expr, alias_? : String, copy? : Bool) -> Expr
+
+pub fn exp_subquery_with_alias_expr(Expr, Expr?, copy? : Bool) -> Expr
+
+pub fn exp_table_from_identifier(Expr?) -> Expr raise SqlglotError
+
+pub fn exp_union(Expr, Expr, distinct? : Bool) -> Expr
+
+pub fn exp_wrap(Expr, Kind) -> Expr
+
+pub fn explode_to_unnest_sql(Generator, Expr) -> String raise SqlglotError
+
+pub fn expr_or(Expr?, () -> Expr? raise SqlglotError) -> Expr? raise SqlglotError
+
+pub fn expr_to_sql(Expr) -> String raise SqlglotError
+
+pub fn false_() -> Expr
+
+pub fn filter_array_using_unnest(Generator, Expr) -> String raise SqlglotError
+
+pub fn find_all_in_scope(Expr, ArrayView[Kind]) -> Array[Expr]
+
+pub fn find_in_scope(Expr, ArrayView[Kind]) -> Expr?
+
+pub fn find_new_name((String) -> Bool, String) -> String
+
+pub fn find_tables(Expr) -> Array[Expr]
+
+pub fn format_time(String, Map[String, String], Trie) -> String
+
+pub fn format_time_opt(String, Map[String, String], trie? : Trie) -> String?
+
+pub fn from_arg_list(Kind, Array[Expr]) -> Expr
+
+pub fn from_arg_list_builder(Kind) -> (Array[Expr], Parser) -> Expr raise SqlglotError
+
+pub fn func_(String, Array[Expr], dialect? : Dialect) -> Expr raise SqlglotError
+
+pub let function_by_name : Array[(String, Kind)]
+
+pub fn gen_annotate_types(Expr, Dialect) -> Expr raise SqlglotError
+
+pub fn gen_apply_index_offset(Expr, Array[Expr], Int, Dialect) -> Array[Expr] raise SqlglotError
+
+pub fn gen_find_all_in_scope(Expr, ArrayView[Kind]) -> Array[Expr]
+
+pub fn gen_map_date_part(Expr?, Dialect) -> Expr?
+
+pub fn gen_unit_to_str(Expr, default? : String) -> Expr?
+
+pub fn gen_walk_in_scope(Expr, Array[Expr]) -> Unit
+
+pub fn gen_week_offset_to_dow(Int) -> Int
+
+pub let gen_week_start_day_to_dow : Map[String, Int]
+
+pub fn generate_series_sql(String, exclusive_func_name? : String) -> (Generator, Expr) -> String raise SqlglotError
+
+pub fn generatedasidentitycolumnconstraint_sql(Generator, Expr) -> String raise SqlglotError
+
+pub fn get_dialect(String) -> Dialect?
+
+pub fn getbit_sql(Generator, Expr) -> String raise SqlglotError
+
+pub fn groupconcat_sql(Generator, Expr, func_name? : String, sep? : String, within_group? : Bool, on_overflow? : Bool) -> String raise SqlglotError
+
+pub fn highlight_sql(String, Array[(Int, Int)], context_length? : Int) -> (String, String, String, String) raise SqlglotError
+
+pub fn ident(String) -> Expr
+
+pub fn if_sql(name? : String, false_value? : Expr) -> (Generator, Expr) -> String raise SqlglotError
+
+pub fn if_sql_str(name? : String, String) -> (Generator, Expr) -> String raise SqlglotError
+
+pub fn in_trie(Trie, ArrayView[String]) -> (TrieResult, Trie)
+
+pub fn in_trie_chars(Trie, ArrayView[Char]) -> (TrieResult, Trie)
+
+pub fn inherit_struct_field_names(Expr) -> Expr raise SqlglotError
+
+pub fn inline_array_sql(Generator, Expr) -> String raise SqlglotError
+
+pub fn inline_array_unless_query(Generator, Expr) -> String raise SqlglotError
+
+pub fn int_str_from_base(String, Int) -> String raise SqlglotError
+
+pub fn interval_day_time_match(String) -> Bool
+
+pub fn interval_string_findall(String) -> Array[(String, String)]
+
+pub fn is_alnum(Char) -> Bool
+
+pub fn is_alpha(Char) -> Bool
+
+pub fn is_digit_char(Char) -> Bool
+
+pub fn is_float_str(String) -> Bool
+
+pub fn is_identifier_char(Char) -> Bool
+
+pub fn is_int_str(String) -> Bool
+
+pub fn is_parse_json(Expr) -> Bool
+
+pub fn is_safe_identifier(String) -> Bool
+
+pub fn is_space(Char) -> Bool
+
+pub fn isnull_to_is_null(Array[Expr]) -> Expr
+
+pub fn jarowinkler_similarity(String) -> (Generator, Expr) -> String raise SqlglotError
+
+pub fn json_extract_segments(String, quoted_index? : Bool, op? : String) -> (Generator, Expr) -> String raise SqlglotError
+
+pub fn json_path_key_only_name(Generator, Expr) -> String raise SqlglotError
+
+pub fn json_path_part_transforms() -> Map[Kind, (Generator, Expr) -> String raise SqlglotError]
+
+pub fn json_quote(String) -> String
+
+pub fn kind_from_key(String) -> Kind?
+
+pub fn kind_from_name(String) -> Kind?
+
+pub fn left_to_substring_sql(Generator, Expr) -> String raise SqlglotError
+
+pub fn length_or_char_length_sql(Generator, Expr) -> String raise SqlglotError
+
+pub fn literal_int(Int) -> Expr
+
+pub fn literal_number(String) -> Expr
+
+pub fn literal_string(String) -> Expr
+
+pub fn log_error(String) -> Unit
+
+pub fn log_info(String) -> Unit
+
+pub fn log_warning(String) -> Unit
+
+pub fn lstrip_chars(String, String) -> String
+
+pub fn map_date_part(Expr?, dialect? : Dialect) -> Expr?
+
+pub fn map_date_part_expr(Expr, dialect? : Dialect) -> Expr
+
+pub fn max_int(Int, Int) -> Int
+
+pub fn max_or_greatest(Generator, Expr) -> String raise SqlglotError
+
+pub fn maybe_copy(Expr, Bool) -> Expr
+
+pub fn[T : IntoPy] maybe_parse(T, into? : ArrayView[Kind], dialect? : Dialect, prefix? : String, copy? : Bool, error_level? : ErrorLevel) -> Expr raise SqlglotError
+
+pub fn maybe_parse_str(String, dialect? : Dialect) -> Expr raise SqlglotError
+
+pub fn[T : Compare] merge_ranges(Array[(T, T)]) -> Array[(T, T)]
+
+pub fn merge_without_target_sql(Generator, Expr) -> String raise SqlglotError
+
+pub fn min_int(Int, Int) -> Int
+
+pub fn min_or_least(Generator, Expr) -> String raise SqlglotError
+
+pub fn mk(Kind, ArrayView[(String, &IntoValue)]) -> Expr
+
+pub fn mk0(Kind) -> Expr
+
+pub fn mk1(Kind, &IntoValue) -> Expr
+
+pub fn mk2(Kind, &IntoValue, &IntoValue) -> Expr
+
+pub fn months_between_sql(Generator, Expr) -> String raise SqlglotError
+
+pub fn move_ctes_to_top_level(Expr) -> Expr
+
+pub fn move_partitioned_by_to_schema_columns(Expr) -> Expr raise SqlglotError
+
+pub fn move_schema_columns_to_partitioned_by(Expr) -> Expr raise SqlglotError
+
+pub fn mul_(Expr, Expr) -> Expr
+
+pub fn name_sequence(String) -> () -> String
+
+pub fn new_trie(Iter[String]) -> Trie
+
+pub fn no_comment_column_constraint_sql(Generator, Expr) -> String raise SqlglotError
+
+pub fn no_datetime_sql(Generator, Expr) -> String raise SqlglotError
+
+pub fn no_ilike_sql(Generator, Expr) -> String raise SqlglotError
+
+pub fn no_last_day_sql(Generator, Expr) -> String raise SqlglotError
+
+pub fn no_make_interval_sql(Generator, Expr, sep? : String) -> String raise SqlglotError
+
+pub fn no_map_from_entries_sql(Generator, Expr) -> String raise SqlglotError
+
+pub fn no_paren_current_date_sql(Generator, Expr) -> String raise SqlglotError
+
+pub fn no_pivot_sql(Generator, Expr) -> String raise SqlglotError
+
+pub fn no_recursive_cte_sql(Generator, Expr) -> String raise SqlglotError
+
+pub fn no_tablesample_sql(Generator, Expr) -> String raise SqlglotError
+
+pub fn no_time_sql(Generator, Expr) -> String raise SqlglotError
+
+pub fn no_timestamp_sql(Generator, Expr) -> String raise SqlglotError
+
+pub fn no_trycast_sql(Generator, Expr) -> String raise SqlglotError
+
+pub fn normalize_identifiers(Expr, Dialect, store_original_column_identifiers? : Bool) -> Expr
+
+pub fn not_(Expr) -> Expr
+
+pub fn nth_value_from_sql(Generator, Expr) -> String raise SqlglotError
+
+pub fn null_() -> Expr
+
+pub let null_arg : Value?
+
+pub fn number_value(Expr) -> Value
+
+pub fn opt_list(Expr?) -> Array[Expr]
+
+pub fn or_(Array[Expr], wrap? : Bool) -> Expr
+
+pub fn paren(Expr) -> Expr
+
+pub fn parse(String, dialect? : Dialect, error_level? : ErrorLevel, error_message_context? : Int, max_errors? : Int, max_nodes? : Int) -> Array[Expr?] raise SqlglotError
+
+pub fn parse_identifier(String, dialect? : Dialect) -> Expr
+
+pub fn parse_int_str(String) -> Int64?
+
+pub fn parse_json_path(String, Dialect) -> Expr raise SqlglotError
+
+pub fn parse_one(String, dialect? : Dialect, into? : Array[Kind], error_level? : ErrorLevel, error_message_context? : Int, max_errors? : Int, max_nodes? : Int, into_is_list? : Bool) -> Expr raise SqlglotError
+
+pub fn parse_one_with(String, String, into? : Array[Kind]) -> Expr raise SqlglotError
+
+pub fn pivot_column_names(Array[Expr], Dialect) -> Array[String] raise SqlglotError
+
+pub fn preprocess(Array[(Expr) -> Expr raise SqlglotError], generator? : (Generator, Expr) -> String raise SqlglotError) -> (Generator, Expr) -> String raise SqlglotError
+
+pub fn properties_from_dict(Map[String, PyObj]) -> Expr raise SqlglotError
+
+pub fn property_sql(Generator, Expr) -> String raise SqlglotError
+
+pub let property_to_name : Map[Kind, String]
+
+pub fn py_decimal_str(String) -> String
+
+pub fn py_float_repr(Double) -> String
+
+pub fn py_len(String) -> Int
+
+pub fn[T : IntoPy] py_list(Array[T]) -> Array[PyObj]
+
+pub fn py_lower(String) -> String
+
+pub fn py_lstrip(String) -> String
+
+pub fn py_repr_str(String) -> String
+
+pub fn py_rstrip(String) -> String
+
+pub fn py_split(String, String) -> Array[String]
+
+pub fn py_split_ws(String) -> Array[String]
+
+pub fn py_str_value(Value?) -> String raise SqlglotError
+
+pub fn py_strip(String) -> String
+
+pub fn py_upper(String) -> String
+
+pub fn regexp_extract_sql(Generator, Expr) -> String raise SqlglotError
+
+pub fn regexp_replace_global_modifier(Expr) -> Expr?
+
+pub fn regexp_replace_sql(Generator, Expr) -> String raise SqlglotError
+
+pub fn register_dialect(String, () -> Dialect) -> Unit
+
+pub fn remove_from_array_using_filter(Generator, Expr) -> String raise SqlglotError
+
+pub fn remove_precision_parameterized_types(Expr) -> Expr raise SqlglotError
+
+pub fn remove_ts_or_ds_to_date(to_sql? : (Generator, Expr) -> String raise SqlglotError, args? : Array[String]) -> (Generator, Expr) -> String raise SqlglotError
+
+pub fn remove_unique_constraints(Expr) -> Expr raise SqlglotError
+
+pub fn remove_within_group_for_percentiles(Expr) -> Expr raise SqlglotError
+
+pub fn rename_func(String) -> (Generator, Expr) -> String raise SqlglotError
+
+pub fn replace_placeholders(Expr, Map[String, Expr]) -> Expr
+
+pub fn right_to_substring_sql(Generator, Expr) -> String raise SqlglotError
+
+pub fn[T : IntoPy] select_(Array[T], dialect? : Dialect) -> Expr raise SqlglotError
+
+pub fn select_star_from(Expr?) -> Expr
+
+pub fn sequence_sql(Generator, Expr) -> String raise SqlglotError
+
+pub fn set_operation(Kind, Expr, Expr, distinct? : Bool) -> Expr
+
+pub fn sha256_sql(Generator, Expr) -> String raise SqlglotError
+
+pub fn sha2_digest_sql(Generator, Expr) -> String raise SqlglotError
+
+pub let simplify_hook : @ref.Ref[((Expr, Dialect) -> Expr raise SqlglotError)?]
+
+pub let sqlglot_anonymous : String
+
+pub let sqlglot_meta : String
+
+pub fn starts_with(String, String) -> Bool
+
+pub fn str_is_alnum(String) -> Bool
+
+pub fn str_is_digit(String) -> Bool
+
+pub fn strip_chars(String, String) -> String
+
+pub fn strposition_sql(Generator, Expr, func_name? : String, supports_position? : Bool, supports_occurrence? : Bool, use_ansi_position? : Bool) -> String raise SqlglotError
+
+pub fn struct_extract_sql(Generator, Expr) -> String raise SqlglotError
+
+pub fn struct_kv_to_alias(Expr) -> Expr raise SqlglotError
+
+pub fn sub_(Expr, Expr) -> Expr
+
+pub fn subclasses_of(Kind) -> Array[Kind]
+
+pub fn subsecond_precision(String) -> Int
+
+pub fn substr(String, Int, Int) -> String
+
+pub fn[T] suggest_closest_match_and_fail(String, String, Array[String]) -> T raise SqlglotError
+
+pub fn table_of(String) -> Expr
+
+pub fn take_log_messages() -> Array[String]
+
+pub fn time_format(dialect? : String) -> (Generator, Expr) -> String? raise SqlglotError
+
+pub fn timestampdiff_sql(Generator, Expr) -> String raise SqlglotError
+
+pub fn timestamptrunc_sql(func? : String, zone? : Bool) -> (Generator, Expr) -> String raise SqlglotError
+
+pub fn timestrtotime_sql(Generator, Expr, include_precision? : Bool) -> String raise SqlglotError
+
+pub let timezones : @set.Set[String]
+
+pub fn to_bool_str(String) -> Bool?
+
+pub fn to_identifier(String, quoted? : Bool) -> Expr
+
+pub fn to_identifier_expr(Expr) -> Expr
+
+pub fn to_identifier_value(Value, quoted? : Bool, copy? : Bool) -> Expr raise SqlglotError
+
+pub fn to_number_with_nls_param(Generator, Expr) -> String raise SqlglotError
+
+pub fn to_table(String) -> Expr
+
+pub fn token_repr(Token) -> String
+
+pub fn token_type_from_name(String) -> TokenType?
+
+pub fn transpile(String, read? : Dialect, write? : Dialect, pretty? : Bool, identify? : String, error_level? : ErrorLevel, unsupported_level? : ErrorLevel) -> Array[String] raise SqlglotError
+
+pub fn trim_sql(Generator, Expr, default_trim_type? : String) -> String raise SqlglotError
+
+pub fn true_() -> Expr
+
+pub fn ts_or_ds_add_cast(Expr) -> Expr
+
+pub fn ts_or_ds_add_return_type(Expr) -> Expr
+
+pub fn[T : Hash + Eq + Compare] tsort(Map[T, Array[T]]) -> Array[T] raise SqlglotError
+
+pub let tsql_convert_format_mapping : Map[String, String]
+
+pub fn tuple_(Array[Expr]) -> Expr
+
+pub fn unabbreviate_unit(String) -> String?
+
+pub let unabbreviated_unit_name : Map[String, String]
+
+pub fn unit_to_str(Expr, default? : String) -> Expr?
+
+pub fn unit_to_var(Expr, default? : String) -> Expr?
+
+pub fn unnest_generate_date_array_using_recursive_cte(Expr) -> Expr raise SqlglotError
+
+pub fn unnest_generate_series(Expr) -> Expr raise SqlglotError
+
+pub fn unnest_to_explode(unnest_using_arrays_zip? : Bool) -> (Expr) -> Expr raise SqlglotError
+
+pub fn unqualify_columns(Expr) -> Expr raise SqlglotError
+
+pub fn unqualify_pivot_fields(Expr) -> Expr raise SqlglotError
+
+pub fn unqualify_unnest(Expr) -> Expr raise SqlglotError
+
+pub fn var_(String) -> Expr
+
+pub fn var_map_sql(Generator, Expr, map_func_name? : String) -> String raise SqlglotError
+
+pub fn var_of_expr(Expr) -> Expr
+
+pub fn walk_in_scope(Expr, prune? : (Expr) -> Bool) -> Array[Expr]
+
+pub fn week_offset_to_dow(Int) -> Int
+
+pub let week_start_day_to_dow : Map[String, Int]
+
+pub fn week_unit_to_dow(Expr?) -> Int?
+
+pub fn weekstart_unit_to_str(Generator, Expr, default? : String) -> Expr? raise SqlglotError
+
+pub fn wrap_binary(Expr) -> Expr
+
+// Errors
+pub(all) suberror SqlglotError {
+  TokenError(String, start~ : Int?, end~ : Int?)
+  ParseError(String, Array[ParseErrorInfo])
+  UnsupportedError(String)
+  OptimizeError(String)
+  SchemaError(String)
+  ExecuteError(String)
+  ValueError(String)
+}
+pub fn SqlglotError::message(Self) -> String
+pub impl Show for SqlglotError
+
+// Types and methods
+pub(all) enum DType {
+  ARRAY
+  AGGREGATEFUNCTION
+  SIMPLEAGGREGATEFUNCTION
+  BIGDECIMAL
+  BIGINT
+  BIGNUM
+  BIGSERIAL
+  BINARY
+  BIT
+  BLOB
+  BOOLEAN
+  BPCHAR
+  CHAR
+  CHARACTER_SET
+  DATE
+  DATE32
+  DATEMULTIRANGE
+  DATERANGE
+  DATETIME
+  DATETIME2
+  DATETIME64
+  DECIMAL
+  DECIMAL32
+  DECIMAL64
+  DECIMAL128
+  DECIMAL256
+  DECFLOAT
+  DOUBLE
+  DYNAMIC
+  ENUM
+  ENUM8
+  ENUM16
+  FILE
+  FIXEDSTRING
+  FLOAT
+  GEOGRAPHY
+  GEOGRAPHYPOINT
+  GEOMETRY
+  POINT
+  RING
+  LINESTRING
+  MULTILINESTRING
+  POLYGON
+  MULTIPOLYGON
+  HLLSKETCH
+  HSTORE
+  IMAGE
+  INET
+  INT
+  INT128
+  INT256
+  INT4MULTIRANGE
+  INT4RANGE
+  INT8MULTIRANGE
+  INT8RANGE
+  INTERVAL
+  IPADDRESS
+  IPPREFIX
+  IPV4
+  IPV6
+  JSON
+  JSONB
+  LIST
+  LONGBLOB
+  LONGTEXT
+  LOWCARDINALITY
+  MAP
+  MEDIUMBLOB
+  MEDIUMINT
+  MEDIUMTEXT
+  MONEY
+  NAME
+  NCHAR
+  NESTED
+  NOTHING
+  NULL
+  NUMMULTIRANGE
+  NUMRANGE
+  NVARCHAR
+  OBJECT
+  RANGE
+  ROWVERSION
+  SERIAL
+  SET
+  SMALLDATETIME
+  SMALLINT
+  SMALLMONEY
+  SMALLSERIAL
+  STRUCT
+  SUPER
+  TEXT
+  TINYBLOB
+  TINYTEXT
+  TIME
+  TIMETZ
+  TIME_NS
+  TIMESTAMP
+  TIMESTAMPNTZ
+  TIMESTAMPLTZ
+  TIMESTAMPTZ
+  TIMESTAMP_S
+  TIMESTAMP_MS
+  TIMESTAMP_NS
+  TINYINT
+  TSMULTIRANGE
+  TSRANGE
+  TSTZMULTIRANGE
+  TSTZRANGE
+  UBIGINT
+  UINT
+  UINT128
+  UINT256
+  UMEDIUMINT
+  UDECIMAL
+  UDOUBLE
+  UNION
+  UNKNOWN
+  USERDEFINED
+  USMALLINT
+  UTINYINT
+  UUID
+  VARBINARY
+  VARCHAR
+  VARIANT
+  VECTOR
+  XML
+  YEAR
+  TDIGEST
+} derive(Compare, Eq, Hash)
+pub fn DType::id(Self) -> Int
+pub fn DType::into_expr(Self) -> Expr
+pub fn DType::name(Self) -> String
+pub fn DType::value(Self) -> String
+pub impl IntoPy for DType
+pub impl IntoValue for DType
+pub impl Show for DType
+
+pub struct Dialect {
+  name : String
+  cfg : DialectConfig
+  tokenizer : TokenizerSettings
+  jsonpath_tokenizer : TokenizerSettings
+  mut jsonpath_var_tokens : Array[TokenType]
+  parser_cfg : ParserConfig
+  parser_fns : ParserFns
+  gen_cfg : GeneratorConfig
+  gen_fns : GeneratorFns
+  hooks : DialectHooks
+  mut normalization_strategy : NormalizationStrategy
+  mut version : (Int, Int, Int)
+  settings : Map[String, String]
+  mut supported_settings : Array[String]
+  mut time_trie : Trie
+  mut format_trie : Trie
+  mut inverse_time_trie : Trie
+  mut inverse_format_trie : Trie
+  parent : Dialect?
+}
+pub fn Dialect::base() -> Self
+pub fn Dialect::can_quote(Self, Expr, identify? : String) -> Bool
+pub fn Dialect::can_quote_base(Self, Expr, identify? : String) -> Bool
+pub fn Dialect::case_sensitive(Self, String) -> Bool
+pub fn Dialect::finalize(Self) -> Self
+pub fn Dialect::format_time(Self, Expr?) -> Expr?
+pub fn Dialect::format_time_str(Self, String) -> Expr
+pub fn Dialect::generate_sql(Self, Expr) -> String raise SqlglotError
+pub fn Dialect::generate_values_aliases(Self, Expr) -> Array[Expr]
+pub fn Dialect::get_or_raise(String) -> Self raise SqlglotError
+pub fn Dialect::instance(Self) -> Self
+pub fn Dialect::normalize_identifier(Self, Expr) -> Expr
+pub fn Dialect::normalize_identifier_base(Self, Expr) -> Expr
+pub fn Dialect::parse(Self, String, error_level? : ErrorLevel, error_message_context? : Int, max_errors? : Int, max_nodes? : Int) -> Array[Expr?] raise SqlglotError
+pub fn Dialect::parse_into(Self, Array[Kind], String, error_level? : ErrorLevel, error_message_context? : Int, max_errors? : Int, max_nodes? : Int, into_is_list? : Bool) -> Array[Expr?] raise SqlglotError
+pub fn Dialect::parser(Self, error_level? : ErrorLevel, error_message_context? : Int, max_errors? : Int, max_nodes? : Int) -> Parser
+pub fn Dialect::quote_identifier(Self, Expr, identify? : Bool) -> Expr
+pub fn Dialect::subclass(Self, String, (Self) -> Unit) -> Self
+pub fn Dialect::to_json_path(Self, Expr?) -> Expr?
+pub fn Dialect::to_json_path_base(Self, Expr?) -> Expr?
+pub fn Dialect::tokenize(Self, String) -> Array[Token] raise SqlglotError
+pub fn Dialect::tokenize_base(Self, String) -> Array[Token] raise SqlglotError
+pub impl Eq for Dialect
+pub impl Show for Dialect
+
+pub(all) struct DialectConfig {
+  mut alias_post_tablesample : Bool
+  mut alias_post_version : Bool
+  mut alter_table_add_required_for_each_column : Bool
+  mut alter_table_supports_cascade : Bool
+  mut annotate_all_scopes : Bool
+  mut array_agg_includes_nulls : Bool?
+  mut array_funcs_propagates_nulls : Bool
+  mut ascii_only_normalization : Bool
+  mut bit_end : String?
+  mut bit_start : String?
+  mut byte_end : String?
+  mut byte_start : String?
+  mut byte_strings_support_escaped_sequences : Bool
+  mut byte_string_is_bytes_type : Bool
+  mut coalesce_comparison_non_standard : Bool
+  mut concat_coalesce : Bool
+  mut concat_ws_coalesce : Bool
+  mut copy_params_are_csv : Bool
+  mut creatable_kind_mapping : Map[String, String]
+  mut dateint_format : String
+  mut date_format : String
+  mut date_part_mapping : Map[String, String]
+  mut default_functions_column_names : Map[Kind, String]
+  mut default_null_type : DType
+  mut disables_alias_ref_expansion : Bool
+  mut dpipe_is_string_concat : Bool
+  mut escaped_sequences : Map[String, String]
+  mut excludes_pseudocolumns_from_star : Bool
+  mut expand_only_group_alias_ref : Bool
+  mut force_early_alias_ref_expansion : Bool
+  mut format_mapping : Map[String, String]
+  mut has_distinct_array_constructors : Bool
+  mut hex_end : String?
+  mut hex_lowercase : Bool
+  mut hex_start : String?
+  mut hex_string_is_integer_type : Bool
+  mut identifiers_can_start_with_digit : Bool
+  mut identifier_end : String
+  mut identifier_start : String
+  mut index_offset : Int
+  mut initcap_default_delimiter_chars : String
+  mut initcap_supports_custom_delimiters : Bool
+  mut inverse_creatable_kind_mapping : Map[String, String]
+  mut inverse_format_mapping : Map[String, String]
+  mut inverse_time_mapping : Map[String, String]
+  mut inverse_vector_type_aliases : Map[String, String]
+  mut json_extract_scalar_scalar_only : Bool
+  mut json_path_single_dot_is_wildcard : Bool
+  mut least_greatest_ignores_nulls : Bool
+  mut log_base_first : Bool?
+  mut normalization_strategy : NormalizationStrategy
+  mut normalize_functions : StrOrBool
+  mut normalize_not_null : Bool
+  mut null_ordering : String
+  mut numbers_can_be_underscore_separated : Bool
+  mut on_condition_empty_before_error : Bool
+  mut prefer_cte_alias_column : Bool
+  mut preserve_original_names : Bool
+  mut prioritize_non_literal_types : Bool
+  mut projection_aliases_shadow_source_names : Bool
+  mut promote_to_inferred_datetime_type : Bool
+  mut pseudocolumns : @set.Set[String]
+  mut query_results_are_structs : Bool
+  mut quote_end : String
+  mut quote_start : String
+  mut regexp_extract_default_group : Int
+  mut regexp_extract_position_overflow_returns_null : Bool
+  mut requires_parenthesized_struct_access : Bool
+  mut safe_division : Bool
+  mut safe_to_eliminate_double_negation : Bool
+  mut set_op_distinct_by_default : Map[Kind, Bool?]
+  mut star_ilike_backslash_escape : Bool
+  mut strict_json_path_syntax : Bool
+  mut strict_string_concat : Bool
+  mut strings_support_escaped_sequences : Bool
+  mut supports_alias_refs_in_join_conditions : Bool
+  mut supports_column_join_marks : Bool
+  mut supports_fixed_size_arrays : Bool
+  mut supports_limit_all : Bool
+  mut supports_null_type : Bool
+  mut supports_order_by_all : Bool
+  mut supports_positional_column_refs : Bool
+  mut supports_struct_star_expansion : Bool
+  mut supports_user_defined_types : Bool
+  mut supports_values_default : Bool
+  mut tablesample_size_is_percent : Bool
+  mut tables_referenceable_as_columns : Bool
+  mut time_format : String
+  mut time_mapping : Map[String, String]
+  mut try_cast_requires_string : Bool?
+  mut typed_division : Bool
+  mut unescaped_sequences : Map[String, String]
+  mut unicode_end : String?
+  mut unicode_start : String?
+  mut unnest_column_only : Bool
+  mut uuid_is_string_type : Bool
+  mut valid_interval_units : @set.Set[String]
+  mut week_offset : Int
+}
+pub fn DialectConfig::copy(Self) -> Self
+
+pub(all) struct DialectHooks {
+  mut normalize_identifier : ((Dialect, Expr) -> Expr)?
+  mut generate_values_aliases : ((Dialect, Expr) -> Array[Expr])?
+  mut tokenize : ((Dialect, String) -> Array[Token] raise SqlglotError)?
+  mut can_quote : ((Dialect, Expr, String) -> Bool)?
+  mut to_json_path : ((Dialect, Expr?) -> Expr?)?
+  mut extra : Map[String, (Dialect, Expr) -> Expr?]
+}
+pub fn DialectHooks::copy(Self) -> Self
+pub fn DialectHooks::new() -> Self
+
+pub(all) enum ErrorLevel {
+  Ignore
+  Warn
+  Raise
+  Immediate
+} derive(Eq, Show)
+
+pub struct Expr {
+  kind : Kind
+  args : Map[String, Value]
+  mut parent : Expr?
+  mut arg_key : String?
+  mut index : Int?
+  mut comments : Array[String]?
+  mut type_ : Expr?
+  mut meta : Map[String, Value]?
+  uid : Int
+}
+pub fn[T : IntoPy] Expr::add(Self, T) -> Self raise SqlglotError
+pub fn Expr::add_comments(Self, Array[String]?, prepend? : Bool) -> Unit
+pub fn Expr::alias(Self) -> String
+pub fn Expr::alias_column_names(Self) -> Array[String]
+pub fn Expr::alias_or_name(Self) -> String
+pub fn[T : IntoPy] Expr::and_(Self, Array[T], dialect? : Dialect, copy? : Bool, wrap? : Bool) -> Self raise SqlglotError
+pub fn Expr::append(Self, String, &IntoValue) -> Unit
+pub fn Expr::apply(Self, (Self) -> Unit raise?) -> Self raise?
+pub fn Expr::arg(Self, String) -> Self?
+pub fn Expr::as_(Self, String, quoted? : Bool, copy? : Bool, table? : Array[String]) -> Self
+pub fn Expr::asc(Self, nulls_first? : Bool) -> Self
+pub fn Expr::assert_is(Self, Kind) -> Self raise SqlglotError
+pub fn[L : IntoPy, H : IntoPy] Expr::between(Self, L, H, copy? : Bool, symmetric? : Bool) -> Self raise SqlglotError
+pub fn Expr::bfs(Self, prune? : (Self) -> Bool) -> Iter[Self]
+pub fn[T : IntoPy] Expr::binop(Self, Kind, T, reverse? : Bool) -> Self raise SqlglotError
+pub fn Expr::bool_arg(Self, String) -> Bool
+pub fn Expr::canonical(Self) -> String
+pub fn Expr::catalog(Self) -> String
+pub fn[T : IntoPy] Expr::cluster_by(Self, Array[T], append? : Bool, dialect? : Dialect, copy? : Bool) -> Self raise SqlglotError
+pub fn Expr::column_parts(Self) -> Array[Self]
+pub fn Expr::copy(Self) -> Self
+pub fn[T : IntoPy] Expr::ctas(Self, T, properties? : Map[String, PyObj], dialect? : Dialect, copy? : Bool) -> Self raise SqlglotError
+pub fn Expr::ctes(Self) -> Array[Self]
+pub fn Expr::datatype_this(Self) -> DType?
+pub fn Expr::db(Self) -> String
+pub fn[T : IntoPy] Expr::delete(Self, T, dialect? : Dialect, copy? : Bool) -> Self raise SqlglotError
+pub fn Expr::depth(Self) -> Int
+pub fn Expr::desc(Self, nulls_first? : Bool) -> Self
+pub fn Expr::dfs(Self, prune? : (Self) -> Bool) -> Iter[Self]
+pub fn Expr::distinct_(Self, ons? : Array[&IntoPy], distinct? : Bool, copy? : Bool) -> Self raise SqlglotError
+pub fn[T : IntoPy] Expr::div(Self, T, typed? : Bool, safe? : Bool) -> Self raise SqlglotError
+pub fn Expr::dump(Self) -> Json
+pub fn[T : IntoPy] Expr::else_(Self, T, dialect? : Dialect, copy? : Bool) -> Self raise SqlglotError
+pub fn[T : IntoPy] Expr::eq_(Self, T) -> Self raise SqlglotError
+pub fn Expr::error_messages(Self, nargs? : Int) -> Array[String]
+pub fn[T : IntoPy] Expr::except_(Self, T, distinct? : Bool, dialect? : Dialect, copy? : Bool) -> Self raise SqlglotError
+pub fn Expr::expression(Self) -> Self?
+pub fn Expr::expression_(Self) -> Self
+pub fn Expr::expressions(Self) -> Array[Self]
+pub fn Expr::find(Self, ArrayView[Kind], bfs? : Bool) -> Self?
+pub fn Expr::find_all(Self, ArrayView[Kind], bfs? : Bool) -> Iter[Self]
+pub fn Expr::find_ancestor(Self, ArrayView[Kind]) -> Self?
+pub fn Expr::flatten(Self, unnest? : Bool) -> Iter[Self]
+pub fn[T : IntoPy] Expr::floordiv(Self, T) -> Self raise SqlglotError
+pub fn[T : IntoPy] Expr::from_(Self, T, dialect? : Dialect, copy? : Bool) -> Self raise SqlglotError
+pub fn[T : IntoPy] Expr::ge(Self, T) -> Self raise SqlglotError
+pub fn Expr::get(Self, String) -> Value?
+pub fn Expr::get_meta(Self) -> Map[String, Value]
+pub fn Expr::get_type(Self) -> Self?
+pub fn Expr::getitem(Self, Array[&IntoPy]) -> Self raise SqlglotError
+pub fn[T : IntoPy] Expr::group_by(Self, Array[T], append? : Bool, dialect? : Dialect, copy? : Bool) -> Self raise SqlglotError
+pub fn[T : IntoPy] Expr::gt(Self, T) -> Self raise SqlglotError
+pub fn Expr::has(Self, String) -> Bool
+pub fn[T : IntoPy] Expr::having_(Self, Array[T], append? : Bool, dialect? : Dialect, copy? : Bool) -> Self raise SqlglotError
+pub fn[T : IntoPy] Expr::hint(Self, Array[T], dialect? : Dialect, copy? : Bool) -> Self raise SqlglotError
+pub fn[T : IntoPy] Expr::ilike(Self, T) -> Self raise SqlglotError
+pub fn[T : IntoPy] Expr::intersect_(Self, T, distinct? : Bool, dialect? : Dialect, copy? : Bool) -> Self raise SqlglotError
+pub fn Expr::invert(Self) -> Self raise SqlglotError
+pub fn[T : IntoPy] Expr::is__(Self, T) -> Self raise SqlglotError
+pub fn Expr::is_int(Self) -> Bool
+pub fn Expr::is_leaf(Self) -> Bool
+pub fn Expr::is_number(Self) -> Bool
+pub fn Expr::is_star(Self) -> Bool
+pub fn Expr::is_string(Self) -> Bool
+pub fn Expr::is_type(Self, ArrayView[DType]) -> Bool
+pub fn Expr::is_type_expr(Self, Self) -> Bool
+pub fn Expr::is_wrapper(Self) -> Bool
+pub fn Expr::isin(Self, expressions? : Array[&IntoPy], query? : &IntoPy, unnest? : Array[&IntoPy], dialect? : Dialect, copy? : Bool) -> Self raise SqlglotError
+pub fn Expr::iter_expressions(Self, reverse? : Bool) -> Array[Self]
+pub fn[T : IntoPy] Expr::join_(Self, T, on? : Array[&IntoPy], using_? : Array[&IntoPy], append? : Bool, join_type? : String, join_alias? : String, side? : String, kind? : String, method? : String, dialect? : Dialect, copy? : Bool) -> Self raise SqlglotError
+pub fn[T : IntoPy] Expr::land(Self, T) -> Self raise SqlglotError
+pub fn[T : IntoPy] Expr::lateral(Self, Array[T], append? : Bool, dialect? : Dialect, copy? : Bool) -> Self raise SqlglotError
+pub fn[T : IntoPy] Expr::le(Self, T) -> Self raise SqlglotError
+pub fn[T : IntoPy] Expr::like(Self, T) -> Self raise SqlglotError
+pub fn[T : IntoPy] Expr::limit_(Self, T, dialect? : Dialect, copy? : Bool) -> Self raise SqlglotError
+pub fn Expr::list(Self, String) -> Array[Self]
+pub fn Expr::load(Json) -> Self? raise SqlglotError
+pub fn Expr::lock(Self, update? : Bool, copy? : Bool) -> Self
+pub fn[T : IntoPy] Expr::lor(Self, T) -> Self raise SqlglotError
+pub fn[T : IntoPy] Expr::lt(Self, T) -> Self raise SqlglotError
+pub fn Expr::meta_bool(Self, String) -> Bool
+pub fn Expr::meta_get(Self, String) -> Value?
+pub fn[T : IntoPy] Expr::mod(Self, T) -> Self raise SqlglotError
+pub fn[T : IntoPy] Expr::mul(Self, T) -> Self raise SqlglotError
+pub fn Expr::name(Self) -> String
+pub fn Expr::named_selects(Self) -> Array[String]
+pub fn Expr::neg(Self) -> Self
+pub fn[T : IntoPy] Expr::neq(Self, T) -> Self raise SqlglotError
+pub fn Expr::new(Kind, Map[String, Value]) -> Self
+pub fn Expr::not_(Self, copy? : Bool) -> Self raise SqlglotError
+pub fn[T : IntoPy] Expr::offset_(Self, T, dialect? : Dialect, copy? : Bool) -> Self raise SqlglotError
+pub fn[T : IntoPy] Expr::on(Self, Array[T], append? : Bool, dialect? : Dialect, copy? : Bool) -> Self raise SqlglotError
+pub fn[T : IntoPy] Expr::or_(Self, Array[T], dialect? : Dialect, copy? : Bool, wrap? : Bool) -> Self raise SqlglotError
+pub fn[T : IntoPy] Expr::order_by(Self, Array[T], append? : Bool, dialect? : Dialect, copy? : Bool) -> Self raise SqlglotError
+pub fn Expr::output_name(Self) -> String
+pub fn Expr::parent_select(Self) -> Self?
+pub fn Expr::parts(Self) -> Array[Self]
+pub fn[R] Expr::pipe(Self, (Self) -> R raise?) -> R raise?
+pub fn Expr::pop(Self) -> Self
+pub fn Expr::pop_comments(Self) -> Array[String]
+pub fn[T : IntoPy] Expr::pow(Self, T) -> Self raise SqlglotError
+pub fn[T : IntoPy] Expr::qualify(Self, Array[T], append? : Bool, dialect? : Dialect, copy? : Bool) -> Self raise SqlglotError
+pub fn Expr::raw_list(Self, String) -> Array[Value]
+pub fn Expr::replace(Self, Self?) -> Self?
+pub fn Expr::replace_with_list(Self, Array[Self]) -> Unit
+pub fn[T : IntoPy] Expr::returning(Self, T, dialect? : Dialect, copy? : Bool) -> Self raise SqlglotError
+pub fn[T : IntoPy] Expr::rlike(Self, T) -> Self raise SqlglotError
+pub fn Expr::root(Self) -> Self
+pub fn Expr::same_parent(Self) -> Bool
+pub fn[T : IntoPy] Expr::select_(Self, Array[T], append? : Bool, dialect? : Dialect, copy? : Bool) -> Self raise SqlglotError
+pub fn Expr::selects(Self) -> Array[Self]
+pub fn Expr::set(Self, String, &IntoValue) -> Unit
+pub fn[T : IntoPy] Expr::set_(Self, Array[T], append? : Bool, dialect? : Dialect, copy? : Bool) -> Self raise SqlglotError
+pub fn Expr::set_at(Self, String, &IntoValue, Int, overwrite? : Bool) -> Unit
+pub fn Expr::set_kwargs(Self, ArrayView[(String, &IntoValue)]) -> Self
+pub fn Expr::set_parent_ref(Self, Self?) -> Unit
+pub fn Expr::set_type(Self, Self?) -> Unit
+pub fn[T : IntoPy] Expr::sort_by(Self, Array[T], append? : Bool, dialect? : Dialect, copy? : Bool) -> Self raise SqlglotError
+pub fn Expr::str_arg(Self, String) -> String?
+pub fn[T : IntoPy] Expr::sub(Self, T) -> Self raise SqlglotError
+pub fn Expr::subquery(Self, alias? : String, copy? : Bool) -> Self
+pub fn[T : IntoPy] Expr::table(Self, T, dialect? : Dialect, copy? : Bool) -> Self raise SqlglotError
+pub fn Expr::table_name(Self) -> String
+pub fn Expr::text(Self, String) -> String
+pub fn Expr::this(Self) -> Self?
+pub fn Expr::this_(Self) -> Self
+pub fn Expr::to_column(Self, copy? : Bool) -> Self
+pub fn Expr::to_dot(Self, include_dots? : Bool) -> Self
+pub fn Expr::to_py(Self) -> PyObj raise SqlglotError
+pub fn Expr::to_py_float(Self) -> Double?
+pub fn Expr::to_py_int(Self) -> Int64?
+pub fn Expr::to_s(Self) -> String
+pub fn Expr::transform(Self, (Self) -> Self? raise?, copy? : Bool) -> Self raise?
+pub fn Expr::transform_values(Self, (Self) -> Value? raise?, copy? : Bool) -> Value raise?
+pub fn[T : IntoPy] Expr::truediv(Self, T) -> Self raise SqlglotError
+pub fn Expr::unalias(Self) -> Self
+pub fn[T : IntoPy] Expr::union_(Self, T, distinct? : Bool, dialect? : Dialect, copy? : Bool) -> Self raise SqlglotError
+pub fn Expr::unnest(Self) -> Self
+pub fn Expr::unnest_operands(Self) -> Array[Self]
+pub fn Expr::unwrap_subquery(Self) -> Self
+pub fn Expr::update_positions(Self, Self?) -> Self
+pub fn Expr::update_positions_from_token(Self, Token) -> Self
+pub fn[T : IntoPy] Expr::using_(Self, Array[T], append? : Bool, dialect? : Dialect, copy? : Bool) -> Self raise SqlglotError
+pub fn Expr::walk(Self, bfs? : Bool, prune? : (Self) -> Bool) -> Iter[Self]
+pub fn[C : IntoPy, T : IntoPy] Expr::when_(Self, C, T, dialect? : Dialect, copy? : Bool) -> Self raise SqlglotError
+pub fn[T : IntoPy] Expr::where_(Self, Array[T], append? : Bool, dialect? : Dialect, copy? : Bool) -> Self raise SqlglotError
+pub fn[T : IntoPy] Expr::window(Self, Array[T], append? : Bool, dialect? : Dialect, copy? : Bool) -> Self raise SqlglotError
+pub fn[A : IntoPy, B : IntoPy] Expr::with_(Self, A, B, recursive? : Bool, materialized? : Bool, append? : Bool, dialect? : Dialect, copy? : Bool, scalar? : Bool) -> Self raise SqlglotError
+pub impl IntoPy for Expr
+pub impl IntoValue for Expr
+pub impl SqlArg for Expr
+pub impl Eq for Expr
+pub impl Hash for Expr
+
+pub(all) struct Generator {
+  dialect : Dialect
+  cfg : GeneratorConfig
+  fns : GeneratorFns
+  pretty : Bool
+  mut identify : String
+  normalize : Bool
+  pad : Int
+  indent_size : Int
+  normalize_functions : String
+  unsupported_level : ErrorLevel
+  max_unsupported : Int
+  leading_comma : Bool
+  max_text_width : Int
+  comments : Bool
+  mut unsupported_messages : Array[String]
+  escaped_quote_end : String
+  escaped_byte_quote_end : String
+  escaped_identifier_end : String
+  next_name : () -> String
+  identifier_start : String
+  identifier_end : String
+  mut quote_json_path_key_using_brackets : Bool
+}
+pub fn Generator::add_arrayagg_null_filter(Self, String, Expr, Expr?) -> String raise SqlglotError
+pub fn Generator::add_column_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::add_column_sql_base(Self, Expr) -> String raise SqlglotError
+pub fn Generator::add_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::addconstraint_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::addpartition_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::after_limit_modifiers(Self, Expr) -> Array[String] raise SqlglotError
+pub fn Generator::after_limit_modifiers_base(Self, Expr) -> Array[String] raise SqlglotError
+pub fn Generator::aiforecast_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::alias_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::aliases_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::all_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::alter_column_null_constraint_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::alter_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::altercolumn_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::alterdiststyle_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::alterindex_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::altermodifysqlsecurity_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::alterrename_sql(Self, Expr, include_to? : Bool) -> String raise SqlglotError
+pub fn Generator::alterrename_sql_v(Self, Expr, include_to? : Bool) -> String raise SqlglotError
+pub fn Generator::altersession_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::alterset_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::altersortkey_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::analyze_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::analyzedelete_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::analyzehistogram_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::analyzelistchainedrows_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::analyzesample_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::analyzestatistics_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::analyzevalidate_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::and_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::anonymous_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::anonymousaggfunc_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::any_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::anyvalue_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::apply_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::arrayagg_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::arrayany_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::arrayinsert_sql(Self, Expr, index_offset? : Int) -> String raise SqlglotError
+pub fn Generator::arrayinsert_sql_v(Self, Expr, index_offset? : Int) -> String raise SqlglotError
+pub fn Generator::arraysize_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::atindex_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::attach_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::attachoption_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::attimezone_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::autoincrementcolumnconstraint_sql(Self, Expr) -> String
+pub fn Generator::base_dispatch(Self, Kind, Expr) -> String? raise SqlglotError
+pub fn Generator::between_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::binary(Self, Expr, String) -> String raise SqlglotError
+pub fn Generator::bitstring_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::bitwiseand_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::bitwiseleftshift_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::bitwisenot_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::bitwiseor_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::bitwiserightshift_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::bitwisexor_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::block_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::blockcompressionproperty_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::booland_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::boolean_sql(Self, Expr) -> String
+pub fn Generator::boolor_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::bracket_offset_expressions(Self, Expr, index_offset? : Int) -> Array[Expr] raise SqlglotError
+pub fn Generator::bracket_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::buildproperty_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::bytestring_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::cache_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::call_method(Self, Kind, Expr) -> String raise SqlglotError
+pub fn Generator::case_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::casestatement_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::cast_sql(Self, Expr, safe_prefix? : String) -> String raise SqlglotError
+pub fn Generator::cast_sql_v(Self, Expr, safe_prefix? : String) -> String raise SqlglotError
+pub fn Generator::ceil_floor(Self, Expr) -> String raise SqlglotError
+pub fn Generator::changes_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::characterset_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::check_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::checkcolumnconstraint_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::checksumproperty_sql(Self, Expr) -> String
+pub fn Generator::chr_sql(Self, Expr, name? : String) -> String raise SqlglotError
+pub fn Generator::chr_sql_v(Self, Expr, name? : String) -> String raise SqlglotError
+pub fn Generator::clone_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::cluster_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::clusteredbyproperty_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::clusterproperty_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::collate_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::column_parts(Self, Expr) -> String raise SqlglotError
+pub fn Generator::column_parts_base(Self, Expr) -> String raise SqlglotError
+pub fn Generator::column_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::columnconstraint_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::columndef_sql(Self, Expr, sep? : String) -> String raise SqlglotError
+pub fn Generator::columndef_sql_v(Self, Expr, sep? : String) -> String raise SqlglotError
+pub fn Generator::columnposition_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::columnprefix_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::columns_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::combinedaggfunc_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::combinedparameterizedagg_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::command_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::comment_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::commit_sql(Self, Expr) -> String
+pub fn Generator::comprehension_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::compresscolumnconstraint_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::computedcolumnconstraint_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::concat_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::concat_to_dpipe_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::concatws_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::conditionalinsert_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::connect_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::connector_sql(Self, Expr, String) -> String raise SqlglotError
+pub fn Generator::constraint_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::convert_concat_args(Self, Expr) -> Array[Expr] raise SqlglotError
+pub fn Generator::convert_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::converttimezone_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::copy_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::copyparameter_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::create_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::createable_sql(Self, Expr, Map[PropertiesLocation, Array[Expr]]) -> String raise SqlglotError
+pub fn Generator::createable_sql_base(Self, Expr, Map[PropertiesLocation, Array[Expr]]) -> String raise SqlglotError
+pub fn Generator::credentials_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::cte_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::cube_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::currentdate_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::datablocksizeproperty_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::datadeletionproperty_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::datatype_param_bound_limiter(Self, Expr, DType, Array[Int], Array[Int?]) -> Expr raise SqlglotError
+pub fn Generator::datatype_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::datatypeparam_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::dateadd_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::datefromunixdate_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::declare_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::declareitem_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::decodecase_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::delete_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::describe_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::detach_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::dialect_class_name(Self) -> String
+pub fn Generator::dictproperty_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::dictrange_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::dictsubproperty_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::directory_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::directorystage_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::distance_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::distancend_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::distinct_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::distribute_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::distributedbyproperty_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::div_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::dot_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::dpipe_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::drop_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::droppartition_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::dropprimarykey_sql(Self, Expr) -> String
+pub fn Generator::duplicatekeyproperty_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::dynamicidentifier_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::embed_ignore_nulls(Self, Expr, String) -> String raise SqlglotError
+pub fn Generator::encodeproperty_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::eq_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::escape_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::escape_str(Self, String, escape_backslash? : Bool, delimiter? : String, escaped_delimiter? : String, is_byte_string? : Bool) -> String
+pub fn Generator::execute_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::executesql_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::exists_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::explodinggenerateseries_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::export_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::expressions(Self, expression? : Expr, key? : String, sqls? : Array[Value], flat? : Bool, indent? : Bool, skip_first? : Bool, skip_last? : Bool, sep? : String, prefix? : String, dynamic? : Bool, new_line? : Bool) -> String raise SqlglotError
+pub fn Generator::extract_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::fallbackproperty_sql(Self, Expr) -> String
+pub fn Generator::featuresattime_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::fetch_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::filter_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::forclause_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::foreignkey_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::forin_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::format_args(Self, Array[&SqlArg], sep? : String) -> String raise SqlglotError
+pub fn Generator::format_time(Self, Expr, inverse_time_mapping? : Map[String, String], inverse_time_trie? : Trie) -> String? raise SqlglotError
+pub fn Generator::format_time_base(Self, Expr, inverse_time_mapping? : Map[String, String], inverse_time_trie? : Trie) -> String? raise SqlglotError
+pub fn Generator::formatjson_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::formatphrase_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::freespaceproperty_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::from_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::fromiso8601date_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::fromiso8601timestamp_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::fromiso8601timestampnanos_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::fromtimezone_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::func(Self, String, Array[&SqlArg], prefix? : String, suffix? : String, normalize? : Bool) -> String raise SqlglotError
+pub fn Generator::function_fallback_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::functionspecification_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::gapfill_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::generate(Self, Expr, copy? : Bool) -> String raise SqlglotError
+pub fn Generator::generate_base(Self, Expr, copy? : Bool) -> String raise SqlglotError
+pub fn Generator::generatebool_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::generatedasidentitycolumnconstraint_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::generatedasrowcolumnconstraint_sql(Self, Expr) -> String
+pub fn Generator::generatedouble_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::generateembedding_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::generateint_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::generatetable_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::generatetext_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::get_put_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::getextract_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::glob_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::grant_or_revoke_sql(Self, Expr, keyword~ : String, preposition~ : String, grant_option_prefix? : String, grant_option_suffix? : String) -> String raise SqlglotError
+pub fn Generator::grant_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::grantprincipal_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::grantprivilege_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::group_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::groupingsets_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::gt_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::gte_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::having_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::havingmax_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::heredoc_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::hex_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::hexstring_sql(Self, Expr, binary_function_repr? : String) -> String raise SqlglotError
+pub fn Generator::hexstring_sql_v(Self, Expr, binary_function_repr? : String) -> String raise SqlglotError
+pub fn Generator::hint_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::historicaldata_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::identifier_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::if_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::ifblock_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::ignorenulls_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::ilike_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::in_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::in_unnest_op(Self, Expr) -> String raise SqlglotError
+pub fn Generator::in_unnest_op_base(Self, Expr) -> String raise SqlglotError
+pub fn Generator::includeproperty_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::indent(Self, String, level? : Int, pad? : Int, skip_first? : Bool, skip_last? : Bool) -> String
+pub fn Generator::index_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::indexcolumnconstraint_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::indexconstraintoption_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::indexparameters_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::indextablehint_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::initcap_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::inoutcolumnconstraint_sql(Self, Expr) -> String
+pub fn Generator::inputoutputformat_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::insert_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::install_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::intdiv_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::interval_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::into_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::introducer_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::is_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::isolatedloadingproperty_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::iterate_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::join_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::joinhint_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::journalproperty_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::json_path_part(Self, Value?) -> String raise SqlglotError
+pub fn Generator::json_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::jsonarray_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::jsonarrayagg_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::jsoncast_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::jsoncolumndef_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::jsonexists_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::jsonextractquote_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::jsonkeyvalue_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::jsonobject_sql(Self, Expr, name? : String) -> String raise SqlglotError
+pub fn Generator::jsonpath_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::jsonpathkey_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::jsonpathsubscript_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::jsonschema_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::jsontable_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::jsonvalue_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::kill_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::kwarg_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::lambda_sql(Self, Expr, arrow_sep? : String, wrap? : Bool) -> String raise SqlglotError
+pub fn Generator::lambda_sql_v(Self, Expr, arrow_sep? : String, wrap? : Bool) -> String raise SqlglotError
+pub fn Generator::lastday_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::lateral_op(Self, Expr) -> String raise SqlglotError
+pub fn Generator::lateral_op_base(Self, Expr) -> String
+pub fn Generator::lateral_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::leave_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::like_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::like_sql_inner(Self, Expr, escape? : Expr) -> String raise SqlglotError
+pub fn Generator::likeproperty_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::limit_sql(Self, Expr, top? : Bool) -> String raise SqlglotError
+pub fn Generator::limitoptions_sql(Self, Expr) -> String
+pub fn Generator::literal_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::loaddata_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::localtime_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::localtimestamp_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::locate_properties(Self, Expr) -> Map[PropertiesLocation, Array[Expr]] raise SqlglotError
+pub fn Generator::locate_properties_base(Self, Expr) -> Map[PropertiesLocation, Array[Expr]] raise SqlglotError
+pub fn Generator::lock_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::lockingproperty_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::log_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::loopblock_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::lowerhex_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::lt_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::lte_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::macrooverload_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::macrooverloads_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::maskingpolicycolumnconstraint_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::match_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::matchagainst_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::matchrecognize_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::matchrecognizemeasure_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::maybe_comment(Self, String, expression? : Expr, comments? : Array[String], separated? : Bool) -> String
+pub fn Generator::median_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::merge_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::mergeblockratioproperty_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::mergetreettl_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::mergetreettlaction_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::ml_sql(Self, Expr, String) -> String raise SqlglotError
+pub fn Generator::mlforecast_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::mltranslate_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::mod_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::modelattribute_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::modifycolumn_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::moduleproperty_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::move_ctes_to_top_level(Self, Expr) -> Expr
+pub fn Generator::mul_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::multitableinserts_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::naked_property(Self, Expr) -> String raise SqlglotError
+pub fn Generator::national_sql(Self, Expr, prefix? : String) -> String raise SqlglotError
+pub fn Generator::neg_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::neq_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::new(Dialect, pretty? : Bool, identify? : String, normalize? : Bool, pad? : Int, indent? : Int, normalize_functions? : String, unsupported_level? : ErrorLevel, max_unsupported? : Int, leading_comma? : Bool, max_text_width? : Int, comments? : Bool) -> Self
+pub fn Generator::nextvaluefor_sql(Self, Expr) -> String raise SqlglotError
+pub fn[T] Generator::no_identify(Self, () -> T raise SqlglotError) -> T raise SqlglotError
+pub fn Generator::normalize_func(Self, String) -> String
+pub fn Generator::not_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::notnullcolumnconstraint_sql(Self, Expr) -> String
+pub fn Generator::nthvalue_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::null_sql(Self, Expr) -> String
+pub fn Generator::nullsafeeq_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::nullsafeneq_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::nvl2_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::objectidentifier_sql(Self, Expr) -> String
+pub fn Generator::offset_limit_modifiers(Self, Expr, Bool, Expr?) -> Array[String] raise SqlglotError
+pub fn Generator::offset_limit_modifiers_base(Self, Expr, Bool, Expr?) -> Array[String] raise SqlglotError
+pub fn Generator::offset_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::oncluster_sql(Self, Expr) -> String
+pub fn Generator::oncondition_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::onconflict_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::op_expressions(Self, String, Expr, flat? : Bool) -> String raise SqlglotError
+pub fn Generator::opclass_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::openjson_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::openjsoncolumndef_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::options_modifier(Self, Expr) -> String raise SqlglotError
+pub fn Generator::options_modifier_base(Self, Expr) -> String raise SqlglotError
+pub fn Generator::or_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::order_sql(Self, Expr, flat? : Bool) -> String raise SqlglotError
+pub fn Generator::ordered_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::overflowtruncatebehavior_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::overlaps_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::overlay_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::pad_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::parameter_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::parameterizedagg_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::paren_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::parsedatetime_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::parsejson_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::partition_by_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::partition_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::partitionboundspec_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::partitionbyrangeproperty_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::partitionbyrangepropertydynamic_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::partitionedofproperty_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::partitionrange_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::periodforsystemtimeconstraint_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::pivot_in_value_aliases(Self, Expr) -> Array[Expr]? raise SqlglotError
+pub fn Generator::pivot_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::pivotalias_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::placeholder_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::pragma_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::predict_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::prepend_ctes(Self, Expr, String) -> String raise SqlglotError
+pub fn Generator::preprocess(Self, Expr) -> Expr raise SqlglotError
+pub fn Generator::preprocess_base(Self, Expr) -> Expr raise SqlglotError
+pub fn Generator::prewhere_sql(Self, Expr) -> String
+pub fn Generator::primarykey_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::primarykeycolumnconstraint_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::prior_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::properties(Self, Expr, prefix? : String, sep? : String, suffix? : String, wrapped? : Bool) -> String raise SqlglotError
+pub fn Generator::properties_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::property_location(Self, Expr) -> PropertiesLocation raise SqlglotError
+pub fn Generator::property_name(Self, Expr, string_key? : Bool) -> String raise SqlglotError
+pub fn Generator::property_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::propertyeq_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::pseudocolumn_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::pseudotype_sql(Self, Expr) -> String
+pub fn Generator::qualify_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::query_modifiers(Self, Expr, Array[String]) -> String raise SqlglotError
+pub fn Generator::queryband_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::queryoption_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::querytransform_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::rand_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::rawstring_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::recursivewithsearch_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::reference_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::refresh_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::refreshtriggerproperty_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::renamecolumn_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::renameindex_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::repeatblock_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::replace_line_breaks(Self, String) -> String
+pub fn Generator::resolve_ordered_for_null_ordering_simulation(Self, Expr) -> Expr?
+pub fn Generator::respectnulls_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::return_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::returning_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::revoke_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::rollback_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::rollup_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::rollupindex_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::rollupproperty_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::root_properties(Self, Expr) -> String raise SqlglotError
+pub fn Generator::rowformatdelimitedproperty_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::safedivide_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::sanitize_comment(Self, String) -> String
+pub fn Generator::schema_columns_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::schema_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::scope_resolution(Self, String, String) -> String raise SqlglotError
+pub fn Generator::scope_resolution_base(Self, String, String) -> String raise SqlglotError
+pub fn Generator::scoperesolution_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::seg(Self, String, sep? : String) -> String
+pub fn Generator::select_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::semanticview_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::semicolon_sql(Self, Expr) -> String
+pub fn Generator::sep(Self, sep? : String) -> String
+pub fn Generator::sequenceproperties_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::sessionparameter_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::set_operation(Self, Expr) -> String raise SqlglotError
+pub fn Generator::set_operations(Self, Expr) -> String raise SqlglotError
+pub fn Generator::set_operations_base(Self, Expr) -> String raise SqlglotError
+pub fn Generator::set_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::setitem_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::show_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::similarto_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::simplify_unless_literal(Self, Expr) -> Expr raise SqlglotError
+pub fn Generator::skipjsoncolumn_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::slice_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::sort_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::space_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::sql(Self, Expr?, comment? : Bool) -> String raise SqlglotError
+pub fn Generator::sql_key(Self, Expr, String) -> String raise SqlglotError
+pub fn Generator::sql_value(Self, Value, comment? : Bool) -> String raise SqlglotError
+pub fn Generator::star_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::storedprocedure_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::string_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::strtodate_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::strtotime_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::struct_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::sub_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::subquery_sql(Self, Expr, sep? : String) -> String raise SqlglotError
+pub fn Generator::summarize_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::table_parts(Self, Expr) -> String raise SqlglotError
+pub fn Generator::table_parts_base(Self, Expr) -> String raise SqlglotError
+pub fn Generator::table_prefixed_sql(Self, Expr, String) -> String raise SqlglotError
+pub fn Generator::table_sql(Self, Expr, sep? : String) -> String raise SqlglotError
+pub fn Generator::table_sql_v(Self, Expr, sep? : String) -> String raise SqlglotError
+pub fn Generator::tablealias_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::tablefromrows_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::tablesample_sql(Self, Expr, tablesample_keyword? : String) -> String raise SqlglotError
+pub fn Generator::tablesample_sql_v(Self, Expr, tablesample_keyword? : String) -> String raise SqlglotError
+pub fn Generator::tag_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::timeserieskey_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::toarray_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::tochar_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::todouble_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::token_sql(Self, TokenType) -> String
+pub fn Generator::tonumber_cast_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::tonumber_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::too_wide(Self, Array[String]) -> Bool
+pub fn Generator::transaction_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::translatecharacters_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::triggerevent_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::triggerproperties_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::triggerreferencing_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::trim_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::truncatetable_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::try_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::trycast_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::tsordstodate_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::tsordstodatetime_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::tsordstotime_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::tsordstotimestamp_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::tuple_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::uncache_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::unicodestring_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::uniquecolumnconstraint_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::uniquekeyproperty_sql(Self, Expr, prefix? : String) -> String raise SqlglotError
+pub fn Generator::uniquekeyproperty_sql_v(Self, Expr, prefix? : String) -> String raise SqlglotError
+pub fn Generator::unixdate_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::unixseconds_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::unnest_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::unpivotcolumns_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::unsupported(Self, String) -> Unit raise SqlglotError
+pub fn Generator::unsupported_args(Self, Expr, Array[String]) -> Unit raise SqlglotError
+pub fn Generator::unsupported_stmt(Self, String) -> String raise SqlglotError
+pub fn Generator::update_from_joins_sql(Self, Expr) -> (String, String) raise SqlglotError
+pub fn Generator::update_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::use_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::userdefinedfunction_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::usingproperty_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::uuid_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::uuidproperty_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::values_sql(Self, Expr, values_as_table? : Bool) -> String raise SqlglotError
+pub fn Generator::values_sql_v(Self, Expr, values_as_table? : Bool) -> String raise SqlglotError
+pub fn Generator::var_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::vectorsearch_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::version_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::watermarkcolumnconstraint_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::weekstart_name(Self, Expr) -> String raise SqlglotError
+pub fn Generator::weekstart_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::when_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::whens_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::where_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::whileblock_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::window_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::windowspec_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::with_properties(Self, Expr) -> String raise SqlglotError
+pub fn Generator::with_properties_base(Self, Expr) -> String raise SqlglotError
+pub fn Generator::with_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::withdataproperty_sql(Self, Expr) -> String
+pub fn Generator::withfill_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::withingroup_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::withsystemversioningproperty_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::withtablehint_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::wrap(Self, Expr) -> String raise SqlglotError
+pub fn Generator::wrap_sql(Self, String) -> String
+pub fn Generator::wrap_str(Self, String) -> String
+pub fn Generator::xmlelement_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::xmlkeyvalueoption_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::xmlnamespace_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::xmltable_sql(Self, Expr) -> String raise SqlglotError
+pub fn Generator::xor_sql(Self, Expr) -> String raise SqlglotError
+
+pub(all) struct GeneratorConfig {
+  mut alter_set_type : String
+  mut alter_set_wrapped : Bool
+  mut alter_table_include_column_keyword : Bool
+  mut array_concat_is_var_len : Bool
+  mut array_size_dim_required : Bool?
+  mut array_size_name : String
+  mut auto_refresh_bare_intervals : Bool
+  mut can_implement_array_any : Bool
+  mut collate_is_func : Bool
+  mut computed_column_with_type : Bool
+  mut copy_has_into_keyword : Bool
+  mut copy_params_are_wrapped : Bool
+  mut copy_params_eq_required : Bool
+  mut create_function_return_as : Bool
+  mut cte_recursive_keyword_required : Bool
+  mut data_type_specifiers_allowed : Bool
+  mut declare_default_assignment : String
+  mut directed_joins : Bool
+  mut duplicate_key_update_with_set : Bool
+  mut ensure_bools : Bool
+  mut except_intersect_support_all_clause : Bool
+  mut exclude_comments : Array[Kind]
+  mut expressions_without_nested_ctes : Array[Kind]
+  mut expression_precedes_properties_creatables : @set.Set[String]
+  mut extract_allows_quotes : Bool
+  mut groupings_sep : String
+  mut hex_func : String
+  mut historical_data_post_alias : Bool
+  mut ignore_nulls_before_order : Bool
+  mut ignore_nulls_in_func : Bool
+  mut index_on : String
+  mut inout_separator : String
+  mut insert_overwrite : String
+  mut interval_allows_plural_form : Bool
+  mut is_bool_allowed : Bool
+  mut join_hints : Bool
+  mut json_key_value_pair_sep : String
+  mut json_path_bracketed_key_supported : Bool
+  mut json_path_key_quoted_forces_brackets : Bool
+  mut json_path_single_quote_escape : Bool
+  mut json_type_required_for_extraction : Bool
+  mut last_day_supports_date_part : Bool
+  mut like_property_inside_schema : Bool
+  mut limit_fetch : String
+  mut limit_is_top : Bool
+  mut limit_only_literals : Bool
+  mut locking_reads_supported : Bool
+  mut matched_by_source : Bool
+  mut match_against_table_prefix : String?
+  mut mod_operator : String
+  mut mod_paren_parent_types : Array[Kind]
+  mut multi_arg_distinct : Bool
+  mut named_placeholder_token : String
+  mut normalize_extract_date_parts : Bool
+  mut null_ordering_supported : Bool?
+  mut nvl2_supported : Bool
+  mut pad_fill_pattern_is_required : Bool
+  mut parameterizable_text_types : Array[DType]
+  mut parameter_token : String
+  mut parse_json_name : String?
+  mut pivot_alias_with_as : Bool
+  mut properties_location : Map[Kind, PropertiesLocation]
+  mut query_hints : Bool
+  mut query_hint_sep : String
+  mut quote_json_path : Bool
+  mut rename_table_with_db : Bool
+  mut reserved_keywords : @set.Set[String]
+  mut respect_ignore_nulls_unsupported_expressions : Array[Kind]
+  mut returning_end : Bool
+  mut select_kinds : Array[String]
+  mut semi_anti_join_with_side : Bool
+  mut sentinel_line_break : String
+  mut set_assignment_requires_variable_keyword : Bool
+  mut set_op_limits : Bool
+  mut set_op_modifiers : Bool
+  mut set_op_parenthesized_operands : Bool
+  mut single_string_interval : Bool
+  mut star_except : String
+  mut star_exclude_requires_derived_table : Bool
+  mut struct_delimiter : Array[String]
+  mut supported_json_path_parts : Array[Kind]
+  mut supports_alter_column_if_exists : Bool
+  mut supports_alter_column_nullability : Bool
+  mut supports_between_flags : Bool
+  mut supports_change_column : Bool
+  mut supports_convert_timezone : Bool
+  mut supports_create_table_like : Bool
+  mut supports_decode_case : Bool
+  mut supports_drop_alter_iceberg_property : Bool
+  mut supports_exploding_projections : Bool
+  mut supports_grouping_sets_as_suffix : Bool
+  mut supports_like_quantifiers : Bool
+  mut supports_median : Bool
+  mut supports_merge_where : Bool
+  mut supports_modify_column : Bool
+  mut supports_named_cte_columns : Bool
+  mut supports_select_into : Bool
+  mut supports_single_arg_concat : Bool
+  mut supports_table_alias_columns : Bool
+  mut supports_table_copy : Bool
+  mut supports_to_number : Bool
+  mut supports_uescape : Bool
+  mut supports_unix_seconds : Bool
+  mut supports_unlogged_tables : Bool
+  mut supports_window_exclude : Bool
+  mut tablesample_keywords : String
+  mut tablesample_requires_parens : Bool
+  mut tablesample_seed_keyword : String
+  mut tablesample_size_is_rows : Bool
+  mut tablesample_with_method : Bool
+  mut table_hints : Bool
+  mut time_part_singulars : Map[String, String]
+  mut token_mapping : Map[TokenType, String]
+  mut try_supported : Bool
+  mut type_mapping : Map[DType, String]
+  mut tz_to_with_time_zone : Bool
+  mut unnest_with_ordinality : Bool
+  mut unpivot_aliases_are_identifiers : Bool
+  mut unsupported_types : Array[DType]
+  mut unwrapped_interval_values : Array[Kind]
+  mut update_statement_supports_from : Bool
+  mut values_as_table : Bool
+  mut window_funcs_with_null_ordering : Array[Kind]
+  mut with_properties_prefix : String
+  mut with_separated_comments : Array[Kind]
+  mut wrap_derived_values : Bool
+}
+pub fn GeneratorConfig::copy(Self) -> Self
+
+pub(all) struct GeneratorFns {
+  mut transforms : Map[Kind, (Generator, Expr) -> String raise SqlglotError]
+  mut methods : Map[Kind, (Generator, Expr) -> String raise SqlglotError]
+  mut hooks : GeneratorHooks
+  mut type_param_settings : Map[DType, (Array[Int], Array[Int?])]
+  mut after_having_modifier_transforms : Array[(String, (Generator, Expr) -> String raise SqlglotError)]
+}
+pub fn GeneratorFns::copy(Self) -> Self
+
+pub(all) struct GeneratorHooks {
+  mut add_column_sql : ((Generator, Expr) -> String raise SqlglotError)?
+  mut after_limit_modifiers : ((Generator, Expr) -> Array[String] raise SqlglotError)?
+  mut column_parts : ((Generator, Expr) -> String raise SqlglotError)?
+  mut createable_sql : ((Generator, Expr, Map[PropertiesLocation, Array[Expr]]) -> String raise SqlglotError)?
+  mut format_time : ((Generator, Expr, Map[String, String]?, Trie?) -> String? raise SqlglotError)?
+  mut generate : ((Generator, Expr, Bool) -> String raise SqlglotError)?
+  mut in_unnest_op : ((Generator, Expr) -> String raise SqlglotError)?
+  mut lateral_op : ((Generator, Expr) -> String raise SqlglotError)?
+  mut locate_properties : ((Generator, Expr) -> Map[PropertiesLocation, Array[Expr]] raise SqlglotError)?
+  mut offset_limit_modifiers : ((Generator, Expr, Bool, Expr?) -> Array[String] raise SqlglotError)?
+  mut options_modifier : ((Generator, Expr) -> String raise SqlglotError)?
+  mut scope_resolution : ((Generator, String, String) -> String raise SqlglotError)?
+  mut set_operations : ((Generator, Expr) -> String raise SqlglotError)?
+  mut table_parts : ((Generator, Expr) -> String raise SqlglotError)?
+  mut with_properties : ((Generator, Expr) -> String raise SqlglotError)?
+  mut preprocess : ((Generator, Expr) -> Expr raise SqlglotError)?
+  mut alterrename_sql : ((Generator, Expr, Bool) -> String raise SqlglotError)?
+  mut arrayinsert_sql : ((Generator, Expr, Int) -> String raise SqlglotError)?
+  mut cast_sql : ((Generator, Expr, String?) -> String raise SqlglotError)?
+  mut chr_sql : ((Generator, Expr, String) -> String raise SqlglotError)?
+  mut columndef_sql : ((Generator, Expr, String) -> String raise SqlglotError)?
+  mut hexstring_sql : ((Generator, Expr, String?) -> String raise SqlglotError)?
+  mut lambda_sql : ((Generator, Expr, String, Bool) -> String raise SqlglotError)?
+  mut table_sql : ((Generator, Expr, String) -> String raise SqlglotError)?
+  mut tablesample_sql : ((Generator, Expr, String?) -> String raise SqlglotError)?
+  mut uniquekeyproperty_sql : ((Generator, Expr, String) -> String raise SqlglotError)?
+  mut values_sql : ((Generator, Expr, Bool) -> String raise SqlglotError)?
+  mut unicode_substitute : ((String) -> String)?
+  mut safe_json_path_key_re : ((String) -> Bool)?
+}
+pub fn GeneratorHooks::copy(Self) -> Self
+pub fn GeneratorHooks::new() -> Self
+
+pub(all) enum Kind {
+  AIAgg
+  AIClassify
+  AIEmbed
+  AIForecast
+  AIGenerate
+  AISimilarity
+  AISummarizeAgg
+  Abs
+  Acos
+  Acosh
+  Add
+  AddConstraint
+  AddMonths
+  AddPartition
+  Adjacent
+  Agg
+  AggFunc
+  AlgorithmProperty
+  Alias
+  Aliases
+  All
+  AllowedValuesProperty
+  Alter
+  AlterColumn
+  AlterDistStyle
+  AlterIndex
+  AlterModifySqlSecurity
+  AlterRename
+  AlterSession
+  AlterSet
+  AlterSortKey
+  Analyze
+  AnalyzeColumns
+  AnalyzeDelete
+  AnalyzeHistogram
+  AnalyzeListChainedRows
+  AnalyzeSample
+  AnalyzeStatistics
+  AnalyzeValidate
+  AnalyzeWith
+  And
+  Anonymous
+  AnonymousAggFunc
+  Any
+  AnyValue
+  ApiProperty
+  ApplicationProperty
+  Apply
+  ApproxDistinct
+  ApproxPercentileAccumulate
+  ApproxPercentileCombine
+  ApproxPercentileEstimate
+  ApproxQuantile
+  ApproxQuantiles
+  ApproxTopK
+  ApproxTopKAccumulate
+  ApproxTopKCombine
+  ApproxTopKEstimate
+  ApproxTopSum
+  ApproximateSimilarity
+  ArgMax
+  ArgMin
+  Array
+  ArrayAgg
+  ArrayAll
+  ArrayAny
+  ArrayAppend
+  ArrayCompact
+  ArrayConcat
+  ArrayConcatAgg
+  ArrayConstructCompact
+  ArrayContainedBy
+  ArrayContains
+  ArrayContainsAll
+  ArrayDistinct
+  ArrayExcept
+  ArrayFilter
+  ArrayFirst
+  ArrayInsert
+  ArrayIntersect
+  ArrayLast
+  ArrayMax
+  ArrayMin
+  ArrayOverlaps
+  ArrayPosition
+  ArrayPrepend
+  ArrayRemove
+  ArrayRemoveAt
+  ArrayReverse
+  ArraySize
+  ArraySlice
+  ArraySort
+  ArraySum
+  ArrayToString
+  ArrayUnionAgg
+  ArrayUniqueAgg
+  ArraysZip
+  Ascii
+  Asin
+  Asinh
+  AssumeColumnConstraint
+  AtIndex
+  AtTimeZone
+  Atan
+  Atan2
+  Atanh
+  Attach
+  AttachOption
+  AutoIncrementColumnConstraint
+  AutoIncrementProperty
+  AutoRefreshProperty
+  Avg
+  BackupProperty
+  Base64DecodeBinary
+  Base64DecodeString
+  Base64Encode
+  Between
+  Binary
+  BinaryColumnConstraint
+  BitLength
+  BitString
+  BitmapBitPosition
+  BitmapBucketNumber
+  BitmapConstructAgg
+  BitmapCount
+  BitmapOrAgg
+  BitwiseAnd
+  BitwiseAndAgg
+  BitwiseCount
+  BitwiseLeftShift
+  BitwiseNot
+  BitwiseOr
+  BitwiseOrAgg
+  BitwiseRightShift
+  BitwiseXor
+  BitwiseXorAgg
+  Block
+  BlockCompressionProperty
+  Booland
+  Boolean
+  Boolnot
+  Boolor
+  BoolxorAgg
+  Bracket
+  BuildProperty
+  ByteLength
+  ByteString
+  CTE
+  Cache
+  CalledOnNullInputProperty
+  Case
+  CaseSpecificColumnConstraint
+  CaseStatement
+  Cast
+  CastToStrType
+  CatalogProperty
+  Cbrt
+  Ceil
+  Changes
+  CharacterSet
+  CharacterSetColumnConstraint
+  CharacterSetProperty
+  Check
+  CheckColumnConstraint
+  CheckJson
+  CheckXml
+  ChecksumProperty
+  Chr
+  CityHash64
+  Clone
+  Cluster
+  ClusterProperty
+  ClusteredByProperty
+  ClusteredColumnConstraint
+  Coalesce
+  CodePointsToBytes
+  CodePointsToString
+  Collate
+  CollateColumnConstraint
+  CollateProperty
+  Collation
+  Column
+  ColumnConstraint
+  ColumnConstraintKind
+  ColumnDef
+  ColumnPosition
+  ColumnPrefix
+  Columns
+  CombinedAggFunc
+  CombinedParameterizedAgg
+  Command
+  Comment
+  CommentColumnConstraint
+  Commit
+  Comprehension
+  Compress
+  CompressColumnConstraint
+  ComputeProperty
+  ComputedColumnConstraint
+  Concat
+  ConcatWs
+  Condition
+  ConditionalInsert
+  Connect
+  ConnectByRoot
+  Connector
+  Constraint
+  Contains
+  Convert
+  ConvertTimezone
+  ConvertToCharset
+  Copy
+  CopyGrantsProperty
+  CopyParameter
+  Corr
+  Cos
+  Cosh
+  CosineDistance
+  Cot
+  Coth
+  Count
+  CountIf
+  CovarPop
+  CovarSamp
+  Create
+  Credentials
+  CredentialsProperty
+  Csc
+  Csch
+  Cube
+  CumeDist
+  CurrentAccount
+  CurrentAccountName
+  CurrentAvailableRoles
+  CurrentCatalog
+  CurrentClient
+  CurrentDatabase
+  CurrentDate
+  CurrentDatetime
+  CurrentIpAddress
+  CurrentOrganizationName
+  CurrentOrganizationUser
+  CurrentRegion
+  CurrentRole
+  CurrentRoleType
+  CurrentSchema
+  CurrentSchemas
+  CurrentSecondaryRoles
+  CurrentSession
+  CurrentStatement
+  CurrentTime
+  CurrentTimestamp
+  CurrentTimestampLTZ
+  CurrentTimezone
+  CurrentTransaction
+  CurrentUser
+  CurrentUserId
+  CurrentVersion
+  CurrentWarehouse
+  DDL
+  DML
+  DPipe
+  DataBlocksizeProperty
+  DataDeletionProperty
+  DataType
+  DataTypeParam
+  DatabaseProperty
+  Date
+  DateAdd
+  DateBin
+  DateDiff
+  DateFormatColumnConstraint
+  DateFromParts
+  DateFromUnixDate
+  DateStrToDate
+  DateSub
+  DateToDateStr
+  DateToDi
+  DateTrunc
+  Datetime
+  DatetimeAdd
+  DatetimeDiff
+  DatetimeSub
+  DatetimeTrunc
+  Day
+  DayOfMonth
+  DayOfWeek
+  DayOfWeekIso
+  DayOfYear
+  Dayname
+  Declare
+  DeclareItem
+  Decode
+  DecodeCase
+  DecompressBinary
+  DecompressString
+  Decrypt
+  DecryptRaw
+  DefaultColumnConstraint
+  DefinerProperty
+  Degrees
+  Delete
+  DenseRank
+  DerivedTable
+  Describe
+  Detach
+  DiToDate
+  DictProperty
+  DictRange
+  DictSubProperty
+  Directory
+  DirectoryStage
+  DistKeyProperty
+  DistStyleProperty
+  Distance
+  DistanceNd
+  Distinct
+  Distribute
+  DistributedByProperty
+  Div
+  Dot
+  DotProduct
+  Drop
+  DropPartition
+  DropPrimaryKey
+  DuplicateKeyProperty
+  DynamicIdentifier
+  DynamicProperty
+  EQ
+  Elt
+  EmptyProperty
+  Encode
+  EncodeColumnConstraint
+  EncodeProperty
+  Encrypt
+  EncryptRaw
+  EndStatement
+  EndsWith
+  EngineProperty
+  EnviromentProperty
+  EphemeralColumnConstraint
+  EqualNull
+  Escape
+  EuclideanDistance
+  Except
+  ExcludeColumnConstraint
+  Execute
+  ExecuteAsProperty
+  ExecuteSql
+  Exists
+  Exp
+  Explode
+  ExplodeOuter
+  ExplodingGenerateSeries
+  Export
+  Expression
+  ExtendsLeft
+  ExtendsRight
+  ExternalProperty
+  Extract
+  Factorial
+  FallbackProperty
+  FarmFingerprint
+  FeaturesAtTime
+  Fetch
+  FileFormatProperty
+  Filter
+  Final
+  First
+  FirstValue
+  Flatten
+  Float64
+  Floor
+  ForClause
+  ForIn
+  ForceProperty
+  ForeignKey
+  Format
+  FormatJson
+  FormatPhrase
+  FreespaceProperty
+  From
+  FromBase
+  FromBase32
+  FromBase64
+  FromISO8601Date
+  FromISO8601Timestamp
+  FromISO8601TimestampNanos
+  FromJson
+  FromTimeZone
+  Func
+  FunctionSpecification
+  GT
+  GTE
+  GapFill
+  GenerateBool
+  GenerateDateArray
+  GenerateDouble
+  GenerateEmbedding
+  GenerateInt
+  GenerateSeries
+  GenerateTable
+  GenerateText
+  GenerateTimestampArray
+  GeneratedAsIdentityColumnConstraint
+  GeneratedAsRowColumnConstraint
+  Generator
+  Get
+  GetExtract
+  GetIgnoreCase
+  Getbit
+  Glob
+  GlobalProperty
+  Grant
+  GrantPrincipal
+  GrantPrivilege
+  Greatest
+  Group
+  GroupConcat
+  Grouping
+  GroupingId
+  GroupingSets
+  HandlerProperty
+  HashAgg
+  Having
+  HavingMax
+  HeapProperty
+  Heredoc
+  Hex
+  HexDecodeString
+  HexString
+  Hint
+  HistoricalData
+  Hll
+  Host
+  Hour
+  HybridProperty
+  ILike
+  IcebergProperty
+  Identifier
+  If
+  IfBlock
+  IgnoreNulls
+  In
+  InOutColumnConstraint
+  IncludeProperty
+  Index
+  IndexColumnConstraint
+  IndexConstraintOption
+  IndexParameters
+  IndexTableHint
+  InheritsProperty
+  Initcap
+  Inline
+  InlineLengthColumnConstraint
+  InputModelProperty
+  InputOutputFormat
+  Insert
+  Install
+  Int64
+  IntDiv
+  Intersect
+  Interval
+  IntervalOp
+  IntervalSpan
+  Into
+  Introducer
+  InvisibleColumnConstraint
+  Is
+  IsArray
+  IsAscii
+  IsInf
+  IsNan
+  IsNullValue
+  IsolatedLoadingProperty
+  Iterate
+  JSON
+  JSONArray
+  JSONArrayAgg
+  JSONArrayAppend
+  JSONArrayContains
+  JSONArrayInsert
+  JSONBContains
+  JSONBContainsAllTopKeys
+  JSONBContainsAnyTopKeys
+  JSONBContainsTopKey
+  JSONBDeleteAtPath
+  JSONBExists
+  JSONBExtract
+  JSONBExtractScalar
+  JSONBObjectAgg
+  JSONBPathExists
+  JSONBool
+  JSONCast
+  JSONColumnDef
+  JSONExists
+  JSONExtract
+  JSONExtractArray
+  JSONExtractQuote
+  JSONExtractScalar
+  JSONFormat
+  JSONKeyValue
+  JSONKeys
+  JSONKeysAtDepth
+  JSONObject
+  JSONObjectAgg
+  JSONPath
+  JSONPathFilter
+  JSONPathKey
+  JSONPathPart
+  JSONPathRecursive
+  JSONPathRoot
+  JSONPathScript
+  JSONPathSelector
+  JSONPathSlice
+  JSONPathSubscript
+  JSONPathUnion
+  JSONPathWildcard
+  JSONRemove
+  JSONSchema
+  JSONSet
+  JSONStripNulls
+  JSONTable
+  JSONType
+  JSONValue
+  JSONValueArray
+  JarowinklerSimilarity
+  Join
+  JoinHint
+  JournalProperty
+  JustifyDays
+  JustifyHours
+  JustifyInterval
+  Kill
+  Kurtosis
+  Kwarg
+  LT
+  LTE
+  Lag
+  Lambda
+  LanguageProperty
+  Last
+  LastDay
+  LastValue
+  Lateral
+  LaxBool
+  LaxFloat64
+  LaxInt64
+  LaxString
+  Lead
+  Least
+  Leave
+  Left
+  Length
+  Levenshtein
+  Like
+  LikeProperty
+  Limit
+  LimitOptions
+  List
+  Literal
+  Ln
+  LoadData
+  Localtime
+  Localtimestamp
+  LocationProperty
+  Lock
+  LockProperty
+  LockingProperty
+  LockingStatement
+  Log
+  LogProperty
+  LogicalAnd
+  LogicalOr
+  LoopBlock
+  Lower
+  LowerHex
+  MD5
+  MD5Digest
+  MD5NumberLower64
+  MD5NumberUpper64
+  MLForecast
+  MLTranslate
+  MacroOverload
+  MacroOverloads
+  MakeInterval
+  ManhattanDistance
+  Map
+  MapCat
+  MapContainsKey
+  MapDelete
+  MapFromEntries
+  MapInsert
+  MapKeys
+  MapPick
+  MapSize
+  MaskingPolicyColumnConstraint
+  MaskingProperty
+  Match
+  MatchAgainst
+  MatchRecognize
+  MatchRecognizeMeasure
+  MaterializedProperty
+  Max
+  Median
+  Merge
+  MergeBlockRatioProperty
+  MergeTreeTTL
+  MergeTreeTTLAction
+  Min
+  Minhash
+  MinhashCombine
+  Minute
+  Mod
+  Mode
+  ModelAttribute
+  ModifyColumn
+  ModuleProperty
+  Month
+  Monthname
+  MonthsBetween
+  Mul
+  MultitableInserts
+  NEQ
+  Nanvl
+  National
+  Neg
+  Negative
+  NestedJSONSelect
+  NetFunc
+  NetworkProperty
+  NextDay
+  NextValueFor
+  NoPrimaryIndexProperty
+  NonClusteredColumnConstraint
+  Normal
+  Normalize
+  Not
+  NotForReplicationColumnConstraint
+  NotNullColumnConstraint
+  NthValue
+  Ntile
+  Null
+  NullSafeEQ
+  NullSafeNEQ
+  Nullif
+  NumberToStr
+  Nvl2
+  ObjectAgg
+  ObjectId
+  ObjectIdentifier
+  ObjectInsert
+  ObjectTransform
+  Offset
+  OnCluster
+  OnCommitProperty
+  OnCondition
+  OnConflict
+  OnProperty
+  OnUpdateColumnConstraint
+  Opclass
+  OpenJSON
+  OpenJSONColumnDef
+  Operator
+  Or
+  Order
+  Ordered
+  OutputModelProperty
+  OverflowTruncateBehavior
+  Overlaps
+  Overlay
+  Pad
+  Parameter
+  ParameterStyleProperty
+  ParameterizedAgg
+  Paren
+  ParseBignumeric
+  ParseDatetime
+  ParseIp
+  ParseJSON
+  ParseNumeric
+  ParseTime
+  ParseUrl
+  Partition
+  PartitionBoundSpec
+  PartitionByListProperty
+  PartitionByRangeProperty
+  PartitionByRangePropertyDynamic
+  PartitionByTruncate
+  PartitionId
+  PartitionList
+  PartitionRange
+  PartitionedByBucket
+  PartitionedByProperty
+  PartitionedOfProperty
+  PathColumnConstraint
+  PercentRank
+  PercentileCont
+  PercentileDisc
+  PeriodForSystemTimeConstraint
+  Pi
+  Pivot
+  PivotAlias
+  PivotAny
+  Placeholder
+  Posexplode
+  PosexplodeOuter
+  PositionalColumn
+  Pow
+  Pragma
+  PreWhere
+  Predicate
+  Predict
+  PreviousDay
+  PrimaryKey
+  PrimaryKeyColumnConstraint
+  Prior
+  ProjectionDef
+  ProjectionPolicyColumnConstraint
+  Properties
+  Property
+  PropertyEQ
+  PseudoType
+  Pseudocolumn
+  Put
+  Qualify
+  Quantile
+  Quarter
+  Query
+  QueryBand
+  QueryOption
+  QueryTransform
+  Radians
+  Rand
+  Randn
+  Randstr
+  RangeBucket
+  RangeN
+  Rank
+  RawString
+  ReadCSV
+  ReadParquet
+  RecursiveWithSearch
+  Reduce
+  Reference
+  Refresh
+  RefreshTriggerProperty
+  RegDomain
+  RegexpCount
+  RegexpExtract
+  RegexpExtractAll
+  RegexpFullMatch
+  RegexpILike
+  RegexpInstr
+  RegexpLike
+  RegexpReplace
+  RegexpSplit
+  RegexpSubstr
+  RegrAvgx
+  RegrAvgy
+  RegrCount
+  RegrIntercept
+  RegrR2
+  RegrSlope
+  RegrSxx
+  RegrSxy
+  RegrSyy
+  RegrValx
+  RegrValy
+  RemoteWithConnectionModelProperty
+  RenameColumn
+  RenameIndex
+  Repeat
+  RepeatBlock
+  Replace
+  ReplacePartition
+  RespectNulls
+  Return
+  Returning
+  ReturnsProperty
+  Reverse
+  Revoke
+  Right
+  Rint
+  Rollback
+  Rollup
+  RollupIndex
+  RollupProperty
+  Round
+  RowAccessProperty
+  RowFormatDelimitedProperty
+  RowFormatProperty
+  RowFormatSerdeProperty
+  RowNumber
+  RtrimmedLength
+  SHA
+  SHA1Digest
+  SHA2
+  SHA2Digest
+  SafeAdd
+  SafeConvertBytesToString
+  SafeDivide
+  SafeFunc
+  SafeMultiply
+  SafeNegate
+  SafeSubtract
+  SampleProperty
+  Schema
+  SchemaCommentProperty
+  ScopeResolution
+  Search
+  SearchIp
+  Sec
+  Sech
+  Second
+  Secret
+  SecureProperty
+  SecurityIntegrationProperty
+  Select
+  Selectable
+  SemanticView
+  Semicolon
+  Seq1
+  Seq2
+  Seq4
+  Seq8
+  SequenceProperties
+  SerdeProperties
+  SessionParameter
+  SessionUser
+  Set
+  SetConfigProperty
+  SetItem
+  SetOperation
+  SetProperty
+  SettingsProperty
+  SharingProperty
+  Show
+  Shuffle
+  Sign
+  SimilarTo
+  Sin
+  Sinh
+  Skewness
+  SkipJSONColumn
+  Slice
+  Sort
+  SortArray
+  SortKeyProperty
+  Soundex
+  SoundexP123
+  Space
+  Split
+  SplitPart
+  SqlReadWriteProperty
+  SqlSecurityProperty
+  Sqrt
+  StDistance
+  StPoint
+  StabilityProperty
+  Stack
+  StandardHash
+  Star
+  StarMap
+  StartsWith
+  Stddev
+  StddevPop
+  StddevSamp
+  StorageHandlerProperty
+  StoredProcedure
+  StrPosition
+  StrToDate
+  StrToMap
+  StrToTime
+  StrToUnix
+  Stream
+  StreamingTableProperty
+  StrictProperty
+  String
+  StringToArray
+  StripNullValue
+  Strtok
+  StrtokToArray
+  Struct
+  StructExtract
+  Stuff
+  Sub
+  Subquery
+  SubqueryPredicate
+  Substring
+  SubstringIndex
+  Sum
+  Summarize
+  SwapTable
+  Systimestamp
+  Table
+  TableAlias
+  TableColumn
+  TableFromRows
+  TableSample
+  Tag
+  Tags
+  Tan
+  Tanh
+  TemporaryProperty
+  Time
+  TimeAdd
+  TimeDiff
+  TimeFromParts
+  TimeSlice
+  TimeStrToDate
+  TimeStrToTime
+  TimeStrToUnix
+  TimeSub
+  TimeToStr
+  TimeToTimeStr
+  TimeToUnix
+  TimeTrunc
+  TimeUnit
+  TimeseriesKey
+  Timestamp
+  TimestampAdd
+  TimestampDiff
+  TimestampFromParts
+  TimestampLtzFromParts
+  TimestampSub
+  TimestampTrunc
+  TimestampTzFromParts
+  TitleColumnConstraint
+  ToArray
+  ToBase32
+  ToBase64
+  ToBinary
+  ToBoolean
+  ToChar
+  ToCodePoints
+  ToDays
+  ToDecfloat
+  ToDouble
+  ToFile
+  ToMap
+  ToNumber
+  ToTableProperty
+  ToVariant
+  Transaction
+  Transform
+  TransformModelProperty
+  TransientProperty
+  Translate
+  TranslateCharacters
+  TriggerEvent
+  TriggerExecute
+  TriggerProperties
+  TriggerReferencing
+  Trim
+  Trunc
+  TruncateTable
+  Try
+  TryBase64DecodeBinary
+  TryBase64DecodeString
+  TryCast
+  TryHexDecodeBinary
+  TryHexDecodeString
+  TryToDecfloat
+  TsOrDiToDi
+  TsOrDsAdd
+  TsOrDsDiff
+  TsOrDsToDate
+  TsOrDsToDateStr
+  TsOrDsToDatetime
+  TsOrDsToTime
+  TsOrDsToTimestamp
+  Tuple
+  Typeof
+  UDTF
+  Unary
+  Uncache
+  Undrop
+  Unhex
+  Unicode
+  UnicodeString
+  Uniform
+  Union
+  UniqueColumnConstraint
+  UniqueKeyProperty
+  UnixDate
+  UnixMicros
+  UnixMillis
+  UnixSeconds
+  UnixToStr
+  UnixToTime
+  UnixToTimeStr
+  UnloggedProperty
+  Unnest
+  UnpivotColumns
+  Update
+  Upper
+  UppercaseColumnConstraint
+  Use
+  UserDefinedFunction
+  UsingData
+  UsingProperty
+  UsingTemplateProperty
+  UtcDate
+  UtcTime
+  UtcTimestamp
+  Uuid
+  UuidProperty
+  Values
+  Var
+  VarMap
+  Variadic
+  Variance
+  VariancePop
+  VectorSearch
+  Version
+  ViewAttributeProperty
+  VirtualProperty
+  VolatileProperty
+  WatermarkColumnConstraint
+  Week
+  WeekOfYear
+  WeekStart
+  When
+  Whens
+  Where
+  WhileBlock
+  WidthBucket
+  Window
+  WindowSpec
+  With
+  WithDataProperty
+  WithFill
+  WithJournalTableProperty
+  WithOperator
+  WithProcedureOptions
+  WithSchemaBindingProperty
+  WithSystemVersioningProperty
+  WithTableHint
+  WithinGroup
+  XMLElement
+  XMLGet
+  XMLKeyValueOption
+  XMLNamespace
+  XMLTable
+  Xor
+  Year
+  YearOfWeek
+  YearOfWeekIso
+  ZeroFillColumnConstraint
+  Zipf
+  PrivExplodeOuter
+  PrivTimeUnit
+} derive(Eq, Hash)
+pub fn Kind::arg_types(Self) -> FixedArray[(String, Bool)]
+pub fn Kind::class_path(Self) -> String
+pub fn Kind::has_arg(Self, String) -> Bool
+pub fn Kind::hash_raw_args(Self) -> Bool
+pub fn Kind::id(Self) -> Int
+pub fn Kind::is_a(Self, Self) -> Bool
+pub fn Kind::is_any(Self, ArrayView[Self]) -> Bool
+pub fn Kind::is_cast(Self) -> Bool
+pub fn Kind::is_data_type(Self) -> Bool
+pub fn Kind::is_primitive(Self) -> Bool
+pub fn Kind::is_subquery(Self) -> Bool
+pub fn Kind::is_trait(Self) -> Bool
+pub fn Kind::is_var_len_args(Self) -> Bool
+pub fn Kind::key(Self) -> String
+pub fn Kind::module_name(Self) -> String
+pub fn Kind::name(Self) -> String
+pub fn Kind::owner_alias(Self) -> Self?
+pub fn Kind::owner_alias_or_name(Self) -> Self?
+pub fn Kind::owner_catalog(Self) -> Self?
+pub fn Kind::owner_columns(Self) -> Self?
+pub fn Kind::owner_ctes(Self) -> Self?
+pub fn Kind::owner_db(Self) -> Self?
+pub fn Kind::owner_is_int(Self) -> Self?
+pub fn Kind::owner_is_number(Self) -> Self?
+pub fn Kind::owner_is_star(Self) -> Self?
+pub fn Kind::owner_is_string(Self) -> Self?
+pub fn Kind::owner_is_type(Self) -> Self?
+pub fn Kind::owner_kind(Self) -> Self?
+pub fn Kind::owner_left(Self) -> Self?
+pub fn Kind::owner_method(Self) -> Self?
+pub fn Kind::owner_name(Self) -> Self?
+pub fn Kind::owner_named_selects(Self) -> Self?
+pub fn Kind::owner_output_name(Self) -> Self?
+pub fn Kind::owner_parts(Self) -> Self?
+pub fn Kind::owner_right(Self) -> Self?
+pub fn Kind::owner_selects(Self) -> Self?
+pub fn Kind::owner_side(Self) -> Self?
+pub fn Kind::owner_table(Self) -> Self?
+pub fn Kind::owner_this(Self) -> Self?
+pub fn Kind::owner_to(Self) -> Self?
+pub fn Kind::owner_to_py(Self) -> Self?
+pub fn Kind::owner_unit(Self) -> Self?
+pub fn Kind::owner_unnest(Self) -> Self?
+pub fn Kind::sql_name(Self) -> String
+pub fn Kind::sql_names(Self) -> FixedArray[String]
+pub fn Kind::var_len_arg_key(Self) -> String
+pub impl Show for Kind
+
+pub(all) enum NormalizationStrategy {
+  Lowercase
+  Uppercase
+  CaseSensitive
+  CaseInsensitive
+  CaseInsensitiveUppercase
+} derive(Eq, Hash, @debug.Debug)
+
+pub(all) struct NumericEscape {
+  base : Int
+  min_digits : Int
+  max_digits : Int
+  max_value : Int
+}
+
+pub(all) struct ParseErrorInfo {
+  description : String
+  line : Int
+  col : Int
+  start_context : String
+  highlight : String
+  end_context : String
+  into_expression : String?
+} derive(@debug.Debug)
+
+pub(all) struct Parser {
+  dialect : Dialect
+  cfg : ParserConfig
+  fns : ParserFns
+  mut error_level : ErrorLevel
+  error_message_context : Int
+  max_errors : Int
+  max_nodes : Int
+  mut sql : String
+  mut errors : Array[SqlglotError]
+  mut tokens : Array[Token]
+  mut tokens_size : Int
+  mut index : Int
+  mut curr : Token
+  mut next : Token
+  mut prev : Token
+  mut prev_comments : Array[String]
+  mut pipe_cte_counter : Int
+  mut chunks : Array[Array[Token]]
+  mut chunk_index : Int
+  mut node_count : Int
+}
+pub fn Parser::add_comments(Self, Expr?) -> Unit
+pub fn Parser::advance(Self, times? : Int) -> Unit
+pub fn Parser::advance_any(Self, ignore_reserved? : Bool) -> Token?
+pub fn Parser::advance_chunk(Self) -> Unit
+pub fn Parser::andl(Self, Bool, () -> Array[Expr] raise SqlglotError) -> Value? raise SqlglotError
+pub fn Parser::andv(Self, Bool, () -> Expr? raise SqlglotError) -> Value? raise SqlglotError
+pub fn Parser::build_cast(Self, Bool, Array[(String, Value?)]) -> Expr raise SqlglotError
+pub fn Parser::build_cast_base(Self, Bool, Array[(String, Value?)]) -> Expr raise SqlglotError
+pub fn Parser::build_json_extract(Self, Expr?, Array[Expr]) -> (Expr?, Array[Expr]) raise SqlglotError
+pub fn Parser::build_pipe_cte(Self, Expr, Array[Expr], alias_cte? : Expr) -> Expr
+pub fn Parser::can_parse_limit_or_offset(Self) -> Bool
+pub fn Parser::can_parse_named_window(Self) -> Bool
+pub fn Parser::check_errors(Self) -> Unit raise SqlglotError
+pub fn Parser::dialect_sql(Self, Expr) -> String raise SqlglotError
+pub fn Parser::expression(Self, Expr, token? : Token, comments? : Array[String]) -> Expr raise SqlglotError
+pub fn Parser::expression_opt(Self, Expr?) -> Expr? raise SqlglotError
+pub fn[V] Parser::find_parser(Self, Map[String, V], WordTrie) -> V?
+pub fn Parser::find_sql(Self, Token, Token) -> String
+pub fn Parser::identifier_expression(Self, token? : Token, quoted? : Bool) -> Expr raise SqlglotError
+pub fn Parser::implicit_unnests_to_explicit(Self, Expr) -> Expr
+pub fn Parser::is_connected(Self) -> Bool
+pub fn Parser::kv_to_prop_eq(Self, Array[Expr], parse_map? : Bool) -> Array[Expr] raise SqlglotError
+pub fn Parser::match_(Self, TokenType, advance? : Bool, expression? : Expr) -> Bool
+pub fn Parser::match_any(Self, ArrayView[TokenType], advance? : Bool) -> Bool
+pub fn[V] Parser::match_keys(Self, Map[TokenType, V], advance? : Bool) -> Bool
+pub fn Parser::match_l_paren(Self, expression? : Expr) -> Unit raise SqlglotError
+pub fn Parser::match_pair(Self, TokenType, TokenType, advance? : Bool) -> Bool
+pub fn Parser::match_r_paren(Self, expression? : Expr) -> Unit raise SqlglotError
+pub fn Parser::match_set(Self, TokenSet, advance? : Bool) -> Bool
+pub fn Parser::match_set_text(Self, TokenSet) -> String?
+pub fn Parser::match_text(Self, String, advance? : Bool) -> Bool
+pub fn[V] Parser::match_text_keys(Self, Map[String, V], advance? : Bool) -> Bool
+pub fn Parser::match_text_seq(Self, ArrayView[String], advance? : Bool) -> Bool
+pub fn Parser::match_text_set(Self, @set.Set[String], advance? : Bool) -> Bool
+pub fn Parser::match_texts(Self, ArrayView[String], advance? : Bool) -> Bool
+pub fn Parser::match_texts_upper(Self, ArrayView[String]) -> String?
+pub fn Parser::negate_range(Self, Expr?) -> Expr? raise SqlglotError
+pub fn Parser::negate_range_base(Self, Expr?) -> Expr? raise SqlglotError
+pub fn Parser::new(Dialect, error_level? : ErrorLevel, error_message_context? : Int, max_errors? : Int, max_nodes? : Int) -> Self
+pub fn Parser::normalize_collate(Self, Expr) -> Unit
+pub fn Parser::parse(Self, Array[Token], String) -> Array[Expr?] raise SqlglotError
+pub fn Parser::parse_add_column(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_alias(Self, Expr?, explicit? : Bool) -> Expr? raise SqlglotError
+pub fn Parser::parse_alias_base(Self, Expr?, explicit? : Bool) -> Expr? raise SqlglotError
+pub fn Parser::parse_alter(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_alter_diststyle(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_alter_drop_action(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_alter_session(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_alter_sortkey(Self, compound? : Bool) -> Expr? raise SqlglotError
+pub fn Parser::parse_alter_table_add(Self) -> Array[Expr] raise SqlglotError
+pub fn Parser::parse_alter_table_alter(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_alter_table_alter_base(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_alter_table_drop(Self) -> Array[Expr] raise SqlglotError
+pub fn Parser::parse_alter_table_rename(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_alter_table_rename_base(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_alter_table_set(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_alter_table_set_base(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_analyze(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_analyze_columns(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_analyze_delete(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_analyze_histogram(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_analyze_list(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_analyze_statistics(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_analyze_validate(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_as_command(Self, Token) -> Expr
+pub fn Parser::parse_assignment(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_assignment_base(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_at_time_zone(Self, Expr?) -> Expr? raise SqlglotError
+pub fn Parser::parse_atom(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_auto_increment(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_auto_property(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_batch_statements(Self, (Self) -> Expr? raise SqlglotError, sep_first_statement? : Bool) -> Array[Expr?] raise SqlglotError
+pub fn Parser::parse_between(Self, Expr?) -> Expr? raise SqlglotError
+pub fn Parser::parse_binary_level(Self, Map[TokenType, Kind], () -> Expr? raise SqlglotError) -> Expr? raise SqlglotError
+pub fn Parser::parse_bitwise(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_block(Self) -> Expr raise SqlglotError
+pub fn Parser::parse_blockcompression(Self) -> Expr raise SqlglotError
+pub fn Parser::parse_boolean(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_bracket(Self, Expr?) -> Expr? raise SqlglotError
+pub fn Parser::parse_bracket_base(Self, Expr?) -> Expr? raise SqlglotError
+pub fn Parser::parse_bracket_key_value(Self, is_map? : Bool) -> Expr? raise SqlglotError
+pub fn Parser::parse_cache(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_called_on_null_input_property(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_case(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_cast(Self, Bool, safe? : Bool) -> Expr? raise SqlglotError
+pub fn Parser::parse_ceil_floor(Self, Kind) -> Expr? raise SqlglotError
+pub fn Parser::parse_changes(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_char(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_character_set(Self, default? : Bool) -> Expr raise SqlglotError
+pub fn Parser::parse_charset_name(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_check_constraint(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_check_constraint_base(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_checksum(Self) -> Expr raise SqlglotError
+pub fn Parser::parse_cluster(Self) -> Expr raise SqlglotError
+pub fn Parser::parse_cluster_property(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_cluster_property_base(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_clustered_by(Self) -> Expr raise SqlglotError
+pub fn Parser::parse_colon_as_variant_extract(Self, Expr?) -> Expr? raise SqlglotError
+pub fn Parser::parse_column(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_column_base(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_column_constraint(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_column_constraint_base(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_column_def(Self, Expr?, computed_column? : Bool) -> Expr? raise SqlglotError
+pub fn Parser::parse_column_def_base(Self, Expr?, computed_column? : Bool) -> Expr? raise SqlglotError
+pub fn Parser::parse_column_def_with_exists(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_column_ops(Self, Expr?) -> Expr? raise SqlglotError
+pub fn Parser::parse_column_ops_base(Self, Expr?) -> Expr? raise SqlglotError
+pub fn Parser::parse_column_parts_fast(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_column_reference(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_command(Self) -> Expr raise SqlglotError
+pub fn Parser::parse_comment(Self, allow_exists? : Bool) -> Expr? raise SqlglotError
+pub fn Parser::parse_commit_or_rollback(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_commit_or_rollback_base(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_comparison(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_composite_key_property(Self, Kind) -> Expr raise SqlglotError
+pub fn Parser::parse_comprehension(Self, Expr?) -> Expr? raise SqlglotError
+pub fn Parser::parse_compress(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_condition(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_conjunction(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_connect(Self, skip_start_token? : Bool) -> Expr? raise SqlglotError
+pub fn Parser::parse_connect_with_prior(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_connect_with_prior_base(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_connector_function(Self, Kind) -> Expr? raise SqlglotError
+pub fn Parser::parse_constraint(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_constraint_base(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_contains_property(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_convert(Self, Bool, safe? : Bool) -> Expr? raise SqlglotError
+pub fn Parser::parse_convert_base(Self, Bool, safe? : Bool) -> Expr? raise SqlglotError
+pub fn Parser::parse_copy(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_copy_parameters(Self) -> Array[Expr] raise SqlglotError
+pub fn Parser::parse_copy_property(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_create(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_create_base(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_create_like(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_credentials(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_csv(Self, () -> Expr? raise SqlglotError, sep? : TokenType) -> Array[Expr] raise SqlglotError
+pub fn[T] Parser::parse_csv_any(Self, () -> T? raise SqlglotError, sep? : TokenType) -> Array[T] raise SqlglotError
+pub fn Parser::parse_cte(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_cte_base(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_cube_or_rollup(Self, with_prefix? : Bool) -> Expr? raise SqlglotError
+pub fn Parser::parse_data_deletion_property(Self) -> Expr raise SqlglotError
+pub fn Parser::parse_datablocksize(Self, default? : Bool, minimum? : Bool, maximum? : Bool) -> Expr raise SqlglotError
+pub fn Parser::parse_dcolon(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_ddl_select(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_declare(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_declareitem(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_decode(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_definer(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_definer_base(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_delete(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_derived_table_values(Self, allow_value_synonym? : Bool) -> Expr? raise SqlglotError
+pub fn Parser::parse_describe(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_describe_base(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_dict_property(Self, String) -> Expr? raise SqlglotError
+pub fn Parser::parse_dict_range(Self, String) -> Expr? raise SqlglotError
+pub fn Parser::parse_disjunction(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_distinct_arg_function(Self, Kind, distinct_index? : Int) -> Expr? raise SqlglotError
+pub fn Parser::parse_distkey(Self) -> Expr raise SqlglotError
+pub fn Parser::parse_distributed_property(Self) -> Expr raise SqlglotError
+pub fn Parser::parse_drop(Self, exists? : Bool) -> Expr? raise SqlglotError
+pub fn Parser::parse_drop_column(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_drop_column_base(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_drop_partition(Self, exists? : Bool?) -> Expr? raise SqlglotError
+pub fn Parser::parse_equality(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_escape(Self, Expr?) -> Expr? raise SqlglotError
+pub fn Parser::parse_exists(Self, not_? : Bool) -> Bool? raise SqlglotError
+pub fn Parser::parse_exponent(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_expression(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_expressions(Self) -> Array[Expr] raise SqlglotError
+pub fn Parser::parse_extract(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_extract_base(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_factor(Self, parse_mod? : Bool) -> Expr? raise SqlglotError
+pub fn Parser::parse_factor_operand(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_fallback(Self, no? : Bool) -> Expr raise SqlglotError
+pub fn Parser::parse_field(Self, any_token? : Bool, tokens? : TokenSet, anonymous_func? : Bool) -> Expr? raise SqlglotError
+pub fn Parser::parse_field_def(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_file_location(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_foreign_key(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_foreign_key_base(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_format_json(Self, Expr?) -> Expr? raise SqlglotError
+pub fn Parser::parse_format_name(Self) -> Expr raise SqlglotError
+pub fn Parser::parse_freespace(Self) -> Expr raise SqlglotError
+pub fn Parser::parse_from(Self, joins? : Bool, skip_from_token? : Bool, consume_pipe? : Bool) -> Expr? raise SqlglotError
+pub fn Parser::parse_from_base(Self, joins? : Bool, skip_from_token? : Bool, consume_pipe? : Bool) -> Expr? raise SqlglotError
+pub fn Parser::parse_function(Self, functions? : Map[String, (Array[Expr], Self) -> Expr raise SqlglotError], anonymous? : Bool, optional_parens? : Bool, any_token? : Bool) -> Expr? raise SqlglotError
+pub fn Parser::parse_function_args(Self, alias? : Bool) -> Array[Expr] raise SqlglotError
+pub fn Parser::parse_function_base(Self, functions? : Map[String, (Array[Expr], Self) -> Expr raise SqlglotError], anonymous? : Bool, optional_parens? : Bool, any_token? : Bool) -> Expr? raise SqlglotError
+pub fn Parser::parse_function_call(Self, functions? : Map[String, (Array[Expr], Self) -> Expr raise SqlglotError], anonymous? : Bool, optional_parens? : Bool, any_token? : Bool) -> Expr? raise SqlglotError
+pub fn Parser::parse_function_call_base(Self, functions? : Map[String, (Array[Expr], Self) -> Expr raise SqlglotError], anonymous? : Bool, optional_parens? : Bool, any_token? : Bool) -> Expr? raise SqlglotError
+pub fn Parser::parse_function_parameter(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_function_properties(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_function_properties_base(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_gap_fill(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_generated_as_identity(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_generated_as_identity_base(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_grant(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_grant_principal(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_grant_privilege(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_grant_revoke_common(Self) -> (Array[Expr], String?, Expr?) raise SqlglotError
+pub fn Parser::parse_group(Self, skip_group_by_token? : Bool) -> Expr? raise SqlglotError
+pub fn Parser::parse_group_concat(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_group_concat_base(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_grouping_set(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_grouping_sets(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_having(Self, skip_having_token? : Bool) -> Expr? raise SqlglotError
+pub fn Parser::parse_having_max(Self, Expr?) -> Expr? raise SqlglotError
+pub fn Parser::parse_heredoc(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_hint(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_hint_body(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_hint_fallback_to_string(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_hint_function_call(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_historical_data(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_id_var(Self, any_token? : Bool, tokens? : TokenSet) -> Expr? raise SqlglotError
+pub fn Parser::parse_id_var_base(Self, any_token? : Bool, tokens? : TokenSet) -> Expr? raise SqlglotError
+pub fn Parser::parse_identifier(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_if(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_if_base(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_in(Self, Expr?, alias? : Bool) -> Expr? raise SqlglotError
+pub fn Parser::parse_index(Self, index? : Expr?, anonymous? : Bool) -> Expr? raise SqlglotError
+pub fn Parser::parse_index_params(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_index_params_base(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_indexed_column(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_initcap(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_inline(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_insert(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_insert_table(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_insert_table_base(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_interpolate(Self) -> Array[Expr]? raise SqlglotError
+pub fn Parser::parse_interval(Self, require_interval? : Bool, parse_function_unit? : Bool) -> Expr? raise SqlglotError
+pub fn Parser::parse_interval_span(Self, Expr?, parse_function_unit? : Bool) -> Expr raise SqlglotError
+pub fn Parser::parse_into(Self, ArrayView[Kind], Array[Token], sql? : String, into_is_list? : Bool) -> Array[Expr?] raise SqlglotError
+pub fn Parser::parse_into_clause(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_into_clause_base(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_introducer(Self, Token) -> Expr? raise SqlglotError
+pub fn Parser::parse_is(Self, Expr?) -> Expr? raise SqlglotError
+pub fn Parser::parse_join(Self, skip_join_token? : Bool, parse_bracket? : Bool, alias_tokens? : TokenSet) -> Expr? raise SqlglotError
+pub fn Parser::parse_join_base(Self, skip_join_token? : Bool, parse_bracket? : Bool, alias_tokens? : TokenSet) -> Expr? raise SqlglotError
+pub fn Parser::parse_join_hint(Self, String) -> Expr? raise SqlglotError
+pub fn Parser::parse_join_parts(Self) -> (Token?, Token?, Token?) raise SqlglotError
+pub fn Parser::parse_join_parts_base(Self) -> (Token?, Token?, Token?)
+pub fn Parser::parse_joins(Self, alias_tokens? : TokenSet) -> Array[Expr] raise SqlglotError
+pub fn Parser::parse_journal(Self, Map[String, Bool]) -> Expr raise SqlglotError
+pub fn Parser::parse_json_column_def(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_json_key_value(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_json_object(Self, agg? : Bool) -> Expr? raise SqlglotError
+pub fn Parser::parse_json_object_base(Self, agg? : Bool) -> Expr? raise SqlglotError
+pub fn Parser::parse_json_schema(Self) -> Expr raise SqlglotError
+pub fn Parser::parse_json_table(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_json_type_arg(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_json_value(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_key_constraint_options(Self) -> Array[String] raise SqlglotError
+pub fn Parser::parse_key_value_property(Self, parse_value? : () -> Expr? raise SqlglotError) -> Expr? raise SqlglotError
+pub fn Parser::parse_kill(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_lambda(Self, alias? : Bool) -> Expr? raise SqlglotError
+pub fn Parser::parse_lambda_arg(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_lambda_base(Self, alias? : Bool) -> Expr? raise SqlglotError
+pub fn Parser::parse_lateral(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_lateral_base(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_limit(Self, this? : Expr?, top? : Bool, skip_limit_token? : Bool) -> Expr? raise SqlglotError
+pub fn Parser::parse_limit_by(Self) -> Array[Expr]? raise SqlglotError
+pub fn Parser::parse_limit_options(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_load(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_locking(Self) -> Expr raise SqlglotError
+pub fn Parser::parse_locks(Self) -> Array[Expr] raise SqlglotError
+pub fn Parser::parse_log(Self, no? : Bool) -> Expr raise SqlglotError
+pub fn Parser::parse_macro_overloads(Self, Expr, Expr, Bool) -> Expr? raise SqlglotError
+pub fn Parser::parse_match_against(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_match_recognize(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_match_recognize_measure(Self) -> Expr raise SqlglotError
+pub fn Parser::parse_merge(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_mergeblockratio(Self, no? : Bool, default? : Bool) -> Expr raise SqlglotError
+pub fn Parser::parse_modifies_property(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_multitable_inserts(Self, Array[String]) -> Expr raise SqlglotError
+pub fn Parser::parse_name_as_expression(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_named_window(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_next_value_for(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_no_property(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_normalize(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_not_constraint(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_null(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_number(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_odbc_datetime_literal(Self) -> Expr raise SqlglotError
+pub fn Parser::parse_offset(Self, this? : Expr?) -> Expr? raise SqlglotError
+pub fn Parser::parse_on_condition(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_on_conflict(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_on_handling(Self, String, Array[String]) -> Value? raise SqlglotError
+pub fn Parser::parse_on_property(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_on_property_base(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_opclass(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_open_json(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_operator(Self, Expr?) -> Expr? raise SqlglotError
+pub fn Parser::parse_order(Self, this? : Expr?, skip_order_token? : Bool) -> Expr? raise SqlglotError
+pub fn Parser::parse_ordered(Self, parse_method? : () -> Expr? raise SqlglotError) -> Expr? raise SqlglotError
+pub fn Parser::parse_ordered_base(Self, parse_method? : () -> Expr? raise SqlglotError) -> Expr? raise SqlglotError
+pub fn Parser::parse_overlay(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_parameter(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_paren(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_partition(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_partition_and_order(Self) -> (Array[Expr], Expr?) raise SqlglotError
+pub fn Parser::parse_partition_base(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_partition_bound_spec(Self) -> Expr raise SqlglotError
+pub fn Parser::parse_partition_by(Self) -> Array[Expr] raise SqlglotError
+pub fn Parser::parse_partitioned_by(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_partitioned_by_base(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_partitioned_by_bucket_or_truncate(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_partitioned_of(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_period_for_system_time(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_pipe_syntax_aggregate(Self, Expr) -> Expr? raise SqlglotError
+pub fn Parser::parse_pipe_syntax_aggregate_fields(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_pipe_syntax_aggregate_group_order_by(Self, Expr, group_by_exists? : Bool) -> Expr raise SqlglotError
+pub fn Parser::parse_pipe_syntax_extend(Self, Expr) -> Expr? raise SqlglotError
+pub fn Parser::parse_pipe_syntax_join(Self, Expr) -> Expr? raise SqlglotError
+pub fn Parser::parse_pipe_syntax_limit(Self, Expr) -> Expr? raise SqlglotError
+pub fn Parser::parse_pipe_syntax_pivot(Self, Expr) -> Expr? raise SqlglotError
+pub fn Parser::parse_pipe_syntax_query(Self, Expr) -> Expr? raise SqlglotError
+pub fn Parser::parse_pipe_syntax_select(Self, Expr) -> Expr? raise SqlglotError
+pub fn Parser::parse_pipe_syntax_set_operator(Self, Expr) -> Expr? raise SqlglotError
+pub fn Parser::parse_pipe_syntax_tablesample(Self, Expr) -> Expr? raise SqlglotError
+pub fn Parser::parse_pivot(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_pivot_aggregation(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_pivot_aggregation_base(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_pivot_in(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_pivots(Self) -> Array[Expr]? raise SqlglotError
+pub fn Parser::parse_placeholder(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_position(Self, haystack_first? : Bool) -> Expr? raise SqlglotError
+pub fn Parser::parse_position_base(Self, haystack_first? : Bool) -> Expr? raise SqlglotError
+pub fn Parser::parse_prewhere(Self, skip_where_token? : Bool) -> Expr? raise SqlglotError
+pub fn Parser::parse_primary(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_primary_base(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_primary_key(Self, wrapped_optional? : Bool, in_props? : Bool, named_primary_key? : Bool) -> Expr? raise SqlglotError
+pub fn Parser::parse_primary_key_base(Self, wrapped_optional? : Bool, in_props? : Bool, named_primary_key? : Bool) -> Expr? raise SqlglotError
+pub fn Parser::parse_primary_key_part(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_primary_or_var(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_procedure_option(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_projections(Self) -> (Array[Expr], Array[Expr]?) raise SqlglotError
+pub fn Parser::parse_properties(Self, before? : Bool) -> Expr? raise SqlglotError
+pub fn Parser::parse_property(Self) -> Value? raise SqlglotError
+pub fn Parser::parse_property_assignment(Self, Kind, kwargs? : ArrayView[(String, &IntoValue)]) -> Expr raise SqlglotError
+pub fn Parser::parse_property_before(Self) -> Value? raise SqlglotError
+pub fn Parser::parse_property_before_base(Self) -> Value? raise SqlglotError
+pub fn Parser::parse_qualify(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_query_modifiers(Self, Expr?) -> Expr? raise SqlglotError
+pub fn Parser::parse_range(Self, this? : Expr?) -> Expr? raise SqlglotError
+pub fn Parser::parse_range_base(Self, Expr?) -> Expr? raise SqlglotError
+pub fn Parser::parse_reads_property(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_recursive_with_search(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_references(Self, match_? : Bool) -> Expr? raise SqlglotError
+pub fn Parser::parse_refresh(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_remote_with_connection(Self) -> Expr raise SqlglotError
+pub fn Parser::parse_respect_or_ignore_nulls(Self, Expr?) -> Expr? raise SqlglotError
+pub fn Parser::parse_retention_period(Self) -> Expr raise SqlglotError
+pub fn Parser::parse_returning(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_returns(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_returns_base(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_revoke(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_row(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_row_format(Self, match_row? : Bool) -> Expr? raise SqlglotError
+pub fn Parser::parse_schema(Self, this? : Expr?) -> Expr? raise SqlglotError
+pub fn Parser::parse_select(Self, nested? : Bool, table? : Bool, parse_subquery_alias? : Bool, parse_set_operation? : Bool, consume_pipe? : Bool, from_? : Expr) -> Expr? raise SqlglotError
+pub fn Parser::parse_select_or_expression(Self, alias? : Bool) -> Expr? raise SqlglotError
+pub fn Parser::parse_select_query(Self, nested? : Bool, table? : Bool, parse_subquery_alias? : Bool, parse_set_operation? : Bool) -> Expr? raise SqlglotError
+pub fn Parser::parse_sequence_properties(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_serde_properties(Self, with_? : Bool) -> Expr? raise SqlglotError
+pub fn Parser::parse_session_parameter(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_set(Self, unset? : Bool, tag? : Bool) -> Expr? raise SqlglotError
+pub fn Parser::parse_set_base(Self, unset? : Bool, tag? : Bool) -> Expr? raise SqlglotError
+pub fn Parser::parse_set_item(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_set_item_assignment(Self, kind? : String) -> Expr? raise SqlglotError
+pub fn Parser::parse_set_operation(Self, Expr?, consume_pipe? : Bool) -> Expr? raise SqlglotError
+pub fn Parser::parse_set_operations(Self, Expr?) -> Expr? raise SqlglotError
+pub fn Parser::parse_set_transaction(Self, global_? : Bool) -> Expr raise SqlglotError
+pub fn Parser::parse_settings_property(Self) -> Expr raise SqlglotError
+pub fn Parser::parse_show(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_simplified_pivot(Self, is_unpivot? : Bool) -> Expr? raise SqlglotError
+pub fn Parser::parse_slice(Self, Expr?) -> Expr? raise SqlglotError
+pub fn Parser::parse_sort(Self, Kind, TokenType) -> Expr? raise SqlglotError
+pub fn Parser::parse_sortkey(Self, compound? : Bool) -> Expr raise SqlglotError
+pub fn Parser::parse_sql_security(Self) -> Expr raise SqlglotError
+pub fn Parser::parse_star(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_star_op(Self, ArrayView[String]) -> Array[Expr]? raise SqlglotError
+pub fn Parser::parse_star_ops(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_statement(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_statement_base(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_stored(Self) -> Expr raise SqlglotError
+pub fn Parser::parse_stream(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_string(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_string_agg(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_string_as_identifier(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_struct_types(Self, type_required? : Bool) -> Expr? raise SqlglotError
+pub fn Parser::parse_struct_types_base(Self, type_required? : Bool) -> Expr? raise SqlglotError
+pub fn Parser::parse_subquery(Self, Expr?, parse_alias? : Bool) -> Expr? raise SqlglotError
+pub fn Parser::parse_substring(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_substring_base(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_system_versioning_property(Self, with_? : Bool) -> Expr raise SqlglotError
+pub fn Parser::parse_table(Self, schema? : Bool, joins? : Bool, alias_tokens? : TokenSet, parse_bracket? : Bool, is_db_reference? : Bool, parse_partition? : Bool, consume_pipe? : Bool) -> Expr? raise SqlglotError
+pub fn Parser::parse_table_alias(Self, alias_tokens? : TokenSet) -> Expr? raise SqlglotError
+pub fn Parser::parse_table_base(Self, TableArgs) -> Expr? raise SqlglotError
+pub fn Parser::parse_table_hints(Self) -> Array[Expr]? raise SqlglotError
+pub fn Parser::parse_table_hints_base(Self) -> Array[Expr]? raise SqlglotError
+pub fn Parser::parse_table_part(Self, schema? : Bool) -> Expr? raise SqlglotError
+pub fn Parser::parse_table_part_base(Self, schema? : Bool) -> Expr? raise SqlglotError
+pub fn Parser::parse_table_parts(Self, schema? : Bool, is_db_reference? : Bool, wildcard? : Bool, fast? : Bool) -> Expr? raise SqlglotError
+pub fn Parser::parse_table_parts_base(Self, schema? : Bool, is_db_reference? : Bool, wildcard? : Bool, fast? : Bool) -> Expr? raise SqlglotError
+pub fn Parser::parse_table_parts_fast(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_table_sample(Self, as_modifier? : Bool) -> Expr? raise SqlglotError
+pub fn Parser::parse_table_sample_base(Self, as_modifier? : Bool) -> Expr? raise SqlglotError
+pub fn Parser::parse_term(Self, parse_mod? : Bool) -> Expr? raise SqlglotError
+pub fn Parser::parse_to_table(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_tokens_with(Self, (Self) -> Expr? raise SqlglotError, Array[Token], String) -> Array[Expr?] raise SqlglotError
+pub fn Parser::parse_transaction(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_transaction_base(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_trigger_deferrable(Self) -> (String?, String?) raise SqlglotError
+pub fn Parser::parse_trigger_events(Self) -> Array[Expr] raise SqlglotError
+pub fn Parser::parse_trigger_execute(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_trigger_for_each(Self) -> String? raise SqlglotError
+pub fn Parser::parse_trigger_referencing(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_trigger_referencing_clause(Self, String) -> Expr? raise SqlglotError
+pub fn Parser::parse_trim(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_truncate_table(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_ttl(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_type(Self, parse_interval? : Bool, fallback_to_identifier? : Bool) -> Expr? raise SqlglotError
+pub fn Parser::parse_type_base(Self, parse_interval? : Bool, fallback_to_identifier? : Bool) -> Expr? raise SqlglotError
+pub fn Parser::parse_type_size(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_types(Self, check_func? : Bool, schema? : Bool, allow_identifiers? : Bool, with_collation? : Bool) -> Expr? raise SqlglotError
+pub fn Parser::parse_types_base(Self, check_func? : Bool, schema? : Bool, allow_identifiers? : Bool, with_collation? : Bool) -> Expr? raise SqlglotError
+pub fn Parser::parse_unary(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_uncache(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_unique(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_unique_base(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_unique_key(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_unique_key_base(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_unnamed_constraint(Self, constraints? : @set.Set[String]) -> Expr? raise SqlglotError
+pub fn Parser::parse_unnamed_constraints(Self) -> Array[Expr] raise SqlglotError
+pub fn Parser::parse_unnest(Self, with_alias? : Bool) -> Expr? raise SqlglotError
+pub fn Parser::parse_unnest_base(Self, with_alias? : Bool) -> Expr? raise SqlglotError
+pub fn Parser::parse_unpivot_columns(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_unquoted_field(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_update(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_update_assignment(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_update_base(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_use(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_use_base(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_user_defined_function(Self, kind? : TokenType) -> Expr? raise SqlglotError
+pub fn Parser::parse_user_defined_function_base(Self, kind? : TokenType) -> Expr? raise SqlglotError
+pub fn Parser::parse_user_defined_function_expression(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_user_defined_type(Self, Expr) -> Expr? raise SqlglotError
+pub fn Parser::parse_user_defined_type_base(Self, Expr) -> Expr? raise SqlglotError
+pub fn Parser::parse_using_identifiers(Self) -> Array[Expr] raise SqlglotError
+pub fn Parser::parse_value(Self, values? : Bool) -> Expr? raise SqlglotError
+pub fn Parser::parse_value_base(Self, values? : Bool) -> Expr? raise SqlglotError
+pub fn Parser::parse_var(Self, any_token? : Bool, tokens? : TokenSet, upper? : Bool) -> Expr? raise SqlglotError
+pub fn Parser::parse_var_from_options(Self, Map[String, Array[Array[String]]], raise_unmatched? : Bool) -> Expr? raise SqlglotError
+pub fn Parser::parse_var_or_string(Self, upper? : Bool) -> Expr? raise SqlglotError
+pub fn Parser::parse_vector_expressions(Self, Array[Expr]) -> Array[Expr] raise SqlglotError
+pub fn Parser::parse_version(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_volatile_property(Self) -> Expr raise SqlglotError
+pub fn Parser::parse_when_matched(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_where(Self, skip_where_token? : Bool) -> Expr? raise SqlglotError
+pub fn Parser::parse_whileblock(Self) -> Expr raise SqlglotError
+pub fn Parser::parse_window(Self, Expr?, alias? : Bool) -> Expr? raise SqlglotError
+pub fn Parser::parse_window_base(Self, Expr?, alias? : Bool) -> Expr? raise SqlglotError
+pub fn Parser::parse_window_clause(Self) -> Array[Expr]? raise SqlglotError
+pub fn Parser::parse_window_spec(Self) -> (Value?, String?) raise SqlglotError
+pub fn Parser::parse_with(Self, skip_with_token? : Bool) -> Expr? raise SqlglotError
+pub fn Parser::parse_with_operator(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_with_property(Self) -> Value? raise SqlglotError
+pub fn Parser::parse_with_property_base(Self) -> Value? raise SqlglotError
+pub fn Parser::parse_withdata(Self, no? : Bool) -> Expr raise SqlglotError
+pub fn Parser::parse_withisolatedloading(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_withjournaltable(Self) -> Expr raise SqlglotError
+pub fn[T] Parser::parse_wrapped(Self, () -> T raise SqlglotError, optional? : Bool) -> T raise SqlglotError
+pub fn Parser::parse_wrapped_csv(Self, () -> Expr? raise SqlglotError, sep? : TokenType, optional? : Bool) -> Array[Expr] raise SqlglotError
+pub fn Parser::parse_wrapped_id_vars(Self, optional? : Bool) -> Array[Expr] raise SqlglotError
+pub fn Parser::parse_wrapped_options(Self) -> Array[Expr] raise SqlglotError
+pub fn Parser::parse_wrapped_properties(Self) -> Array[Expr] raise SqlglotError
+pub fn Parser::parse_wrapped_select(Self, table? : Bool) -> Expr? raise SqlglotError
+pub fn Parser::parse_wrapped_select_base(Self, table? : Bool) -> Expr? raise SqlglotError
+pub fn Parser::parse_xml_element(Self) -> Expr? raise SqlglotError
+pub fn Parser::parse_xml_namespace(Self) -> Array[Expr] raise SqlglotError
+pub fn Parser::parse_xml_table(Self) -> Expr? raise SqlglotError
+pub fn Parser::pivot_column_names(Self, Array[Expr]) -> Array[String] raise SqlglotError
+pub fn Parser::prev_upper(Self) -> String
+pub fn Parser::raise_error(Self, String, token? : Token) -> Unit raise SqlglotError
+pub fn Parser::replace_lambda(Self, Expr?, Array[Expr]) -> Expr? raise SqlglotError
+pub fn Parser::reset(Self) -> Unit
+pub fn Parser::retreat(Self, Int) -> Unit
+pub fn Parser::to_prop_eq(Self, Expr, Int) -> Expr raise SqlglotError
+pub fn[T] Parser::try_parse(Self, () -> T? raise SqlglotError, retreat? : Bool) -> T?
+pub fn Parser::validate_expression(Self, Expr, nargs? : Int) -> Expr raise SqlglotError
+pub fn Parser::values_to_select(Self, Expr) -> Expr
+pub fn Parser::warn_unsupported(Self) -> Unit
+
+pub(all) struct ParserConfig {
+  mut add_constraint_tokens : TokenSet
+  mut add_join_on_true : Bool
+  mut adjacent_strings_cannot_be_connected : Bool
+  mut aggregate_type_tokens : TokenSet
+  mut alias_tokens : TokenSet
+  mut alterables : TokenSet
+  mut alter_rename_requires_column : Bool
+  mut alter_table_partitions : Bool
+  mut ambiguous_alias_tokens : Array[TokenType]
+  mut analyze_styles : @set.Set[String]
+  mut array_constructors : Map[String, Kind]
+  mut assignment : Map[TokenType, Kind]
+  mut bitwise : Map[TokenType, Kind]
+  mut brackets : TokenSet
+  mut cast_actions : Map[String, Array[Array[String]]]
+  mut cast_column_operators : TokenSet
+  mut clone_keywords : @set.Set[String]
+  mut colon_chain_is_single_extract : Bool
+  mut colon_is_variant_extract : Bool
+  mut colon_placeholder_tokens : TokenSet
+  mut column_postfix_tokens : TokenSet
+  mut comment_table_alias_tokens : TokenSet
+  mut comparison : Map[TokenType, Kind]
+  mut conflict_actions : Map[String, Array[Array[String]]]
+  mut conjunction : Map[TokenType, Kind]
+  mut copy_into_varlen_options : @set.Set[String]
+  mut creatables : TokenSet
+  mut create_sequence : Map[String, Array[Array[String]]]
+  mut db_creatables : TokenSet
+  mut ddl_select_tokens : TokenSet
+  mut default_sampling_method : String?
+  mut describe_styles : @set.Set[String]
+  mut disjunction : Map[TokenType, Kind]
+  mut distinct_tokens : TokenSet
+  mut enum_type_tokens : TokenSet
+  mut equality : Map[TokenType, Kind]
+  mut execute_as_options : Map[String, Array[Array[String]]]
+  mut exponent : Map[TokenType, Kind]
+  mut factor : Map[TokenType, Kind]
+  mut fetch_tokens : TokenSet
+  mut functions_with_aliased_args : @set.Set[String]
+  mut func_tokens : TokenSet
+  mut historical_data_kind : @set.Set[String]
+  mut historical_data_prefix : @set.Set[String]
+  mut identifier_tokens : TokenSet
+  mut identify_pivot_strings : Bool
+  mut id_var_tokens : TokenSet
+  mut insert_alternatives : @set.Set[String]
+  mut interval_spans : Bool
+  mut invalid_func_name_tokens : TokenSet
+  mut isolated_loading_options : Map[String, Array[Array[String]]]
+  mut is_json_predicate_kind : @set.Set[String]
+  mut joins_have_equal_precedence : Bool
+  mut join_hints : @set.Set[String]
+  mut join_kinds : TokenSet
+  mut join_methods : TokenSet
+  mut join_sides : TokenSet
+  mut json_arrows_require_json_type : Bool
+  mut json_extract_requires_json_expression : Bool
+  mut json_key_value_separator_tokens : TokenSet
+  mut key_constraint_options : Map[String, Array[Array[String]]]
+  mut key_value_definitions : Array[Kind]
+  mut lambda_arg_terminators : TokenSet
+  mut log_defaults_to_ln : Bool
+  mut map_keys_are_arbitrary_expressions : Bool
+  mut modifiables : Array[Kind]
+  mut modifiers_attached_to_set_op : Bool
+  mut nested_type_tokens : TokenSet
+  mut no_paren_functions : Map[TokenType, Kind]
+  mut no_paren_if_commands : Bool
+  mut odbc_datetime_literals : Map[String, Kind]
+  mut on_condition_tokens : @set.Set[String]
+  mut opclass_follow_keywords : @set.Set[String]
+  mut operation_modifiers : @set.Set[String]
+  mut optional_alias_token_cte : Bool
+  mut optype_follow_tokens : TokenSet
+  mut partition_keywords : @set.Set[String]
+  mut pivot_column_naming : String
+  mut prefixed_pivot_columns : Bool
+  mut pre_volatile_tokens : TokenSet
+  mut privilege_follow_tokens : TokenSet
+  mut procedure_options : Map[String, Array[Array[String]]]
+  mut query_modifier_tokens : TokenSet
+  mut quoted_types_to_preserve : @set.Set[String]
+  mut recursive_cte_search_kind : @set.Set[String]
+  mut reserved_tokens : TokenSet
+  mut schema_binding_options : Map[String, Array[Array[String]]]
+  mut schema_unnamed_constraints : @set.Set[String]
+  mut security_property_keywords : @set.Set[String]
+  mut select_start_tokens : TokenSet
+  mut set_assignment_delimiters : @set.Set[String]
+  mut set_operations : TokenSet
+  mut set_op_modifiers : @set.Set[String]
+  mut set_requires_assignment_delimiter : Bool
+  mut signed_to_unsigned_type_token : Map[TokenType, TokenType]
+  mut strict_cast : Bool
+  mut string_aliases : Bool
+  mut struct_type_tokens : TokenSet
+  mut subquery_predicates : Map[TokenType, Kind]
+  mut subquery_tokens : TokenSet
+  mut supports_digit_prefixed_field_names : Bool
+  mut supports_implicit_unnest : Bool
+  mut supports_nth_value_from_modifier : Bool
+  mut supports_omitted_interval_span_unit : Bool
+  mut supports_partition_selection : Bool
+  mut tablesample_csv : Bool
+  mut table_alias_tokens : TokenSet
+  mut table_index_hint_tokens : TokenSet
+  mut table_postfix_tokens : TokenSet
+  mut table_terminators : TokenSet
+  mut term : Map[TokenType, Kind]
+  mut text_match_excluded_tokens : TokenSet
+  mut times : TokenSet
+  mut timestamps : TokenSet
+  mut transaction_characteristics : Map[String, Array[Array[String]]]
+  mut transaction_kind : @set.Set[String]
+  mut trigger_deferrable : Map[String, Array[Array[String]]]
+  mut trigger_events : TokenSet
+  mut trigger_timing : Map[String, Array[Array[String]]]
+  mut trim_pattern_first : Bool
+  mut trim_types : @set.Set[String]
+  mut typed_lambda_args : Bool
+  mut type_tokens : TokenSet
+  mut unnest_offset_alias_tokens : TokenSet
+  mut unpivot_value_columns_first : Bool
+  mut update_alias_tokens : TokenSet
+  mut usables : Map[String, Array[Array[String]]]
+  mut values_followed_by_paren : Bool
+  mut version_phrases : Array[(Array[String], String)]
+  mut view_attributes : @set.Set[String]
+  mut window_alias_tokens : TokenSet
+  mut window_before_paren_tokens : TokenSet
+  mut window_exclude_options : Map[String, Array[Array[String]]]
+  mut window_sides : @set.Set[String]
+  mut wrapped_transform_column_constraint : Bool
+  mut zone_aware_timestamp_constructor : Bool
+}
+pub fn ParserConfig::copy(Self) -> Self
+
+pub(all) struct ParserFns {
+  mut functions : Map[String, (Array[Expr], Parser) -> Expr raise SqlglotError]
+  mut function_parsers : Map[String, (Parser) -> Expr? raise SqlglotError]
+  mut no_paren_function_parsers : Map[String, (Parser) -> Expr? raise SqlglotError]
+  mut statement_parsers : Map[TokenType, (Parser) -> Expr? raise SqlglotError]
+  mut unary_parsers : Map[TokenType, (Parser) -> Expr? raise SqlglotError]
+  mut string_parsers : Map[TokenType, (Parser, Token) -> Expr? raise SqlglotError]
+  mut numeric_parsers : Map[TokenType, (Parser, Token) -> Expr? raise SqlglotError]
+  mut primary_parsers : Map[TokenType, (Parser, Token) -> Expr? raise SqlglotError]
+  mut placeholder_parsers : Map[TokenType, (Parser) -> Expr? raise SqlglotError]
+  mut range_parsers : Map[TokenType, (Parser, Expr?) -> Expr? raise SqlglotError]
+  mut column_operators : Map[TokenType, ((Parser, Expr?, Expr?) -> Expr? raise SqlglotError)?]
+  mut json_operators : Map[TokenType, (Parser, Expr?, Expr?) -> Expr? raise SqlglotError]
+  mut lambdas : Map[TokenType, (Parser, Array[Expr]) -> Expr? raise SqlglotError]
+  mut expression_parsers : Map[Kind, (Parser) -> Expr? raise SqlglotError]
+  mut property_parsers : Map[String, (Parser, Map[String, Bool]) -> Value? raise SqlglotError]
+  mut constraint_parsers : Map[String, (Parser) -> Expr? raise SqlglotError]
+  mut alter_parsers : Map[String, (Parser) -> Value? raise SqlglotError]
+  mut alter_alter_parsers : Map[String, (Parser) -> Expr? raise SqlglotError]
+  mut query_modifier_parsers : Map[TokenType, (Parser) -> (String, Value?) raise SqlglotError]
+  mut set_parsers : Map[String, (Parser) -> Expr? raise SqlglotError]
+  mut show_parsers : Map[String, (Parser) -> Expr? raise SqlglotError]
+  mut type_literal_parsers : Map[DType, (Parser, Expr, Expr) -> Expr raise SqlglotError]
+  mut type_converters : Map[DType, (Expr) -> Expr]
+  mut pipe_syntax_transform_parsers : Map[String, (Parser, Expr) -> Expr? raise SqlglotError]
+  mut analyze_expression_parsers : Map[String, (Parser) -> Expr? raise SqlglotError]
+  mut hooks : ParserHooks
+  mut show_trie : WordTrie
+  mut set_trie : WordTrie
+}
+pub fn ParserFns::copy(Self) -> Self
+pub fn ParserFns::finalize(Self) -> Unit
+
+pub(all) struct ParserHooks {
+  mut negate_range : ((Parser, Expr?) -> Expr? raise SqlglotError)?
+  mut parse_alias : ((Parser, Expr?, Bool) -> Expr? raise SqlglotError)?
+  mut parse_alter_drop_action : ((Parser) -> Expr? raise SqlglotError)?
+  mut parse_alter_table_alter : ((Parser) -> Expr? raise SqlglotError)?
+  mut parse_alter_table_rename : ((Parser) -> Expr? raise SqlglotError)?
+  mut parse_alter_table_set : ((Parser) -> Expr? raise SqlglotError)?
+  mut parse_assignment : ((Parser) -> Expr? raise SqlglotError)?
+  mut parse_bracket : ((Parser, Expr?) -> Expr? raise SqlglotError)?
+  mut parse_bracket_key_value : ((Parser, Bool) -> Expr? raise SqlglotError)?
+  mut parse_charset_name : ((Parser) -> Expr? raise SqlglotError)?
+  mut parse_check_constraint : ((Parser) -> Expr? raise SqlglotError)?
+  mut parse_cluster_property : ((Parser) -> Expr? raise SqlglotError)?
+  mut parse_column : ((Parser) -> Expr? raise SqlglotError)?
+  mut parse_column_constraint : ((Parser) -> Expr? raise SqlglotError)?
+  mut parse_column_def : ((Parser, Expr?, Bool) -> Expr? raise SqlglotError)?
+  mut parse_column_ops : ((Parser, Expr?) -> Expr? raise SqlglotError)?
+  mut parse_commit_or_rollback : ((Parser) -> Expr? raise SqlglotError)?
+  mut parse_connect_with_prior : ((Parser) -> Expr? raise SqlglotError)?
+  mut parse_constraint : ((Parser) -> Expr? raise SqlglotError)?
+  mut parse_convert : ((Parser, Bool, Bool?) -> Expr? raise SqlglotError)?
+  mut parse_create : ((Parser) -> Expr? raise SqlglotError)?
+  mut parse_cte : ((Parser) -> Expr? raise SqlglotError)?
+  mut parse_dcolon : ((Parser) -> Expr? raise SqlglotError)?
+  mut parse_definer : ((Parser) -> Expr? raise SqlglotError)?
+  mut parse_describe : ((Parser) -> Expr? raise SqlglotError)?
+  mut parse_drop_column : ((Parser) -> Expr? raise SqlglotError)?
+  mut parse_equality : ((Parser) -> Expr? raise SqlglotError)?
+  mut parse_expression : ((Parser) -> Expr? raise SqlglotError)?
+  mut parse_extract : ((Parser) -> Expr? raise SqlglotError)?
+  mut parse_factor_operand : ((Parser) -> Expr? raise SqlglotError)?
+  mut parse_file_location : ((Parser) -> Expr? raise SqlglotError)?
+  mut parse_foreign_key : ((Parser) -> Expr? raise SqlglotError)?
+  mut parse_from : ((Parser, Bool, Bool, Bool) -> Expr? raise SqlglotError)?
+  mut parse_function : ((Parser, Map[String, (Array[Expr], Parser) -> Expr raise SqlglotError]?, Bool, Bool, Bool) -> Expr? raise SqlglotError)?
+  mut parse_function_call : ((Parser, Map[String, (Array[Expr], Parser) -> Expr raise SqlglotError]?, Bool, Bool, Bool) -> Expr? raise SqlglotError)?
+  mut parse_function_parameter : ((Parser) -> Expr? raise SqlglotError)?
+  mut parse_function_properties : ((Parser) -> Expr? raise SqlglotError)?
+  mut parse_generated_as_identity : ((Parser) -> Expr? raise SqlglotError)?
+  mut parse_group_concat : ((Parser) -> Expr? raise SqlglotError)?
+  mut parse_hint_function_call : ((Parser) -> Expr? raise SqlglotError)?
+  mut parse_id_var : ((Parser, Bool, TokenSet?) -> Expr? raise SqlglotError)?
+  mut parse_if : ((Parser) -> Expr? raise SqlglotError)?
+  mut parse_index_params : ((Parser) -> Expr? raise SqlglotError)?
+  mut parse_insert_table : ((Parser) -> Expr? raise SqlglotError)?
+  mut parse_into_clause : ((Parser) -> Expr? raise SqlglotError)?
+  mut parse_join : ((Parser, Bool, Bool, TokenSet?) -> Expr? raise SqlglotError)?
+  mut parse_join_parts : ((Parser) -> (Token?, Token?, Token?) raise SqlglotError)?
+  mut parse_json_object : ((Parser, Bool) -> Expr? raise SqlglotError)?
+  mut parse_lambda : ((Parser, Bool) -> Expr? raise SqlglotError)?
+  mut parse_lambda_arg : ((Parser) -> Expr? raise SqlglotError)?
+  mut parse_lateral : ((Parser) -> Expr? raise SqlglotError)?
+  mut parse_on_property : ((Parser) -> Expr? raise SqlglotError)?
+  mut parse_ordered : ((Parser, (() -> Expr? raise SqlglotError)?) -> Expr? raise SqlglotError)?
+  mut parse_parameter : ((Parser) -> Expr? raise SqlglotError)?
+  mut parse_partition : ((Parser) -> Expr? raise SqlglotError)?
+  mut parse_partition_and_order : ((Parser) -> (Array[Expr], Expr?) raise SqlglotError)?
+  mut parse_partitioned_by : ((Parser) -> Expr? raise SqlglotError)?
+  mut parse_pivot_aggregation : ((Parser) -> Expr? raise SqlglotError)?
+  mut parse_position : ((Parser, Bool) -> Expr? raise SqlglotError)?
+  mut parse_primary : ((Parser) -> Expr? raise SqlglotError)?
+  mut parse_primary_key : ((Parser, Bool, Bool, Bool) -> Expr? raise SqlglotError)?
+  mut parse_primary_key_part : ((Parser) -> Expr? raise SqlglotError)?
+  mut parse_projections : ((Parser) -> (Array[Expr], Array[Expr]?) raise SqlglotError)?
+  mut parse_property_before : ((Parser) -> Value? raise SqlglotError)?
+  mut parse_range : ((Parser, Expr?) -> Expr? raise SqlglotError)?
+  mut parse_returns : ((Parser) -> Expr? raise SqlglotError)?
+  mut parse_set : ((Parser, Bool, Bool) -> Expr? raise SqlglotError)?
+  mut parse_statement : ((Parser) -> Expr? raise SqlglotError)?
+  mut parse_struct_types : ((Parser, Bool) -> Expr? raise SqlglotError)?
+  mut parse_substring : ((Parser) -> Expr? raise SqlglotError)?
+  mut parse_table : ((Parser, TableArgs) -> Expr? raise SqlglotError)?
+  mut parse_table_hints : ((Parser) -> Array[Expr]? raise SqlglotError)?
+  mut parse_table_part : ((Parser, Bool) -> Expr? raise SqlglotError)?
+  mut parse_table_parts : ((Parser, Bool, Bool, Bool, Bool) -> Expr? raise SqlglotError)?
+  mut parse_table_sample : ((Parser, Bool) -> Expr? raise SqlglotError)?
+  mut parse_transaction : ((Parser) -> Expr? raise SqlglotError)?
+  mut parse_type : ((Parser, Bool, Bool) -> Expr? raise SqlglotError)?
+  mut parse_types : ((Parser, Bool, Bool, Bool, Bool) -> Expr? raise SqlglotError)?
+  mut parse_unique : ((Parser) -> Expr? raise SqlglotError)?
+  mut parse_unique_key : ((Parser) -> Expr? raise SqlglotError)?
+  mut parse_unnest : ((Parser, Bool) -> Expr? raise SqlglotError)?
+  mut parse_update : ((Parser) -> Expr? raise SqlglotError)?
+  mut parse_use : ((Parser) -> Expr? raise SqlglotError)?
+  mut parse_user_defined_function : ((Parser, TokenType?) -> Expr? raise SqlglotError)?
+  mut parse_user_defined_function_expression : ((Parser) -> Expr? raise SqlglotError)?
+  mut parse_user_defined_type : ((Parser, Expr) -> Expr? raise SqlglotError)?
+  mut parse_value : ((Parser, Bool) -> Expr? raise SqlglotError)?
+  mut parse_vector_expressions : ((Parser, Array[Expr]) -> Array[Expr] raise SqlglotError)?
+  mut parse_window : ((Parser, Expr?, Bool) -> Expr? raise SqlglotError)?
+  mut parse_with_property : ((Parser) -> Value? raise SqlglotError)?
+  mut parse_wrapped_id_vars : ((Parser, Bool) -> Array[Expr] raise SqlglotError)?
+  mut parse_wrapped_select : ((Parser, Bool) -> Expr? raise SqlglotError)?
+  mut pivot_column_names : ((Parser, Array[Expr]) -> Array[String] raise SqlglotError)?
+  mut to_prop_eq : ((Parser, Expr, Int) -> Expr raise SqlglotError)?
+  mut build_cast : ((Parser, Bool, Array[(String, Value?)]) -> Expr raise SqlglotError)?
+  mut parse : ((Parser, Array[Token], String) -> Array[Expr?] raise SqlglotError)?
+  mut parse_into : ((Parser, Array[Kind], Array[Token], String) -> Array[Expr?] raise SqlglotError)?
+}
+pub fn ParserHooks::copy(Self) -> Self
+pub fn ParserHooks::new() -> Self
+
+pub(all) enum PropertiesLocation {
+  PostCreate
+  PostName
+  PostSchema
+  PostWith
+  PostAlias
+  PostExpression
+  PostIndex
+  Unsupported
+} derive(Eq, Hash, @debug.Debug)
+
+pub(all) enum PyObj {
+  PyExpr(Expr)
+  PyStr(String)
+  PyInt(Int64)
+  PyFloat(Double)
+  PyDecimal(String)
+  PyBool(Bool)
+  PyNone
+  PyTuple(Array[PyObj])
+  PyList(Array[PyObj])
+  PyDict(Array[(PyObj, PyObj)])
+  PyBytes(Bytes)
+  PyObject(Array[(String, PyObj)])
+  PyDate(year~ : Int, month~ : Int, day~ : Int)
+  PyTime(hour~ : Int, minute~ : Int, second~ : Int, microsecond~ : Int)
+  PyDateTime(year~ : Int, month~ : Int, day~ : Int, hour~ : Int, minute~ : Int, second~ : Int, microsecond~ : Int, tz~ : (String, Int)?)
+} derive(Eq)
+pub fn PyObj::py_repr(Self) -> String
+pub fn PyObj::py_str(Self) -> String
+pub fn PyObj::truthy(Self) -> Bool
+pub impl IntoPy for PyObj
+
+pub(all) enum QuoteSpec {
+  Same(String)
+  Pair(String, String)
+}
+
+pub(all) enum StrOrBool {
+  S(String)
+  B(Bool)
+} derive(Eq, @debug.Debug)
+
+pub(all) struct TableArgs {
+  schema : Bool
+  joins : Bool
+  alias_tokens : TokenSet?
+  parse_bracket : Bool
+  is_db_reference : Bool
+  parse_partition : Bool
+  consume_pipe : Bool
+}
+
+pub struct Token {
+  token_type : TokenType
+  text : String
+  line : Int
+  col : Int
+  start : Int
+  end : Int
+  comments : Array[String]
+}
+pub fn Token::identifier(String) -> Self
+pub fn Token::new(TokenType, String, line? : Int, col? : Int, start? : Int, end? : Int, comments? : Array[String]) -> Self
+pub fn Token::number(Int) -> Self
+pub fn Token::ok(Self) -> Bool
+pub fn Token::string(String) -> Self
+pub fn Token::var_(String) -> Self
+pub impl Show for Token
+
+pub struct TokenSet {
+  bits : FixedArray[Bool]
+}
+pub fn TokenSet::add(Self, TokenType) -> Unit
+pub fn TokenSet::contains(Self, TokenType) -> Bool
+pub fn TokenSet::copy(Self) -> Self
+pub fn TokenSet::empty() -> Self
+pub fn TokenSet::minus(Self, ArrayView[TokenType]) -> Self
+pub fn TokenSet::minus_set(Self, Self) -> Self
+pub fn TokenSet::new(ArrayView[TokenType]) -> Self
+pub fn TokenSet::remove(Self, TokenType) -> Unit
+pub fn TokenSet::to_array(Self) -> Array[TokenType]
+pub fn TokenSet::union(Self, ArrayView[TokenType]) -> Self
+pub fn TokenSet::union_set(Self, Self) -> Self
+
+pub(all) enum TokenType {
+  L_PAREN
+  R_PAREN
+  L_BRACKET
+  R_BRACKET
+  L_BRACE
+  R_BRACE
+  COMMA
+  DOT
+  DASH
+  PLUS
+  COLON
+  DOTCOLON
+  DOTCARET
+  DCOLON
+  DCOLONDOLLAR
+  DCOLONPERCENT
+  DCOLONQMARK
+  DQMARK
+  SEMICOLON
+  STAR
+  BACKSLASH
+  SLASH
+  LT
+  LTE
+  GT
+  GTE
+  NOT
+  EQ
+  NEQ
+  NULLSAFE_EQ
+  COLON_EQ
+  COLON_GT
+  NCOLON_GT
+  AND
+  OR
+  AMP
+  DPIPE
+  PIPE_GT
+  PIPE
+  PIPE_SLASH
+  DPIPE_SLASH
+  CARET
+  CARET_AT
+  TILDE
+  ARROW
+  DARROW
+  FARROW
+  HASH
+  HASH_ARROW
+  DHASH_ARROW
+  LR_ARROW
+  LLRR_ARROW
+  DAT
+  AT_QMARK
+  LT_AT
+  AT_GT
+  DOLLAR
+  PARAMETER
+  SESSION
+  SESSION_PARAMETER
+  SESSION_USER
+  DAMP
+  AMP_LT
+  AMP_GT
+  ADJACENT
+  XOR
+  DSTAR
+  QMARK_AMP
+  QMARK_PIPE
+  HASH_DASH
+  EXCLAMATION
+  URI_START
+  BLOCK_START
+  BLOCK_END
+  SPACE
+  BREAK
+  STRING
+  NUMBER
+  IDENTIFIER
+  DATABASE
+  COLUMN
+  COLUMN_DEF
+  SCHEMA
+  TABLE
+  WAREHOUSE
+  STAGE
+  STREAM
+  STREAMLIT
+  VAR
+  BIT_STRING
+  HEX_STRING
+  BYTE_STRING
+  NATIONAL_STRING
+  RAW_STRING
+  HEREDOC_STRING
+  UNICODE_STRING
+  BIT
+  BOOLEAN
+  TINYINT
+  UTINYINT
+  SMALLINT
+  USMALLINT
+  MEDIUMINT
+  UMEDIUMINT
+  INT
+  UINT
+  BIGINT
+  UBIGINT
+  BIGNUM
+  INT128
+  UINT128
+  INT256
+  UINT256
+  FLOAT
+  DOUBLE
+  UDOUBLE
+  DECIMAL
+  DECIMAL32
+  DECIMAL64
+  DECIMAL128
+  DECIMAL256
+  DECFLOAT
+  UDECIMAL
+  BIGDECIMAL
+  CHAR
+  NCHAR
+  VARCHAR
+  NVARCHAR
+  BPCHAR
+  TEXT
+  MEDIUMTEXT
+  LONGTEXT
+  BLOB
+  MEDIUMBLOB
+  LONGBLOB
+  TINYBLOB
+  TINYTEXT
+  NAME
+  BINARY
+  VARBINARY
+  JSON
+  JSONB
+  TIME
+  TIMETZ
+  TIME_NS
+  TIMESTAMP
+  TIMESTAMPTZ
+  TIMESTAMPLTZ
+  TIMESTAMPNTZ
+  TIMESTAMP_S
+  TIMESTAMP_MS
+  TIMESTAMP_NS
+  DATETIME
+  DATETIME2
+  DATETIME64
+  SMALLDATETIME
+  DATE
+  DATE32
+  INT4RANGE
+  INT4MULTIRANGE
+  INT8RANGE
+  INT8MULTIRANGE
+  NUMRANGE
+  NUMMULTIRANGE
+  TSRANGE
+  TSMULTIRANGE
+  TSTZRANGE
+  TSTZMULTIRANGE
+  DATERANGE
+  DATEMULTIRANGE
+  UUID
+  GEOGRAPHY
+  GEOGRAPHYPOINT
+  NULLABLE
+  GEOMETRY
+  POINT
+  RING
+  LINESTRING
+  LOCALTIME
+  LOCALTIMESTAMP
+  SYSTIMESTAMP
+  MULTILINESTRING
+  POLYGON
+  MULTIPOLYGON
+  HLLSKETCH
+  HSTORE
+  SUPER
+  SERIAL
+  SMALLSERIAL
+  BIGSERIAL
+  XML
+  YEAR
+  USERDEFINED
+  MONEY
+  SMALLMONEY
+  ROWVERSION
+  IMAGE
+  VARIANT
+  OBJECT
+  INET
+  IPADDRESS
+  IPPREFIX
+  IPV4
+  IPV6
+  ENUM
+  ENUM8
+  ENUM16
+  FIXEDSTRING
+  LOWCARDINALITY
+  NESTED
+  AGGREGATEFUNCTION
+  SIMPLEAGGREGATEFUNCTION
+  TDIGEST
+  UNKNOWN
+  VECTOR
+  DYNAMIC
+  VOID
+  ALIAS
+  ALTER
+  ALL
+  ANTI
+  ANY
+  APPLY
+  ARRAY
+  ASC
+  ASOF
+  ATTACH
+  AUTO_INCREMENT
+  BEGIN
+  BETWEEN
+  BULK_COLLECT_INTO
+  CACHE
+  CASE
+  CHARACTER_SET
+  CLUSTER_BY
+  COLLATE
+  COMMAND
+  COMMENT
+  COMMIT
+  CONNECT_BY
+  CONSTRAINT
+  COPY
+  CREATE
+  CROSS
+  CUBE
+  CURRENT_DATE
+  CURRENT_DATETIME
+  CURRENT_SCHEMA
+  CURRENT_TIME
+  CURRENT_TIMESTAMP
+  CURRENT_USER
+  CURRENT_USER_ID
+  CURRENT_ROLE
+  CURRENT_CATALOG
+  DECLARE
+  DEFAULT
+  DELETE
+  DESC
+  DESCRIBE
+  DETACH
+  DICTIONARY
+  DISTINCT
+  DISTRIBUTE_BY
+  DIV
+  DROP
+  ELSE
+  END
+  ESCAPE
+  EXCEPT
+  EXECUTE
+  EXISTS
+  FALSE
+  FETCH
+  FILE
+  FILE_FORMAT
+  FILTER
+  FINAL
+  FIRST
+  FOR
+  FORCE
+  FOREIGN_KEY
+  FORMAT
+  FROM
+  FULL
+  FUNCTION
+  GET
+  GLOB
+  GLOBAL
+  GRANT
+  GROUP_BY
+  GROUPING_SETS
+  HAVING
+  HINT
+  IGNORE
+  ILIKE
+  IN
+  INDEX
+  INDEXED_BY
+  INNER
+  INSERT
+  INSTALL
+  INTEGRATION
+  INTERSECT
+  INTERVAL
+  INTO
+  INTRODUCER
+  IRLIKE
+  IS
+  ISNULL
+  JOIN
+  JOIN_MARKER
+  KEEP
+  KEY
+  KILL
+  LANGUAGE
+  LATERAL
+  LEFT
+  LIKE
+  LIMIT
+  LIST
+  LOAD
+  LOCK
+  MAP
+  MATCH
+  MATCH_CONDITION
+  MATCH_RECOGNIZE
+  MEMBER_OF
+  MERGE
+  MOD
+  MODEL
+  NATURAL
+  NEXT
+  NOTHING
+  NOTNULL
+  NULL
+  OBJECT_IDENTIFIER
+  OFFSET
+  ON
+  ONLY
+  OPERATOR
+  ORDER_BY
+  ORDER_SIBLINGS_BY
+  ORDERED
+  ORDINALITY
+  OUT
+  INOUT
+  OUTER
+  OVER
+  OVERLAPS
+  OVERWRITE
+  PACKAGE
+  PARTITION
+  PARTITION_BY
+  PERCENT
+  PIVOT
+  PLACEHOLDER
+  POLICY
+  POOL
+  POSITIONAL
+  PRAGMA
+  PREWHERE
+  PRIMARY_KEY
+  PROCEDURE
+  PROPERTIES
+  PROJECTION
+  PSEUDO_TYPE
+  PUT
+  QUALIFY
+  QUOTE
+  QDCOLON
+  RANGE
+  RECURSIVE
+  REFRESH
+  RENAME
+  REPLACE
+  RETURNING
+  REVOKE
+  REFERENCES
+  RIGHT
+  RLIKE
+  ROLE
+  ROLLBACK
+  ROLLUP
+  ROW
+  ROWS
+  RULE
+  SELECT
+  SEMI
+  SEPARATOR
+  SEQUENCE
+  SERDE_PROPERTIES
+  SET
+  SETTINGS
+  SHOW
+  SIMILAR_TO
+  SOME
+  SORT_BY
+  SOUNDS_LIKE
+  SQL_SECURITY
+  START_WITH
+  STORAGE_INTEGRATION
+  STRAIGHT_JOIN
+  STRUCT
+  SUMMARIZE
+  TABLE_SAMPLE
+  TAG
+  TEMPORARY
+  TOP
+  THEN
+  TRUE
+  TRUNCATE
+  TRIGGER
+  TYPE
+  UNCACHE
+  UNDROP
+  UNION
+  UNNEST
+  UNPIVOT
+  UPDATE
+  USE
+  USING
+  VALUES
+  VARIADIC
+  VIEW
+  SEMANTIC_VIEW
+  VOLATILE
+  VOLUME
+  WHEN
+  WHERE
+  WINDOW
+  WITH
+  UNIQUE
+  UTC_DATE
+  UTC_TIME
+  UTC_TIMESTAMP
+  OPTION
+  SINK
+  SOURCE
+  ANALYZE
+  NAMESPACE
+  EXPORT
+  HIVE_TOKEN_STREAM
+  SENTINEL
+} derive(Compare, Eq, Hash)
+pub fn TokenType::id(Self) -> Int
+pub fn TokenType::name(Self) -> String
+pub impl Show for TokenType
+
+pub struct Tokenizer {
+  settings : TokenizerSettings
+  numbers_can_be_underscore_separated : Bool
+  identifiers_can_start_with_digit : Bool
+  unescaped_sequences : Map[String, String]
+  mut sql : Array[Char]
+  mut sql_str : String
+  mut size : Int
+  mut tokens : Array[Token]
+  mut start : Int
+  mut current : Int
+  mut line : Int
+  mut col : Int
+  mut comments : Array[String]
+  mut char : Char
+  mut end : Bool
+  mut peek : Char
+  mut prev_token_line : Int
+}
+pub fn Tokenizer::new(TokenizerSettings, numbers_can_be_underscore_separated? : Bool, identifiers_can_start_with_digit? : Bool, unescaped_sequences? : Map[String, String]) -> Self
+pub fn Tokenizer::tokenize(Self, String) -> Array[Token] raise SqlglotError
+
+pub(all) struct TokenizerSettings {
+  mut single_tokens : Map[Char, TokenType]
+  mut bit_strings : Array[QuoteSpec]
+  mut byte_strings : Array[QuoteSpec]
+  mut hex_strings : Array[QuoteSpec]
+  mut raw_strings : Array[QuoteSpec]
+  mut heredoc_strings : Array[QuoteSpec]
+  mut unicode_strings : Array[QuoteSpec]
+  mut identifiers : Array[QuoteSpec]
+  mut quotes : Array[QuoteSpec]
+  mut string_escapes : Array[String]
+  mut byte_string_escapes : Array[String]?
+  mut var_single_tokens : Array[Char]
+  mut escape_follow_chars : Array[String]
+  mut identifier_escapes : Array[String]
+  mut heredoc_tag_is_identifier : Bool
+  mut heredoc_string_alternative : TokenType
+  mut string_escapes_allowed_in_raw_strings : Bool
+  mut numeric_escapes : Map[String, NumericEscape]
+  mut drop_unknown_escapes : Bool
+  mut nested_comments : Bool
+  mut hint_start : String
+  mut tokens_preceding_hint : Array[TokenType]
+  mut keywords : Map[String, TokenType]
+  mut commands : Array[TokenType]
+  mut command_prefix_tokens : Array[TokenType]
+  mut numeric_literals : Map[String, String]
+  mut numbers_can_have_decimals : Bool
+  mut comments : Array[QuoteSpec]
+  mut quotes_map : Map[String, String]
+  mut identifiers_map : Map[String, String]
+  mut identifier_chars : Map[Char, String]
+  mut format_strings : Map[String, (String, TokenType)]
+  mut string_escapes_set : Map[String, Bool]
+  mut byte_string_escapes_set : Map[String, Bool]
+  mut escape_follow_chars_set : Map[String, Bool]
+  mut identifier_escapes_set : Map[String, Bool]
+  mut comments_map : Map[String, String?]
+  mut keyword_trie : Trie
+  mut commands_set : Map[TokenType, Bool]
+}
+pub fn TokenizerSettings::copy(Self) -> Self
+pub fn TokenizerSettings::finalize(Self) -> Self
+
+pub struct Trie {
+  children : Map[Char, Trie]
+  mut terminal : Bool
+}
+pub fn Trie::add(Self, String) -> Unit
+pub fn Trie::get(Self, Char) -> Self?
+pub fn Trie::new() -> Self
+
+pub(all) enum TrieResult {
+  Failed
+  Prefix
+  Exists
+} derive(Eq, @debug.Debug)
+
+pub(all) enum Value {
+  Node(Expr)
+  List(Array[Value])
+  Str(String)
+  Bool(Bool)
+  Int(Int64)
+  DT(DType)
+}
+pub fn Value::as_node(Self) -> Expr?
+pub fn Value::as_str(Self) -> String?
+pub fn Value::truthy(Self) -> Bool
+pub impl IntoValue for Value
+pub impl SqlArg for Value
+
+pub struct WordTrie {
+  children : Map[String, WordTrie]
+  mut terminal : Bool
+}
+pub fn WordTrie::from_keys(Iter[String]) -> Self
+pub fn WordTrie::lookup(Self, ArrayView[String]) -> (TrieResult, Self)
+pub fn WordTrie::new() -> Self
+
+// Type aliases
+pub type ColumnOpFn = (Parser, Expr?, Expr?) -> Expr? raise SqlglotError
+
+pub type FuncBuilder = (Array[Expr], Parser) -> Expr raise SqlglotError
+
+pub type GenExprFn = (Generator, Expr) -> Expr raise SqlglotError
+
+pub type GenFn = (Generator, Expr) -> String raise SqlglotError
+
+pub type ParseFn = (Parser) -> Expr? raise SqlglotError
+
+pub type ParseFn1 = (Parser, Expr?) -> Expr? raise SqlglotError
+
+pub type PropKwargs = Map[String, Bool]
+
+pub type PropLocs = Map[PropertiesLocation, Array[Expr]]
+
+pub type PropertyFn = (Parser, Map[String, Bool]) -> Value? raise SqlglotError
+
+pub type TokenParseFn = (Parser, Token) -> Expr? raise SqlglotError
+
+pub type Transform = (Expr) -> Expr raise SqlglotError
+
+// Traits
+pub(open) trait IntoPy {
+  fn into_py(Self) -> PyObj
+}
+pub impl IntoPy for Bool
+pub impl IntoPy for Int
+pub impl IntoPy for Int64
+pub impl IntoPy for Double
+pub impl IntoPy for String
+pub impl[T : IntoPy] IntoPy for T?
+pub impl IntoPy for Bytes
+pub impl[T : IntoPy] IntoPy for Array[T]
+pub impl[V : IntoPy] IntoPy for Map[String, V]
+
+pub trait IntoValue {
+  fn into_value(Self) -> Value?
+}
+pub impl IntoValue for Bool
+pub impl IntoValue for Int
+pub impl IntoValue for Int64
+pub impl IntoValue for String
+pub impl[T : IntoValue] IntoValue for T?
+pub impl[T : IntoValue] IntoValue for Array[T]
+
+pub trait SqlArg {
+  fn arg_sql(Self, Generator) -> String? raise SqlglotError
+}
+pub impl SqlArg for String
+pub impl[T : SqlArg] SqlArg for T?

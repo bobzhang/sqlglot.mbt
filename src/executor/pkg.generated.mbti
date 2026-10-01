@@ -1,0 +1,304 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "hongbozhang/sqlglot/executor"
+
+import {
+  "hongbozhang/sqlglot/core",
+  "hongbozhang/sqlglot/optimizer",
+  "hongbozhang/sqlglot/planner",
+}
+
+// Values
+pub fn compile_python(String) -> Code raise PyException
+
+pub fn date_fromisoformat(Value) -> PyDate raise PyException
+
+pub fn datetime_fromisoformat(Value) -> PyDateTime raise PyException
+
+pub let default_env : Map[String, Value]
+
+pub fn ensure_tables(Map[String, TableData]?, dialect? : @core.Dialect) -> Tables raise @core.SqlglotError
+
+pub fn error_message(Error) -> String
+
+pub fn eval_code(Code, Map[String, Value], Value) -> Value raise
+
+pub fn[T : @core.IntoPy] execute(T, schema? : Map[String, @optimizer.SchemaNode], mapping_schema? : @optimizer.MappingSchema, read? : String, dialect? : String, tables? : Map[String, TableData]) -> Table raise
+
+pub fn float_repr(Double) -> String
+
+pub fn hash_key(Value) -> String raise PyException
+
+pub fn py_abs(Value) -> Value raise PyException
+
+pub fn py_add(Value, Value) -> Value raise PyException
+
+pub fn py_bitop(String, Value, Value) -> Value raise PyException
+
+pub fn py_eq(Value, Value) -> Bool
+
+pub fn py_float(Value) -> Value raise PyException
+
+pub fn py_floordiv(Value, Value) -> Value raise PyException
+
+pub fn py_fsum(Array[Value]) -> Double raise PyException
+
+pub fn py_ge(Value, Value) -> Bool raise PyException
+
+pub fn py_getitem(Value, Value) -> Value raise PyException
+
+pub fn py_gt(Value, Value) -> Bool raise PyException
+
+pub fn py_int(Value) -> Value raise PyException
+
+pub fn py_invert(Value) -> Value raise PyException
+
+pub fn py_iter(Value) -> Array[Value] raise PyException
+
+pub fn py_le(Value, Value) -> Bool raise PyException
+
+pub fn py_len(Value) -> Int raise PyException
+
+pub fn py_lt(Value, Value) -> Bool raise PyException
+
+pub fn py_max(Array[Value]) -> Value raise PyException
+
+pub fn py_min(Array[Value]) -> Value raise PyException
+
+pub fn py_mod(Value, Value) -> Value raise PyException
+
+pub fn py_mul(Value, Value) -> Value raise PyException
+
+pub fn py_neg(Value) -> Value raise PyException
+
+pub fn py_pos(Value) -> Value raise PyException
+
+pub fn py_pow(Value, Value) -> Value raise PyException
+
+pub fn py_round(Value, Value) -> Value raise PyException
+
+pub fn py_set(Array[Value]) -> Array[Value] raise PyException
+
+pub fn py_set_union(Array[Value], Array[Value]) -> Array[Value] raise PyException
+
+pub fn py_slice(Value, Value, Value, step? : Int) -> Value raise PyException
+
+pub fn py_sub(Value, Value) -> Value raise PyException
+
+pub fn py_sum(Array[Value]) -> Value raise PyException
+
+pub fn py_truediv(Value, Value) -> Value raise PyException
+
+pub fn python_dialect() -> @core.Dialect
+
+pub fn python_generate(@core.Expr, identify? : Bool) -> String raise @core.SqlglotError
+
+pub fn str_lower(String) -> String
+
+pub fn str_upper(String) -> String
+
+pub fn strftime(PyDateTime, String) -> String
+
+pub fn strptime(String, String) -> PyDateTime raise PyException
+
+pub fn time_fromisoformat(Value) -> PyTime raise PyException
+
+// Errors
+pub(all) suberror ExecuteError {
+  ExecuteError(String, cause~ : Error?)
+}
+
+pub(all) suberror PyException {
+  PyException(String, String)
+}
+pub fn PyException::kind(Self) -> String
+pub fn PyException::message(Self) -> String
+
+// Types and methods
+pub enum Code {
+  Const(Value)
+  Name(String)
+  Attr(Code, String)
+  Subscript(Code, Code)
+  Call(Code, Array[Code])
+  Lambda(Array[String], Code)
+  IfExp(Code, Code, Code)
+  BoolOp(Bool, Array[Code])
+  Not(Code)
+  Unary(String, Code)
+  Binary(String, Code, Code)
+  Compare(Code, Array[(String, Code)])
+  ListDisplay(Array[Code])
+  TupleDisplay(Array[Code])
+  DictDisplay(Array[(Code, Code)])
+}
+
+pub struct Context {
+  tables : Array[(String?, Table)]
+  mut table_ : Table?
+  range_readers : Map[String?, Reader]
+  row_readers : Map[String?, Reader]
+  env : Map[String, Value]
+  mut scope : Value
+}
+pub fn Context::add_columns(Self, Array[String]) -> Unit
+pub fn Context::columns(Self) -> Array[String] raise PyException
+pub fn Context::contains(Self, String?) -> Bool
+pub fn Context::each(Self, (RowReader) -> Unit raise) -> Unit raise
+pub fn Context::eval(Self, Code) -> Value raise
+pub fn Context::eval_tuple(Self, Array[Code]) -> Array[Value] raise
+pub fn Context::get_table(Self, String?) -> Table raise PyException
+pub fn Context::new(Array[(String?, Table)], env? : Map[String, Value], outer? : Map[String?, Reader]) -> Self
+pub fn Context::set_index(Self, Int) -> Unit raise PyException
+pub fn Context::set_range(Self, Int, Int) -> Unit
+pub fn Context::set_row(Self, Array[Value]) -> Unit
+pub fn Context::sort(Self, Array[Code]) -> Unit raise
+pub fn Context::table(Self) -> Table raise PyException
+pub fn Context::table_iter(Self, String?) -> TableIter raise PyException
+
+pub(all) struct PyDate {
+  year : Int
+  month : Int
+  day : Int
+} derive(Eq)
+pub fn PyDate::isoformat(Self) -> String
+pub fn PyDate::repr(Self) -> String
+pub fn PyDate::toordinal(Self) -> Int64
+pub fn PyDate::weekday(Self) -> Int
+
+pub(all) struct PyDateTime {
+  date : PyDate
+  time : PyTime
+  tz : Int?
+}
+pub fn PyDateTime::isoformat(Self, sep? : String) -> String
+pub fn PyDateTime::repr(Self) -> String
+
+pub(all) struct PyFunc {
+  name : String
+  call : (Array[Value]) -> Value raise
+}
+
+pub(all) struct PyTime {
+  hour : Int
+  minute : Int
+  second : Int
+  microsecond : Int
+} derive(Eq)
+pub fn PyTime::isoformat(Self) -> String
+pub fn PyTime::repr(Self) -> String
+
+pub(all) struct PyTimeDelta {
+  days : Int64
+  seconds : Int
+  microseconds : Int
+} derive(Eq)
+pub fn PyTimeDelta::from_us(Int64) -> Self
+pub fn PyTimeDelta::py_str(Self) -> String
+pub fn PyTimeDelta::repr(Self) -> String
+pub fn PyTimeDelta::total_us(Self) -> Int64
+
+pub struct PythonExecutor {
+  env : Map[String, Value]
+  tables : Tables
+  // private fields
+}
+pub fn PythonExecutor::context(Self, Array[(String?, Table)]) -> Context
+pub fn PythonExecutor::execute(Self, @planner.Plan, outer_scope? : Map[String?, Reader]) -> Table raise
+pub fn PythonExecutor::generate(Self, @core.Expr?) -> Code? raise
+pub fn PythonExecutor::new(env? : Map[String, Value], tables? : Tables) -> Self raise @core.SqlglotError
+pub fn PythonExecutor::subquery_cache_sizes(Self) -> Array[Int]
+
+pub struct RangeReader {
+  mut table : Table?
+  mut start : Int
+  mut stop : Int
+}
+pub fn RangeReader::get(Self, String) -> Value raise PyException
+pub fn RangeReader::length(Self) -> Int
+
+pub enum Reader {
+  Row(RowReader)
+  Range(RangeReader)
+}
+pub fn Reader::get(Self, String) -> Value raise PyException
+
+pub struct RowReader {
+  columns : Map[String, Int]
+  mut row : Array[Value]
+}
+pub fn RowReader::get(Self, String) -> Value raise PyException
+pub fn RowReader::new(columns? : Array[String], column_range? : (Int, Int)) -> Self
+
+pub struct Table {
+  mut columns : Array[String]
+  mut column_range : (Int, Int)?
+  mut reader : RowReader
+  mut rows : Array[Array[Value]]
+  range_reader : RangeReader
+}
+pub fn Table::add_columns(Self, Array[String]) -> Unit
+pub fn Table::append(Self, Array[Value]) -> Unit raise PyException
+pub fn Table::get_row(Self, Int) -> RowReader raise PyException
+pub fn Table::length(Self) -> Int
+pub fn Table::new(columns? : Array[String], rows? : Array[Array[Value]], column_range? : (Int, Int)) -> Self
+pub fn Table::pop(Self) -> Unit
+pub fn Table::to_pylist(Self) -> Array[Array[(String, Value)]]
+pub fn Table::to_string(Self) -> String
+pub fn Table::width(Self) -> Int
+pub impl Show for Table
+
+pub(all) enum TableData {
+  Records(Array[Array[(String, Value)]])
+  Tbl(Table)
+  Nested(Map[String, TableData])
+}
+
+pub struct TableIter {
+  table : Table
+  mut index : Int
+}
+pub fn TableIter::next(Self) -> RowReader? raise PyException
+
+pub struct Tables {
+  mapping : Map[String, TableData]
+  supported_table_args : Array[String]
+}
+pub fn Tables::find(Self, @core.Expr, raise_on_missing? : Bool) -> Table? raise @core.SqlglotError
+pub fn Tables::flatten(Self) -> Array[Array[String]]
+pub fn Tables::get(Self, Array[String]) -> Table?
+pub fn Tables::new(Map[String, TableData]) -> Self raise @core.SqlglotError
+
+pub(all) enum Value {
+  Null
+  Bool(Bool)
+  Int(Int64)
+  Float(Double)
+  Str(String)
+  List(Array[Value])
+  Tuple(Array[Value])
+  Dict(Array[(Value, Value)])
+  Set(Array[Value])
+  Date(PyDate)
+  Time(PyTime)
+  DateTime(PyDateTime)
+  TimeDelta(PyTimeDelta)
+  Iter(Array[Value])
+  Func(PyFunc)
+  Module(String)
+  DTypeV(@core.DType)
+  Readers(Map[String?, Reader])
+  ReaderV(Reader)
+  RevKey(Value)
+}
+pub fn Value::is_null(Self) -> Bool
+pub fn Value::py_str(Self) -> String
+pub fn Value::repr(Self) -> String
+pub fn Value::truthy(Self) -> Bool
+pub fn Value::type_name(Self) -> String
+pub impl Eq for Value
+pub impl Show for Value
+
+// Type aliases
+pub type Row = Array[Value]
+
+// Traits

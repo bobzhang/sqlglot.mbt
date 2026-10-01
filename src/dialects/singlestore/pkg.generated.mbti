@@ -1,0 +1,19 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "hongbozhang/sqlglot/dialects/singlestore"
+
+import {
+  "hongbozhang/sqlglot/core",
+}
+
+// Values
+pub fn cast_to_time6(@core.Expr?, time_type? : @core.DType) -> @core.Expr
+
+pub fn dialect() -> @core.Dialect
+
+// Errors
+
+// Types and methods
+
+// Type aliases
+
+// Traits

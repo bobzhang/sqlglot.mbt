@@ -1,0 +1,70 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "hongbozhang/sqlglot/planner"
+
+import {
+  "hongbozhang/sqlglot/core",
+  "moonbitlang/core/debug",
+}
+
+// Values
+pub fn step_from_expression(@core.Expr, Map[String, Step]) -> Step raise @core.SqlglotError
+
+// Errors
+
+// Types and methods
+pub struct JoinInfo {
+  side : String
+  join_key : Array[@core.Expr]
+  source_key : Array[@core.Expr]
+  condition : @core.Expr
+}
+
+pub struct Plan {
+  expression : @core.Expr
+  ctes : @core.Expr?
+  root : Step
+}
+pub fn Plan::dag(Self) -> Array[(Step, Array[Step])]
+pub fn Plan::leaves(Self) -> Array[Step]
+pub fn Plan::new(@core.Expr) -> Self raise @core.SqlglotError
+pub fn Plan::to_string(Self) -> String
+
+pub struct Step {
+  uid : Int
+  kind : StepKind
+  mut name : String?
+  dependencies : Array[Step]
+  dependents : Array[Step]
+  mut projections : Array[@core.Expr]
+  mut limit : Int?
+  mut offset : Int
+  mut condition : @core.Expr?
+  mut source : @core.Expr?
+  mut source_name : String?
+  joins : Array[(String, JoinInfo)]
+  mut aggregations : Array[@core.Expr]
+  mut operands : Array[@core.Expr]
+  mut group : Array[(String, @core.Expr)]
+  mut agg_source : String?
+  mut key : Array[@core.Expr]
+  op : @core.Kind?
+  left : String
+  right : String
+  distinct : Bool
+}
+pub fn Step::add_dependency(Self, Self) -> Unit
+pub fn Step::id(Self) -> String
+pub fn Step::to_s(Self, level? : Int) -> String
+pub fn Step::type_name(Self) -> String
+
+pub(all) enum StepKind {
+  Scan
+  Join
+  Aggregate
+  Sort
+  SetOperation
+} derive(Eq, @debug.Debug)
+
+// Type aliases
+
+// Traits

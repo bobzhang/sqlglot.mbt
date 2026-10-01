@@ -1,0 +1,27 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "hongbozhang/sqlglot/cli"
+
+import {
+  "hongbozhang/sqlglot/core",
+  "moonbitlang/core/debug",
+}
+
+// Values
+pub fn run(Array[String], () -> String) -> CliResult
+
+pub fn token_repr(@core.Token) -> String
+
+pub let version : String
+
+// Errors
+
+// Types and methods
+pub(all) struct CliResult {
+  stdout : String
+  stderr : String
+  exit_code : Int
+} derive(Eq, @debug.Debug)
+
+// Type aliases
+
+// Traits

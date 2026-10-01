@@ -1,0 +1,32 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "hongbozhang/sqlglot/lineage"
+
+import {
+  "hongbozhang/sqlglot/core",
+  "hongbozhang/sqlglot/optimizer",
+}
+
+// Values
+pub fn lineage(String, @core.Expr, schema? : @optimizer.MappingSchema, sources? : Map[String, @core.Expr], dialect? : @core.Dialect, scope? : @optimizer.Scope, trim_selects? : Bool, copy? : Bool, on_node? : (Node) -> Unit) -> Node raise @core.SqlglotError
+
+pub fn lineage_all(@core.Expr, schema? : @optimizer.MappingSchema, sources? : Map[String, @core.Expr], dialect? : @core.Dialect, scope? : @optimizer.Scope, trim_selects? : Bool, copy? : Bool, on_node? : (Node) -> Unit) -> Map[String, Node] raise @core.SqlglotError
+
+// Errors
+
+// Types and methods
+pub struct Node {
+  id : Int
+  name : String
+  expression : @core.Expr
+  source : @core.Expr
+  downstream : Array[Node]
+  source_name : String
+  reference_node_name : String
+  payload : Map[String, Json]
+}
+pub fn Node::to_html(Self, dialect? : @core.Dialect, imports? : Bool) -> String raise @core.SqlglotError
+pub fn Node::walk(Self) -> Array[Self]
+
+// Type aliases
+
+// Traits

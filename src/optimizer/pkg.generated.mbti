@@ -1,0 +1,421 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "hongbozhang/sqlglot/optimizer"
+
+import {
+  "hongbozhang/sqlglot/core",
+  "moonbitlang/core/debug",
+  "moonbitlang/core/set",
+}
+
+// Values
+pub fn annotate_types(@core.Expr, schema? : MappingSchema, expression_metadata? : Map[@core.Kind, TypeSpec], coerces_to? : Map[@core.DType, @set.Set[@core.DType]], dialect? : @core.Dialect, overwrite_types? : Bool) -> @core.Expr raise @core.SqlglotError
+
+pub let base_expression_metadata : Map[@core.Kind, TypeSpec]
+
+pub fn build_scope(@core.Expr) -> Scope? raise @core.SqlglotError
+
+pub fn canonicalize(@core.Expr, dialect? : @core.Dialect) -> @core.Expr raise @core.SqlglotError
+
+pub fn canonicalize_internal_names(@core.Expr) -> @core.Expr raise @core.SqlglotError
+
+pub fn copy_coerces_to(Map[@core.DType, @set.Set[@core.DType]]) -> Map[@core.DType, @set.Set[@core.DType]]
+
+pub let default_binary_coercions : Map[(@core.DType, @core.DType), (@core.Expr, @core.Expr) -> TType?]
+
+pub let default_coerces_to : Map[@core.DType, @set.Set[@core.DType]]
+
+pub fn default_selection(Bool) -> @core.Expr
+
+pub fn dialect_coerces_to(@core.Dialect) -> Map[@core.DType, @set.Set[@core.DType]]
+
+pub fn dialect_expression_metadata(@core.Dialect) -> Map[@core.Kind, TypeSpec]
+
+pub fn eliminate_ctes(@core.Expr, journal? : Array[(@core.Expr, String, @core.Value?)]) -> @core.Expr raise @core.SqlglotError
+
+pub fn eliminate_join_marks(@core.Expr) -> @core.Expr raise @core.SqlglotError
+
+pub fn eliminate_joins(@core.Expr) -> @core.Expr raise @core.SqlglotError
+
+pub fn eliminate_subqueries(@core.Expr) -> @core.Expr raise @core.SqlglotError
+
+pub fn ensure_schema(schema? : MappingSchema, mapping? : Map[String, SchemaNode], dialect? : @core.Dialect) -> MappingSchema raise @core.SqlglotError
+
+pub fn expand(@core.Expr, Map[String, @core.Expr], dialect? : @core.Dialect, copy? : Bool) -> @core.Expr raise @core.SqlglotError
+
+pub fn explode_projection_to_unnest(index_offset? : Int, unnest_map? : Bool) -> (@core.Expr) -> @core.Expr raise @core.SqlglotError
+
+pub fn extend_metadata(Map[@core.Kind, TypeSpec]) -> Map[@core.Kind, TypeSpec]
+
+pub fn find_all_in_scope(@core.Expr, Array[@core.Kind]) -> Iter[@core.Expr]
+
+pub fn find_in_scope(@core.Expr, Array[@core.Kind]) -> @core.Expr?
+
+pub fn gen(@core.Expr, comments? : Bool) -> String raise @core.SqlglotError
+
+pub fn install() -> Unit
+
+pub fn isolate_table_selects(@core.Expr, schema? : MappingSchema, dialect? : @core.Dialect) -> @core.Expr raise @core.SqlglotError
+
+pub fn join_condition(@core.Expr) -> (Array[@core.Expr], Array[@core.Expr], @core.Expr)
+
+pub fn merge_ctes(@core.Expr, leave_tables_isolated? : Bool, scopes? : Array[Scope], copy_budget? : CopyBudget) -> (@core.Expr, Bool) raise @core.SqlglotError
+
+pub fn merge_derived_tables(@core.Expr, leave_tables_isolated? : Bool, scopes? : Array[Scope], copy_budget? : CopyBudget) -> @core.Expr raise @core.SqlglotError
+
+pub fn merge_subqueries(@core.Expr, leave_tables_isolated? : Bool, max_copy_factor? : Int?, min_copy_budget? : Int) -> @core.Expr raise @core.SqlglotError
+
+pub fn normalization_distance(@core.Expr, dnf? : Bool, max? : Int) -> Int
+
+pub fn normalize(@core.Expr, dnf? : Bool, max_distance? : Int) -> @core.Expr raise @core.SqlglotError
+
+pub fn normalize_identifier_str(String, dialect? : @core.Dialect) -> @core.Expr
+
+pub fn normalize_identifiers(@core.Expr, dialect? : @core.Dialect, store_original_column_identifiers? : Bool) -> @core.Expr
+
+pub fn normalize_name(String, dialect? : @core.Dialect, is_table? : Bool, normalize? : Bool) -> @core.Expr
+
+pub fn normalize_name_ident(@core.Expr, @core.Dialect, is_table? : Bool) -> @core.Expr
+
+pub fn normalize_table_name(@core.Expr, dialect? : @core.Dialect, copy? : Bool) -> String
+
+pub fn normalize_table_name_str(String, dialect? : @core.Dialect) -> String raise @core.SqlglotError
+
+pub fn normalized(@core.Expr, dnf? : Bool) -> Bool
+
+pub fn optimize(@core.Expr, schema? : MappingSchema, mapping? : Map[String, SchemaNode], db? : String, catalog? : String, dialect? : @core.Dialect, rules? : Array[Rule], sql? : String, infer_schema? : Bool, identify? : Bool, leave_tables_isolated? : Bool, validate_qualify_columns? : Bool, canonicalize_table_aliases? : Bool, expand_alias_refs? : Bool, expand_stars? : Bool, allow_partial_qualification? : Bool, isolate_tables? : Bool, quote_identifiers? : Bool, on_qualify? : (@core.Expr) -> Unit, constant_propagation? : Bool, coalesce_simplification? : Bool) -> @core.Expr raise @core.SqlglotError
+
+pub fn optimize_joins(@core.Expr) -> @core.Expr raise @core.SqlglotError
+
+pub fn optimize_sql(String, schema? : MappingSchema, mapping? : Map[String, SchemaNode], dialect? : @core.Dialect, rules? : Array[Rule], infer_schema? : Bool, identify? : Bool) -> @core.Expr raise @core.SqlglotError
+
+pub fn pivot_output_columns(@core.Expr, Array[String]) -> Array[(String, String)]
+
+pub fn projection_has_aggregate(@core.Expr, Array[@core.Expr]) -> Bool
+
+pub fn projection_reachability(@core.Expr, whole_query? : Bool) -> ProjectionReachability raise @core.SqlglotError
+
+pub fn prune_projections(ProjectionReachability, Int, journal? : Array[(@core.Expr, String, @core.Value?)], remove_ctes? : Bool) -> Unit
+
+pub fn pushdown_cte_alias_columns(Scope) -> Unit
+
+pub fn pushdown_predicates(@core.Expr, dialect? : @core.Dialect) -> @core.Expr raise @core.SqlglotError
+
+pub fn pushdown_projections(@core.Expr, journal? : Array[(@core.Expr, String, @core.Value?)]) -> @core.Expr raise @core.SqlglotError
+
+pub fn qualify(@core.Expr, dialect? : @core.Dialect, db? : String, catalog? : String, schema? : MappingSchema, expand_alias_refs? : Bool, expand_stars? : Bool, infer_schema? : Bool, isolate_tables? : Bool, qualify_columns? : Bool, allow_partial_qualification? : Bool, validate_qualify_columns? : Bool, quote_identifiers? : Bool, identify? : Bool, canonicalize_table_aliases? : Bool, on_qualify? : (@core.Expr) -> Unit, sql? : String) -> @core.Expr raise @core.SqlglotError
+
+pub fn qualify_columns(@core.Expr, MappingSchema, expand_alias_refs? : Bool, expand_stars? : Bool, infer_schema? : Bool, allow_partial_qualification? : Bool) -> @core.Expr raise @core.SqlglotError
+
+pub fn qualify_outputs(@core.Expr, @core.Dialect) -> Unit raise @core.SqlglotError
+
+pub fn qualify_outputs_scope(Scope, @core.Dialect) -> Unit
+
+pub fn qualify_tables(@core.Expr, db? : String, catalog? : String, on_qualify? : (@core.Expr) -> Unit, dialect? : @core.Dialect, canonicalize_table_aliases? : Bool) -> @core.Expr raise @core.SqlglotError
+
+pub fn quote_identifiers(@core.Expr, dialect? : @core.Dialect, identify? : Bool) -> @core.Expr
+
+pub fn record(Array[(@core.Expr, String, @core.Value?)], @core.Expr, String) -> Unit
+
+pub fn register_coerces_to(String, () -> Map[@core.DType, @set.Set[@core.DType]]) -> Unit
+
+pub fn register_expression_metadata(String, () -> Map[@core.Kind, TypeSpec]) -> Unit
+
+pub fn reorder_joins(@core.Expr) -> @core.Expr raise @core.SqlglotError
+
+pub fn replace_tree(@core.Expr, (@core.Expr) -> @core.Expr raise @core.SqlglotError, prune? : (@core.Expr) -> Bool) -> @core.Expr raise @core.SqlglotError
+
+pub fn revert(Array[(@core.Expr, String, @core.Value?)], start? : Int) -> Unit
+
+pub let rules : Array[Rule]
+
+pub fn schema_from_json_string(String) -> Map[String, SchemaNode] raise @core.SqlglotError
+
+pub fn simplify(@core.Expr, constant_propagation? : Bool, coalesce_simplification? : Bool, dialect? : @core.Dialect) -> @core.Expr raise @core.SqlglotError
+
+pub fn simplify_parens(@core.Expr, @core.Dialect) -> @core.Expr
+
+pub fn sql_of(@core.Expr, dialect? : @core.Dialect, pretty? : Bool) -> String raise @core.SqlglotError
+
+pub fn traverse_scope(@core.Expr) -> Array[Scope] raise @core.SqlglotError
+
+pub fn tsort(Array[(String, Array[String])]) -> Array[String] raise @core.SqlglotError
+
+pub fn unnest_subqueries(@core.Expr) -> @core.Expr raise @core.SqlglotError
+
+pub fn validate_qualify_columns(@core.Expr, sql? : String) -> @core.Expr raise @core.SqlglotError
+
+pub fn walk_in_scope(@core.Expr, prune? : (@core.Expr) -> Bool) -> Iter[@core.Expr]
+
+// Errors
+
+// Types and methods
+pub(all) enum ArgRef {
+  Key(String)
+  Node(@core.Expr)
+}
+
+pub struct CopyBudget {
+  expression : @core.Expr
+  max_copy_factor : Int?
+  min_copy_budget : Int
+  mut remaining : Int?
+}
+pub fn CopyBudget::consume(Self, Scope, Scope, String) -> Bool
+pub fn CopyBudget::new(@core.Expr, max_copy_factor? : Int?, min_copy_budget? : Int) -> Self
+
+pub struct MappingSchema {
+  mut mapping : Map[String, SchemaNode]
+  mut udf_mapping : Map[String, SchemaNode]
+  visible : Map[String, SchemaNode]
+  normalize : Bool
+  dialect : @core.Dialect
+  // private fields
+}
+pub fn MappingSchema::add_table(Self, @core.Expr, column_mapping? : Map[String, SchemaNode], dialect? : @core.Dialect, normalize? : Bool, match_depth? : Bool) -> Unit raise @core.SqlglotError
+pub fn MappingSchema::add_table_str(Self, String, columns? : Array[String], column_types? : Map[String, SchemaNode], dialect? : @core.Dialect, normalize? : Bool, match_depth? : Bool) -> Unit raise @core.SqlglotError
+pub fn MappingSchema::column_names(Self, @core.Expr, only_visible? : Bool, dialect? : @core.Dialect, normalize? : Bool) -> Array[String] raise @core.SqlglotError
+pub fn MappingSchema::copy(Self, schema? : Map[String, SchemaNode]) -> Self raise @core.SqlglotError
+pub fn MappingSchema::depth(Self) -> Int
+pub fn MappingSchema::empty(Self) -> Bool
+pub fn MappingSchema::find(Self, @core.Expr, raise_on_missing? : Bool) -> Map[String, SchemaNode]? raise @core.SqlglotError
+pub fn MappingSchema::find_column_types(Self, @core.Expr) -> Map[String, @core.Expr?]? raise @core.SqlglotError
+pub fn MappingSchema::get_column_type(Self, @core.Expr, @core.Expr, dialect? : @core.Dialect, normalize? : Bool) -> @core.Expr raise @core.SqlglotError
+pub fn MappingSchema::get_column_type_str(Self, @core.Expr, String, dialect? : @core.Dialect, normalize? : Bool) -> @core.Expr raise @core.SqlglotError
+pub fn MappingSchema::get_udf_type(Self, @core.Expr, dialect? : @core.Dialect, normalize? : Bool) -> @core.Expr raise @core.SqlglotError
+pub fn MappingSchema::get_udf_type_str(Self, String, dialect? : @core.Dialect, normalize? : Bool) -> @core.Expr raise @core.SqlglotError
+pub fn MappingSchema::has_column(Self, @core.Expr, @core.Expr, dialect? : @core.Dialect, normalize? : Bool) -> Bool raise @core.SqlglotError
+pub fn MappingSchema::new(schema? : Map[String, SchemaNode], visible? : Map[String, SchemaNode], dialect? : @core.Dialect, normalize? : Bool, udf_mapping? : Map[String, SchemaNode]) -> Self raise @core.SqlglotError
+pub fn MappingSchema::normalize_table(Self, @core.Expr, dialect? : @core.Dialect, normalize? : Bool) -> @core.Expr
+pub fn MappingSchema::supported_table_args(Self) -> Array[String] raise @core.SqlglotError
+
+pub struct OptimizeOptions {
+  schema : MappingSchema
+  db : String?
+  catalog : String?
+  dialect : @core.Dialect
+  sql : String?
+  isolate_tables : Bool
+  quote_identifiers : Bool
+  infer_schema : Bool?
+  identify : Bool
+  leave_tables_isolated : Bool
+  validate_qualify_columns : Bool
+  canonicalize_table_aliases : Bool
+  expand_alias_refs : Bool
+  expand_stars : Bool
+  allow_partial_qualification : Bool
+  on_qualify : ((@core.Expr) -> Unit)?
+  constant_propagation : Bool
+  coalesce_simplification : Bool
+}
+
+pub struct ProjectionReachability {
+  scopes : Array[Scope]
+  live : Map[Int, Int64]
+  selections : Map[Int, Array[Int64]]
+  is_agg : Map[Int, Bool]
+  group_by_ordinals : Map[Int, Array[(@core.Expr, @core.Expr)]]
+  set_names : Map[Int, Array[String]]
+}
+
+pub struct Resolver {
+  scope : Scope
+  schema : MappingSchema
+  dialect : @core.Dialect
+  // private fields
+}
+pub fn Resolver::all_columns(Self) -> @set.Set[String] raise @core.SqlglotError
+pub fn Resolver::get_source_columns(Self, String, only_visible? : Bool) -> Array[String] raise @core.SqlglotError
+pub fn Resolver::get_source_columns_from_set_op(Self, @core.Expr) -> Array[String] raise @core.SqlglotError
+pub fn Resolver::get_table(Self, @core.Expr) -> @core.Expr? raise @core.SqlglotError
+pub fn Resolver::get_table_by_name(Self, String) -> @core.Expr? raise @core.SqlglotError
+pub fn Resolver::has_unknown_sources(Self) -> Bool raise @core.SqlglotError
+pub fn Resolver::new(Scope, MappingSchema, infer_schema? : Bool) -> Self
+pub fn Resolver::outer_resolvers(Self) -> Array[Self]
+
+pub(all) enum Rule {
+  Qualify
+  QualifyTables
+  QualifyColumns
+  IsolateTableSelects
+  PushdownProjections
+  Normalize
+  UnnestSubqueries
+  PushdownPredicates
+  OptimizeJoins
+  EliminateSubqueries
+  MergeSubqueries
+  EliminateJoins
+  EliminateCtes
+  QuoteIdentifiers
+  AnnotateTypes
+  Canonicalize
+  Simplify
+  CanonicalizeInternalNames
+  Custom((@core.Expr, OptimizeOptions) -> @core.Expr raise @core.SqlglotError)
+}
+pub fn Rule::apply(Self, @core.Expr, OptimizeOptions) -> @core.Expr raise @core.SqlglotError
+
+pub(all) enum SchemaNode {
+  Dict(Map[String, SchemaNode])
+  Type(String)
+  DataType(@core.Expr)
+  Null
+  Names(Array[String])
+}
+pub fn SchemaNode::from_json(Json) -> Self raise @core.SqlglotError
+
+pub struct Scope {
+  id : Int
+  mut expression : @core.Expr
+  sources : Map[String, Source]
+  lateral_sources : Map[String, Source]
+  cte_sources : Map[String, Source]
+  outer_columns : Array[String]
+  parent : Scope?
+  scope_type : ScopeType
+  subquery_scopes : Array[Scope]
+  derived_table_scopes : Array[Scope]
+  table_scopes : Array[Scope]
+  cte_scopes : Array[Scope]
+  mut set_operation_scopes : Array[Scope]
+  udtf_scopes : Array[Scope]
+  can_be_correlated : Bool
+  // private fields
+}
+pub fn Scope::add_source(Self, String, Source) -> Unit
+pub fn Scope::branch(Self, @core.Expr, ScopeType, sources? : Map[String, Source], cte_sources? : Map[String, Source], lateral_sources? : Map[String, Source], outer_columns? : Array[String]) -> Self
+pub fn Scope::clear_cache(Self) -> Unit
+pub fn Scope::clear_column_cache(Self) -> Unit
+pub fn Scope::column_index(Self) -> @set.Set[Int]
+pub fn Scope::columns(Self) -> Array[@core.Expr]
+pub fn Scope::ctes(Self) -> Array[@core.Expr]
+pub fn Scope::derived_tables(Self) -> Array[@core.Expr]
+pub fn Scope::external_columns(Self) -> Array[@core.Expr]
+pub fn Scope::find(Self, Array[@core.Kind]) -> @core.Expr?
+pub fn Scope::find_all(Self, Array[@core.Kind]) -> Iter[@core.Expr]
+pub fn Scope::is_correlated_subquery(Self) -> Bool
+pub fn Scope::is_cte(Self) -> Bool
+pub fn Scope::is_derived_table(Self) -> Bool
+pub fn Scope::is_root(Self) -> Bool
+pub fn Scope::is_set_operation(Self) -> Bool
+pub fn Scope::is_subquery(Self) -> Bool
+pub fn Scope::is_udtf(Self) -> Bool
+pub fn Scope::join_hints(Self) -> Array[@core.Expr]
+pub fn Scope::key(Self) -> Int
+pub fn Scope::local_columns(Self) -> Array[@core.Expr]
+pub fn Scope::new(@core.Expr, sources? : Map[String, Source], outer_columns? : Array[String], parent? : Self, scope_type? : ScopeType, lateral_sources? : Map[String, Source], cte_sources? : Map[String, Source], can_be_correlated? : Bool) -> Self
+pub fn Scope::pivots(Self) -> Array[@core.Expr]
+pub fn Scope::ref_count(Self) -> Map[Int, Int]
+pub fn Scope::references(Self) -> Array[(String, @core.Expr)]
+pub fn Scope::remove_source(Self, String) -> Unit
+pub fn Scope::rename_source(Self, String?, String) -> Unit
+pub fn Scope::replace(Self, @core.Expr, @core.Expr) -> Unit
+pub fn Scope::scans_all_subscope_columns(Self) -> Bool
+pub fn Scope::selected_sources(Self) -> Map[String, (@core.Expr, Source)] raise @core.SqlglotError
+pub fn Scope::selected_sources_or_empty(Self) -> Map[String, (@core.Expr, Source)]
+pub fn Scope::semi_or_anti_join_tables(Self) -> @set.Set[String]
+pub fn Scope::source_columns(Self, String) -> Array[@core.Expr]
+pub fn Scope::stars(Self) -> Array[@core.Expr]
+pub fn Scope::subqueries(Self) -> Array[@core.Expr]
+pub fn Scope::table_columns(Self) -> Array[@core.Expr]
+pub fn Scope::tables(Self) -> Array[@core.Expr]
+pub fn Scope::traverse(Self) -> Array[Self]
+pub fn Scope::udtfs(Self) -> Array[@core.Expr]
+pub fn Scope::unqualified_columns(Self) -> Array[@core.Expr]
+pub fn Scope::walk(Self, prune? : (@core.Expr) -> Bool) -> Iter[@core.Expr]
+
+pub(all) enum ScopeType {
+  Root
+  SubqueryScope
+  DerivedTableScope
+  CteScope
+  SetOperationScope
+  UdtfScope
+} derive(Eq, @debug.Debug)
+
+pub struct Simplifier {
+  dialect : @core.Dialect
+  annotate_new_expressions : Bool
+  annotator : TypeAnnotator
+}
+pub fn Simplifier::absorb_and_eliminate(Self, @core.Expr, Bool) -> @core.Expr raise @core.SqlglotError
+pub fn Simplifier::new(dialect? : @core.Dialect, annotate_new_expressions? : Bool) -> Self
+pub fn Simplifier::remove_complements(Self, @core.Expr, Bool) -> @core.Expr raise @core.SqlglotError
+pub fn Simplifier::rewrite_between(Self, @core.Expr) -> @core.Expr raise @core.SqlglotError
+pub fn Simplifier::simplify(Self, @core.Expr, constant_propagation? : Bool, coalesce_simplification? : Bool) -> @core.Expr raise @core.SqlglotError
+pub fn Simplifier::simplify_coalesce(Self, @core.Expr) -> @core.Expr raise @core.SqlglotError
+pub fn Simplifier::simplify_concat(Self, @core.Expr) -> @core.Expr raise @core.SqlglotError
+pub fn Simplifier::simplify_conditionals(Self, @core.Expr) -> @core.Expr raise @core.SqlglotError
+pub fn Simplifier::simplify_connectors(Self, @core.Expr, Bool) -> @core.Expr raise @core.SqlglotError
+pub fn Simplifier::simplify_datetrunc(Self, @core.Expr) -> @core.Expr raise @core.SqlglotError
+pub fn Simplifier::simplify_equality(Self, @core.Expr) -> @core.Expr raise @core.SqlglotError
+pub fn Simplifier::simplify_literals(Self, @core.Expr, Bool) -> @core.Expr raise @core.SqlglotError
+pub fn Simplifier::simplify_not(Self, @core.Expr) -> @core.Expr raise @core.SqlglotError
+pub fn Simplifier::simplify_startswith(Self, @core.Expr) -> @core.Expr raise @core.SqlglotError
+pub fn Simplifier::sort_comparison(Self, @core.Expr) -> @core.Expr raise @core.SqlglotError
+pub fn Simplifier::uniq_sort(Self, @core.Expr, Bool) -> @core.Expr raise @core.SqlglotError
+
+pub enum Source {
+  TableSource(@core.Expr)
+  ScopeSource(Scope)
+}
+pub fn Source::as_scope(Self) -> Scope?
+pub fn Source::as_table(Self) -> @core.Expr?
+pub fn Source::expression(Self) -> @core.Expr?
+pub fn Source::is_same(Self, Self) -> Bool
+pub fn Source::key(Self) -> Int
+
+pub(all) enum TType {
+  D(@core.DType)
+  T(@core.Expr)
+}
+
+pub struct TypeAnnotator {
+  schema : MappingSchema
+  dialect : @core.Dialect
+  expression_metadata : Map[@core.Kind, TypeSpec]
+  coerces_to : Map[@core.DType, @set.Set[@core.DType]]
+  binary_coercions : Map[(@core.DType, @core.DType), (@core.Expr, @core.Expr) -> TType?]
+  // private fields
+}
+pub fn TypeAnnotator::annotate(Self, @core.Expr, annotate_scope? : Bool) -> @core.Expr raise @core.SqlglotError
+pub fn TypeAnnotator::annotate_binary(Self, @core.Expr) -> Unit raise @core.SqlglotError
+pub fn TypeAnnotator::annotate_bracket(Self, @core.Expr) -> Unit
+pub fn TypeAnnotator::annotate_by_args(Self, @core.Expr, Array[ArgRef], promote? : Bool, array? : Bool) -> Unit
+pub fn TypeAnnotator::annotate_by_array_element(Self, @core.Expr) -> Unit
+pub fn TypeAnnotator::annotate_div(Self, @core.Expr) -> Unit
+pub fn TypeAnnotator::annotate_dot(Self, @core.Expr) -> Unit
+pub fn TypeAnnotator::annotate_explode(Self, @core.Expr) -> Unit
+pub fn TypeAnnotator::annotate_extract(Self, @core.Expr) -> Unit
+pub fn TypeAnnotator::annotate_literal(Self, @core.Expr) -> Unit
+pub fn TypeAnnotator::annotate_map(Self, @core.Expr) -> Unit
+pub fn TypeAnnotator::annotate_scope(Self, Scope) -> Unit raise @core.SqlglotError
+pub fn TypeAnnotator::annotate_struct(Self, @core.Expr) -> Unit
+pub fn TypeAnnotator::annotate_subquery(Self, @core.Expr) -> Unit
+pub fn TypeAnnotator::annotate_timeunit(Self, @core.Expr) -> Unit
+pub fn TypeAnnotator::annotate_to_map(Self, @core.Expr) -> Unit
+pub fn TypeAnnotator::annotate_unary(Self, @core.Expr) -> Unit
+pub fn TypeAnnotator::annotate_unnest(Self, @core.Expr) -> Unit
+pub fn TypeAnnotator::annotate_within_group(Self, @core.Expr) -> Unit
+pub fn TypeAnnotator::clear(Self) -> Unit
+pub fn TypeAnnotator::maybe_coerce(Self, TType, TType) -> TType
+pub fn TypeAnnotator::new(MappingSchema, expression_metadata? : Map[@core.Kind, TypeSpec], coerces_to? : Map[@core.DType, @set.Set[@core.DType]], binary_coercions? : Map[(@core.DType, @core.DType), (@core.Expr, @core.Expr) -> TType?], overwrite_types? : Bool) -> Self
+pub fn TypeAnnotator::set_dtype(Self, @core.Expr, @core.DType) -> Unit
+pub fn TypeAnnotator::set_type(Self, @core.Expr, TType?) -> Unit
+pub fn TypeAnnotator::set_type_expr(Self, @core.Expr, @core.Expr?) -> Unit
+pub fn TypeAnnotator::uncache(Self, @core.Expr, deep? : Bool) -> Unit
+
+pub(all) enum TypeSpec {
+  Returns(TType)
+  Annotator((TypeAnnotator, @core.Expr) -> Unit raise @core.SqlglotError)
+}
+
+// Type aliases
+pub type BinaryCoercion = (@core.Expr, @core.Expr) -> TType?
+
+pub type ExprMetadata = Map[@core.Kind, TypeSpec]
+
+pub type Journal = Array[(@core.Expr, String, @core.Value?)]
+
+// Traits

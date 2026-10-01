@@ -1,0 +1,44 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "hongbozhang/sqlglot/dialects/hive"
+
+import {
+  "hongbozhang/sqlglot/core",
+}
+
+// Values
+pub fn build_with_ignore_nulls(@core.Kind) -> (Array[@core.Expr], @core.Parser) -> @core.Expr raise @core.SqlglotError
+
+pub fn datatype_sql(@core.Generator, @core.Expr) -> String raise @core.SqlglotError
+
+pub fn dialect() -> @core.Dialect
+
+pub fn fileformatproperty_sql(@core.Generator, @core.Expr) -> String raise @core.SqlglotError
+
+pub fn format_time(@core.Generator, @core.Expr, Map[String, String]?, @core.Trie?) -> String? raise @core.SqlglotError
+
+pub let hive_date_format : String
+
+pub let hive_dateint_format : String
+
+pub let hive_time_format : String
+
+pub let hive_ts_or_ds_expressions : Array[@core.Kind]
+
+pub fn parse_types(@core.Parser, Bool, Bool, Bool, Bool) -> @core.Expr? raise @core.SqlglotError
+
+pub fn register_parser_settings(String, HiveParserSettings) -> Unit
+
+pub fn register_ts_or_ds_expressions(String, Array[@core.Kind]) -> Unit
+
+// Errors
+
+// Types and methods
+pub(all) struct HiveParserSettings {
+  normalize_decimal_literals : Bool
+  decimal_literals_allow_negative_scale : Bool
+  change_column_alter_syntax : Bool
+}
+
+// Type aliases
+
+// Traits

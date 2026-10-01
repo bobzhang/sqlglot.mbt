@@ -1,0 +1,113 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "hongbozhang/sqlglot"
+
+import {
+  "hongbozhang/sqlglot/core",
+}
+
+// Values
+pub fn[T : @core.IntoPy, A : @core.IntoPy] alias_(T, A, table? : Bool, table_columns? : Array[String], quoted? : Bool, dialect? : String, copy? : Bool) -> @core.Expr raise @core.SqlglotError
+
+pub fn[T : @core.IntoPy] and_(Array[T], dialect? : String, copy? : Bool, wrap? : Bool) -> @core.Expr raise @core.SqlglotError
+
+pub fn[T : @core.IntoPy] array(Array[T], copy? : Bool, dialect? : String) -> @core.Expr raise @core.SqlglotError
+
+pub fn case(expression? : &@core.IntoPy, dialect? : String, copy? : Bool) -> @core.Expr raise @core.SqlglotError
+
+pub fn[T : @core.IntoPy, D : @core.IntoPy] cast(T, D, copy? : Bool, dialect? : String) -> @core.Expr raise @core.SqlglotError
+
+pub fn[T : @core.IntoPy] column(T, table? : &@core.IntoPy, db? : &@core.IntoPy, catalog? : &@core.IntoPy, fields? : Array[&@core.IntoPy], quoted? : Bool, copy? : Bool) -> @core.Expr raise @core.SqlglotError
+
+pub fn[T : @core.IntoPy] condition(T, dialect? : String, copy? : Bool) -> @core.Expr raise @core.SqlglotError
+
+pub fn[T : @core.IntoPy] datatype_build(T, dialect? : String, udt? : Bool, copy? : Bool) -> @core.Expr raise @core.SqlglotError
+
+pub fn[T : @core.IntoPy] datatype_is_type(@core.Expr, Array[T], check_nullable? : Bool) -> Bool raise @core.SqlglotError
+
+pub fn[T : @core.IntoPy] delete(T, where_? : &@core.IntoPy, returning? : &@core.IntoPy, dialect? : String) -> @core.Expr raise @core.SqlglotError
+
+pub fn dialect(String) -> @core.Dialect raise @core.SqlglotError
+
+pub let dialect_names : Array[String]
+
+pub fn[T : @core.IntoPy] except_(Array[T], distinct? : Bool, dialect? : String, copy? : Bool) -> @core.Expr raise @core.SqlglotError
+
+pub fn expand(@core.Expr, Map[String, () -> @core.Expr raise @core.SqlglotError], dialect? : String, copy? : Bool) -> @core.Expr raise @core.SqlglotError
+
+pub fn[T : @core.IntoPy] from_(T, dialect? : String) -> @core.Expr raise @core.SqlglotError
+
+pub fn func(String, args? : Array[&@core.IntoPy], kwargs? : Map[String, &@core.IntoPy], copy? : Bool, dialect? : String) -> @core.Expr raise @core.SqlglotError
+
+pub fn generate(@core.Expr, dialect? : String, copy? : Bool, pretty? : Bool, identify? : Bool, identify_mode? : String, normalize? : Bool, pad? : Int, indent? : Int, normalize_functions? : String, unsupported_level? : @core.ErrorLevel, max_unsupported? : Int, leading_comma? : Bool, max_text_width? : Int, comments? : Bool) -> String raise @core.SqlglotError
+
+pub fn[T : @core.IntoPy, I : @core.IntoPy] insert(T, I, columns? : Array[String], overwrite? : Bool, returning? : &@core.IntoPy, dialect? : String, copy? : Bool) -> @core.Expr raise @core.SqlglotError
+
+pub fn[T : @core.IntoPy] intersect(Array[T], distinct? : Bool, dialect? : String, copy? : Bool) -> @core.Expr raise @core.SqlglotError
+
+pub fn[T : @core.IntoPy] is_type(@core.Expr, Array[T], check_nullable? : Bool) -> Bool raise @core.SqlglotError
+
+pub fn[T : @core.IntoPy] maybe_parse(T, into? : Array[@core.Kind], dialect? : String, prefix? : String, copy? : Bool) -> @core.Expr raise @core.SqlglotError
+
+pub fn[I : @core.IntoPy, U : @core.IntoPy, O : @core.IntoPy] merge(Array[&@core.IntoPy], into~ : I, using_~ : U, on~ : O, returning? : &@core.IntoPy, dialect? : String, copy? : Bool) -> @core.Expr raise @core.SqlglotError
+
+pub fn[T : @core.IntoPy] normalize_table_name(T, dialect? : String, copy? : Bool) -> String raise @core.SqlglotError
+
+pub fn[T : @core.IntoPy] not_(T, dialect? : String, copy? : Bool) -> @core.Expr raise @core.SqlglotError
+
+pub fn[T : @core.IntoPy] or_(Array[T], dialect? : String, copy? : Bool, wrap? : Bool) -> @core.Expr raise @core.SqlglotError
+
+pub fn[T : @core.IntoPy] paren(T, copy? : Bool) -> @core.Expr raise @core.SqlglotError
+
+pub fn parse(String, read? : String, error_level? : @core.ErrorLevel, error_message_context? : Int, max_errors? : Int, max_nodes? : Int) -> Array[@core.Expr?] raise @core.SqlglotError
+
+pub fn parse_identifier(String, dialect? : String) -> @core.Expr raise @core.SqlglotError
+
+pub fn parse_one(String, read? : String, into? : @core.Kind, into_any? : Array[@core.Kind], error_level? : @core.ErrorLevel, error_message_context? : Int, max_errors? : Int, max_nodes? : Int) -> @core.Expr raise @core.SqlglotError
+
+pub fn register_dialects() -> Unit
+
+pub fn[T : @core.IntoPy, O : @core.IntoPy, N : @core.IntoPy] rename_column(T, O, N, exists? : Bool, dialect? : String) -> @core.Expr raise @core.SqlglotError
+
+pub fn[O : @core.IntoPy, N : @core.IntoPy] rename_table(O, N, dialect? : String) -> @core.Expr raise @core.SqlglotError
+
+pub fn replace_placeholders(@core.Expr, args? : Array[&@core.IntoPy], kwargs? : Map[String, &@core.IntoPy]) -> @core.Expr raise @core.SqlglotError
+
+pub fn replace_tables(@core.Expr, Map[String, String], dialect? : String, copy? : Bool) -> @core.Expr raise @core.SqlglotError
+
+pub fn[T : @core.IntoPy] select(Array[T], dialect? : String) -> @core.Expr raise @core.SqlglotError
+
+pub fn[T : @core.IntoPy] subquery(T, alias? : String, dialect? : String, copy? : Bool) -> @core.Expr raise @core.SqlglotError
+
+pub fn table_(String, db? : String, catalog? : String, quoted? : Bool, alias? : String) -> @core.Expr
+
+pub fn[T : @core.IntoPy] table_name(T, dialect? : String, identify? : Bool) -> String raise @core.SqlglotError
+
+pub fn[T : @core.IntoPy] to_column(T, quoted? : Bool, dialect? : String, copy? : Bool, kwargs? : Map[String, @core.Value]) -> @core.Expr raise @core.SqlglotError
+
+pub fn[T : @core.IntoPy] to_identifier(T, quoted? : Bool, copy? : Bool) -> @core.Expr? raise @core.SqlglotError
+
+pub fn[T : @core.IntoPy] to_interval(T) -> @core.Expr raise @core.SqlglotError
+
+pub fn[T : @core.IntoPy] to_table(T, dialect? : String, copy? : Bool, kwargs? : Map[String, @core.Value]) -> @core.Expr raise @core.SqlglotError
+
+pub fn transpile(String, read? : String, write? : String, identity? : Bool, error_level? : @core.ErrorLevel, pretty? : Bool, identify? : Bool, identify_mode? : String, normalize? : Bool, pad? : Int, indent? : Int, normalize_functions? : String, unsupported_level? : @core.ErrorLevel, max_unsupported? : Int, leading_comma? : Bool, max_text_width? : Int, comments? : Bool) -> Array[String] raise @core.SqlglotError
+
+pub fn[T : @core.IntoPy] tuple_(Array[T], copy? : Bool, dialect? : String) -> @core.Expr raise @core.SqlglotError
+
+pub fn[T : @core.IntoPy] union(Array[T], distinct? : Bool, dialect? : String, copy? : Bool) -> @core.Expr raise @core.SqlglotError
+
+pub fn[T : @core.IntoPy] update(T, properties? : Map[String, &@core.IntoPy], where_? : &@core.IntoPy, from_? : &@core.IntoPy, with_? : Map[String, &@core.IntoPy], dialect? : String, copy? : Bool) -> @core.Expr raise @core.SqlglotError
+
+pub fn values(Array[@core.PyObj], alias? : String, columns? : Array[String]) -> @core.Expr raise @core.SqlglotError
+
+pub fn[T : @core.IntoPy] var_(T) -> @core.Expr raise @core.SqlglotError
+
+pub fn[T : @core.IntoPy] xor(Array[T], dialect? : String, copy? : Bool, wrap? : Bool) -> @core.Expr raise @core.SqlglotError
+
+// Errors
+
+// Types and methods
+
+// Type aliases
+
+// Traits

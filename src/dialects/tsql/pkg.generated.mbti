@@ -1,0 +1,21 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "hongbozhang/sqlglot/dialects/tsql"
+
+import {
+  "hongbozhang/sqlglot/core",
+}
+
+// Values
+pub fn dialect() -> @core.Dialect
+
+pub let options_that_require_equal : Array[String]
+
+pub fn qualify_derived_table_outputs(@core.Expr) -> @core.Expr raise @core.SqlglotError
+
+// Errors
+
+// Types and methods
+
+// Type aliases
+
+// Traits

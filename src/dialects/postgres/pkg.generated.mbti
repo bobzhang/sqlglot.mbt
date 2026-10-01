@@ -1,0 +1,25 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "hongbozhang/sqlglot/dialects/postgres"
+
+import {
+  "hongbozhang/sqlglot/core",
+}
+
+// Values
+pub fn build_regexp_replace(Array[@core.Expr], @core.Parser) -> @core.Expr raise @core.SqlglotError
+
+pub fn date_add_sql(String) -> (@core.Generator, @core.Expr) -> String raise @core.SqlglotError
+
+pub fn date_diff_sql(@core.Generator, @core.Expr) -> String raise @core.SqlglotError
+
+pub fn dialect() -> @core.Dialect
+
+pub fn to_interval(String) -> @core.Expr raise @core.SqlglotError
+
+// Errors
+
+// Types and methods
+
+// Type aliases
+
+// Traits

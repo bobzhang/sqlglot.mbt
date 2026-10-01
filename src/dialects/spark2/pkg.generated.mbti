@@ -1,0 +1,21 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "hongbozhang/sqlglot/dialects/spark2"
+
+import {
+  "hongbozhang/sqlglot/core",
+}
+
+// Values
+pub fn build_as_cast(String) -> (Array[@core.Expr], @core.Parser) -> @core.Expr raise @core.SqlglotError
+
+pub fn dialect() -> @core.Dialect
+
+pub fn temporary_storage_provider(@core.Expr) -> @core.Expr raise @core.SqlglotError
+
+// Errors
+
+// Types and methods
+
+// Type aliases
+
+// Traits

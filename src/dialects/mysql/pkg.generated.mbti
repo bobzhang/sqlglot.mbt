@@ -1,0 +1,53 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "hongbozhang/sqlglot/dialects/mysql"
+
+import {
+  "hongbozhang/sqlglot/core",
+}
+
+// Values
+pub fn altercolumn_sql(@core.Generator, @core.Expr) -> String raise @core.SqlglotError
+
+pub fn cast_sql(@core.Generator, @core.Expr, String?) -> String raise @core.SqlglotError
+
+pub fn datatype_sql(@core.Generator, @core.Expr) -> String raise @core.SqlglotError
+
+pub fn date_add_sql(String) -> (@core.Generator, @core.Expr) -> String raise @core.SqlglotError
+
+pub fn dialect() -> @core.Dialect
+
+pub fn locate_properties(@core.Generator, @core.Expr) -> Map[@core.PropertiesLocation, Array[@core.Expr]] raise @core.SqlglotError
+
+pub fn mysql_format_time(@core.Expr?) -> @core.Expr?
+
+pub fn parse_partition_property(@core.Parser, (@core.Parser) -> @core.Expr? raise @core.SqlglotError) -> @core.Value? raise @core.SqlglotError
+
+pub fn parse_partition_range_value(@core.Parser) -> @core.Expr? raise @core.SqlglotError
+
+pub fn parse_show_mysql(@core.Parser, String, target? : String, full? : Bool, global_? : Bool) -> @core.Expr raise @core.SqlglotError
+
+pub fn register_settings(@core.Dialect, (MySQLSettings) -> Unit) -> Unit
+
+pub fn seq_get(Array[@core.Expr], Int) -> @core.Expr?
+
+pub fn settings_of(@core.Dialect) -> MySQLSettings
+
+pub fn show_parser(String, target? : String, full? : Bool, global_? : Bool) -> (@core.Parser) -> @core.Expr? raise @core.SqlglotError
+
+pub fn show_sql(@core.Generator, @core.Expr) -> String raise @core.SqlglotError
+
+pub fn timestamptrunc_sql(@core.Generator, @core.Expr) -> String raise @core.SqlglotError
+
+// Errors
+
+// Types and methods
+pub(all) struct MySQLSettings {
+  mut varchar_requires_size : Bool
+  mut cast_mapping : Map[@core.DType, String]
+  mut timestamp_func_types : Array[@core.DType]
+  mut sql_security_view_location : @core.PropertiesLocation
+}
+
+// Type aliases
+
+// Traits
