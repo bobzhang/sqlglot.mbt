@@ -1,7 +1,7 @@
 // Port of sqlglot/parsers/hive.py
 
 ///|
-fn arg_at(args : Array[@core.Expr], i : Int) -> @core.Expr? {
+fn arg_at(args : Array[@core.Expr], i : Int32) -> @core.Expr? {
   args.get(i)
 }
 
@@ -223,7 +223,7 @@ fn parser_settings(d : @core.Dialect) -> HiveParserSettings {
 
 ///|
 /// Python `Decimal(text).as_tuple()` -> (digits, exponent).
-fn decimal_as_tuple(text : String) -> (Array[Int], Int) {
+fn decimal_as_tuple(text : String) -> (Array[Int32], Int32) {
   let mut mantissa = text
   let mut exponent = 0
   for i, c in text {
@@ -242,7 +242,7 @@ fn decimal_as_tuple(text : String) -> (Array[Int], Int) {
       break
     }
   }
-  let digits : Array[Int] = []
+  let digits : Array[Int32] = []
   let mut frac = 0
   let mut seen_dot = false
   for c in mantissa {
@@ -477,7 +477,7 @@ fn parse_parameter(p : @core.Parser) -> @core.Expr? raise @core.SqlglotError {
 fn to_prop_eq(
   p : @core.Parser,
   expression : @core.Expr,
-  index : Int,
+  index : Int32,
 ) -> @core.Expr raise @core.SqlglotError {
   if expression.is_star() {
     return expression

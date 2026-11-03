@@ -42,7 +42,7 @@ pub(all) struct DialectConfig {
   mut identifiers_can_start_with_digit : Bool
   mut identifier_end : String
   mut identifier_start : String
-  mut index_offset : Int
+  mut index_offset : Int32
   mut initcap_default_delimiter_chars : String
   mut initcap_supports_custom_delimiters : Bool
   mut inverse_creatable_kind_mapping : Map[String, String]
@@ -68,7 +68,7 @@ pub(all) struct DialectConfig {
   mut query_results_are_structs : Bool
   mut quote_end : String
   mut quote_start : String
-  mut regexp_extract_default_group : Int
+  mut regexp_extract_default_group : Int32
   mut regexp_extract_position_overflow_returns_null : Bool
   mut requires_parenthesized_struct_access : Bool
   mut safe_division : Bool
@@ -100,7 +100,7 @@ pub(all) struct DialectConfig {
   mut unnest_column_only : Bool
   mut uuid_is_string_type : Bool
   mut valid_interval_units : @set.Set[String]
-  mut week_offset : Int
+  mut week_offset : Int32
 }
 
 ///|

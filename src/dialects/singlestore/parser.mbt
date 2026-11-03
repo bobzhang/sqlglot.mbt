@@ -4,7 +4,7 @@
 /// Python `cast_to_time6(expression, time_type=TIME)`.
 pub fn cast_to_time6(
   expression : @core.Expr?,
-  time_type? : @core.DType = TIME,
+  time_type~ : @core.DType = TIME,
 ) -> @core.Expr {
   @core.mk(Cast, [
     ("this", expression),

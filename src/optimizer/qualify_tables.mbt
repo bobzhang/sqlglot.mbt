@@ -6,7 +6,7 @@
 pub fn normalize_identifiers(
   expression : @core.Expr,
   dialect? : @core.Dialect,
-  store_original_column_identifiers? : Bool = false,
+  store_original_column_identifiers~ : Bool = false,
 ) -> @core.Expr {
   @core.normalize_identifiers(
     expression,
@@ -34,7 +34,7 @@ pub fn qualify_tables(
   catalog? : String,
   on_qualify? : (@core.Expr) -> Unit,
   dialect? : @core.Dialect,
-  canonicalize_table_aliases? : Bool = false,
+  canonicalize_table_aliases~ : Bool = false,
 ) -> @core.Expr raise @core.SqlglotError {
   let dialect = get_dialect(dialect)
   let next_alias_name = @core.name_sequence("_")
@@ -75,7 +75,10 @@ pub fn qualify_tables(
     !expression.kind.is_a(Query) {
     let cte_names : @set.Set[String] = @set.Set([])
     match expression.arg("with_") {
-      Some(w) => for cte in w.expressions() { cte_names.add(cte.alias_or_name()) }
+      Some(w) =>
+        for cte in w.expressions() {
+          cte_names.add(cte.alias_or_name())
+        }
       None => ()
     }
     for node in expression.walk(prune=n => n.kind.is_a(Query)) {
@@ -150,7 +153,8 @@ pub fn qualify_tables(
           if parent_is(unwrapped, [From, Join]) {
             continue
           }
-          if parent_is(unwrapped, [Create]) && !physical_equal(unwrapped, subquery) {
+          if parent_is(unwrapped, [Create]) &&
+            !physical_equal(unwrapped, subquery) {
             unwrapped.set("this", subquery)
           } else {
             unwrapped.replace(Some(subquery)) |> ignore
@@ -174,9 +178,17 @@ pub fn qualify_tables(
           None => derived_table.this_().set("joins", @core.null_arg)
         }
       }
-      set_alias(derived_table, canonical_aliases, None, Some(scope), false, None)
+      set_alias(
+        derived_table,
+        canonical_aliases,
+        None,
+        Some(scope),
+        false,
+        None,
+      )
       match derived_table.list("pivots").last() {
-        Some(pivot) => set_alias(pivot, canonical_aliases, None, None, false, None)
+        Some(pivot) =>
+          set_alias(pivot, canonical_aliases, None, None, false, None)
         None => ()
       }
     }
@@ -261,7 +273,14 @@ pub fn qualify_tables(
               } else {
                 None
               }
-              set_alias(pivot, canonical_aliases, target_alias, None, true, None)
+              set_alias(
+                pivot,
+                canonical_aliases,
+                target_alias,
+                None,
+                true,
+                None,
+              )
               match scope.sources.get(source.alias_or_name()) {
                 Some(ScopeSource(_)) => continue
                 _ => ()

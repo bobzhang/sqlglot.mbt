@@ -18,7 +18,7 @@ pub fn column_from_parts(
   table? : Expr?,
   db? : Expr?,
   catalog? : Expr?,
-  fields? : Array[Expr] = [],
+  fields~ : Array[Expr] = [],
 ) -> Expr {
   let c = mk(Column, [
     ("this", col),
@@ -73,7 +73,7 @@ pub fn dot_build(expressions : Array[Expr]) -> Expr {
 
 ///|
 /// `Column.to_dot()`: converts the column into a dot expression.
-pub fn Expr::to_dot(self : Expr, include_dots? : Bool = true) -> Expr {
+pub fn Expr::to_dot(self : Expr, include_dots~ : Bool = true) -> Expr {
   let parts = self.parts()
   let mut parent = self.parent
   if include_dots {
@@ -96,7 +96,7 @@ pub fn Expr::to_dot(self : Expr, include_dots? : Bool = true) -> Expr {
 
 ///|
 /// `Table.to_column()`
-pub fn Expr::to_column(self : Expr, copy? : Bool = true) -> Expr {
+pub fn Expr::to_column(self : Expr, copy~ : Bool = true) -> Expr {
   let parts = self.parts()
   let last_part = parts[parts.length() - 1]
   let mut col = if last_part.kind == Identifier {
@@ -123,7 +123,7 @@ pub fn Expr::to_column(self : Expr, copy? : Bool = true) -> Expr {
 
 ///|
 /// `exp.alias_(expression, alias)` with an identifier alias expression.
-pub fn alias_expr(e : Expr, alias_ : Expr?, copy? : Bool = true) -> Expr {
+pub fn alias_expr(e : Expr, alias_ : Expr?, copy~ : Bool = true) -> Expr {
   let e = maybe_copy(e, copy)
   let alias_ = match alias_ {
     Some(a) => Some(if copy { a.copy() } else { a })
@@ -142,7 +142,7 @@ pub fn alias_(
   e : Expr,
   name : String,
   quoted? : Bool,
-  copy? : Bool = true,
+  copy~ : Bool = true,
 ) -> Expr {
   alias_expr(e, Some(to_identifier(name, quoted?)), copy~)
 }
@@ -152,8 +152,8 @@ pub fn alias_(
 pub fn alias_table(
   e : Expr,
   name : String,
-  columns? : Array[String] = [],
-  copy? : Bool = true,
+  columns~ : Array[String] = [],
+  copy~ : Bool = true,
 ) -> Expr {
   let e = maybe_copy(e, copy)
   let table_alias = mk1(TableAlias, to_identifier(name))
@@ -169,7 +169,7 @@ pub fn alias_table(
 pub fn Expr::subquery(
   self : Expr,
   alias_? : String,
-  copy? : Bool = true,
+  copy~ : Bool = true,
 ) -> Expr {
   let instance = maybe_copy(self, copy)
   let alias_ = match alias_ {
@@ -226,8 +226,8 @@ pub fn from_arg_list_builder(kind : Kind) -> FuncBuilder {
 pub fn combine_conditions(
   conditions : Array[Expr],
   connector : Kind,
-  copy? : Bool = true,
-  wrap? : Bool = true,
+  copy~ : Bool = true,
+  wrap~ : Bool = true,
 ) -> Expr {
   let wrap_ = fn(e : Expr) {
     if wrap && e.kind.is_a(Connector) {
@@ -251,8 +251,8 @@ pub fn combine_conditions(
 /// `exp.and_(...)` for expressions (copied unless `copy` is false).
 pub fn and_(
   conditions : Array[Expr],
-  copy? : Bool = true,
-  wrap? : Bool = true,
+  copy~ : Bool = true,
+  wrap~ : Bool = true,
 ) -> Expr {
   combine_conditions(conditions, And, copy~, wrap~)
 }
@@ -261,22 +261,22 @@ pub fn and_(
 /// `exp.or_(...)` for expressions (copied unless `copy` is false).
 pub fn or_(
   conditions : Array[Expr],
-  copy? : Bool = true,
-  wrap? : Bool = true,
+  copy~ : Bool = true,
+  wrap~ : Bool = true,
 ) -> Expr {
   combine_conditions(conditions, Or, copy~, wrap~)
 }
 
 ///|
 /// `exp.not_(expression)` (copied unless `copy` is false).
-pub fn not_(e : Expr, copy? : Bool = true) -> Expr {
+pub fn not_(e : Expr, copy~ : Bool = true) -> Expr {
   let e = maybe_copy(e, copy)
   mk1(Not, if e.kind.is_a(Connector) { mk1(Paren, e) } else { e })
 }
 
 ///|
 /// `exp.paren(expression)` (copied unless `copy` is false).
-pub fn paren(e : Expr, copy? : Bool = true) -> Expr {
+pub fn paren(e : Expr, copy~ : Bool = true) -> Expr {
   mk1(Paren, maybe_copy(e, copy))
 }
 
@@ -285,7 +285,7 @@ pub fn paren(e : Expr, copy? : Bool = true) -> Expr {
 pub fn apply_index_offset(
   this : Expr,
   expressions : Array[Expr],
-  offset : Int,
+  offset : Int32,
   dialect : Dialect,
 ) -> Array[Expr] {
   // Same logic as the generator's version (falls back to the minimal type annotation
@@ -300,7 +300,7 @@ pub fn apply_index_offset(
 pub fn normalize_identifiers(
   expression : Expr,
   dialect : Dialect,
-  store_original_column_identifiers? : Bool = false,
+  store_original_column_identifiers~ : Bool = false,
 ) -> Expr {
   let it = expression.walk(prune=n => n.meta_bool("case_sensitive"))
   while it.next() is Some(node) {

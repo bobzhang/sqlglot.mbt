@@ -5,7 +5,7 @@
 pub fn normalize_table_name(
   table : @core.Expr,
   dialect? : @core.Dialect,
-  copy? : Bool = true,
+  copy~ : Bool = true,
 ) -> String {
   let t = if copy { table.copy() } else { table }
   normalize_identifiers(t, dialect?).parts().map(p => p.name()).join(".")
@@ -27,7 +27,7 @@ pub fn expand(
   expression : @core.Expr,
   sources : Map[String, @core.Expr],
   dialect? : @core.Dialect,
-  copy? : Bool = true,
+  copy~ : Bool = true,
 ) -> @core.Expr raise @core.SqlglotError {
   let normalized_sources : Map[String, @core.Expr] = Map([])
   for k, v in sources {

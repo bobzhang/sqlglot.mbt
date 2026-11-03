@@ -17,7 +17,11 @@ pub fn dialect() -> @core.Dialect {
   match dialect_cell.val {
     Some(d) => d
     None => {
-      let d = @core.Dialect::subclass(@mysql.dialect(), "singlestore", configure)
+      let d = @core.Dialect::subclass(
+        @mysql.dialect(),
+        "singlestore",
+        configure,
+      )
       dialect_cell.val = Some(d)
       d
     }

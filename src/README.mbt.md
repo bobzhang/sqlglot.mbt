@@ -47,7 +47,11 @@ Generator options are labelled arguments; `identify` and `normalize_functions` t
 ///|
 test "generator options" {
   inspect(
-    @sqlglot.transpile("SELECT a FROM t WHERE b = 1", write="spark", identify=Always)[0],
+    @sqlglot.transpile(
+      "SELECT a FROM t WHERE b = 1",
+      write="spark",
+      identify=Always,
+    )[0],
     content="SELECT `a` FROM `t` WHERE `b` = 1",
   )
   inspect(
@@ -116,7 +120,10 @@ test "parse errors" {
   try @sqlglot.parse_one("SELECT foo FROM (SELECT baz FROM t") catch {
     @sqlglot.SqlglotError::ParseError(_, errors) => {
       let e = errors[0]
-      inspect("\{e.description} at \{e.line}:\{e.col}", content="Expecting ) at 1:34")
+      inspect(
+        "\{e.description} at \{e.line}:\{e.col}",
+        content="Expecting ) at 1:34",
+      )
     }
     _ => fail("expected a parse error")
   } noraise {
@@ -141,12 +148,12 @@ test "build queries" {
     @sqlglot.condition("a < 0"),
     "c IS NOT NULL",
   ]
-  let q2 = base
-    .where_([@sqlglot.and_(conditions)])
-    .order_by(["c"])
-    .limit_(10)
+  let q2 = base.where_([@sqlglot.and_(conditions)]).order_by(["c"]).limit_(10)
   inspect(@sqlglot.generate(base), content="SELECT a, b + 1 AS c FROM t")
-  inspect(@sqlglot.generate(q1), content="SELECT a, b + 1 AS c FROM t WHERE a > 1")
+  inspect(
+    @sqlglot.generate(q1),
+    content="SELECT a, b + 1 AS c FROM t WHERE a > 1",
+  )
   inspect(
     @sqlglot.generate(q2),
     content="SELECT a, b + 1 AS c FROM t WHERE a < 0 AND NOT c IS NULL ORDER BY c LIMIT 10",
@@ -208,7 +215,10 @@ test "optimize" {
 ///|
 test "execute" {
   let tables : Map[String, @sqlglot.TableData] = {
-    "sushi": Records([[("id", Int(1)), ("price", Float(1.0))], [("id", Int(2)), ("price", Float(2.0))]]),
+    "sushi": Records([
+      [("id", Int(1)), ("price", Float(1.0))],
+      [("id", Int(2)), ("price", Float(2.0))],
+    ]),
     "order_items": Records([
       [("sushi_id", Int(1)), ("order_id", Int(1))],
       [("sushi_id", Int(1)), ("order_id", Int(1))],

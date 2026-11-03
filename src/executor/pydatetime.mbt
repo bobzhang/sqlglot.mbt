@@ -1,23 +1,25 @@
 // A port of the parts of Python's `datetime` module used by the executor.
 
 ///|
+#derive(Eq)
 pub(all) struct PyDate {
-  year : Int
-  month : Int
-  day : Int
-} derive(Eq)
+  year : Int32
+  month : Int32
+  day : Int32
+}
 
 ///|
 #deprecated
 pub extend PyDate with Eq::{not_equal, equal}
 
 ///|
+#derive(Eq)
 pub(all) struct PyTime {
-  hour : Int
-  minute : Int
-  second : Int
-  microsecond : Int
-} derive(Eq)
+  hour : Int32
+  minute : Int32
+  second : Int32
+  microsecond : Int32
+}
 
 ///|
 #deprecated
@@ -29,33 +31,34 @@ pub extend PyTime with Eq::{not_equal, equal}
 pub(all) struct PyDateTime {
   date : PyDate
   time : PyTime
-  tz : Int?
+  tz : Int32?
 }
 
 ///|
 /// A normalized `datetime.timedelta`.
+#derive(Eq)
 pub(all) struct PyTimeDelta {
   days : Int64
-  seconds : Int
-  microseconds : Int
-} derive(Eq)
+  seconds : Int32
+  microseconds : Int32
+}
 
 ///|
 #deprecated
 pub extend PyTimeDelta with Eq::{not_equal, equal}
 
 ///|
-let days_in_month_table : FixedArray[Int] = [
+let days_in_month_table : FixedArray[Int32] = [
   0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31,
 ]
 
 ///|
-fn is_leap(y : Int) -> Bool {
+fn is_leap(y : Int32) -> Bool {
   y % 4 == 0 && (y % 100 != 0 || y % 400 == 0)
 }
 
 ///|
-fn days_in_month(y : Int, m : Int) -> Int {
+fn days_in_month(y : Int32, m : Int32) -> Int32 {
   if m == 2 && is_leap(y) {
     29
   } else {
@@ -65,7 +68,7 @@ fn days_in_month(y : Int, m : Int) -> Int {
 
 ///|
 /// Python `date.toordinal()`.
-fn ordinal(y : Int, m : Int, d : Int) -> Int64 {
+fn ordinal(y : Int32, m : Int32, d : Int32) -> Int64 {
   let y1 = (y - 1).to_int64()
   let mut days = y1 * 365L + y1 / 4L - y1 / 100L + y1 / 400L
   for i in 1..<m {
@@ -105,7 +108,7 @@ fn from_ordinal(n : Int64) -> PyDate raise PyException {
 }
 
 ///|
-fn check_date(y : Int, m : Int, d : Int) -> PyDate raise PyException {
+fn check_date(y : Int32, m : Int32, d : Int32) -> PyDate raise PyException {
   if y < 1 || y > 9999 {
     raise value_error("year \{y} is out of range")
   }
@@ -119,7 +122,12 @@ fn check_date(y : Int, m : Int, d : Int) -> PyDate raise PyException {
 }
 
 ///|
-fn check_time(h : Int, mi : Int, s : Int, us : Int) -> PyTime raise PyException {
+fn check_time(
+  h : Int32,
+  mi : Int32,
+  s : Int32,
+  us : Int32,
+) -> PyTime raise PyException {
   if h < 0 || h > 23 {
     raise value_error("hour must be in 0..23")
   }
@@ -142,17 +150,17 @@ pub fn PyDate::toordinal(self : PyDate) -> Int64 {
 
 ///|
 /// Python `date.weekday()` (Monday is 0).
-pub fn PyDate::weekday(self : PyDate) -> Int {
+pub fn PyDate::weekday(self : PyDate) -> Int32 {
   ((self.toordinal() + 6L) % 7L).to_int()
 }
 
 ///|
-fn PyDate::compare(self : PyDate, other : PyDate) -> Int {
+fn PyDate::compare(self : PyDate, other : PyDate) -> Int32 {
   self.toordinal().compare(other.toordinal())
 }
 
 ///|
-fn PyTime::compare(self : PyTime, other : PyTime) -> Int {
+fn PyTime::compare(self : PyTime, other : PyTime) -> Int32 {
   self.total_us().compare(other.total_us())
 }
 
@@ -186,7 +194,7 @@ fn PyDateTime::eq(self : PyDateTime, other : PyDateTime) -> Bool {
 fn PyDateTime::compare(
   self : PyDateTime,
   other : PyDateTime,
-) -> Int raise PyException {
+) -> Int32 raise PyException {
   match (self.tz, other.tz) {
     (None, None) => self.total_us().compare(other.total_us())
     (Some(_), Some(_)) => self.utc_us().compare(other.utc_us())
@@ -196,7 +204,7 @@ fn PyDateTime::compare(
 }
 
 ///|
-fn datetime_from_us(us : Int64, tz : Int?) -> PyDateTime raise PyException {
+fn datetime_from_us(us : Int64, tz : Int32?) -> PyDateTime raise PyException {
   let day = floor_div64(us, 86400000000L)
   let rem = us - day * 86400000000L
   let date = from_ordinal(day + 1L)
@@ -249,7 +257,7 @@ fn PyTimeDelta::is_zero(self : PyTimeDelta) -> Bool {
 }
 
 ///|
-fn PyTimeDelta::compare(self : PyTimeDelta, other : PyTimeDelta) -> Int {
+fn PyTimeDelta::compare(self : PyTimeDelta, other : PyTimeDelta) -> Int32 {
   self.total_us().compare(other.total_us())
 }
 
@@ -265,7 +273,7 @@ fn check_td(td : PyTimeDelta) -> PyTimeDelta raise PyException {
 }
 
 ///|
-fn pad(n : Int, width : Int) -> String {
+fn pad(n : Int32, width : Int32) -> String {
   let s = n.abs().to_string()
   let s = if s.length() < width {
     "0".repeat(width - s.length()) + s
@@ -295,7 +303,7 @@ pub fn PyTime::isoformat(self : PyTime) -> String {
 }
 
 ///|
-fn tz_suffix(tz : Int?) -> String {
+fn tz_suffix(tz : Int32?) -> String {
   match tz {
     None => ""
     Some(off) => {
@@ -312,7 +320,7 @@ fn tz_suffix(tz : Int?) -> String {
 }
 
 ///|
-pub fn PyDateTime::isoformat(self : PyDateTime, sep? : String = "T") -> String {
+pub fn PyDateTime::isoformat(self : PyDateTime, sep~ : String = "T") -> String {
   self.date.isoformat() + sep + self.time.isoformat() + tz_suffix(self.tz)
 }
 
@@ -448,7 +456,7 @@ fn round_half_even(x : Double) -> Double {
 // ---- ISO format parsing (Python 3.11+ fromisoformat) ----
 
 ///|
-fn digits_at(chars : Array[Char], start : Int, count : Int) -> Int? {
+fn digits_at(chars : Array[Char], start : Int32, count : Int32) -> Int32? {
   if start + count > chars.length() {
     return None
   }
@@ -473,7 +481,7 @@ fn invalid_iso(s : String) -> PyException {
 fn parse_iso_date(
   chars : Array[Char],
   s : String,
-) -> (PyDate, Int) raise PyException {
+) -> (PyDate, Int32) raise PyException {
   guard digits_at(chars, 0, 4) is Some(year) else { raise invalid_iso(s) }
   if chars.length() >= 5 && chars[4] == '-' {
     if chars.length() >= 6 && chars[5] == 'W' {
@@ -510,9 +518,9 @@ fn parse_iso_date(
 
 ///|
 fn iso_calendar_date(
-  year : Int,
-  week : Int,
-  dow : Int,
+  year : Int32,
+  week : Int32,
+  dow : Int32,
   s : String,
 ) -> PyDate raise PyException {
   if week < 1 || week > 53 || dow < 1 || dow > 7 {
@@ -529,12 +537,12 @@ fn iso_calendar_date(
 /// offset; returns the time and the offset in seconds.
 fn parse_iso_time(
   chars : Array[Char],
-  start : Int,
+  start : Int32,
   s : String,
-) -> (PyTime, Int?) raise PyException {
+) -> (PyTime, Int32?) raise PyException {
   // split off the time zone
   let mut end = chars.length()
-  let mut tz : Int? = None
+  let mut tz : Int32? = None
   for i in start..<chars.length() {
     let c = chars[i]
     if c == 'Z' || c == '+' || c == '-' {
@@ -567,16 +575,16 @@ fn parse_iso_time(
 ///|
 fn parse_time_fields(
   chars : Array[Char],
-  start : Int,
+  start : Int32,
   s : String,
-) -> (PyTime, Int) raise PyException {
+) -> (PyTime, Int32) raise PyException {
   guard digits_at(chars, start, 2) is Some(hour) else { raise invalid_iso(s) }
   let mut pos = start + 2
   let mut minute = 0
   let mut second = 0
   let mut micro = 0
   let extended = pos < chars.length() && chars[pos] == ':'
-  fn component(p : Int) -> (Int, Int)? {
+  fn component(p : Int32) -> (Int32, Int32)? {
     let p = if extended {
       if p < chars.length() && chars[p] == ':' {
         p + 1
@@ -784,14 +792,14 @@ pub fn strptime(s : String, fmt : String) -> PyDateTime raise PyException {
   let mut second = 0
   let mut micro = 0
   let mut pm : Bool? = None
-  let mut yday : Int? = None
-  let mut tz : Int? = None
+  let mut yday : Int32? = None
+  let mut tz : Int32? = None
   let fail = fn() {
     value_error(
       "time data \{@core.py_repr_str(s)} does not match format \{@core.py_repr_str(fmt)}",
     )
   }
-  fn num(max_len : Int) -> Int raise PyException {
+  fn num(max_len : Int32) -> Int32 raise PyException {
     let start = pos
     let mut v = 0
     while pos < text.length() &&
@@ -807,7 +815,7 @@ pub fn strptime(s : String, fmt : String) -> PyDateTime raise PyException {
     v
   }
 
-  fn name(names : Array[String], abbrev : Bool) -> Int raise PyException {
+  fn name(names : Array[String], abbrev : Bool) -> Int32 raise PyException {
     for i, n in names {
       let cand = if abbrev { n.view(end_offset=3).to_owned() } else { n }
       let cl = cand.length()

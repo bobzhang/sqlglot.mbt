@@ -138,7 +138,7 @@ fn sorted_keys(e : @core.Expr) -> String {
 }
 
 ///|
-fn py_str_compare(a : String, b : String) -> Int {
+fn py_str_compare(a : String, b : String) -> Int32 {
   let n = if a.length() < b.length() { a.length() } else { b.length() }
   for i in 0..<n {
     if a[i] != b[i] {

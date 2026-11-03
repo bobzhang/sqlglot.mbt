@@ -130,7 +130,7 @@ pub let timezones : @set.Set[String] = @set.Set::from_array([
 ])
 
 ///|
-fn iso_digits(chars : Array[Char], start : Int, n : Int) -> Int? {
+fn iso_digits(chars : Array[Char], start : Int32, n : Int32) -> Int32? {
   if start < 0 || start + n > chars.length() {
     return None
   }
@@ -146,12 +146,12 @@ fn iso_digits(chars : Array[Char], start : Int, n : Int) -> Int? {
 }
 
 ///|
-fn iso_is_leap(year : Int) -> Bool {
+fn iso_is_leap(year : Int32) -> Bool {
   (year % 4 == 0 && year % 100 != 0) || year % 400 == 0
 }
 
 ///|
-fn iso_days_in_month(year : Int, month : Int) -> Int {
+fn iso_days_in_month(year : Int32, month : Int32) -> Int32 {
   match month {
     2 => if iso_is_leap(year) { 29 } else { 28 }
     4 | 6 | 9 | 11 => 30
@@ -161,7 +161,7 @@ fn iso_days_in_month(year : Int, month : Int) -> Int {
 
 ///|
 /// Validates the date component of an ISO-8601 string, returning its length.
-fn iso_date_len(chars : Array[Char]) -> Int? {
+fn iso_date_len(chars : Array[Char]) -> Int32? {
   let n = chars.length()
   guard iso_digits(chars, 0, 4) is Some(year) && year >= 1 else { return None }
   if n >= 5 && chars[4] == '-' {
@@ -217,9 +217,9 @@ fn iso_date_len(chars : Array[Char]) -> Int? {
 /// at `end`. Returns the fractional digits (possibly empty) if valid.
 fn iso_time_fraction(
   chars : Array[Char],
-  start : Int,
-  end : Int,
-  max_hour : Int,
+  start : Int32,
+  end : Int32,
+  max_hour : Int32,
 ) -> String? {
   let mut i = start
   guard iso_digits(chars, i, 2) is Some(hh) && hh <= max_hour else {
@@ -274,7 +274,7 @@ fn iso_time_fraction(
 /// Port of `sqlglot.time.subsecond_precision`: given an ISO-8601 timestamp literal, e.g.
 /// '2023-01-01 12:13:14.123456+00:00', returns its subsecond precision (0, 3 or 6).
 /// Mirrors Python's `datetime.fromisoformat`; invalid literals yield 0.
-pub fn subsecond_precision(timestamp_literal : String) -> Int {
+pub fn subsecond_precision(timestamp_literal : String) -> Int32 {
   let chars = timestamp_literal.to_array()
   let n = chars.length()
   guard iso_date_len(chars) is Some(date_len) else { return 0 }

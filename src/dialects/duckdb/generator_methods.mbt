@@ -3407,11 +3407,11 @@ fn strtoktoarray_sql(
 
 ///|
 /// Python `str(Decimal(i) / Decimal(n))` for 0 <= i <= n.
-fn decimal_div_str(i : Int, n : Int) -> String {
+fn decimal_div_str(i : Int32, n : Int32) -> String {
   if i == 0 {
     return "0"
   }
-  let gcd = (a : Int, b : Int) => {
+  let gcd = (a : Int32, b : Int32) => {
     let mut a = a
     let mut b = b
     while b != 0 {
@@ -3433,7 +3433,7 @@ fn decimal_div_str(i : Int, n : Int) -> String {
   let digits = StringBuilder()
   let mut sig = if int_part > 0 { int_part.to_string().length() } else { 0 }
   let mut started = int_part > 0
-  let frac : Array[Int] = []
+  let frac : Array[Int32] = []
   while rem != 0 && sig < 28 {
     rem = rem * 10
     let digit = rem / den

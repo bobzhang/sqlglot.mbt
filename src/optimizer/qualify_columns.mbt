@@ -5,10 +5,10 @@
 pub fn qualify_columns(
   expression : @core.Expr,
   schema : MappingSchema,
-  expand_alias_refs? : Bool = true,
-  expand_stars? : Bool = true,
+  expand_alias_refs~ : Bool = true,
+  expand_stars~ : Bool = true,
   infer_schema? : Bool,
-  allow_partial_qualification? : Bool = false,
+  allow_partial_qualification~ : Bool = false,
 ) -> @core.Expr raise @core.SqlglotError {
   let annotator = TypeAnnotator::new(schema)
   let infer_schema = match infer_schema {
@@ -17,7 +17,7 @@ pub fn qualify_columns(
   }
   let dialect = schema.dialect
   let pseudocolumns = dialect.cfg.pseudocolumns
-  let ancestry : Map[Int, (Scope?, Bool?)] = Map([])
+  let ancestry : Map[Int32, (Scope?, Bool?)] = Map([])
   for scope in traverse_scope(expression) {
     if dialect.cfg.prefer_cte_alias_column {
       pushdown_cte_alias_columns(scope)
@@ -63,7 +63,7 @@ pub fn qualify_columns(
 }
 
 ///|
-fn meta_int(e : @core.Expr, key : String) -> Int? {
+fn meta_int(e : @core.Expr, key : String) -> Int32? {
   match e.meta_get(key) {
     Some(Int(i)) => Some(i.to_int())
     _ => None
@@ -130,7 +130,10 @@ pub fn validate_qualify_columns(
 }
 
 ///|
-fn separate_pseudocolumns(scope : Scope, pseudocolumns : @set.Set[String]) -> Unit {
+fn separate_pseudocolumns(
+  scope : Scope,
+  pseudocolumns : @set.Set[String],
+) -> Unit {
   if pseudocolumns.is_empty() {
     return
   }
@@ -143,7 +146,8 @@ fn separate_pseudocolumns(scope : Scope, pseudocolumns : @set.Set[String]) -> Un
     }
     if name != "LEVEL" ||
       (scope_expression.kind.is_a(Select) && scope_expression.has("connect")) {
-      column.replace(Some(@core.Expr::new(Pseudocolumn, column.args.copy()))) |> ignore
+      column.replace(Some(@core.Expr::new(Pseudocolumn, column.args.copy())))
+      |> ignore
       has_pseudocolumns = true
     }
   }
@@ -174,7 +178,11 @@ priv struct ColumnTables {
 }
 
 ///|
-fn ColumnTables::has(self : ColumnTables, column : String, table : String) -> Bool {
+fn ColumnTables::has(
+  self : ColumnTables,
+  column : String,
+  table : String,
+) -> Bool {
   match self.map.get(column) {
     Some(ts) => ts.contains(table)
     None => false
@@ -196,7 +204,7 @@ fn expand_using(
   }
 
   let joins = scope.find_all([Join]).collect()
-  let column_tables : ColumnTables = { map: {} }
+  let column_tables : ColumnTables = { map: {}, }
   if joins.is_empty() {
     return column_tables
   }
@@ -316,7 +324,9 @@ fn expand_using(
     for column in scope.columns() {
       if column.table_name() == "" && column_tables.map.contains(column.name()) {
         let tables = column_tables.map[column.name()]
-        let coalesce_args = tables.map(t => column_with_table(column.name(), table=t))
+        let coalesce_args = tables.map(t => {
+          column_with_table(column.name(), table=t)
+        })
         let mut replacement = @core.func_("coalesce", coalesce_args)
         if parent_is(column, [Select]) {
           replacement = @core.alias_(replacement, column.name(), copy=false)
@@ -347,7 +357,7 @@ fn join_method(join : @core.Expr) -> String {
 /// chain.
 fn scope_ancestry(
   scope : Scope,
-  memo : Map[Int, (Scope?, Bool?)],
+  memo : Map[Int32, (Scope?, Bool?)],
 ) -> (Scope?, Bool) {
   if scope.is_cte() {
     return (Some(scope), false)
@@ -407,14 +417,14 @@ fn expand_alias_refs_impl(
   scope : Scope,
   resolver : Resolver,
   dialect : @core.Dialect,
-  ancestry : Map[Int, (Scope?, Bool?)],
-  expand_only_groupby? : Bool = false,
+  ancestry : Map[Int32, (Scope?, Bool?)],
+  expand_only_groupby~ : Bool = false,
 ) -> Unit raise @core.SqlglotError {
   let expression = scope.expression
   if !expression.kind.is_a(Select) || dialect.cfg.disables_alias_ref_expansion {
     return
   }
-  let alias_to_expression : Map[String, (@core.Expr, Int)] = Map([])
+  let alias_to_expression : Map[String, (@core.Expr, Int32)] = Map([])
   let projections : @set.Set[String] = @set.Set([])
   for s in expression.selects() {
     projections.add(s.alias_or_name())
@@ -460,12 +470,16 @@ fn expand_alias_refs_impl(
       match alias_expr {
         Some(ae) => {
           skip_replace = find_in_scope(ae, [AggFunc]) is Some(_) &&
-            (is_group_by ||
-            (column.find_ancestor([AggFunc]) is Some(_) &&
-            !(match column.find_ancestor([Window, Select]) {
-              Some(a) => a.kind.is_a(Window)
-              None => false
-            })))
+            (
+              is_group_by ||
+              (
+                column.find_ancestor([AggFunc]) is Some(_) &&
+                !(match column.find_ancestor([Window, Select]) {
+                  Some(a) => a.kind.is_a(Window)
+                  None => false
+                })
+              )
+            )
           if (is_having || is_qualify) &&
             dialect.cfg.projection_aliases_shadow_source_names {
             skip_replace = skip_replace ||
@@ -610,7 +624,7 @@ fn expand_order_by_and_distinct_on(
     match alias_names_ {
       Some(a) => a
       None => {
-        let counts : Map[String, Int] = Map([])
+        let counts : Map[String, Int32] = Map([])
         for n in expression.named_selects() {
           counts[n] = counts.get_or_default(n, 0) + 1
         }
@@ -805,7 +819,9 @@ fn convert_columns_to_dots(
     }
     let selected_sources = scope.selected_sources()
     let mut root_resolver : Resolver? = None
-    if !is_star && column.db() != "" && selected_sources.contains(column_table_name) {
+    if !is_star &&
+      column.db() != "" &&
+      selected_sources.contains(column_table_name) {
       let parts = column.parts()
       let root = parts[0]
       let field = parts[1]
@@ -821,14 +837,18 @@ fn convert_columns_to_dots(
     }
     let has_table = column_table_name != ""
     if has_table &&
-      (!selected_sources.contains(column_table_name) ||
-      (is_star && column.db() != "") ||
-      root_resolver is Some(_)) &&
-      (root_resolver is Some(_) ||
-      is_star ||
-      scope.parent is None ||
-      !scope.parent.unwrap().sources.contains(column_table_name) ||
-      !scope.is_correlated_subquery()) {
+      (
+        !selected_sources.contains(column_table_name) ||
+        (is_star && column.db() != "") ||
+        root_resolver is Some(_)
+      ) &&
+      (
+        root_resolver is Some(_) ||
+        is_star ||
+        scope.parent is None ||
+        !scope.parent.unwrap().sources.contains(column_table_name) ||
+        !scope.is_correlated_subquery()
+      ) {
       let all_parts = column.parts()
       let mut root = all_parts[0]
       let mut parts = all_parts[1:].to_owned()
@@ -901,7 +921,10 @@ fn convert_columns_to_dots(
 }
 
 ///|
-fn find_pivot_by_alias(pivots : Array[@core.Expr], alias_ : String) -> @core.Expr? {
+fn find_pivot_by_alias(
+  pivots : Array[@core.Expr],
+  alias_ : String,
+) -> @core.Expr? {
   for p in pivots {
     if p.alias_() == alias_ {
       return Some(p)
@@ -974,10 +997,8 @@ fn qualify_positional_column(
     column_table,
     only_visible=true,
   )
-  if !(
-      1L <= position_value &&
-      position_value <= positional_columns.length().to_int64()
-    ) {
+  if !(1L <= position_value &&
+    position_value <= positional_columns.length().to_int64()) {
     if allow_partial_qualification {
       return true
     }
@@ -1035,7 +1056,9 @@ fn qualify_columns_impl(
         !source_columns.is_empty() &&
         !source_columns.contains("*") {
         for pivot in pivots {
-          source_columns = pivot_output_columns(pivot, source_columns).map(kv => kv.0)
+          source_columns = pivot_output_columns(pivot, source_columns).map(kv => {
+            kv.0
+          })
         }
       }
       if qualify_positional_column(
@@ -1065,9 +1088,9 @@ fn qualify_columns_impl(
       match table {
         Some(t) =>
           match scope.sources.get(t.name()) {
-            Some(ScopeSource(source)) if source.column_index().contains(
-              column.uid,
-            ) => continue
+            Some(ScopeSource(source)) if source
+              .column_index()
+              .contains(column.uid) => continue
             _ => ()
           }
         None => ()
@@ -1283,7 +1306,9 @@ pub fn qualify_outputs_scope(scope : Scope, dialect : @core.Dialect) -> Unit {
           if si.has("quoted") {
             selection.arg("alias").unwrap().set("quoted", true)
           }
-        _ => dialect.normalize_identifier(selection.arg("alias").unwrap()) |> ignore
+        _ =>
+          dialect.normalize_identifier(selection.arg("alias").unwrap())
+          |> ignore
       }
     }
     match aliased_column {
@@ -1302,7 +1327,7 @@ pub fn qualify_outputs_scope(scope : Scope, dialect : @core.Dialect) -> Unit {
 pub fn quote_identifiers(
   expression : @core.Expr,
   dialect? : @core.Dialect,
-  identify? : Bool = true,
+  identify~ : Bool = true,
 ) -> @core.Expr {
   let dialect = get_dialect(dialect)
   for node in expression.walk() {

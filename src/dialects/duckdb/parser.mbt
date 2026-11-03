@@ -1,7 +1,7 @@
 // Port of sqlglot/parsers/duckdb.py
 
 ///|
-fn seq_get(args : Array[@core.Expr], i : Int) -> @core.Expr? {
+fn seq_get(args : Array[@core.Expr], i : Int32) -> @core.Expr? {
   args.get(i)
 }
 
@@ -28,7 +28,7 @@ fn build_date_diff(args : Array[@core.Expr]) -> @core.Expr {
 }
 
 ///|
-fn build_generate_series(end_exclusive? : Bool = false) -> @core.FuncBuilder {
+fn build_generate_series(end_exclusive~ : Bool = false) -> @core.FuncBuilder {
   (args, _) => {
     let args = args.copy()
     // Check https://duckdb.org/docs/sql/functions/nested.html#range-functions
@@ -307,7 +307,7 @@ fn parse_lambda(
 ) -> @core.Expr? raise @core.SqlglotError {
   let index = p.index
   if !p.match_text_seq(["LAMBDA"]) {
-    return p.parse_lambda_base(alias_=alias_)
+    return p.parse_lambda_base(alias_~)
   }
   let expressions = p.parse_csv(() => p.parse_lambda_arg())
   if !p.match_(COLON) {

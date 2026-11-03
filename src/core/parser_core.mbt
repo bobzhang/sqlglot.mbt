@@ -17,34 +17,34 @@ pub(all) struct Parser {
   cfg : ParserConfig
   fns : ParserFns
   mut error_level : ErrorLevel
-  error_message_context : Int
-  max_errors : Int
-  max_nodes : Int
+  error_message_context : Int32
+  max_errors : Int32
+  max_nodes : Int32
   mut sql : String
   /// UTF-16 offsets of the code points of `sql` (`[]` when they coincide, i.e. no
   /// surrogate pairs), computed on first use by `find_sql`; `None` until then
-  mut sql_offsets : Array[Int]?
+  mut sql_offsets : Array[Int32]?
   mut errors : Array[SqlglotError]
   mut tokens : Array[Token]
-  mut tokens_size : Int
-  mut index : Int
+  mut tokens_size : Int32
+  mut index : Int32
   mut curr : Token
   mut next : Token
   mut prev : Token
   mut prev_comments : Array[String]
-  mut pipe_cte_counter : Int
+  mut pipe_cte_counter : Int32
   mut chunks : Array[Array[Token]]
-  mut chunk_index : Int
-  mut node_count : Int
+  mut chunk_index : Int32
+  mut node_count : Int32
 }
 
 ///|
 pub fn Parser::new(
   dialect : Dialect,
-  error_level? : ErrorLevel = Immediate,
-  error_message_context? : Int = 100,
-  max_errors? : Int = 3,
-  max_nodes? : Int = -1,
+  error_level~ : ErrorLevel = Immediate,
+  error_message_context~ : Int32 = 100,
+  max_errors~ : Int32 = 3,
+  max_nodes~ : Int32 = -1,
 ) -> Parser {
   {
     dialect,
@@ -90,7 +90,7 @@ pub fn Parser::reset(self : Parser) -> Unit {
 }
 
 ///|
-pub fn Parser::advance(self : Parser, times? : Int = 1) -> Unit {
+pub fn Parser::advance(self : Parser, times~ : Int32 = 1) -> Unit {
   let index = self.index + times
   self.index = index
   let tokens = self.tokens
@@ -125,7 +125,7 @@ pub fn Parser::advance_chunk(self : Parser) -> Unit {
 }
 
 ///|
-pub fn Parser::retreat(self : Parser, index : Int) -> Unit {
+pub fn Parser::retreat(self : Parser, index : Int32) -> Unit {
   if index != self.index {
     self.advance(times=index - self.index)
   }
@@ -147,7 +147,7 @@ pub fn Parser::add_comments(self : Parser, expression : Expr?) -> Unit {
 pub fn Parser::match_(
   self : Parser,
   token_type : TokenType,
-  advance? : Bool = true,
+  advance~ : Bool = true,
   expression? : Expr,
 ) -> Bool {
   if self.curr.token_type == token_type {
@@ -164,7 +164,7 @@ pub fn Parser::match_(
 pub fn Parser::match_set(
   self : Parser,
   types : TokenSet,
-  advance? : Bool = true,
+  advance~ : Bool = true,
 ) -> Bool {
   if types.contains(self.curr.token_type) {
     if advance {
@@ -179,7 +179,7 @@ pub fn Parser::match_set(
 pub fn Parser::match_any(
   self : Parser,
   types : ArrayView[TokenType],
-  advance? : Bool = true,
+  advance~ : Bool = true,
 ) -> Bool {
   if types.contains(self.curr.token_type) {
     if advance {
@@ -194,7 +194,7 @@ pub fn Parser::match_any(
 pub fn[V] Parser::match_keys(
   self : Parser,
   m : Map[TokenType, V],
-  advance? : Bool = true,
+  advance~ : Bool = true,
 ) -> Bool {
   if m.contains(self.curr.token_type) {
     if advance {
@@ -210,7 +210,7 @@ pub fn Parser::match_pair(
   self : Parser,
   a : TokenType,
   b : TokenType,
-  advance? : Bool = true,
+  advance~ : Bool = true,
 ) -> Bool {
   if self.curr.token_type == a && self.next.token_type == b {
     if advance {
@@ -225,7 +225,7 @@ pub fn Parser::match_pair(
 pub fn Parser::match_texts(
   self : Parser,
   texts : ArrayView[String],
-  advance? : Bool = true,
+  advance~ : Bool = true,
 ) -> Bool {
   if !self.cfg.text_match_excluded_tokens.contains(self.curr.token_type) &&
     texts.contains(py_upper(self.curr.text)) {
@@ -241,7 +241,7 @@ pub fn Parser::match_texts(
 pub fn Parser::match_text_set(
   self : Parser,
   texts : @set.Set[String],
-  advance? : Bool = true,
+  advance~ : Bool = true,
 ) -> Bool {
   if !self.cfg.text_match_excluded_tokens.contains(self.curr.token_type) &&
     texts.contains(py_upper(self.curr.text)) {
@@ -257,7 +257,7 @@ pub fn Parser::match_text_set(
 pub fn[V] Parser::match_text_keys(
   self : Parser,
   texts : Map[String, V],
-  advance? : Bool = true,
+  advance~ : Bool = true,
 ) -> Bool {
   if !self.cfg.text_match_excluded_tokens.contains(self.curr.token_type) &&
     texts.contains(py_upper(self.curr.text)) {
@@ -273,7 +273,7 @@ pub fn[V] Parser::match_text_keys(
 pub fn Parser::match_text_seq(
   self : Parser,
   texts : ArrayView[String],
-  advance? : Bool = true,
+  advance~ : Bool = true,
 ) -> Bool {
   let index = self.index
   let excluded = self.cfg.text_match_excluded_tokens
@@ -297,7 +297,7 @@ pub fn Parser::match_text_seq(
 pub fn Parser::match_text(
   self : Parser,
   text : String,
-  advance? : Bool = true,
+  advance~ : Bool = true,
 ) -> Bool {
   self.match_text_seq([text], advance~)
 }
@@ -316,7 +316,7 @@ pub fn Parser::find_sql(self : Parser, start : Token, end : Token) -> String {
 /// `self.sql[start:end]` (code point indices, Python slicing) in O(end - start): the
 /// code point -> UTF-16 offset table is built once per SQL string, instead of converting
 /// the whole string on every call.
-pub fn Parser::sql_slice(self : Parser, start : Int, end : Int) -> String {
+pub fn Parser::sql_slice(self : Parser, start : Int32, end : Int32) -> String {
   let offsets = match self.sql_offsets {
     Some(o) => o
     None => {
@@ -354,7 +354,7 @@ pub fn Parser::sql_slice(self : Parser, start : Int, end : Int) -> String {
 pub fn Parser::raise_error(
   self : Parser,
   message : String,
-  token? : Token = sentinel_none,
+  token~ : Token = sentinel_none,
 ) -> Unit raise SqlglotError {
   let token = if token.ok() {
     token
@@ -393,7 +393,7 @@ pub fn Parser::raise_error(
 pub fn Parser::validate_expression(
   self : Parser,
   expression : Expr,
-  nargs? : Int = 0,
+  nargs~ : Int32 = 0,
 ) -> Expr raise SqlglotError {
   if self.max_nodes > -1 {
     self.node_count += 1
@@ -416,7 +416,7 @@ pub fn Parser::validate_expression(
 pub fn[T] Parser::try_parse(
   self : Parser,
   parse_method : () -> T? raise SqlglotError,
-  retreat? : Bool = false,
+  retreat~ : Bool = false,
 ) -> T? {
   let index = self.index
   let error_level = self.error_level
@@ -448,8 +448,8 @@ pub fn Parser::parse_into(
   self : Parser,
   expression_types : ArrayView[Kind],
   raw_tokens : Array[Token],
-  sql? : String = "",
-  into_is_list? : Bool = false,
+  sql~ : String = "",
+  into_is_list~ : Bool = false,
 ) -> Array[Expr?] raise SqlglotError {
   let errors : Array[ParseErrorInfo] = []
   let mut last_message = ""
@@ -547,7 +547,7 @@ pub fn Parser::expression_opt(
 pub fn Parser::parse_batch_statements(
   self : Parser,
   parse_method : (Parser) -> Expr? raise SqlglotError,
-  sep_first_statement? : Bool = true,
+  sep_first_statement~ : Bool = true,
 ) -> Array[Expr?] raise SqlglotError {
   let expressions : Array[Expr?] = []
   if sep_first_statement {
@@ -634,7 +634,7 @@ pub fn Parser::parse_command(self : Parser) -> Expr raise SqlglotError {
 pub fn Parser::parse_csv(
   self : Parser,
   parse_method : () -> Expr? raise SqlglotError,
-  sep? : TokenType = COMMA,
+  sep~ : TokenType = COMMA,
 ) -> Array[Expr] raise SqlglotError {
   let mut parse_result = parse_method()
   let items = match parse_result {
@@ -657,7 +657,7 @@ pub fn Parser::parse_csv(
 pub fn[T] Parser::parse_csv_any(
   self : Parser,
   parse_method : () -> T? raise SqlglotError,
-  sep? : TokenType = COMMA,
+  sep~ : TokenType = COMMA,
 ) -> Array[T] raise SqlglotError {
   let items = match parse_method() {
     Some(r) => [r]
@@ -675,7 +675,7 @@ pub fn[T] Parser::parse_csv_any(
 ///|
 pub fn Parser::parse_wrapped_id_vars(
   self : Parser,
-  optional? : Bool = false,
+  optional~ : Bool = false,
 ) -> Array[Expr] raise SqlglotError {
   match self.fns.hooks.parse_wrapped_id_vars {
     Some(f) => f(self, optional)
@@ -687,8 +687,8 @@ pub fn Parser::parse_wrapped_id_vars(
 pub fn Parser::parse_wrapped_csv(
   self : Parser,
   parse_method : () -> Expr? raise SqlglotError,
-  sep? : TokenType = COMMA,
-  optional? : Bool = false,
+  sep~ : TokenType = COMMA,
+  optional~ : Bool = false,
 ) -> Array[Expr] raise SqlglotError {
   self.parse_wrapped(() => self.parse_csv(parse_method, sep~), optional~)
 }
@@ -697,7 +697,7 @@ pub fn Parser::parse_wrapped_csv(
 pub fn[T] Parser::parse_wrapped(
   self : Parser,
   parse_method : () -> T raise SqlglotError,
-  optional? : Bool = false,
+  optional~ : Bool = false,
 ) -> T raise SqlglotError {
   let wrapped = self.match_(L_PAREN)
   if !wrapped && !optional {
@@ -741,7 +741,7 @@ pub fn Parser::match_r_paren(
 pub fn Parser::parse_var_from_options(
   self : Parser,
   options : Map[String, Array[Array[String]]],
-  raise_unmatched? : Bool = true,
+  raise_unmatched~ : Bool = true,
 ) -> Expr? raise SqlglotError {
   let start = self.curr
   if !start.ok() {

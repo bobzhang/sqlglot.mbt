@@ -6,7 +6,7 @@
 priv struct Dec {
   neg : Bool
   coeff : @bigint.BigInt
-  exp : Int
+  exp : Int32
 }
 
 ///|
@@ -16,15 +16,15 @@ priv enum PyNum {
 }
 
 ///|
-let decimal_prec : Int = 28
+let decimal_prec : Int32 = 28
 
 ///|
-fn big(i : Int) -> @bigint.BigInt {
+fn big(i : Int32) -> @bigint.BigInt {
   @bigint.BigInt::from_int(i)
 }
 
 ///|
-fn pow10(n : Int) -> @bigint.BigInt {
+fn pow10(n : Int32) -> @bigint.BigInt {
   let mut r = big(1)
   let ten = big(10)
   for _ in 0..<n {
@@ -43,7 +43,7 @@ fn big_abs(x : @bigint.BigInt) -> @bigint.BigInt {
 }
 
 ///|
-fn num_digits(x : @bigint.BigInt) -> Int {
+fn num_digits(x : @bigint.BigInt) -> Int32 {
   big_abs(x).to_string().length()
 }
 
@@ -156,14 +156,14 @@ fn expr_to_pynum(e : @core.Expr) -> PyNum? {
 fn PyNum::neg(self : PyNum) -> PyNum {
   match self {
     PInt(i) => PInt(-i)
-    PDec(d) => PDec({ ..d, neg: !d.neg }).fix()
+    PDec(d) => PDec({ ..d, neg: !d.neg, }).fix()
   }
 }
 
 ///|
 fn PyNum::to_dec(self : PyNum) -> Dec {
   match self {
-    PInt(i) => { neg: i < big(0), coeff: big_abs(i), exp: 0 }
+    PInt(i) => { neg: i < big(0), coeff: big_abs(i), exp: 0, }
     PDec(d) => d
   }
 }
@@ -196,7 +196,7 @@ fn Dec::fix(self : Dec) -> Dec {
     q = q / big(10)
     exp += 1
   }
-  { neg: self.neg, coeff: q, exp }
+  { neg: self.neg, coeff: q, exp, }
 }
 
 ///|
@@ -209,11 +209,11 @@ fn Dec::signed(self : Dec) -> @bigint.BigInt {
 }
 
 ///|
-fn dec_from_signed(v : @bigint.BigInt, exp : Int, zero_neg : Bool) -> Dec {
+fn dec_from_signed(v : @bigint.BigInt, exp : Int32, zero_neg : Bool) -> Dec {
   if v == big(0) {
-    { neg: zero_neg, coeff: big(0), exp }
+    { neg: zero_neg, coeff: big(0), exp, }
   } else {
-    { neg: v < big(0), coeff: big_abs(v), exp }
+    { neg: v < big(0), coeff: big_abs(v), exp, }
   }
 }
 
@@ -228,7 +228,7 @@ fn dec_add(a : Dec, b : Dec) -> Dec {
 
 ///|
 fn dec_mul(a : Dec, b : Dec) -> Dec {
-  { neg: a.neg != b.neg, coeff: a.coeff * b.coeff, exp: a.exp + b.exp }.fix()
+  { neg: a.neg != b.neg, coeff: a.coeff * b.coeff, exp: a.exp + b.exp, }.fix()
 }
 
 ///|
@@ -238,7 +238,7 @@ fn dec_div(a : Dec, b : Dec) -> Dec raise @core.SqlglotError {
   }
   let sign = a.neg != b.neg
   if a.coeff == big(0) {
-    return { neg: sign, coeff: big(0), exp: a.exp - b.exp }.fix()
+    return { neg: sign, coeff: big(0), exp: a.exp - b.exp, }.fix()
   }
   let shift = num_digits(b.coeff) - num_digits(a.coeff) + decimal_prec + 1
   let mut exp = a.exp - b.exp - shift
@@ -263,7 +263,7 @@ fn dec_div(a : Dec, b : Dec) -> Dec raise @core.SqlglotError {
       exp += 1
     }
   }
-  { neg: sign, coeff, exp }.fix()
+  { neg: sign, coeff, exp, }.fix()
 }
 
 ///|
@@ -280,7 +280,7 @@ fn pynum_sub(a : PyNum, b : PyNum) -> PyNum {
     (PInt(x), PInt(y)) => PInt(x - y)
     _ => {
       let bd = b.to_dec()
-      PDec(dec_add(a.to_dec(), { ..bd, neg: !bd.neg }))
+      PDec(dec_add(a.to_dec(), { ..bd, neg: !bd.neg, }))
     }
   }
 }
@@ -300,7 +300,7 @@ fn pynum_div(a : PyNum, b : PyNum) -> PyNum raise @core.SqlglotError {
 
 ///|
 /// Numeric comparison: -1, 0 or 1.
-fn pynum_cmp(a : PyNum, b : PyNum) -> Int {
+fn pynum_cmp(a : PyNum, b : PyNum) -> Int32 {
   let x = a.to_dec()
   let y = b.to_dec()
   let exp = @core.min_int(x.exp, y.exp)
@@ -376,7 +376,10 @@ fn literal_from_pynum(n : PyNum) -> @core.Expr {
   let text = n.to_py_string()
   if n.is_negative() {
     let abs_text = n.neg().to_py_string()
-    @core.mk1(Neg, @core.mk(Literal, [("this", abs_text), ("is_string", false)]))
+    @core.mk1(
+      Neg,
+      @core.mk(Literal, [("this", abs_text), ("is_string", false)]),
+    )
   } else {
     @core.mk(Literal, [("this", text), ("is_string", false)])
   }

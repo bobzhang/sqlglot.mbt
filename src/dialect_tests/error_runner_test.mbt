@@ -79,7 +79,9 @@ fn run_error_call(
 ///|
 fn run_error_cases(module_name : String, cases : Array[String]) -> Unit raise {
   if cases.length() % 6 != 0 {
-    fail("malformed error fixture for \{module_name}: \{cases.length()} strings")
+    fail(
+      "malformed error fixture for \{module_name}: \{cases.length()} strings",
+    )
   }
   let total = cases.length() / 6
   let failures = []

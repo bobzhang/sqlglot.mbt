@@ -4,7 +4,7 @@
 /// A `MappingSchema` from a JSON mapping (Python dict) in `dialect`.
 fn a_schema(
   json : String,
-  dialect? : String = "",
+  dialect~ : String = "",
 ) -> @optimizer.MappingSchema raise {
   @optimizer.MappingSchema::new(
     schema=@optimizer.schema_from_json_string(json),
@@ -16,7 +16,7 @@ fn a_schema(
 /// `qualify(expression, dialect=dialect, schema=<json mapping>)`.
 fn a_qualify(
   e : @core.Expr,
-  dialect? : String = "",
+  dialect~ : String = "",
   schema? : String,
 ) -> @core.Expr raise {
   let schema = match schema {
@@ -30,7 +30,7 @@ fn a_qualify(
 /// `annotate_types(expression, schema=<json mapping>, dialect=dialect)`.
 fn a_annotate(
   e : @core.Expr,
-  dialect? : String = "",
+  dialect~ : String = "",
   schema? : String,
 ) -> @core.Expr raise {
   let schema = match schema {
@@ -46,13 +46,13 @@ fn a_annotate(
 fn T::a_assert_duckdb_sql(
   self : T,
   expression : @core.Expr,
-  includes? : Array[String] = [],
-  excludes? : Array[String] = [],
-  chr_chars? : Array[Char] = [],
+  includes~ : Array[String] = [],
+  excludes~ : Array[String] = [],
+  chr_chars~ : Array[Char] = [],
   loc~ : SourceLoc,
 ) -> String raise {
   // duckdb's WS_CONTROL_CHARS_TO_DUCK
-  let codes : Map[Char, Int] = {
+  let codes : Map[Char, Int32] = {
     '\u{0b}': 11,
     '\u{1c}': 28,
     '\u{1d}': 29,

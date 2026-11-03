@@ -395,7 +395,7 @@ pub fn Parser::parse_row(self : Parser) -> Expr? raise SqlglotError {
 ///|
 pub fn Parser::parse_serde_properties(
   self : Parser,
-  with_? : Bool = false,
+  with_~ : Bool = false,
 ) -> Expr? raise SqlglotError {
   let index = self.index
   let with_ = with_ || self.match_text("WITH")
@@ -416,7 +416,7 @@ pub fn Parser::parse_serde_properties(
 ///|
 pub fn Parser::parse_row_format(
   self : Parser,
-  match_row? : Bool = false,
+  match_row~ : Bool = false,
 ) -> Expr? raise SqlglotError {
   if match_row && !self.match_pair(ROW, FORMAT) {
     return None
@@ -695,7 +695,7 @@ pub fn Parser::parse_partition_base(self : Parser) -> Expr? raise SqlglotError {
 ///|
 pub fn Parser::parse_value(
   self : Parser,
-  values? : Bool = true,
+  values~ : Bool = true,
 ) -> Expr? raise SqlglotError {
   match self.fns.hooks.parse_value {
     Some(f) => f(self, values)
@@ -706,7 +706,7 @@ pub fn Parser::parse_value(
 ///|
 pub fn Parser::parse_value_base(
   self : Parser,
-  values? : Bool = true,
+  values~ : Bool = true,
 ) -> Expr? raise SqlglotError {
   ignore(values)
   fn parse_value_expression() -> Expr? raise SqlglotError {
@@ -740,7 +740,7 @@ pub fn Parser::parse_projections(
 ///|
 pub fn Parser::parse_wrapped_select(
   self : Parser,
-  table? : Bool = false,
+  table~ : Bool = false,
 ) -> Expr? raise SqlglotError {
   match self.fns.hooks.parse_wrapped_select {
     Some(f) => f(self, table)
@@ -751,7 +751,7 @@ pub fn Parser::parse_wrapped_select(
 ///|
 pub fn Parser::parse_wrapped_select_base(
   self : Parser,
-  table? : Bool = false,
+  table~ : Bool = false,
 ) -> Expr? raise SqlglotError {
   let mut this : Expr? = None
   if self.match_any([PIVOT, UNPIVOT]) {

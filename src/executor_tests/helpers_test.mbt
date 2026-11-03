@@ -214,9 +214,9 @@ fn assert_columns(
 /// Runs `execute` and returns the error it raises.
 fn execute_error(
   sql : String,
-  schema? : Map[String, @optimizer.SchemaNode] = {},
-  dialect? : String = "",
-  tables? : Map[String, @executor.TableData] = {},
+  schema~ : Map[String, @optimizer.SchemaNode] = {},
+  dialect~ : String = "",
+  tables~ : Map[String, @executor.TableData] = {},
 ) -> Error raise {
   try @executor.execute(sql, schema~, dialect~, tables~) catch {
     e => e
@@ -230,7 +230,7 @@ fn execute_error(
 /// first failure.
 struct Suite {
   name : String
-  mut passed : Int
+  mut passed : Int32
   failures : Array[String]
 }
 

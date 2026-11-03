@@ -3,4 +3,3 @@ import {
   "bobzhang/sqlglot/optimizer",
   "bobzhang/sqlglot/planner",
 } for "test"
-

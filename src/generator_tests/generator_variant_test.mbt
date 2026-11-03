@@ -185,8 +185,8 @@ fn run_variant(
   name : String,
   d : @core.Dialect,
   diffs : Array[String],
-) -> (Int, Int) {
-  let expected : Map[Int, (String, String)] = Map([])
+) -> (Int32, Int32) {
+  let expected : Map[Int32, (String, String)] = Map([])
   let mut i = 0
   while i + 2 < diffs.length() {
     let idx = @string.parse_int(diffs[i]) catch { _ => -1 }

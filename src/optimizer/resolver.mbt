@@ -11,14 +11,14 @@ pub struct Resolver {
   priv mut all_columns_ : @set.Set[String]?
   priv infer_schema : Bool
   priv get_source_columns_cache : Map[(String, Bool), Array[String]]
-  priv column_type_from_scope_cache : Map[(Int, String), @core.Expr?]
+  priv column_type_from_scope_cache : Map[(Int32, String), @core.Expr?]
 }
 
 ///|
 pub fn Resolver::new(
   scope : Scope,
   schema : MappingSchema,
-  infer_schema? : Bool = true,
+  infer_schema~ : Bool = true,
 ) -> Resolver {
   {
     scope,
@@ -208,7 +208,9 @@ pub fn Resolver::get_source_columns_from_set_op(
         dedup_strings(left).filter(x => r.contains(x))
       } else {
         // Python leaves `columns` unbound here
-        raise @core.OptimizeError("Unknown set operation: \{expr_sql(expression)}")
+        raise @core.OptimizeError(
+          "Unknown set operation: \{expr_sql(expression)}",
+        )
       }
     } else {
       set_op.named_selects()
@@ -221,7 +223,7 @@ pub fn Resolver::get_source_columns_from_set_op(
 pub fn Resolver::get_source_columns(
   self : Resolver,
   name : String,
-  only_visible? : Bool = false,
+  only_visible~ : Bool = false,
 ) -> Array[String] raise @core.SqlglotError {
   let cache_key = (name, only_visible)
   match self.get_source_columns_cache.get(cache_key) {
@@ -411,7 +413,9 @@ fn Resolver::get_available_source_columns(
   }
   for i in 0..<@core.min_int(upto, joins.length()) {
     let join = joins[i]
-    available[join.alias_or_name()] = self.get_source_columns(join.alias_or_name())
+    available[join.alias_or_name()] = self.get_source_columns(
+      join.alias_or_name(),
+    )
   }
   available
 }
@@ -523,7 +527,7 @@ fn Resolver::get_unnest_column_type(
 /// The number of calls of `Resolver::get_column_type_from_scope` (Python
 /// `Resolver._get_column_type_from_scope`) so far; tests use it to check that the
 /// trace is memoized (Python's test patches the method to count its calls).
-pub let column_type_trace_calls : Ref[Int] = Ref(0)
+pub let column_type_trace_calls : Ref[Int32] = Ref(0)
 
 ///|
 fn Resolver::get_column_type_from_scope(

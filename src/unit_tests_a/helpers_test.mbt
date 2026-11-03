@@ -63,7 +63,7 @@ fn[X : Debug] repr_of(x : X) -> String {
 fn T::ok(
   self : T,
   cond : Bool,
-  msg? : String = "condition is false",
+  msg~ : String = "condition is false",
   loc~ : SourceLoc,
 ) -> Unit {
   if !cond {
@@ -157,14 +157,14 @@ fn T::validate(
   self : T,
   sql : String,
   target : String,
-  read? : String = "",
+  read~ : String = "",
   write? : String,
-  identity? : Bool = true,
-  pretty? : Bool = false,
-  identify? : Bool = false,
-  leading_comma? : Bool = false,
-  pad? : Int = 2,
-  indent? : Int = 2,
+  identity~ : Bool = true,
+  pretty~ : Bool = false,
+  identify~ : Bool = false,
+  leading_comma~ : Bool = false,
+  pad~ : Int32 = 2,
+  indent~ : Int32 = 2,
   loc~ : SourceLoc,
 ) -> Unit {
   self.eqf(
@@ -188,7 +188,7 @@ fn T::validate(
 
 ///|
 /// `parse_one(sql, read).sql(write)`.
-fn sql_of(sql : String, read? : String = "", write? : String) -> String raise {
+fn sql_of(sql : String, read~ : String = "", write? : String) -> String raise {
   let w = match write {
     Some(w) => w
     None => read

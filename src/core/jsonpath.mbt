@@ -5,7 +5,7 @@ priv struct JsonPathParser {
   path : String
   tokens : Array[Token]
   var_tokens : Array[TokenType]
-  mut i : Int
+  mut i : Int32
 }
 
 ///|

@@ -50,9 +50,20 @@ pub(all) enum Rule {
 ///|
 /// The default optimizer rules (Python `RULES`), in order.
 pub let rules : Array[Rule] = [
-  Qualify, PushdownProjections, Normalize, UnnestSubqueries, PushdownPredicates, OptimizeJoins,
-  EliminateSubqueries, MergeSubqueries, EliminateJoins, EliminateCtes, QuoteIdentifiers,
-  AnnotateTypes, Canonicalize, Simplify,
+  Qualify,
+  PushdownProjections,
+  Normalize,
+  UnnestSubqueries,
+  PushdownPredicates,
+  OptimizeJoins,
+  EliminateSubqueries,
+  MergeSubqueries,
+  EliminateJoins,
+  EliminateCtes,
+  QuoteIdentifiers,
+  AnnotateTypes,
+  Canonicalize,
+  Simplify,
 ]
 
 ///|
@@ -109,7 +120,10 @@ pub fn Rule::apply(
     OptimizeJoins => optimize_joins(expression)
     EliminateSubqueries => eliminate_subqueries(expression)
     MergeSubqueries =>
-      merge_subqueries(expression, leave_tables_isolated=o.leave_tables_isolated)
+      merge_subqueries(
+        expression,
+        leave_tables_isolated=o.leave_tables_isolated,
+      )
     EliminateJoins => eliminate_joins(expression)
     EliminateCtes => eliminate_ctes(expression)
     QuoteIdentifiers =>
@@ -141,21 +155,21 @@ pub fn optimize(
   db? : String,
   catalog? : String,
   dialect? : @core.Dialect,
-  rules? : Array[Rule] = rules,
+  rules~ : Array[Rule] = rules,
   sql? : String,
   infer_schema? : Bool,
-  identify? : Bool = true,
-  leave_tables_isolated? : Bool = false,
-  validate_qualify_columns? : Bool = true,
-  canonicalize_table_aliases? : Bool = false,
-  expand_alias_refs? : Bool = true,
-  expand_stars? : Bool = true,
-  allow_partial_qualification? : Bool = false,
-  isolate_tables? : Bool = true,
-  quote_identifiers? : Bool = false,
+  identify~ : Bool = true,
+  leave_tables_isolated~ : Bool = false,
+  validate_qualify_columns~ : Bool = true,
+  canonicalize_table_aliases~ : Bool = false,
+  expand_alias_refs~ : Bool = true,
+  expand_stars~ : Bool = true,
+  allow_partial_qualification~ : Bool = false,
+  isolate_tables~ : Bool = true,
+  quote_identifiers~ : Bool = false,
   on_qualify? : (@core.Expr) -> Unit,
-  constant_propagation? : Bool = false,
-  coalesce_simplification? : Bool = false,
+  constant_propagation~ : Bool = false,
+  coalesce_simplification~ : Bool = false,
 ) -> @core.Expr raise @core.SqlglotError {
   let schema = ensure_schema(schema?, mapping?, dialect?)
   let options : OptimizeOptions = {
@@ -192,9 +206,9 @@ pub fn optimize_sql(
   schema? : MappingSchema,
   mapping? : Map[String, SchemaNode],
   dialect? : @core.Dialect,
-  rules? : Array[Rule] = rules,
+  rules~ : Array[Rule] = rules,
   infer_schema? : Bool,
-  identify? : Bool = true,
+  identify~ : Bool = true,
 ) -> @core.Expr raise @core.SqlglotError {
   let expression = @core.parse_one(sql, dialect?)
   optimize(

@@ -33,7 +33,9 @@ test "simplify: mutates the AST in place" {
   let expression = parse_sql("SELECT a, c, b FROM table1 WHERE 1 = 1")
   assert_eq(
     gen_sql(
-      simplify_with_types(simplify_with_types(expression.find([Where]).unwrap())),
+      simplify_with_types(
+        simplify_with_types(expression.find([Where]).unwrap()),
+      ),
     ),
     "WHERE TRUE",
   )
@@ -56,7 +58,10 @@ test "simplify: concat keeps its safe flag" {
   assert_eq(gen_sql(simplified_safe_concat), "CONCAT('a', x, 'bc')")
 
   // Both Databricks' and DuckDB's CONCAT_WS skip NULL args, so no CASE wrapping is needed
-  let concat_ws = parse_sql("CONCAT_WS(' ', a, NULL, 'b', 'c')", read="databricks")
+  let concat_ws = parse_sql(
+    "CONCAT_WS(' ', a, NULL, 'b', 'c')",
+    read="databricks",
+  )
   let simplified_concat_ws = @optimizer.simplify(concat_ws)
   assert_true(simplified_concat_ws.bool_arg("coalesce"))
   assert_eq(
@@ -84,10 +89,7 @@ test "simplify: gen" {
     ("this", @core.to_identifier("anonymous")),
     (
       "expressions",
-      @core.Value::List([
-        Node(@core.column_of("x")),
-        Node(@core.column_of("y")),
-      ]),
+      @core.Value::List([Node(@core.column_of("x")), Node(@core.column_of("y"))]),
     ),
   ])
   assert_eq(@optimizer.gen(anon_unquoted_identifier), "ANONYMOUS(x,y)")
@@ -111,7 +113,9 @@ test "simplify: gen" {
   try @optimizer.gen(@core.mk(Anonymous, [("this", 5)])) catch {
     @core.ValueError(msg) =>
       assert_true(
-        msg.contains("Anonymous.this expects a str or an Identifier, got 'int'."),
+        msg.contains(
+          "Anonymous.this expects a str or an Identifier, got 'int'.",
+        ),
       )
     e => fail("expected ValueError, got \{e}")
   } noraise {

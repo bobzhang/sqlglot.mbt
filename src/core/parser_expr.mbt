@@ -259,7 +259,7 @@ pub fn Parser::parse_is(
 pub fn Parser::parse_in(
   self : Parser,
   this : Expr?,
-  alias_? : Bool = false,
+  alias_~ : Bool = false,
 ) -> Expr? raise SqlglotError {
   let mut this = this
   match self.parse_unnest(with_alias=false) {
@@ -513,7 +513,7 @@ pub fn interval_string_findall(text : String) -> Array[(String, String)] {
 pub fn Parser::parse_interval_span(
   self : Parser,
   this : Expr?,
-  parse_function_unit? : Bool = true,
+  parse_function_unit~ : Bool = true,
 ) -> Expr raise SqlglotError {
   let mut this = this
   let mut interval_span_units_omitted : Bool? = None
@@ -698,8 +698,8 @@ pub fn py_decimal_str(text : String) -> String {
 ///|
 pub fn Parser::parse_interval(
   self : Parser,
-  require_interval? : Bool = true,
-  parse_function_unit? : Bool = true,
+  require_interval~ : Bool = true,
+  parse_function_unit~ : Bool = true,
 ) -> Expr? raise SqlglotError {
   let index = self.index
   if !self.match_(INTERVAL) && require_interval {
@@ -799,7 +799,7 @@ pub fn Parser::parse_bitwise(self : Parser) -> Expr? raise SqlglotError {
 ///|
 pub fn Parser::parse_term(
   self : Parser,
-  parse_mod? : Bool = true,
+  parse_mod~ : Bool = true,
 ) -> Expr? raise SqlglotError {
   let mut this = self.parse_factor(parse_mod~)
   while self.match_keys(self.cfg.term) {
@@ -842,7 +842,7 @@ pub fn Parser::normalize_collate(self : Parser, collate : Expr) -> Unit {
 ///|
 pub fn Parser::parse_factor(
   self : Parser,
-  parse_mod? : Bool = true,
+  parse_mod~ : Bool = true,
 ) -> Expr? raise SqlglotError {
   let mut this = self.parse_at_time_zone(self.parse_factor_operand())
   while self.match_keys(self.cfg.factor, advance=false) {
@@ -923,8 +923,8 @@ fn time_zone_re_search(text : String) -> Bool {
 ///|
 pub fn Parser::parse_type(
   self : Parser,
-  parse_interval? : Bool = true,
-  fallback_to_identifier? : Bool = false,
+  parse_interval~ : Bool = true,
+  fallback_to_identifier~ : Bool = false,
 ) -> Expr? raise SqlglotError {
   match self.fns.hooks.parse_type {
     Some(f) => f(self, parse_interval, fallback_to_identifier)
@@ -935,8 +935,8 @@ pub fn Parser::parse_type(
 ///|
 pub fn Parser::parse_type_base(
   self : Parser,
-  parse_interval? : Bool = true,
-  fallback_to_identifier? : Bool = false,
+  parse_interval~ : Bool = true,
+  fallback_to_identifier~ : Bool = false,
 ) -> Expr? raise SqlglotError {
   if !fallback_to_identifier {
     match self.parse_atom() {

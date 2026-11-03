@@ -87,8 +87,8 @@ fn T::assert_pretty_nested(
   type_str : String,
   single_line : String,
   pretty : String,
-  max_text_width? : Int = 10,
-  leading_comma? : Bool = false,
+  max_text_width~ : Int32 = 10,
+  leading_comma~ : Bool = false,
   loc~ : SourceLoc,
 ) -> Unit {
   match self.run(() => @core.datatype_from_str(type_str), loc~) {

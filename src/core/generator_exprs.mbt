@@ -97,7 +97,7 @@ fn gen_simplify(
 pub fn gen_apply_index_offset(
   this : Expr,
   expressions : Array[Expr],
-  offset : Int,
+  offset : Int32,
   dialect : Dialect,
 ) -> Array[Expr] raise SqlglotError {
   if offset == 0 || expressions.length() != 1 {
@@ -375,10 +375,10 @@ pub fn Generator::literal_sql(
 pub fn Generator::escape_str(
   self : Generator,
   text : String,
-  escape_backslash? : Bool = true,
+  escape_backslash~ : Bool = true,
   delimiter? : String,
   escaped_delimiter? : String,
-  is_byte_string? : Bool = false,
+  is_byte_string~ : Bool = false,
 ) -> String {
   let supports_escape_sequences = if is_byte_string {
     self.dialect.cfg.byte_strings_support_escaped_sequences
@@ -421,7 +421,7 @@ pub fn Generator::escape_str(
 pub fn Generator::national_sql(
   self : Generator,
   expression : Expr,
-  prefix? : String = "N",
+  prefix~ : String = "N",
 ) -> String raise SqlglotError {
   let string = self.sql(Some(literal_string(expression.name())))
   prefix + string
@@ -546,8 +546,8 @@ pub fn Generator::datatype_param_bound_limiter(
   self : Generator,
   expression : Expr,
   type_value : DType,
-  defaults : Array[Int],
-  bounds : Array[Int?],
+  defaults : Array[Int32],
+  bounds : Array[Int32?],
 ) -> Expr raise SqlglotError {
   let params = expression.raw_list("expressions")
   if params.is_empty() {
@@ -732,7 +732,7 @@ pub fn Generator::between_sql(
 pub fn Generator::bracket_offset_expressions(
   self : Generator,
   expression : Expr,
-  index_offset? : Int,
+  index_offset? : Int32,
 ) -> Array[Expr] raise SqlglotError {
   if expression.has("json_access") {
     return expression.expressions()
@@ -1592,8 +1592,8 @@ pub fn Generator::slice_sql(
 pub fn Generator::lambda_sql_v(
   self : Generator,
   expression : Expr,
-  arrow_sep? : String = "->",
-  wrap? : Bool = true,
+  arrow_sep~ : String = "->",
+  wrap~ : Bool = true,
 ) -> String raise SqlglotError {
   match self.fns.hooks.lambda_sql {
     Some(f) => f(self, expression, arrow_sep, wrap)
@@ -1605,8 +1605,8 @@ pub fn Generator::lambda_sql_v(
 pub fn Generator::lambda_sql(
   self : Generator,
   expression : Expr,
-  arrow_sep? : String = "->",
-  wrap? : Bool = true,
+  arrow_sep~ : String = "->",
+  wrap~ : Bool = true,
 ) -> String raise SqlglotError {
   let mut args = self.expressions(expression~, flat=true)
   if wrap && py_split(args, ",").length() > 1 {

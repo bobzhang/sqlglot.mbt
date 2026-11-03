@@ -311,7 +311,7 @@ test "TestClickhouse.test_convert" {
     ),
     "toDate('2020-01-01')",
   )
-  let dt = (microsecond : Int, tz : (String, Int)?) => {
+  let dt = (microsecond : Int32, tz : (String, Int32)?) => {
     @core.PyDateTime(
       year=2020,
       month=1,

@@ -20,7 +20,9 @@ test "annotate_types: table as struct (bigquery)" {
   assert_true(annotated.selects()[0].is_type_expr(struct_type))
   let annotated = annotate("WITH t AS (SELECT 1 AS c) SELECT t FROM t")
   assert_true(
-    annotated.selects()[0].is_type_expr(@core.datatype_from_str("STRUCT<c INT>")),
+    annotated.selects()[0].is_type_expr(
+      @core.datatype_from_str("STRUCT<c INT>"),
+    ),
   )
   let annotated = annotate("WITH t AS (SELECT FOO() AS c) SELECT t FROM t")
   assert_true(annotated.selects()[0].is_type([UNKNOWN]))
@@ -125,7 +127,9 @@ test "optimize: case sensitive JSON dot access" {
     let normalized = "`t`.`col`.`fOo`.`BaR`.`BaZ`"
     assert_eq(
       optimize_in(
-        "SELECT JSON_VALUE(\{dot_access}, '$') AS col FROM t", "bigquery", schema,
+        "SELECT JSON_VALUE(\{dot_access}, '$') AS col FROM t",
+        "bigquery",
+        schema,
       ),
       "SELECT JSON_VALUE(\{normalized}, '$') AS `col` FROM `t` AS `t`",
     )

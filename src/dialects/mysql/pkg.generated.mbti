@@ -28,7 +28,7 @@ pub fn parse_show_mysql(@core.Parser, String, target? : String, full? : Bool, gl
 
 pub fn register_settings(@core.Dialect, (MySQLSettings) -> Unit) -> Unit
 
-pub fn seq_get(Array[@core.Expr], Int) -> @core.Expr?
+pub fn seq_get(Array[@core.Expr], Int32) -> @core.Expr?
 
 pub fn settings_of(@core.Dialect) -> MySQLSettings
 

@@ -3,7 +3,7 @@
 ///|
 fn sql(
   e : @core.Expr,
-  dialect? : String = "",
+  dialect~ : String = "",
 ) -> String raise @core.SqlglotError {
   @sqlglot.generate(e, dialect~)
 }
@@ -12,12 +12,12 @@ fn sql(
 /// Python `expression.sql(dialect=..., **opts)` with generator options.
 fn gen(
   e : @core.Expr,
-  dialect? : String = "",
-  pretty? : Bool = false,
-  identify? : Bool = false,
-  normalize? : Bool = false,
+  dialect~ : String = "",
+  pretty~ : Bool = false,
+  identify~ : Bool = false,
+  normalize~ : Bool = false,
   normalize_functions? : String,
-  comments? : Bool = true,
+  comments~ : Bool = true,
 ) -> String raise @core.SqlglotError {
   @core.Generator::new(
     @sqlglot.dialect(dialect),
@@ -30,7 +30,7 @@ fn gen(
 }
 
 ///|
-fn p1(s : String, read? : String = "") -> @core.Expr raise @core.SqlglotError {
+fn p1(s : String, read~ : String = "") -> @core.Expr raise @core.SqlglotError {
   @sqlglot.parse_one(s, read~)
 }
 
@@ -1447,7 +1447,7 @@ test "TestExprs.test_values" {
 }
 
 ///|
-fn dtb(s : String, dialect? : String = "") -> String raise @core.SqlglotError {
+fn dtb(s : String, dialect~ : String = "") -> String raise @core.SqlglotError {
   sql(@sqlglot.datatype_build(s, dialect~))
 }
 
@@ -1691,7 +1691,10 @@ test "TestExprs.test_assert_is" {
   ignore(p1("x").assert_is(Column))
   try p1("x").assert_is(Identifier) catch {
     @core.ValueError(m) =>
-      inspect(m, content="x is not <class 'sqlglot.expressions.core.Identifier'>.")
+      inspect(
+        m,
+        content="x is not <class 'sqlglot.expressions.core.Identifier'>.",
+      )
     e => fail("unexpected error \{e}")
   } noraise {
     _ => fail("expected an error")
@@ -1704,7 +1707,7 @@ test "TestExprs.test_parse_identifier" {
 }
 
 ///|
-fn py_time(h : Int, m : Int, s : Int, us? : Int = 0) -> @core.PyObj {
+fn py_time(h : Int32, m : Int32, s : Int32, us~ : Int32 = 0) -> @core.PyObj {
   PyTime(hour=h, minute=m, second=s, microsecond=us)
 }
 
@@ -1788,7 +1791,7 @@ test "TestExprs.test_update_positions_empty_meta" {
 ///|
 fn add_val(
   expr : @core.Expr,
-  val : Int,
+  val : Int32,
   squared~ : Bool,
 ) -> @core.Expr raise @core.SqlglotError {
   let nb = if squared { val * val } else { val }
@@ -1797,7 +1800,7 @@ fn add_val(
 
 ///|
 test "TestExprs.test_pipe_and_apply" {
-  let add_val_alt = fn(val : Int, squared : Bool, expr : @core.Expr) raise {
+  let add_val_alt = fn(val : Int32, squared : Bool, expr : @core.Expr) raise {
     add_val(expr, val, squared~)
   }
   let col = @sqlglot.column("age")

@@ -23,13 +23,14 @@ pub enum Code {
 }
 
 ///|
+#derive(Eq)
 priv enum Tok {
   TName(String)
   TNum(Value)
   TStr(String)
   TOp(String)
   TEnd
-} derive(Eq)
+}
 
 ///|
 fn syntax_error(msg : String) -> PyException {
@@ -143,7 +144,7 @@ fn tokenize(src : String) -> Array[Tok] raise PyException {
 }
 
 ///|
-fn hex_val(c : Char) -> Int? {
+fn hex_val(c : Char) -> Int32? {
   if c >= '0' && c <= '9' {
     Some(c.to_int() - '0'.to_int())
   } else if c >= 'a' && c <= 'f' {
@@ -158,9 +159,9 @@ fn hex_val(c : Char) -> Int? {
 ///|
 fn read_string(
   chars : Array[Char],
-  start : Int,
+  start : Int32,
   raw : Bool,
-) -> (String, Int) raise PyException {
+) -> (String, Int32) raise PyException {
   let n = chars.length()
   let q = chars[start]
   let triple = start + 2 < n && chars[start + 1] == q && chars[start + 2] == q
@@ -227,9 +228,9 @@ fn read_string(
           }
         }
         i += len
-        sb.write_char(Int::unsafe_to_char(v))
+        sb.write_char(Int32::unsafe_to_char(v))
       }
-      '0'..='7' => {
+      '0'..<='7' => {
         let mut v = e.to_int() - '0'.to_int()
         let mut k = 0
         while k < 2 && i < n && chars[i] >= '0' && chars[i] <= '7' {
@@ -237,7 +238,7 @@ fn read_string(
           i += 1
           k += 1
         }
-        sb.write_char(Int::unsafe_to_char(v))
+        sb.write_char(Int32::unsafe_to_char(v))
       }
       _ => {
         // unknown escapes are kept verbatim
@@ -251,8 +252,8 @@ fn read_string(
 ///|
 fn read_number(
   chars : Array[Char],
-  start : Int,
-) -> (Value, Int) raise PyException {
+  start : Int32,
+) -> (Value, Int32) raise PyException {
   let n = chars.length()
   let mut i = start
   if chars[i] == '0' && i + 1 < n && "xXoObB".contains_char(chars[i + 1]) {
@@ -373,7 +374,7 @@ fn read_number(
 ///|
 priv struct PyParser {
   toks : Array[Tok]
-  mut pos : Int
+  mut pos : Int32
 }
 
 ///|
@@ -382,7 +383,7 @@ fn PyParser::peek(self : PyParser) -> Tok {
 }
 
 ///|
-fn PyParser::peek_at(self : PyParser, k : Int) -> Tok {
+fn PyParser::peek_at(self : PyParser, k : Int32) -> Tok {
   if self.pos + k < self.toks.length() {
     self.toks[self.pos + k]
   } else {
@@ -551,7 +552,7 @@ let binop_levels : Array[Array[String]] = [
 ]
 
 ///|
-fn PyParser::binop(self : PyParser, level : Int) -> Code raise PyException {
+fn PyParser::binop(self : PyParser, level : Int32) -> Code raise PyException {
   if level >= binop_levels.length() {
     return self.factor()
   }

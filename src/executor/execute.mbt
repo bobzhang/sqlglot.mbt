@@ -79,11 +79,11 @@ fn nested_set(
 /// Returns a simple columnar data structure.
 pub fn[T : @core.IntoPy] execute(
   sql : T,
-  schema? : Map[String, @optimizer.SchemaNode] = {},
+  schema~ : Map[String, @optimizer.SchemaNode] = {},
   mapping_schema? : @optimizer.MappingSchema,
   read? : String,
-  dialect? : String = "",
-  tables? : Map[String, TableData] = {},
+  dialect~ : String = "",
+  tables~ : Map[String, TableData] = {},
 ) -> Table raise {
   let d = @dialects.dialect(read.unwrap_or(dialect))
   let tables_ = ensure_tables(Some(tables), dialect=d)

@@ -3,14 +3,14 @@
 // needed.
 
 ///|
-extern "c" fn c_getchar() -> Int = "getchar"
+extern "c" fn c_getchar() -> Int32 = "getchar"
 
 ///|
 #borrow(buf)
-extern "c" fn c_write(fd : Int, buf : Bytes, len : Int64) -> Int64 = "write"
+extern "c" fn c_write(fd : Int32, buf : Bytes, len : Int64) -> Int64 = "write"
 
 ///|
-extern "c" fn c_exit(code : Int) = "exit"
+extern "c" fn c_exit(code : Int32) = "exit"
 
 ///|
 /// Reads standard input to the end and decodes it as UTF-8.
@@ -26,7 +26,7 @@ fn read_stdin() -> String {
 }
 
 ///|
-fn write_all(fd : Int, text : String) -> Unit {
+fn write_all(fd : Int32, text : String) -> Unit {
   let bytes = @utf8.encode(text)
   let mut offset = 0
   while offset < bytes.length() {

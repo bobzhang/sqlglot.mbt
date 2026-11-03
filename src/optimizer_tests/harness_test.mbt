@@ -49,9 +49,9 @@ fn run_fixtures(
   pretty~ : Bool,
   runner : (@core.Expr, Case) -> @core.Expr raise,
   output? : (@core.Expr, Case) -> String raise,
-  max_report? : Int = 15,
-  report_dialects? : Bool = false,
-  check_parents? : Bool = true,
+  max_report~ : Int32 = 15,
+  report_dialects~ : Bool = false,
+  check_parents~ : Bool = true,
 ) -> Unit raise {
   let mut total = 0
   let mut passed = 0
@@ -78,7 +78,7 @@ fn run_fixtures(
       } else {
         Some(@core.Dialect::get_or_raise(dialect_name))
       }
-      let case_ = { dialect, meta }
+      let case_ = { dialect, meta, }
       let expression = @core.parse_one(sql, dialect?)
       let optimized = runner(expression, case_)
       // TestOptimizer.check_file: every expression arg points back to its parent
@@ -176,7 +176,9 @@ fn parent_link_error(root : @core.Expr) -> String? {
           Some(p) => physical_equal(p, node)
           None => false
         }
-        if !parent_ok || e.arg_key != Some(key) || (index is Some(_) && e.index != index) {
+        if !parent_ok ||
+          e.arg_key != Some(key) ||
+          (index is Some(_) && e.index != index) {
           return Some(
             "PARENT LINK: \{e.kind} under \{node.kind}.\{key}\{Repr(index)}: arg_key=\{Repr(e.arg_key)} index=\{Repr(e.index)} parent ok=\{parent_ok}",
           )

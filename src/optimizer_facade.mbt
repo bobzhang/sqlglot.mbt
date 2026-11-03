@@ -23,12 +23,12 @@ pub fn[T : @core.IntoPy] optimize(
   mapping_schema? : @optimizer.MappingSchema,
   db? : String,
   catalog? : String,
-  dialect? : String = "",
+  dialect~ : String = "",
   infer_schema? : Bool,
-  identify? : Bool = true,
-  leave_tables_isolated? : Bool = false,
-  validate_qualify_columns? : Bool = true,
-  expand_stars? : Bool = true,
+  identify~ : Bool = true,
+  leave_tables_isolated~ : Bool = false,
+  validate_qualify_columns~ : Bool = true,
+  expand_stars~ : Bool = true,
 ) -> @core.Expr raise @core.SqlglotError {
   let d = @core.Dialect::get_or_raise(dialect)
   let expression = @core.maybe_parse(expression, dialect=d, copy=true)

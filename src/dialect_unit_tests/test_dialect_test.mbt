@@ -853,9 +853,9 @@ test "TestDialect.test_initcap" {
 fn T::a_custom_initcap_duckdb_sql(
   self : T,
   query : String,
-  includes? : Array[String] = [],
-  excludes? : Array[String] = [],
-  chr_chars? : Array[Char] = [],
+  includes~ : Array[String] = [],
+  excludes~ : Array[String] = [],
+  chr_chars~ : Array[Char] = [],
   loc~ : SourceLoc,
 ) -> Unit {
   for dialect in ["bigquery", "snowflake"] {

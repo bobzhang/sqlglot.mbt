@@ -4,7 +4,7 @@
 pub fn Parser::parse_alias(
   self : Parser,
   this : Expr?,
-  explicit? : Bool = false,
+  explicit~ : Bool = false,
 ) -> Expr? raise SqlglotError {
   match self.fns.hooks.parse_alias {
     Some(f) => f(self, this, explicit)
@@ -16,7 +16,7 @@ pub fn Parser::parse_alias(
 pub fn Parser::parse_alias_base(
   self : Parser,
   this : Expr?,
-  explicit? : Bool = false,
+  explicit~ : Bool = false,
 ) -> Expr? raise SqlglotError {
   if self.can_parse_limit_or_offset() {
     return this
@@ -74,7 +74,7 @@ pub fn Parser::parse_alias_base(
 ///|
 pub fn Parser::parse_id_var(
   self : Parser,
-  any_token? : Bool = true,
+  any_token~ : Bool = true,
   tokens? : TokenSet,
 ) -> Expr? raise SqlglotError {
   match self.fns.hooks.parse_id_var {
@@ -86,7 +86,7 @@ pub fn Parser::parse_id_var(
 ///|
 pub fn Parser::parse_id_var_base(
   self : Parser,
-  any_token? : Bool = true,
+  any_token~ : Bool = true,
   tokens? : TokenSet,
 ) -> Expr? raise SqlglotError {
   let mut expression = self.parse_identifier()
@@ -143,9 +143,9 @@ pub fn Parser::parse_identifier(self : Parser) -> Expr? raise SqlglotError {
 ///|
 pub fn Parser::parse_var(
   self : Parser,
-  any_token? : Bool = false,
+  any_token~ : Bool = false,
   tokens? : TokenSet,
-  upper? : Bool = false,
+  upper~ : Bool = false,
 ) -> Expr? raise SqlglotError {
   if (any_token && self.advance_any() is Some(_)) ||
     self.match_(VAR) ||
@@ -162,7 +162,7 @@ pub fn Parser::parse_var(
 ///|
 pub fn Parser::advance_any(
   self : Parser,
-  ignore_reserved? : Bool = false,
+  ignore_reserved~ : Bool = false,
 ) -> Token? {
   if self.curr.ok() &&
     (
@@ -178,7 +178,7 @@ pub fn Parser::advance_any(
 ///|
 pub fn Parser::parse_var_or_string(
   self : Parser,
-  upper? : Bool = false,
+  upper~ : Bool = false,
 ) -> Expr? raise SqlglotError {
   expr_or(self.parse_string(), () => self.parse_var(any_token=true, upper~))
 }
@@ -262,7 +262,7 @@ pub fn Parser::parse_star_op(
 ///|
 pub fn Parser::parse_select_or_expression(
   self : Parser,
-  alias_? : Bool = false,
+  alias_~ : Bool = false,
 ) -> Expr? raise SqlglotError {
   let first = if alias_ {
     self.parse_alias(self.parse_assignment(), explicit=true)

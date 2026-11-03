@@ -50,7 +50,7 @@ test "normalize: inline asserts" {
 
 ///|
 test "normalization_distance" {
-  fn gen_expr(depth : Int) -> @core.Expr raise {
+  fn gen_expr(depth : Int32) -> @core.Expr raise {
     parse_sql(Array::make(depth, "a AND b").join(" OR "))
   }
 
@@ -140,7 +140,10 @@ test "journal: record and revert" {
   let journal : @optimizer.Journal = []
   let expression = parse_sql("SELECT a, b FROM x")
   @optimizer.record(journal, expression, "expressions")
-  expression.set("expressions", @core.Value::List([Node(expression.expressions()[0])]))
+  expression.set(
+    "expressions",
+    @core.Value::List([Node(expression.expressions()[0])]),
+  )
   assert_eq(gen_sql(expression), "SELECT a FROM x")
   @optimizer.revert(journal)
   assert_eq(gen_sql(expression), "SELECT a, b FROM x")
@@ -167,10 +170,7 @@ test "journal: eliminate_ctes" {
   let sql = "WITH y AS (SELECT a FROM x), z AS (SELECT b FROM x) SELECT b FROM z"
   let expression = parse_sql(sql)
   @optimizer.eliminate_ctes(expression, journal~) |> ignore
-  assert_eq(
-    gen_sql(expression),
-    "WITH z AS (SELECT b FROM x) SELECT b FROM z",
-  )
+  assert_eq(gen_sql(expression), "WITH z AS (SELECT b FROM x) SELECT b FROM z")
   @optimizer.revert(journal)
   assert_eq(gen_sql(expression), sql)
 
@@ -218,7 +218,7 @@ test "journal: pushdown_projections" {
 }
 
 ///|
-fn node_count(e : @core.Expr) -> Int {
+fn node_count(e : @core.Expr) -> Int32 {
   let mut n = 0
   for _ in e.walk() {
     n += 1
@@ -271,7 +271,9 @@ test "optimize: on_qualify can replace tables" {
       @optimizer.optimize(
         parse_sql("SELECT * FROM foo"),
         on_qualify=table => table.replace(Some(@core.to_table("bar"))) |> ignore,
-        mapping=@optimizer.schema_from_json_string("{\"bar\": {\"a\": \"INT\"}}"),
+        mapping=@optimizer.schema_from_json_string(
+          "{\"bar\": {\"a\": \"INT\"}}",
+        ),
       ),
     ),
     "SELECT \"bar\".\"a\" AS \"a\" FROM \"bar\"",
@@ -343,12 +345,18 @@ test "pushdown_projections: prunes non-self-referencing ctes" {
     schema="{\"graph\": {\"id\": \"INT\", \"link\": \"INT\", \"junk\": \"INT\"}}",
   )
   let ctes = optimized.find_all([CTE]).collect()
-  debug_inspect(alias_names(ctes[0].this_().selects()), content=(
-    #|["id", "link"]
-  ))
-  debug_inspect(alias_names(ctes[1].this_().selects()), content=(
-    #|["id"]
-  ))
+  debug_inspect(
+    alias_names(ctes[0].this_().selects()),
+    content=(
+      #|["id", "link"]
+    ),
+  )
+  debug_inspect(
+    alias_names(ctes[1].this_().selects()),
+    content=(
+      #|["id"]
+    ),
+  )
 
   // A db-qualified table that shares the CTE's name is not a self-reference
   let optimized = optimize_sql_str(
@@ -358,9 +366,12 @@ test "pushdown_projections: prunes non-self-referencing ctes" {
   )
   let union = optimized.find([CTE]).unwrap().this_()
   for side in [union.this_(), union.expression_()] {
-    debug_inspect(alias_names(side.selects()), content=(
-      #|["id"]
-    ))
+    debug_inspect(
+      alias_names(side.selects()),
+      content=(
+        #|["id"]
+      ),
+    )
   }
 }
 
@@ -417,7 +428,9 @@ test "optimize: no pseudocolumn expansion (bigquery schema)" {
   )
   assert_true(
     @optimizer.optimize(parse_sql("SELECT * FROM a"), schema~).equal(
-      parse_sql("SELECT \"a\".\"a\" AS \"a\", \"a\".\"b\" AS \"b\" FROM \"a\" AS \"a\""),
+      parse_sql(
+        "SELECT \"a\".\"a\" AS \"a\", \"a\".\"b\" AS \"b\" FROM \"a\" AS \"a\"",
+      ),
     ),
   )
 }

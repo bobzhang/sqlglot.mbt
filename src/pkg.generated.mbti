@@ -43,7 +43,7 @@ pub fn[T : @core.IntoPy] from_(T, dialect? : String, copy? : Bool) -> @core.Expr
 
 pub fn func(String, args? : Array[&@core.IntoPy], kwargs? : Map[String, &@core.IntoPy], copy? : Bool, dialect? : String) -> @core.Expr raise @core.SqlglotError
 
-pub fn generate(@core.Expr, dialect? : String, copy? : Bool, pretty? : Bool, identify? : Identify, normalize? : Bool, pad? : Int, indent? : Int, normalize_functions? : NormalizeFunctions, unsupported_level? : @core.ErrorLevel, max_unsupported? : Int, leading_comma? : Bool, max_text_width? : Int, comments? : Bool) -> String raise @core.SqlglotError
+pub fn generate(@core.Expr, dialect? : String, copy? : Bool, pretty? : Bool, identify? : Identify, normalize? : Bool, pad? : Int32, indent? : Int32, normalize_functions? : NormalizeFunctions, unsupported_level? : @core.ErrorLevel, max_unsupported? : Int32, leading_comma? : Bool, max_text_width? : Int32, comments? : Bool) -> String raise @core.SqlglotError
 
 pub fn[T : @core.IntoPy, I : @core.IntoPy] insert(T, I, columns? : Array[String], overwrite? : Bool, returning? : &@core.IntoPy, dialect? : String, copy? : Bool) -> @core.Expr raise @core.SqlglotError
 
@@ -65,11 +65,11 @@ pub fn[T : @core.IntoPy] or_(Array[T], dialect? : String, copy? : Bool, wrap? : 
 
 pub fn[T : @core.IntoPy] paren(T, copy? : Bool) -> @core.Expr raise @core.SqlglotError
 
-pub fn parse(String, read? : String, error_level? : @core.ErrorLevel, error_message_context? : Int, max_errors? : Int, max_nodes? : Int) -> Array[@core.Expr?] raise @core.SqlglotError
+pub fn parse(String, read? : String, error_level? : @core.ErrorLevel, error_message_context? : Int32, max_errors? : Int32, max_nodes? : Int32) -> Array[@core.Expr?] raise @core.SqlglotError
 
 pub fn parse_identifier(String, dialect? : String) -> @core.Expr raise @core.SqlglotError
 
-pub fn parse_one(String, read? : String, into? : @core.Kind, into_any? : Array[@core.Kind], error_level? : @core.ErrorLevel, error_message_context? : Int, max_errors? : Int, max_nodes? : Int) -> @core.Expr raise @core.SqlglotError
+pub fn parse_one(String, read? : String, into? : @core.Kind, into_any? : Array[@core.Kind], error_level? : @core.ErrorLevel, error_message_context? : Int32, max_errors? : Int32, max_nodes? : Int32) -> @core.Expr raise @core.SqlglotError
 
 pub fn register_dialects() -> Unit
 
@@ -97,7 +97,7 @@ pub fn[T : @core.IntoPy] to_interval(T) -> @core.Expr raise @core.SqlglotError
 
 pub fn[T : @core.IntoPy] to_table(T, dialect? : String, copy? : Bool, kwargs? : Map[String, @core.Value]) -> @core.Expr raise @core.SqlglotError
 
-pub fn transpile(String, read? : String, write? : String, identity? : Bool, error_level? : @core.ErrorLevel, error_message_context? : Int, max_errors? : Int, max_nodes? : Int, pretty? : Bool, identify? : Identify, normalize? : Bool, pad? : Int, indent? : Int, normalize_functions? : NormalizeFunctions, unsupported_level? : @core.ErrorLevel, max_unsupported? : Int, leading_comma? : Bool, max_text_width? : Int, comments? : Bool) -> Array[String] raise @core.SqlglotError
+pub fn transpile(String, read? : String, write? : String, identity? : Bool, error_level? : @core.ErrorLevel, error_message_context? : Int32, max_errors? : Int32, max_nodes? : Int32, pretty? : Bool, identify? : Identify, normalize? : Bool, pad? : Int32, indent? : Int32, normalize_functions? : NormalizeFunctions, unsupported_level? : @core.ErrorLevel, max_unsupported? : Int32, leading_comma? : Bool, max_text_width? : Int32, comments? : Bool) -> Array[String] raise @core.SqlglotError
 
 pub fn[T : @core.IntoPy] tuple_(Array[T], copy? : Bool, dialect? : String) -> @core.Expr raise @core.SqlglotError
 
@@ -114,12 +114,13 @@ pub fn[T : @core.IntoPy] xor(Array[T], dialect? : String, copy? : Bool, wrap? : 
 // Errors
 
 // Types and methods
+#derive(Eq, @debug.Debug)
 pub(all) enum Identify {
   Never
   Always
   Safe
   Unsafe
-} derive(Eq, @debug.Debug)
+}
 #deprecated
 pub fn Identify::equal(Self, Self) -> Bool
 #deprecated
@@ -127,11 +128,12 @@ pub fn Identify::not_equal(Self, Self) -> Bool
 #deprecated
 pub fn Identify::to_repr(Self) -> @debug.Repr
 
+#derive(Eq, @debug.Debug)
 pub(all) enum NormalizeFunctions {
   Upper
   Lower
   Keep
-} derive(Eq, @debug.Debug)
+}
 #deprecated
 pub fn NormalizeFunctions::equal(Self, Self) -> Bool
 #deprecated

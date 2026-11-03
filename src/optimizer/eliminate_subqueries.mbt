@@ -99,7 +99,10 @@ pub fn eliminate_subqueries(
       None => ()
     }
   }
-  for scope in root.set_operation_scopes + root.subquery_scopes + root.table_scopes {
+  for
+    scope in root.set_operation_scopes +
+    root.subquery_scopes +
+    root.table_scopes {
     for child_scope in scope.traverse() {
       match eliminate_scope(child_scope, state) {
         Some(c) => new_ctes.push(c)
@@ -151,13 +154,17 @@ fn eliminate_derived_table(scope : Scope, state : CteState) -> @core.Expr? {
     return None
   }
   let expr_parent = match scope.expression.parent {
-    Some(p) if p.kind.is_a(Subquery) && !physical_equal(p, parent_scope.expression) =>
-      p
+    Some(p) if p.kind.is_a(Subquery) &&
+      !physical_equal(p, parent_scope.expression) => p
     _ => return None
   }
   let to_replace = expr_parent.unwrap_subquery()
   let (name, cte) = new_cte(scope, state)
-  let alias_ = if to_replace.alias_() != "" { to_replace.alias_() } else { name }
+  let alias_ = if to_replace.alias_() != "" {
+    to_replace.alias_()
+  } else {
+    name
+  }
   let table = aliased_table(name, alias_)
   match to_replace.get("joins") {
     Some(j) => table.set("joins", j)
@@ -192,7 +199,8 @@ fn eliminate_cte(
       let (table, source) = v
       match source {
         ScopeSource(s) if physical_equal(s, scope) =>
-          table.replace(Some(aliased_table(name, table.alias_or_name()))) |> ignore
+          table.replace(Some(aliased_table(name, table.alias_or_name())))
+          |> ignore
         _ => ()
       }
     }

@@ -210,7 +210,7 @@ fn to_int(
 ///|
 fn date_delta_sql(
   name : String,
-  negate_interval? : Bool = false,
+  negate_interval~ : Bool = false,
 ) -> @core.GenFn {
   (g, e) => {
     let interval = to_int(g, e.expression_())

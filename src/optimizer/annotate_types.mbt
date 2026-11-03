@@ -82,15 +82,36 @@ fn coerce_date(l : @core.Expr, unit : @core.Expr?) -> TType {
 
 ///|
 fn build_default_coerces_to() -> Map[@core.DType, @set.Set[@core.DType]] {
-  let text_precedence : Array[@core.DType] = [TEXT, NVARCHAR, VARCHAR, NCHAR, CHAR]
+  let text_precedence : Array[@core.DType] = [
+    TEXT,
+    NVARCHAR,
+    VARCHAR,
+    NCHAR,
+    CHAR,
+  ]
   let numeric_precedence : Array[@core.DType] = [
-    DECFLOAT, DOUBLE, FLOAT, BIGDECIMAL, DECIMAL, BIGINT, INT, SMALLINT, TINYINT,
+    DECFLOAT,
+    DOUBLE,
+    FLOAT,
+    BIGDECIMAL,
+    DECIMAL,
+    BIGINT,
+    INT,
+    SMALLINT,
+    TINYINT,
   ]
   let timelike_precedence : Array[@core.DType] = [
-    TIMESTAMPLTZ, TIMESTAMPTZ, TIMESTAMP, DATETIME, DATE,
+    TIMESTAMPLTZ,
+    TIMESTAMPTZ,
+    TIMESTAMP,
+    DATETIME,
+    DATE,
   ]
   let result : Map[@core.DType, @set.Set[@core.DType]] = Map([])
-  for type_precedence in [text_precedence, numeric_precedence, timelike_precedence] {
+  for
+    type_precedence in [
+      text_precedence, numeric_precedence, timelike_precedence,
+    ] {
     let coerces_to : @set.Set[@core.DType] = @set.Set([])
     for data_type in type_precedence {
       result[data_type] = coerces_to.copy()
@@ -135,29 +156,33 @@ fn swap_all(
 fn build_binary_coercions() -> Map[(@core.DType, @core.DType), BinaryCoercion] {
   let out : Map[(@core.DType, @core.DType), BinaryCoercion] = Map([])
   swap_all(
-    @core.dtype_text_types.map(t => (
-      (t, @core.DType::INTERVAL),
-      fn(l : @core.Expr, r : @core.Expr) -> TType? {
-        Some(coerce_date_literal(l, r.arg("unit")))
-      },
-    )),
+    @core.dtype_text_types.map(t => {
+      (
+        (t, @core.DType::INTERVAL),
+        fn(l : @core.Expr, r : @core.Expr) -> TType? {
+          Some(coerce_date_literal(l, r.arg("unit")))
+        },
+      )
+    }),
     out,
   )
   let text_numeric = []
   for text in @core.dtype_text_types {
     for numeric in @core.dtype_numeric_types {
-      text_numeric.push((
-        (text, numeric),
-        fn(l : @core.Expr, r : @core.Expr) -> TType? {
-          match l.get_type() {
-            Some(lt) if (match lt.datatype_this() {
-                Some(d) => @core.dtype_numeric_types.contains(d)
-                None => false
-              }) => Some(T(lt))
-            _ => type_of(r)
-          }
-        },
-      ))
+      text_numeric.push(
+        (
+          (text, numeric),
+          fn(l : @core.Expr, r : @core.Expr) -> TType? {
+            match l.get_type() {
+              Some(lt) if (match lt.datatype_this() {
+                  Some(d) => @core.dtype_numeric_types.contains(d)
+                  None => false
+                }) => Some(T(lt))
+              _ => type_of(r)
+            }
+          },
+        ),
+      )
     }
   }
   swap_all(text_numeric, out)
@@ -190,12 +215,12 @@ pub struct TypeAnnotator {
   expression_metadata : ExprMetadata
   coerces_to : Map[@core.DType, @set.Set[@core.DType]]
   binary_coercions : Map[(@core.DType, @core.DType), BinaryCoercion]
-  priv visited : @set.Set[Int]
-  priv null_expressions : Map[Int, @core.Expr]
+  priv visited : @set.Set[Int32]
+  priv null_expressions : Map[Int32, @core.Expr]
   priv supports_null_type : Bool
-  priv setop_column_types : Map[Int, Array[(String, TType)]]
+  priv setop_column_types : Map[Int32, Array[(String, TType)]]
   priv overwrite_types : Bool
-  priv scope_source_selects : Map[(Int, String), Map[String, TType?]]
+  priv scope_source_selects : Map[(Int32, String), Map[String, TType?]]
 }
 
 ///|
@@ -204,7 +229,7 @@ pub fn TypeAnnotator::new(
   expression_metadata? : ExprMetadata,
   coerces_to? : Map[@core.DType, @set.Set[@core.DType]],
   binary_coercions? : Map[(@core.DType, @core.DType), BinaryCoercion],
-  overwrite_types? : Bool = true,
+  overwrite_types~ : Bool = true,
 ) -> TypeAnnotator {
   let dialect = schema.dialect
   let expression_metadata = match expression_metadata {
@@ -248,12 +273,15 @@ pub fn annotate_types(
   expression_metadata? : ExprMetadata,
   coerces_to? : Map[@core.DType, @set.Set[@core.DType]],
   dialect? : @core.Dialect,
-  overwrite_types? : Bool = true,
+  overwrite_types~ : Bool = true,
 ) -> @core.Expr raise @core.SqlglotError {
   let schema = ensure_schema(schema?, dialect?)
-  TypeAnnotator::new(schema, expression_metadata?, coerces_to?, overwrite_types~).annotate(
-    expression,
-  )
+  TypeAnnotator::new(
+    schema,
+    expression_metadata?,
+    coerces_to?,
+    overwrite_types~,
+  ).annotate(expression)
 }
 
 ///|
@@ -269,7 +297,7 @@ pub fn TypeAnnotator::clear(self : TypeAnnotator) -> Unit {
 pub fn TypeAnnotator::uncache(
   self : TypeAnnotator,
   expression : @core.Expr,
-  deep? : Bool = true,
+  deep~ : Bool = true,
 ) -> Unit {
   let nodes = if deep { expression.walk().collect() } else { [expression] }
   for node in nodes {
@@ -333,7 +361,7 @@ pub fn TypeAnnotator::set_type_expr(
 pub fn TypeAnnotator::annotate(
   self : TypeAnnotator,
   expression : @core.Expr,
-  annotate_scope? : Bool = true,
+  annotate_scope~ : Bool = true,
 ) -> @core.Expr raise @core.SqlglotError {
   if annotate_scope {
     for scope in traverse_scope(expression) {
@@ -380,7 +408,8 @@ fn TypeAnnotator::get_scope_source_selects(
             parent_source = scope.cte_sources.get(p.name())
           _ => ()
         }
-        let mut src_types : Map[String, TType?] = match (parent_source, parent) {
+        let mut src_types : Map[String, TType?] = match
+          (parent_source, parent) {
           (Some(ScopeSource(ps)), _) => self.get_source_scope_selects(ps)
           (_, Some(p)) if p.kind.is_a(Table) => {
             let m : Map[String, TType?] = Map([])
@@ -469,9 +498,11 @@ fn TypeAnnotator::get_source_scope_selects(
     return out
   }
   if expression.kind.is_a(SetOperation) &&
-    (expression.has("by_name") ||
-    selects_of(expression.this_()).length() ==
-    selects_of(expression.expression_()).length()) {
+    (
+      expression.has("by_name") ||
+      selects_of(expression.this_()).length() ==
+      selects_of(expression.expression_()).length()
+    ) {
     let out : Map[String, TType?] = Map([])
     for kv in self.get_setop_column_types(expression) {
       out[kv.0] = Some(kv.1)
@@ -515,7 +546,10 @@ pub fn TypeAnnotator::annotate_scope(
         let defs = []
         for c, kind in schema {
           defs.push(
-            @core.mk(ColumnDef, [("this", @core.to_identifier(c)), ("kind", kind)]),
+            @core.mk(ColumnDef, [
+              ("this", @core.to_identifier(c)),
+              ("kind", kind),
+            ]),
           )
         }
         self.set_type(table_column, Some(T(struct_datatype(defs))))
@@ -553,9 +587,11 @@ pub fn TypeAnnotator::annotate_scope(
     let any_unknown = struct_type
       .expressions()
       .iter()
-      .any(cd => match cd.arg("kind") {
-        Some(k) => k.is_type([UNKNOWN])
-        None => false
+      .any(cd => {
+        match cd.arg("kind") {
+          Some(k) => k.is_type([UNKNOWN])
+          None => false
+        }
       })
     if !any_unknown {
       scope.expression.get_meta()["query_type"] = Node(struct_type)
@@ -572,9 +608,11 @@ fn TypeAnnotator::annotate_expression(
   let stack : Array[(@core.Expr, Bool)] = [(expression, false)]
   while stack.pop() is Some((expr, children_annotated)) {
     if self.visited.contains(expr.uid) ||
-      (!self.overwrite_types &&
-      expr.get_type() is Some(_) &&
-      !expr.is_type([UNKNOWN])) {
+      (
+        !self.overwrite_types &&
+        expr.get_type() is Some(_) &&
+        !expr.is_type([UNKNOWN])
+      ) {
       continue
     }
     if !children_annotated {
@@ -691,7 +729,8 @@ fn restore_dot_parts(expr : @core.Expr) -> Unit {
         identifier.set("quoted", true)
       }
       Some(identifier) =>
-        identifier.replace(Some(@core.to_identifier(part, quoted=true))) |> ignore
+        identifier.replace(Some(@core.to_identifier(part, quoted=true)))
+        |> ignore
       None => ()
     }
     parent = p.parent
@@ -716,7 +755,8 @@ fn TypeAnnotator::fixup_order_by_aliases(
   for sel in selects_of(query) {
     if sel.kind.is_a(Alias) {
       match sel.this_().get_type() {
-        Some(t) if !sel.this_().is_type([UNKNOWN]) => alias_types[sel.alias_()] = t
+        Some(t) if !sel.this_().is_type([UNKNOWN]) =>
+          alias_types[sel.alias_()] = t
         _ => ()
       }
     }
@@ -1022,10 +1062,12 @@ fn TypeAnnotator::get_pivot_column_types(
   let output_to_src = pivot_output_columns(pivot, src_types.keys().collect())
   let agg_types = pivot
     .expressions()
-    .map(agg => if agg.kind.is_a(Alias) {
-      type_of(agg.this_())
-    } else {
-      type_of(agg)
+    .map(agg => {
+      if agg.kind.is_a(Alias) {
+        type_of(agg.this_())
+      } else {
+        type_of(agg)
+      }
     })
   let agg_cols_offset = output_to_src.length() -
     pivot_constants.length() * agg_types.length()

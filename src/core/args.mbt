@@ -11,7 +11,7 @@
 pub struct Args {
   priv mut keys : FixedArray[String]
   priv mut vals : FixedArray[Value]
-  priv mut len : Int
+  priv mut len : Int32
 }
 
 ///|
@@ -22,9 +22,9 @@ let empty_vals : FixedArray[Value] = []
 
 ///|
 /// Creates an empty argument map with room for `capacity` arguments.
-pub fn Args::new(capacity? : Int = 0) -> Args {
+pub fn Args::new(capacity~ : Int32 = 0) -> Args {
   if capacity <= 0 {
-    { keys: empty_keys, vals: empty_vals, len: 0 }
+    { keys: empty_keys, vals: empty_vals, len: 0, }
   } else {
     {
       keys: FixedArray::make(capacity, ""),
@@ -62,7 +62,7 @@ pub fn Args::from_map(m : Map[String, Value]) -> Args {
 }
 
 ///|
-fn Args::find(self : Args, key : String) -> Int {
+fn Args::find(self : Args, key : String) -> Int32 {
   for i in 0..<self.len {
     if self.keys[i] == key {
       return i
@@ -72,7 +72,7 @@ fn Args::find(self : Args, key : String) -> Int {
 }
 
 ///|
-pub fn Args::length(self : Args) -> Int {
+pub fn Args::length(self : Args) -> Int32 {
   self.len
 }
 

@@ -5,7 +5,7 @@
 /// If no precision is specified, default to `max_precision`.
 fn cap_data_type_precision(
   expression : @core.Expr,
-  max_precision? : Int64 = 6L,
+  max_precision~ : Int64 = 6L,
 ) -> @core.Expr {
   let precision_param = expression.find([DataTypeParam])
   let target_precision = match precision_param {

@@ -4,7 +4,7 @@ pub(all) suberror SqlglotError {
   /// Error raised when tokenizing fails. When available, `start` and `end` are the
   /// offsets in the source SQL of the context snippet quoted in the message, i.e.
   /// the snippet is `sql[start:end]`.
-  TokenError(String, start~ : Int?, end~ : Int?)
+  TokenError(String, start~ : Int32?, end~ : Int32?)
   ParseError(String, Array[ParseErrorInfo])
   UnsupportedError(String)
   OptimizeError(String)
@@ -15,15 +15,16 @@ pub(all) suberror SqlglotError {
 
 ///|
 /// Details of a single parse error.
+#derive(Debug)
 pub(all) struct ParseErrorInfo {
   description : String
-  line : Int
-  col : Int
+  line : Int32
+  col : Int32
   start_context : String
   highlight : String
   end_context : String
   into_expression : String?
-} derive(Debug)
+}
 
 ///|
 #deprecated
@@ -66,12 +67,13 @@ pub extend SqlglotError with Show::{to_string}
 pub extend SqlglotError with Show::{output}
 
 ///|
+#derive(Eq, Debug)
 pub(all) enum ErrorLevel {
   Ignore
   Warn
   Raise
   Immediate
-} derive(Eq, Debug)
+}
 
 ///|
 #deprecated
@@ -85,15 +87,15 @@ pub extend ErrorLevel with Debug::{to_repr}
 /// Highlight a SQL string using ANSI codes at the given (inclusive) positions.
 pub fn highlight_sql(
   sql : String,
-  positions : Array[(Int, Int)],
-  context_length? : Int = 100,
+  positions : Array[(Int32, Int32)],
+  context_length~ : Int32 = 100,
 ) -> (String, String, String, String) raise SqlglotError {
   if positions.is_empty() {
     raise ValueError("positions must contain at least one (start, end) tuple")
   }
   let chars = sql.to_array()
   let n = chars.length()
-  fn sl(a : Int, b : Int) -> String {
+  fn sl(a : Int32, b : Int32) -> String {
     let a = if a < 0 { 0 } else if a > n { n } else { a }
     let b = if b < 0 { 0 } else if b > n { n } else { b }
     if a >= b {
@@ -145,7 +147,7 @@ pub fn highlight_sql(
 }
 
 ///|
-pub fn concat_messages(errors : Array[String], maximum : Int) -> String {
+pub fn concat_messages(errors : Array[String], maximum : Int32) -> String {
   let msg = []
   for i, e in errors {
     if i >= maximum {

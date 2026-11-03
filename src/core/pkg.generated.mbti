@@ -3,6 +3,7 @@ package "bobzhang/sqlglot/core"
 
 import {
   "moonbitlang/core/debug",
+  "moonbitlang/core/json",
   "moonbitlang/core/ref",
   "moonbitlang/core/set",
 }
@@ -36,7 +37,7 @@ pub fn any_to_exists(Expr) -> Expr raise SqlglotError
 
 pub fn any_value_to_max_sql(Generator, Expr) -> String raise SqlglotError
 
-pub fn apply_index_offset(Expr, Array[Expr], Int, Dialect) -> Array[Expr]
+pub fn apply_index_offset(Expr, Array[Expr], Int32, Dialect) -> Array[Expr]
 
 pub fn apply_set_operation(Array[PyObj], Kind, distinct? : Bool, dialect? : Dialect, copy? : Bool) -> Expr raise SqlglotError
 
@@ -102,7 +103,7 @@ pub fn build_date_delta(Kind, unit_mapping? : Map[String, String], default_unit?
 
 pub fn build_date_delta_with_interval(Kind, default_unit? : String) -> (Array[Expr], Parser) -> Expr raise SqlglotError
 
-pub fn build_default_decimal_type(precision? : Int, scale? : Int) -> (Expr) -> Expr
+pub fn build_default_decimal_type(precision? : Int32, scale? : Int32) -> (Expr) -> Expr
 
 pub fn build_extract_json_with_path(Kind) -> (Array[Expr], Parser) -> Expr raise SqlglotError
 
@@ -174,7 +175,7 @@ pub fn char_lower(Char) -> Char
 
 pub fn char_upper(Char) -> Char
 
-pub fn code_point_offsets(String) -> Array[Int]
+pub fn code_point_offsets(String) -> Array[Int32]
 
 pub fn column_from_parts(Expr, table? : Expr?, db? : Expr?, catalog? : Expr?, fields? : Array[Expr]) -> Expr
 
@@ -186,7 +187,7 @@ pub fn combine_conditions(Array[Expr], Kind, copy? : Bool, wrap? : Bool) -> Expr
 
 pub fn combine_py(Array[PyObj], Kind, dialect? : Dialect, copy? : Bool, wrap? : Bool) -> Expr raise SqlglotError
 
-pub fn concat_messages(Array[String], Int) -> String
+pub fn concat_messages(Array[String], Int32) -> String
 
 pub fn concat_to_dpipe_sql(Generator, Expr) -> String raise SqlglotError
 
@@ -222,7 +223,7 @@ pub fn date_trunc_to_time(Array[Expr]) -> Expr
 
 pub fn datestrtodate_sql(Generator, Expr) -> String raise SqlglotError
 
-pub fn decimal_value(Char) -> Int
+pub fn decimal_value(Char) -> Int32
 
 pub let default_pretty : @ref.Ref[Bool]
 
@@ -352,7 +353,7 @@ pub let function_by_name : Array[(String, Kind)]
 
 pub fn gen_annotate_types(Expr, Dialect) -> Expr raise SqlglotError
 
-pub fn gen_apply_index_offset(Expr, Array[Expr], Int, Dialect) -> Array[Expr] raise SqlglotError
+pub fn gen_apply_index_offset(Expr, Array[Expr], Int32, Dialect) -> Array[Expr] raise SqlglotError
 
 pub fn gen_find_all_in_scope(Expr, ArrayView[Kind]) -> Array[Expr]
 
@@ -362,9 +363,9 @@ pub fn gen_unit_to_str(Expr, default? : String) -> Expr?
 
 pub fn gen_walk_in_scope(Expr, Array[Expr]) -> Unit
 
-pub fn gen_week_offset_to_dow(Int) -> Int
+pub fn gen_week_offset_to_dow(Int32) -> Int32
 
-pub let gen_week_start_day_to_dow : Map[String, Int]
+pub let gen_week_start_day_to_dow : Map[String, Int32]
 
 pub fn generate_series_sql(String, exclusive_func_name? : String) -> (Generator, Expr) -> String raise SqlglotError
 
@@ -376,7 +377,7 @@ pub fn getbit_sql(Generator, Expr) -> String raise SqlglotError
 
 pub fn groupconcat_sql(Generator, Expr, func_name? : String, sep? : String, within_group? : Bool, on_overflow? : Bool) -> String raise SqlglotError
 
-pub fn highlight_sql(String, Array[(Int, Int)], context_length? : Int) -> (String, String, String, String) raise SqlglotError
+pub fn highlight_sql(String, Array[(Int32, Int32)], context_length? : Int32) -> (String, String, String, String) raise SqlglotError
 
 pub fn ident(String) -> Expr
 
@@ -396,7 +397,7 @@ pub fn inline_array_unless_query(Generator, Expr) -> String raise SqlglotError
 
 pub fn int64_range_error(String) -> SqlglotError
 
-pub fn int_str_from_base(String, Int) -> String raise SqlglotError
+pub fn int_str_from_base(String, Int32) -> String raise SqlglotError
 
 pub fn interval_day_time_match(String) -> Bool
 
@@ -456,7 +457,7 @@ pub fn left_to_substring_sql(Generator, Expr) -> String raise SqlglotError
 
 pub fn length_or_char_length_sql(Generator, Expr) -> String raise SqlglotError
 
-pub fn literal_int(Int) -> Expr
+pub fn literal_int(Int32) -> Expr
 
 pub fn literal_number(String) -> Expr
 
@@ -474,7 +475,7 @@ pub fn map_date_part(Expr?, dialect? : Dialect) -> Expr?
 
 pub fn map_date_part_expr(Expr, dialect? : Dialect) -> Expr
 
-pub fn max_int(Int, Int) -> Int
+pub fn max_int(Int32, Int32) -> Int32
 
 pub fn max_or_greatest(Generator, Expr) -> String raise SqlglotError
 
@@ -488,7 +489,7 @@ pub fn[T : Compare] merge_ranges(Array[(T, T)]) -> Array[(T, T)]
 
 pub fn merge_without_target_sql(Generator, Expr) -> String raise SqlglotError
 
-pub fn min_int(Int, Int) -> Int
+pub fn min_int(Int32, Int32) -> Int32
 
 pub fn min_or_least(Generator, Expr) -> String raise SqlglotError
 
@@ -558,7 +559,7 @@ pub fn or_(Array[Expr], copy? : Bool, wrap? : Bool) -> Expr
 
 pub fn paren(Expr, copy? : Bool) -> Expr
 
-pub fn parse(String, dialect? : Dialect, error_level? : ErrorLevel, error_message_context? : Int, max_errors? : Int, max_nodes? : Int) -> Array[Expr?] raise SqlglotError
+pub fn parse(String, dialect? : Dialect, error_level? : ErrorLevel, error_message_context? : Int32, max_errors? : Int32, max_nodes? : Int32) -> Array[Expr?] raise SqlglotError
 
 pub fn parse_identifier(String, dialect? : Dialect) -> Expr
 
@@ -568,7 +569,7 @@ pub fn parse_int_str(String) -> Int64?
 
 pub fn parse_json_path(String, Dialect) -> Expr raise SqlglotError
 
-pub fn parse_one(String, dialect? : Dialect, into? : Array[Kind], error_level? : ErrorLevel, error_message_context? : Int, max_errors? : Int, max_nodes? : Int, into_is_list? : Bool) -> Expr raise SqlglotError
+pub fn parse_one(String, dialect? : Dialect, into? : Array[Kind], error_level? : ErrorLevel, error_message_context? : Int32, max_errors? : Int32, max_nodes? : Int32, into_is_list? : Bool) -> Expr raise SqlglotError
 
 pub fn parse_one_with(String, String, into? : Array[Kind]) -> Expr raise SqlglotError
 
@@ -588,9 +589,9 @@ pub fn py_decimal_str(String) -> String
 
 pub fn py_float_repr(Double) -> String
 
-pub fn py_int_text_add(String, Int) -> String?
+pub fn py_int_text_add(String, Int32) -> String?
 
-pub fn py_len(String) -> Int
+pub fn py_len(String) -> Int32
 
 pub fn[T : IntoPy] py_list(Array[T]) -> Array[PyObj]
 
@@ -676,9 +677,9 @@ pub fn sub_(Expr, Expr) -> Expr
 
 pub fn subclasses_of(Kind) -> Array[Kind]
 
-pub fn subsecond_precision(String) -> Int
+pub fn subsecond_precision(String) -> Int32
 
-pub fn substr(String, Int, Int) -> String
+pub fn substr(String, Int32, Int32) -> String
 
 pub fn[T] suggest_closest_match_and_fail(String, String, Array[String]) -> T raise SqlglotError
 
@@ -760,11 +761,11 @@ pub fn var_of_expr(Expr) -> Expr
 
 pub fn walk_in_scope(Expr, prune? : (Expr) -> Bool) -> Array[Expr]
 
-pub fn week_offset_to_dow(Int) -> Int
+pub fn week_offset_to_dow(Int32) -> Int32
 
-pub let week_start_day_to_dow : Map[String, Int]
+pub let week_start_day_to_dow : Map[String, Int32]
 
-pub fn week_unit_to_dow(Expr?) -> Int?
+pub fn week_unit_to_dow(Expr?) -> Int32?
 
 pub fn weekstart_unit_to_str(Generator, Expr, default? : String) -> Expr? raise SqlglotError
 
@@ -772,7 +773,7 @@ pub fn wrap_binary(Expr) -> Expr
 
 // Errors
 pub(all) suberror SqlglotError {
-  TokenError(String, start~ : Int?, end~ : Int?)
+  TokenError(String, start~ : Int32?, end~ : Int32?)
   ParseError(String, Array[ParseErrorInfo])
   UnsupportedError(String)
   OptimizeError(String)
@@ -803,14 +804,15 @@ pub fn Args::is_empty(Self) -> Bool
 pub fn Args::iter(Self) -> Iter[(String, Value)]
 pub fn Args::iter2(Self) -> Iter2[String, Value]
 pub fn Args::keys(Self) -> Iter[String]
-pub fn Args::length(Self) -> Int
-pub fn Args::new(capacity? : Int) -> Self
+pub fn Args::length(Self) -> Int32
+pub fn Args::new(capacity? : Int32) -> Self
 pub fn Args::remove(Self, String) -> Unit
 #alias("_[_]=_")
 pub fn Args::set(Self, String, Value) -> Unit
 pub fn Args::to_array(Self) -> Array[(String, Value)]
 pub fn Args::values(Self) -> Iter[Value]
 
+#derive(Compare, Eq, Hash, @debug.Debug)
 pub(all) enum DType {
   ARRAY
   AGGREGATEFUNCTION
@@ -940,16 +942,16 @@ pub(all) enum DType {
   XML
   YEAR
   TDIGEST
-} derive(Compare, Eq, Hash, @debug.Debug)
+}
 #deprecated
-pub fn DType::compare(Self, Self) -> Int
+pub fn DType::compare(Self, Self) -> Int32
 #deprecated
 pub fn DType::equal(Self, Self) -> Bool
 #deprecated
-pub fn DType::hash(Self) -> Int
+pub fn DType::hash(Self) -> Int32
 #deprecated
 pub fn DType::hash_combine(Self, Hasher) -> Unit
-pub fn DType::id(Self) -> Int
+pub fn DType::id(Self) -> Int32
 pub fn DType::into_expr(Self) -> Expr
 #deprecated
 pub fn DType::into_py(Self) -> PyObj
@@ -988,7 +990,7 @@ pub struct Dialect {
   gen_fns : GeneratorFns
   hooks : DialectHooks
   mut normalization_strategy : NormalizationStrategy
-  mut version : (Int, Int, Int)
+  mut version : (Int32, Int32, Int32)
   settings : Map[String, String]
   mut supported_settings : Array[String]
   mut time_trie : Trie
@@ -1016,9 +1018,9 @@ pub fn Dialect::normalize_identifier_base(Self, Expr) -> Expr
 pub fn Dialect::not_equal(Self, Self) -> Bool
 #deprecated
 pub fn Dialect::output(Self, &Logger) -> Unit
-pub fn Dialect::parse(Self, String, error_level? : ErrorLevel, error_message_context? : Int, max_errors? : Int, max_nodes? : Int) -> Array[Expr?] raise SqlglotError
-pub fn Dialect::parse_into(Self, Array[Kind], String, error_level? : ErrorLevel, error_message_context? : Int, max_errors? : Int, max_nodes? : Int, into_is_list? : Bool) -> Array[Expr?] raise SqlglotError
-pub fn Dialect::parser(Self, error_level? : ErrorLevel, error_message_context? : Int, max_errors? : Int, max_nodes? : Int) -> Parser
+pub fn Dialect::parse(Self, String, error_level? : ErrorLevel, error_message_context? : Int32, max_errors? : Int32, max_nodes? : Int32) -> Array[Expr?] raise SqlglotError
+pub fn Dialect::parse_into(Self, Array[Kind], String, error_level? : ErrorLevel, error_message_context? : Int32, max_errors? : Int32, max_nodes? : Int32, into_is_list? : Bool) -> Array[Expr?] raise SqlglotError
+pub fn Dialect::parser(Self, error_level? : ErrorLevel, error_message_context? : Int32, max_errors? : Int32, max_nodes? : Int32) -> Parser
 pub fn Dialect::quote_identifier(Self, Expr, identify? : Bool) -> Expr
 pub fn Dialect::subclass(Self, String, (Self) -> Unit) -> Self
 pub fn Dialect::to_json_path(Self, Expr?) -> Expr? raise SqlglotError
@@ -1069,7 +1071,7 @@ pub(all) struct DialectConfig {
   mut identifiers_can_start_with_digit : Bool
   mut identifier_end : String
   mut identifier_start : String
-  mut index_offset : Int
+  mut index_offset : Int32
   mut initcap_default_delimiter_chars : String
   mut initcap_supports_custom_delimiters : Bool
   mut inverse_creatable_kind_mapping : Map[String, String]
@@ -1095,7 +1097,7 @@ pub(all) struct DialectConfig {
   mut query_results_are_structs : Bool
   mut quote_end : String
   mut quote_start : String
-  mut regexp_extract_default_group : Int
+  mut regexp_extract_default_group : Int32
   mut regexp_extract_position_overflow_returns_null : Bool
   mut requires_parenthesized_struct_access : Bool
   mut safe_division : Bool
@@ -1127,7 +1129,7 @@ pub(all) struct DialectConfig {
   mut unnest_column_only : Bool
   mut uuid_is_string_type : Bool
   mut valid_interval_units : @set.Set[String]
-  mut week_offset : Int
+  mut week_offset : Int32
 }
 pub fn DialectConfig::copy(Self) -> Self
 
@@ -1142,12 +1144,13 @@ pub(all) struct DialectHooks {
 pub fn DialectHooks::copy(Self) -> Self
 pub fn DialectHooks::new() -> Self
 
+#derive(Eq, @debug.Debug)
 pub(all) enum ErrorLevel {
   Ignore
   Warn
   Raise
   Immediate
-} derive(Eq, @debug.Debug)
+}
 #deprecated
 pub fn ErrorLevel::equal(Self, Self) -> Bool
 #deprecated
@@ -1160,11 +1163,11 @@ pub struct Expr {
   args : Args
   mut parent : Expr?
   mut arg_key : String?
-  mut index : Int?
+  mut index : Int32?
   mut comments : Array[String]?
   mut type_ : Expr?
   mut meta : Args?
-  uid : Int
+  uid : Int32
   // private fields
 }
 pub fn[T : IntoPy] Expr::add(Self, T) -> Self raise SqlglotError
@@ -1196,16 +1199,16 @@ pub fn Expr::ctes(Self) -> Array[Self]
 pub fn Expr::datatype_this(Self) -> DType?
 pub fn Expr::db(Self) -> String
 pub fn[T : IntoPy] Expr::delete(Self, T, dialect? : Dialect, copy? : Bool) -> Self raise SqlglotError
-pub fn Expr::depth(Self) -> Int
+pub fn Expr::depth(Self) -> Int32
 pub fn Expr::desc(Self, nulls_first? : Bool) -> Self
 pub fn Expr::dfs(Self, prune? : (Self) -> Bool) -> Iter[Self]
 pub fn Expr::distinct_(Self, ons? : Array[&IntoPy], distinct? : Bool, copy? : Bool) -> Self raise SqlglotError
 pub fn[T : IntoPy] Expr::div(Self, T, typed? : Bool, safe? : Bool) -> Self raise SqlglotError
-pub fn Expr::dump(Self) -> Json
+pub fn Expr::dump(Self) -> @json.Json
 pub fn[T : IntoPy] Expr::else_(Self, T, dialect? : Dialect, copy? : Bool) -> Self raise SqlglotError
 pub fn[T : IntoPy] Expr::eq_(Self, T) -> Self raise SqlglotError
 pub fn Expr::equal(Self, Self) -> Bool
-pub fn Expr::error_messages(Self, nargs? : Int) -> Array[String]
+pub fn Expr::error_messages(Self, nargs? : Int32) -> Array[String]
 pub fn[T : IntoPy] Expr::except_(Self, T, distinct? : Bool, dialect? : Dialect, copy? : Bool) -> Self raise SqlglotError
 pub fn Expr::expression(Self) -> Self?
 pub fn Expr::expression_(Self) -> Self
@@ -1225,7 +1228,7 @@ pub fn[T : IntoPy] Expr::group_by(Self, Array[T], append? : Bool, dialect? : Dia
 pub fn[T : IntoPy] Expr::gt(Self, T) -> Self raise SqlglotError
 pub fn Expr::has(Self, String) -> Bool
 pub fn Expr::has_key(Self, String) -> Bool
-pub fn Expr::hash(Self) -> Int
+pub fn Expr::hash(Self) -> Int32
 #deprecated
 pub fn Expr::hash_combine(Self, Hasher) -> Unit
 pub fn[T : IntoPy] Expr::having_(Self, Array[T], append? : Bool, dialect? : Dialect, copy? : Bool) -> Self raise SqlglotError
@@ -1255,7 +1258,7 @@ pub fn[T : IntoPy] Expr::le(Self, T) -> Self raise SqlglotError
 pub fn[T : IntoPy] Expr::like(Self, T) -> Self raise SqlglotError
 pub fn[T : IntoPy] Expr::limit_(Self, T, dialect? : Dialect, copy? : Bool) -> Self raise SqlglotError
 pub fn Expr::list(Self, String) -> Array[Self]
-pub fn Expr::load(Json) -> Self? raise SqlglotError
+pub fn Expr::load(@json.Json) -> Self? raise SqlglotError
 pub fn Expr::lock(Self, update? : Bool, copy? : Bool) -> Self
 pub fn[T : IntoPy] Expr::lor(Self, T) -> Self raise SqlglotError
 pub fn[T : IntoPy] Expr::lt(Self, T) -> Self raise SqlglotError
@@ -1295,7 +1298,7 @@ pub fn[T : IntoPy] Expr::select_(Self, Array[T], append? : Bool, dialect? : Dial
 pub fn Expr::selects(Self) -> Array[Self]
 pub fn Expr::set(Self, String, &IntoValue) -> Unit
 pub fn[T : IntoPy] Expr::set_(Self, Array[T], append? : Bool, dialect? : Dialect, copy? : Bool) -> Self raise SqlglotError
-pub fn Expr::set_at(Self, String, &IntoValue, Int, overwrite? : Bool) -> Unit
+pub fn Expr::set_at(Self, String, &IntoValue, Int32, overwrite? : Bool) -> Unit
 pub fn Expr::set_kwargs(Self, ArrayView[(String, &IntoValue)]) -> Self
 pub fn Expr::set_parent_ref(Self, Self?) -> Unit
 pub fn Expr::set_type(Self, Self?) -> Unit
@@ -1343,13 +1346,13 @@ pub(all) struct Generator {
   pretty : Bool
   mut identify : String
   normalize : Bool
-  pad : Int
-  indent_size : Int
+  pad : Int32
+  indent_size : Int32
   normalize_functions : String
   unsupported_level : ErrorLevel
-  max_unsupported : Int
+  max_unsupported : Int32
   leading_comma : Bool
-  max_text_width : Int
+  max_text_width : Int32
   comments : Bool
   mut unsupported_messages : Array[String]
   escaped_quote_end : String
@@ -1398,8 +1401,8 @@ pub fn Generator::anyvalue_sql(Self, Expr) -> String raise SqlglotError
 pub fn Generator::apply_sql(Self, Expr) -> String raise SqlglotError
 pub fn Generator::arrayagg_sql(Self, Expr) -> String raise SqlglotError
 pub fn Generator::arrayany_sql(Self, Expr) -> String raise SqlglotError
-pub fn Generator::arrayinsert_sql(Self, Expr, index_offset? : Int) -> String raise SqlglotError
-pub fn Generator::arrayinsert_sql_v(Self, Expr, index_offset? : Int) -> String raise SqlglotError
+pub fn Generator::arrayinsert_sql(Self, Expr, index_offset? : Int32) -> String raise SqlglotError
+pub fn Generator::arrayinsert_sql_v(Self, Expr, index_offset? : Int32) -> String raise SqlglotError
 pub fn Generator::arraysize_sql(Self, Expr) -> String raise SqlglotError
 pub fn Generator::atindex_sql(Self, Expr) -> String raise SqlglotError
 pub fn Generator::attach_sql(Self, Expr) -> String raise SqlglotError
@@ -1421,7 +1424,7 @@ pub fn Generator::blockcompressionproperty_sql(Self, Expr) -> String raise Sqlgl
 pub fn Generator::booland_sql(Self, Expr) -> String raise SqlglotError
 pub fn Generator::boolean_sql(Self, Expr) -> String
 pub fn Generator::boolor_sql(Self, Expr) -> String raise SqlglotError
-pub fn Generator::bracket_offset_expressions(Self, Expr, index_offset? : Int) -> Array[Expr] raise SqlglotError
+pub fn Generator::bracket_offset_expressions(Self, Expr, index_offset? : Int32) -> Array[Expr] raise SqlglotError
 pub fn Generator::bracket_sql(Self, Expr) -> String raise SqlglotError
 pub fn Generator::buildproperty_sql(Self, Expr) -> String raise SqlglotError
 pub fn Generator::bytestring_sql(Self, Expr) -> String raise SqlglotError
@@ -1482,7 +1485,7 @@ pub fn Generator::cube_sql(Self, Expr) -> String raise SqlglotError
 pub fn Generator::currentdate_sql(Self, Expr) -> String raise SqlglotError
 pub fn Generator::datablocksizeproperty_sql(Self, Expr) -> String raise SqlglotError
 pub fn Generator::datadeletionproperty_sql(Self, Expr) -> String raise SqlglotError
-pub fn Generator::datatype_param_bound_limiter(Self, Expr, DType, Array[Int], Array[Int?]) -> Expr raise SqlglotError
+pub fn Generator::datatype_param_bound_limiter(Self, Expr, DType, Array[Int32], Array[Int32?]) -> Expr raise SqlglotError
 pub fn Generator::datatype_sql(Self, Expr) -> String raise SqlglotError
 pub fn Generator::datatypeparam_sql(Self, Expr) -> String raise SqlglotError
 pub fn Generator::dateadd_sql(Self, Expr) -> String raise SqlglotError
@@ -1584,7 +1587,7 @@ pub fn Generator::in_sql(Self, Expr) -> String raise SqlglotError
 pub fn Generator::in_unnest_op(Self, Expr) -> String raise SqlglotError
 pub fn Generator::in_unnest_op_base(Self, Expr) -> String raise SqlglotError
 pub fn Generator::includeproperty_sql(Self, Expr) -> String raise SqlglotError
-pub fn Generator::indent(Self, String, level? : Int, pad? : Int, skip_first? : Bool, skip_last? : Bool) -> String
+pub fn Generator::indent(Self, String, level? : Int32, pad? : Int32, skip_first? : Bool, skip_last? : Bool) -> String
 pub fn Generator::index_sql(Self, Expr) -> String raise SqlglotError
 pub fn Generator::indexcolumnconstraint_sql(Self, Expr) -> String raise SqlglotError
 pub fn Generator::indexconstraintoption_sql(Self, Expr) -> String raise SqlglotError
@@ -1675,7 +1678,7 @@ pub fn Generator::naked_property(Self, Expr) -> String raise SqlglotError
 pub fn Generator::national_sql(Self, Expr, prefix? : String) -> String raise SqlglotError
 pub fn Generator::neg_sql(Self, Expr) -> String raise SqlglotError
 pub fn Generator::neq_sql(Self, Expr) -> String raise SqlglotError
-pub fn Generator::new(Dialect, pretty? : Bool, identify? : String, normalize? : Bool, pad? : Int, indent? : Int, normalize_functions? : String, unsupported_level? : ErrorLevel, max_unsupported? : Int, leading_comma? : Bool, max_text_width? : Int, comments? : Bool) -> Self
+pub fn Generator::new(Dialect, pretty? : Bool, identify? : String, normalize? : Bool, pad? : Int32, indent? : Int32, normalize_functions? : String, unsupported_level? : ErrorLevel, max_unsupported? : Int32, leading_comma? : Bool, max_text_width? : Int32, comments? : Bool) -> Self
 pub fn Generator::nextvaluefor_sql(Self, Expr) -> String raise SqlglotError
 pub fn[T] Generator::no_identify(Self, () -> T raise SqlglotError) -> T raise SqlglotError
 pub fn Generator::normalize_func(Self, String) -> String
@@ -2020,7 +2023,7 @@ pub(all) struct GeneratorFns {
   mut transforms : Map[Kind, (Generator, Expr) -> String raise SqlglotError]
   mut methods : Map[Kind, (Generator, Expr) -> String raise SqlglotError]
   mut hooks : GeneratorHooks
-  mut type_param_settings : Map[DType, (Array[Int], Array[Int?])]
+  mut type_param_settings : Map[DType, (Array[Int32], Array[Int32?])]
   mut after_having_modifier_transforms : Array[(String, (Generator, Expr) -> String raise SqlglotError)]
 }
 pub fn GeneratorFns::copy(Self) -> Self
@@ -2043,7 +2046,7 @@ pub(all) struct GeneratorHooks {
   mut with_properties : ((Generator, Expr) -> String raise SqlglotError)?
   mut preprocess : ((Generator, Expr) -> Expr raise SqlglotError)?
   mut alterrename_sql : ((Generator, Expr, Bool) -> String raise SqlglotError)?
-  mut arrayinsert_sql : ((Generator, Expr, Int) -> String raise SqlglotError)?
+  mut arrayinsert_sql : ((Generator, Expr, Int32) -> String raise SqlglotError)?
   mut cast_sql : ((Generator, Expr, String?) -> String raise SqlglotError)?
   mut chr_sql : ((Generator, Expr, String) -> String raise SqlglotError)?
   mut columndef_sql : ((Generator, Expr, String) -> String raise SqlglotError)?
@@ -2059,6 +2062,7 @@ pub(all) struct GeneratorHooks {
 pub fn GeneratorHooks::copy(Self) -> Self
 pub fn GeneratorHooks::new() -> Self
 
+#derive(Eq, Hash)
 pub(all) enum Kind {
   AIAgg
   AIClassify
@@ -3113,18 +3117,18 @@ pub(all) enum Kind {
   Zipf
   PrivExplodeOuter
   PrivTimeUnit
-} derive(Eq, Hash)
+}
 pub fn Kind::arg_types(Self) -> FixedArray[(String, Bool)]
 pub fn Kind::class_path(Self) -> String
 #deprecated
 pub fn Kind::equal(Self, Self) -> Bool
 pub fn Kind::has_arg(Self, String) -> Bool
 #deprecated
-pub fn Kind::hash(Self) -> Int
+pub fn Kind::hash(Self) -> Int32
 #deprecated
 pub fn Kind::hash_combine(Self, Hasher) -> Unit
 pub fn Kind::hash_raw_args(Self) -> Bool
-pub fn Kind::id(Self) -> Int
+pub fn Kind::id(Self) -> Int32
 pub fn Kind::is_a(Self, Self) -> Bool
 pub fn Kind::is_any(Self, ArrayView[Self]) -> Bool
 pub fn Kind::is_cast(Self) -> Bool
@@ -3173,17 +3177,18 @@ pub fn Kind::to_string(Self) -> String
 pub fn Kind::var_len_arg_key(Self) -> String
 pub impl Show for Kind
 
+#derive(Eq, Hash, @debug.Debug)
 pub(all) enum NormalizationStrategy {
   Lowercase
   Uppercase
   CaseSensitive
   CaseInsensitive
   CaseInsensitiveUppercase
-} derive(Eq, Hash, @debug.Debug)
+}
 #deprecated
 pub fn NormalizationStrategy::equal(Self, Self) -> Bool
 #deprecated
-pub fn NormalizationStrategy::hash(Self) -> Int
+pub fn NormalizationStrategy::hash(Self) -> Int32
 #deprecated
 pub fn NormalizationStrategy::hash_combine(Self, Hasher) -> Unit
 #deprecated
@@ -3192,21 +3197,22 @@ pub fn NormalizationStrategy::not_equal(Self, Self) -> Bool
 pub fn NormalizationStrategy::to_repr(Self) -> @debug.Repr
 
 pub(all) struct NumericEscape {
-  base : Int
-  min_digits : Int
-  max_digits : Int
-  max_value : Int
+  base : Int32
+  min_digits : Int32
+  max_digits : Int32
+  max_value : Int32
 }
 
+#derive(@debug.Debug)
 pub(all) struct ParseErrorInfo {
   description : String
-  line : Int
-  col : Int
+  line : Int32
+  col : Int32
   start_context : String
   highlight : String
   end_context : String
   into_expression : String?
-} derive(@debug.Debug)
+}
 #deprecated
 pub fn ParseErrorInfo::to_repr(Self) -> @debug.Repr
 
@@ -3215,26 +3221,26 @@ pub(all) struct Parser {
   cfg : ParserConfig
   fns : ParserFns
   mut error_level : ErrorLevel
-  error_message_context : Int
-  max_errors : Int
-  max_nodes : Int
+  error_message_context : Int32
+  max_errors : Int32
+  max_nodes : Int32
   mut sql : String
-  mut sql_offsets : Array[Int]?
+  mut sql_offsets : Array[Int32]?
   mut errors : Array[SqlglotError]
   mut tokens : Array[Token]
-  mut tokens_size : Int
-  mut index : Int
+  mut tokens_size : Int32
+  mut index : Int32
   mut curr : Token
   mut next : Token
   mut prev : Token
   mut prev_comments : Array[String]
-  mut pipe_cte_counter : Int
+  mut pipe_cte_counter : Int32
   mut chunks : Array[Array[Token]]
-  mut chunk_index : Int
-  mut node_count : Int
+  mut chunk_index : Int32
+  mut node_count : Int32
 }
 pub fn Parser::add_comments(Self, Expr?) -> Unit
-pub fn Parser::advance(Self, times? : Int) -> Unit
+pub fn Parser::advance(Self, times? : Int32) -> Unit
 pub fn Parser::advance_any(Self, ignore_reserved? : Bool) -> Token?
 pub fn Parser::advance_chunk(Self) -> Unit
 pub fn Parser::andl(Self, Bool, () -> Array[Expr] raise SqlglotError) -> Value? raise SqlglotError
@@ -3271,7 +3277,7 @@ pub fn Parser::match_texts(Self, ArrayView[String], advance? : Bool) -> Bool
 pub fn Parser::match_texts_upper(Self, ArrayView[String]) -> String?
 pub fn Parser::negate_range(Self, Expr?) -> Expr? raise SqlglotError
 pub fn Parser::negate_range_base(Self, Expr?) -> Expr? raise SqlglotError
-pub fn Parser::new(Dialect, error_level? : ErrorLevel, error_message_context? : Int, max_errors? : Int, max_nodes? : Int) -> Self
+pub fn Parser::new(Dialect, error_level? : ErrorLevel, error_message_context? : Int32, max_errors? : Int32, max_nodes? : Int32) -> Self
 pub fn Parser::normalize_collate(Self, Expr) -> Unit
 pub fn Parser::parse(Self, Array[Token], String) -> Array[Expr?] raise SqlglotError
 pub fn Parser::parse_add_column(Self) -> Expr? raise SqlglotError
@@ -3389,7 +3395,7 @@ pub fn Parser::parse_describe_base(Self) -> Expr? raise SqlglotError
 pub fn Parser::parse_dict_property(Self, String) -> Expr? raise SqlglotError
 pub fn Parser::parse_dict_range(Self, String) -> Expr? raise SqlglotError
 pub fn Parser::parse_disjunction(Self) -> Expr? raise SqlglotError
-pub fn Parser::parse_distinct_arg_function(Self, Kind, distinct_index? : Int) -> Expr? raise SqlglotError
+pub fn Parser::parse_distinct_arg_function(Self, Kind, distinct_index? : Int32) -> Expr? raise SqlglotError
 pub fn Parser::parse_distkey(Self) -> Expr raise SqlglotError
 pub fn Parser::parse_distributed_property(Self) -> Expr raise SqlglotError
 pub fn Parser::parse_drop(Self, exists? : Bool) -> Expr? raise SqlglotError
@@ -3718,11 +3724,11 @@ pub fn Parser::prev_upper(Self) -> String
 pub fn Parser::raise_error(Self, String, token? : Token) -> Unit raise SqlglotError
 pub fn Parser::replace_lambda(Self, Expr?, Array[Expr]) -> Expr? raise SqlglotError
 pub fn Parser::reset(Self) -> Unit
-pub fn Parser::retreat(Self, Int) -> Unit
-pub fn Parser::sql_slice(Self, Int, Int) -> String
-pub fn Parser::to_prop_eq(Self, Expr, Int) -> Expr raise SqlglotError
+pub fn Parser::retreat(Self, Int32) -> Unit
+pub fn Parser::sql_slice(Self, Int32, Int32) -> String
+pub fn Parser::to_prop_eq(Self, Expr, Int32) -> Expr raise SqlglotError
 pub fn[T] Parser::try_parse(Self, () -> T? raise SqlglotError, retreat? : Bool) -> T?
-pub fn Parser::validate_expression(Self, Expr, nargs? : Int) -> Expr raise SqlglotError
+pub fn Parser::validate_expression(Self, Expr, nargs? : Int32) -> Expr raise SqlglotError
 pub fn Parser::values_to_select(Self, Expr) -> Expr
 pub fn Parser::warn_unsupported(Self) -> Unit
 
@@ -3993,7 +3999,7 @@ pub(all) struct ParserHooks {
   mut parse_wrapped_id_vars : ((Parser, Bool) -> Array[Expr] raise SqlglotError)?
   mut parse_wrapped_select : ((Parser, Bool) -> Expr? raise SqlglotError)?
   mut pivot_column_names : ((Parser, Array[Expr]) -> Array[String] raise SqlglotError)?
-  mut to_prop_eq : ((Parser, Expr, Int) -> Expr raise SqlglotError)?
+  mut to_prop_eq : ((Parser, Expr, Int32) -> Expr raise SqlglotError)?
   mut build_cast : ((Parser, Bool, Array[(String, Value?)]) -> Expr raise SqlglotError)?
   mut parse : ((Parser, Array[Token], String) -> Array[Expr?] raise SqlglotError)?
   mut parse_into : ((Parser, Array[Kind], Array[Token], String) -> Array[Expr?] raise SqlglotError)?
@@ -4001,6 +4007,7 @@ pub(all) struct ParserHooks {
 pub fn ParserHooks::copy(Self) -> Self
 pub fn ParserHooks::new() -> Self
 
+#derive(Eq, Hash, @debug.Debug)
 pub(all) enum PropertiesLocation {
   PostCreate
   PostName
@@ -4010,11 +4017,11 @@ pub(all) enum PropertiesLocation {
   PostExpression
   PostIndex
   Unsupported
-} derive(Eq, Hash, @debug.Debug)
+}
 #deprecated
 pub fn PropertiesLocation::equal(Self, Self) -> Bool
 #deprecated
-pub fn PropertiesLocation::hash(Self) -> Int
+pub fn PropertiesLocation::hash(Self) -> Int32
 #deprecated
 pub fn PropertiesLocation::hash_combine(Self, Hasher) -> Unit
 #deprecated
@@ -4022,6 +4029,7 @@ pub fn PropertiesLocation::not_equal(Self, Self) -> Bool
 #deprecated
 pub fn PropertiesLocation::to_repr(Self) -> @debug.Repr
 
+#derive(Eq)
 pub(all) enum PyObj {
   PyExpr(Expr)
   PyStr(String)
@@ -4035,10 +4043,10 @@ pub(all) enum PyObj {
   PyDict(Array[(PyObj, PyObj)])
   PyBytes(Bytes)
   PyObject(Array[(String, PyObj)])
-  PyDate(year~ : Int, month~ : Int, day~ : Int)
-  PyTime(hour~ : Int, minute~ : Int, second~ : Int, microsecond~ : Int)
-  PyDateTime(year~ : Int, month~ : Int, day~ : Int, hour~ : Int, minute~ : Int, second~ : Int, microsecond~ : Int, tz~ : (String, Int)?)
-} derive(Eq)
+  PyDate(year~ : Int32, month~ : Int32, day~ : Int32)
+  PyTime(hour~ : Int32, minute~ : Int32, second~ : Int32, microsecond~ : Int32)
+  PyDateTime(year~ : Int32, month~ : Int32, day~ : Int32, hour~ : Int32, minute~ : Int32, second~ : Int32, microsecond~ : Int32, tz~ : (String, Int32)?)
+}
 #deprecated
 pub fn PyObj::equal(Self, Self) -> Bool
 #deprecated
@@ -4055,10 +4063,11 @@ pub(all) enum QuoteSpec {
   Pair(String, String)
 }
 
+#derive(Eq, @debug.Debug)
 pub(all) enum StrOrBool {
   S(String)
   B(Bool)
-} derive(Eq, @debug.Debug)
+}
 #deprecated
 pub fn StrOrBool::equal(Self, Self) -> Bool
 #deprecated
@@ -4079,15 +4088,15 @@ pub(all) struct TableArgs {
 pub struct Token {
   token_type : TokenType
   text : String
-  line : Int
-  col : Int
-  start : Int
-  end : Int
+  line : Int32
+  col : Int32
+  start : Int32
+  end : Int32
   mut comments : Array[String]
 }
 pub fn Token::identifier(String) -> Self
-pub fn Token::new(TokenType, String, line? : Int, col? : Int, start? : Int, end? : Int, comments? : Array[String]) -> Self
-pub fn Token::number(Int) -> Self
+pub fn Token::new(TokenType, String, line? : Int32, col? : Int32, start? : Int32, end? : Int32, comments? : Array[String]) -> Self
+pub fn Token::number(Int32) -> Self
 pub fn Token::ok(Self) -> Bool
 #deprecated
 pub fn Token::output(Self, &Logger) -> Unit
@@ -4111,6 +4120,7 @@ pub fn TokenSet::to_array(Self) -> Array[TokenType]
 pub fn TokenSet::union(Self, ArrayView[TokenType]) -> Self
 pub fn TokenSet::union_set(Self, Self) -> Self
 
+#derive(Compare, Eq, Hash)
 pub(all) enum TokenType {
   L_PAREN
   R_PAREN
@@ -4555,16 +4565,16 @@ pub(all) enum TokenType {
   EXPORT
   HIVE_TOKEN_STREAM
   SENTINEL
-} derive(Compare, Eq, Hash)
+}
 #deprecated
-pub fn TokenType::compare(Self, Self) -> Int
+pub fn TokenType::compare(Self, Self) -> Int32
 #deprecated
 pub fn TokenType::equal(Self, Self) -> Bool
 #deprecated
-pub fn TokenType::hash(Self) -> Int
+pub fn TokenType::hash(Self) -> Int32
 #deprecated
 pub fn TokenType::hash_combine(Self, Hasher) -> Unit
-pub fn TokenType::id(Self) -> Int
+pub fn TokenType::id(Self) -> Int32
 pub fn TokenType::name(Self) -> String
 #deprecated
 pub fn TokenType::not_equal(Self, Self) -> Bool
@@ -4588,17 +4598,17 @@ pub struct Tokenizer {
   unescaped_sequences : Map[String, String]
   mut sql : Array[Char]
   mut sql_str : String
-  mut size : Int
+  mut size : Int32
   mut tokens : Array[Token]
-  mut start : Int
-  mut current : Int
-  mut line : Int
-  mut col : Int
+  mut start : Int32
+  mut current : Int32
+  mut line : Int32
+  mut col : Int32
   mut comments : Array[String]
   mut char : Char
   mut end : Bool
   mut peek : Char
-  mut prev_token_line : Int
+  mut prev_token_line : Int32
 }
 pub fn Tokenizer::new(TokenizerSettings, numbers_can_be_underscore_separated? : Bool, identifiers_can_start_with_digit? : Bool, unescaped_sequences? : Map[String, String]) -> Self
 pub fn Tokenizer::tokenize(Self, String) -> Array[Token] raise SqlglotError
@@ -4655,11 +4665,12 @@ pub fn Trie::add(Self, String) -> Unit
 pub fn Trie::get(Self, Char) -> Self?
 pub fn Trie::new() -> Self
 
+#derive(Eq, @debug.Debug)
 pub(all) enum TrieResult {
   Failed
   Prefix
   Exists
-} derive(Eq, @debug.Debug)
+}
 #deprecated
 pub fn TrieResult::equal(Self, Self) -> Bool
 #deprecated
@@ -4721,7 +4732,7 @@ pub(open) trait IntoPy {
   fn into_py(Self) -> PyObj
 }
 pub impl IntoPy for Bool
-pub impl IntoPy for Int
+pub impl IntoPy for Int32
 pub impl IntoPy for Int64
 pub impl IntoPy for Double
 pub impl IntoPy for String
@@ -4734,7 +4745,7 @@ pub trait IntoValue {
   fn into_value(Self) -> Value?
 }
 pub impl IntoValue for Bool
-pub impl IntoValue for Int
+pub impl IntoValue for Int32
 pub impl IntoValue for Int64
 pub impl IntoValue for String
 pub impl[T : IntoValue] IntoValue for T?

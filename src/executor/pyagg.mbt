@@ -296,7 +296,7 @@ fn hash_double(v : Double) -> Int64 {
 
 ///|
 /// C `frexp`: v = m * 2^e with 0.5 <= |m| < 1.
-fn frexp(v : Double) -> (Double, Int) {
+fn frexp(v : Double) -> (Double, Int32) {
   if v == 0.0 {
     return (v, 0)
   }

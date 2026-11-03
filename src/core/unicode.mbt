@@ -3,7 +3,7 @@
 
 ///|
 /// Whether `c` lies in one of the flattened `[start, end]` ranges of `tbl`.
-fn in_ranges(tbl : FixedArray[Int], c : Int) -> Bool {
+fn in_ranges(tbl : FixedArray[Int32], c : Int32) -> Bool {
   let n = tbl.length() / 2
   // First range whose start is > c.
   let mut lo = 0
@@ -21,7 +21,7 @@ fn in_ranges(tbl : FixedArray[Int], c : Int) -> Bool {
 
 ///|
 /// The single code point mapping of `c` in `[start, end, delta, stride]` runs, or -1.
-fn run_lookup(runs : FixedArray[Int], c : Int) -> Int {
+fn run_lookup(runs : FixedArray[Int32], c : Int32) -> Int32 {
   let n = runs.length() / 4
   let mut lo = 0
   let mut hi = n
@@ -46,7 +46,7 @@ fn run_lookup(runs : FixedArray[Int], c : Int) -> Int {
 
 ///|
 /// Index of `c` in the sorted `cps`, or -1.
-fn sorted_index(cps : FixedArray[Int], c : Int) -> Int {
+fn sorted_index(cps : FixedArray[Int32], c : Int32) -> Int32 {
   let mut lo = 0
   let mut hi = cps.length()
   while lo < hi {
@@ -69,14 +69,14 @@ fn sorted_index(cps : FixedArray[Int], c : Int) -> Int {
 fn write_case_mapped(
   sb : StringBuilder,
   c : Char,
-  runs : FixedArray[Int],
-  multi_cps : FixedArray[Int],
+  runs : FixedArray[Int32],
+  multi_cps : FixedArray[Int32],
   multi_strs : FixedArray[String],
 ) -> Unit {
   let i = c.to_int()
   let m = run_lookup(runs, i)
   if m >= 0 {
-    sb.write_char(Int::unsafe_to_char(m))
+    sb.write_char(Int32::unsafe_to_char(m))
     return
   }
   let k = sorted_index(multi_cps, i)
@@ -91,14 +91,14 @@ fn write_case_mapped(
 /// The first code point of the full case mapping of `c`.
 fn first_case_mapped(
   c : Char,
-  runs : FixedArray[Int],
-  multi_cps : FixedArray[Int],
+  runs : FixedArray[Int32],
+  multi_cps : FixedArray[Int32],
   multi_strs : FixedArray[String],
 ) -> Char {
   let i = c.to_int()
   let m = run_lookup(runs, i)
   if m >= 0 {
-    return Int::unsafe_to_char(m)
+    return Int32::unsafe_to_char(m)
   }
   let k = sorted_index(multi_cps, i)
   if k >= 0 {
@@ -166,7 +166,7 @@ pub fn py_lower(s : String) -> String {
 ///|
 /// CPython's `handle_capital_sigma`: `Σ` lowers to `ς` when it is preceded by a cased
 /// letter and not followed by one (skipping case-ignorable characters in both directions).
-fn capital_sigma_lower(chars : Array[Char], i : Int) -> Char {
+fn capital_sigma_lower(chars : Array[Char], i : Int32) -> Char {
   let mut j = i - 1
   while j >= 0 && in_ranges(uc_case_ignorable, chars[j].to_int()) {
     j -= 1
@@ -253,7 +253,7 @@ pub fn is_decimal(c : Char) -> Bool {
 
 ///|
 /// The value of a decimal digit (`unicodedata.decimal`), or -1.
-pub fn decimal_value(c : Char) -> Int {
+pub fn decimal_value(c : Char) -> Int32 {
   let i = c.to_int()
   if i < 128 {
     return if c >= '0' && c <= '9' { i - '0'.to_int() } else { -1 }

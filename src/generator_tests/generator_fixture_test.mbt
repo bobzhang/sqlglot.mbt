@@ -1,6 +1,6 @@
 ///|
 /// Runs the generator on ASTs dumped from Python and compares with Python's output.
-fn run_generator_fixtures(mode : String, verbose : Bool) -> (Int, Int) {
+fn run_generator_fixtures(mode : String, verbose : Bool) -> (Int32, Int32) {
   let d = @core.base_dialect()
   let mut total = 0
   let mut failed = 0
@@ -55,7 +55,7 @@ test "generator fixtures: identify" {
 }
 
 ///|
-fn run_dialect_fixtures(mode : String, verbose : Bool) -> (Int, Int) {
+fn run_dialect_fixtures(mode : String, verbose : Bool) -> (Int32, Int32) {
   let d = @core.base_dialect()
   let mut total = 0
   let mut failed = 0

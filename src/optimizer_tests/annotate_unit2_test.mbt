@@ -24,9 +24,14 @@ fn qualify_and_annotate(
 test "annotate_types: unnest" {
   let expression = @optimizer.annotate_types(
     @optimizer.qualify(
-      parse_sql("SELECT a, a.b, a.b.c FROM x, UNNEST(x.a) AS a", read="bigquery"),
+      parse_sql(
+        "SELECT a, a.b, a.b.c FROM x, UNNEST(x.a) AS a",
+        read="bigquery",
+      ),
     ),
-    schema=mapping_schema("{\"x\": {\"a\": \"ARRAY<STRUCT<b STRUCT<c int>>>\"}}"),
+    schema=mapping_schema(
+      "{\"x\": {\"a\": \"ARRAY<STRUCT<b STRUCT<c int>>>\"}}",
+    ),
   )
   assert_true(type_equals(expression.selects()[0], "STRUCT<b STRUCT<c int>>"))
   assert_true(type_equals(expression.selects()[1], "STRUCT<c int>"))
@@ -55,8 +60,12 @@ test "annotate_types: unnest struct fields (bigquery)" {
     "WITH data AS (SELECT [STRUCT('Bob' AS first_name, 'Smith' AS last_name)] AS users) SELECT first_name, last_name FROM data, UNNEST(users)",
     dialect="bigquery",
   )
-  assert_true(type_equals(expression.selects()[0], "VARCHAR", dialect="bigquery"))
-  assert_true(type_equals(expression.selects()[1], "VARCHAR", dialect="bigquery"))
+  assert_true(
+    type_equals(expression.selects()[0], "VARCHAR", dialect="bigquery"),
+  )
+  assert_true(
+    type_equals(expression.selects()[1], "VARCHAR", dialect="bigquery"),
+  )
   let expression = qualify_and_annotate(
     "SELECT person FROM UNNEST([STRUCT('Charlie' AS name, 40 AS age)]) AS person",
     dialect="bigquery",
@@ -79,8 +88,12 @@ test "annotate_types: unnest struct fields (bigquery)" {
     "WITH data AS (SELECT [STRUCT('Bob' AS first_name, 'Smith' AS last_name)] AS users) SELECT first_name, last_name FROM data, UNNEST(users) AS p",
     dialect="bigquery",
   )
-  assert_true(type_equals(expression.selects()[0], "VARCHAR", dialect="bigquery"))
-  assert_true(type_equals(expression.selects()[1], "VARCHAR", dialect="bigquery"))
+  assert_true(
+    type_equals(expression.selects()[0], "VARCHAR", dialect="bigquery"),
+  )
+  assert_true(
+    type_equals(expression.selects()[1], "VARCHAR", dialect="bigquery"),
+  )
   let expression = qualify_and_annotate(
     "SELECT name FROM UNNEST([STRUCT('Charlie' AS name, 40 AS age)]) AS person",
     dialect="bigquery",
@@ -144,11 +157,12 @@ test "annotate_types: unions" {
   assert_eq(tthis(union_by_name.selects()[2]), "VARCHAR")
 
   // Chained UNIONs and UNIONs with nested subqueries
-  for sql in [
-    "WITH t AS (SELECT NULL AS col UNION SELECT NULL AS col UNION SELECT 'a' AS col UNION SELECT NULL AS col UNION SELECT NULL AS col) SELECT col FROM t;",
-    "WITH t AS (SELECT NULL AS col UNION (SELECT NULL AS col UNION ALL SELECT 'a' AS col)) SELECT col FROM t;",
-    "WITH t AS ((SELECT NULL AS col UNION ALL SELECT 'a' AS col) UNION SELECT NULL AS col) SELECT col FROM t;",
-  ] {
+  for
+    sql in [
+      "WITH t AS (SELECT NULL AS col UNION SELECT NULL AS col UNION SELECT 'a' AS col UNION SELECT NULL AS col UNION SELECT NULL AS col) SELECT col FROM t;",
+      "WITH t AS (SELECT NULL AS col UNION (SELECT NULL AS col UNION ALL SELECT 'a' AS col)) SELECT col FROM t;",
+      "WITH t AS ((SELECT NULL AS col UNION ALL SELECT 'a' AS col) UNION SELECT NULL AS col) SELECT col FROM t;",
+    ] {
     assert_eq(
       tthis(@optimizer.optimize(parse_sql(sql)).selects()[0]),
       "VARCHAR",
@@ -197,7 +211,10 @@ test "annotate_types: udtf (snowflake)" {
   )
   assert_eq(
     gen_sql(
-      @optimizer.annotate_types(table_udtf, dialect?=dialect_of(Some("snowflake"))),
+      @optimizer.annotate_types(
+        table_udtf,
+        dialect?=dialect_of(Some("snowflake")),
+      ),
       dialect="snowflake",
     ),
     "SELECT * FROM TABLE(GENERATOR(ROWCOUNT => 100000))",
@@ -240,7 +257,9 @@ test "annotate_types: struct field case sensitivity" {
     let (query, dialect, expected) = case_
     let annotated = qualify_and_annotate(query, dialect~, schema~)
     if tthis(annotated.selects()[0]) != expected {
-      fail("\{dialect} \{query}: expected \{expected}, got \{tthis(annotated.selects()[0])}")
+      fail(
+        "\{dialect} \{query}: expected \{expected}, got \{tthis(annotated.selects()[0])}",
+      )
     }
   }
 }
@@ -340,10 +359,11 @@ test "annotate_types: deep ASTs" {
 
 ///|
 test "annotate_types: NULL coercion (bigquery)" {
-  for null_sql in [
-    "SELECT t.foo FROM (SELECT CAST(1 AS BIGDECIMAL) AS foo UNION ALL SELECT NULL AS foo) AS t",
-    "SELECT t.foo FROM (SELECT NULL AS foo UNION ALL SELECT CAST(1 AS BIGDECIMAL) AS foo) AS t",
-  ] {
+  for
+    null_sql in [
+      "SELECT t.foo FROM (SELECT CAST(1 AS BIGDECIMAL) AS foo UNION ALL SELECT NULL AS foo) AS t",
+      "SELECT t.foo FROM (SELECT NULL AS foo UNION ALL SELECT CAST(1 AS BIGDECIMAL) AS foo) AS t",
+    ] {
     let annotated = annotate_sql(null_sql, read="bigquery", dialect="bigquery")
     assert_eq(gen_sql(annotated), null_sql)
     assert_eq(tthis(annotated.selects()[0]), "BIGDECIMAL")
@@ -361,7 +381,9 @@ test "annotate_types: correlated subqueries" {
     gen_sql(annotated, dialect="bigquery"),
     "SELECT (SELECT `t`.`col` AS `col`) AS `_col_0` FROM `t` AS `t`",
   )
-  assert_true(type_equals(annotated.selects()[0], "BIGNUMERIC", dialect="bigquery"))
+  assert_true(
+    type_equals(annotated.selects()[0], "BIGNUMERIC", dialect="bigquery"),
+  )
   let annotated = qualify_and_annotate(
     "SELECT (SELECT MAX(u_x) FROM UNNEST([1, d_x]) AS u_x WHERE u_x < d_z) AS c_i FROM (SELECT CAST(20 AS BIGNUMERIC) AS d_x, 30 AS d_z) AS d_t",
     dialect="bigquery",
@@ -371,7 +393,9 @@ test "annotate_types: correlated subqueries" {
     gen_sql(annotated, dialect="bigquery"),
     "SELECT (SELECT MAX(`u_x`) AS `_col_0` FROM UNNEST([1, `d_t`.`d_x`]) AS `u_x` WHERE `u_x` < `d_t`.`d_z`) AS `c_i` FROM (SELECT CAST(20 AS BIGNUMERIC) AS `d_x`, 30 AS `d_z`) AS `d_t`",
   )
-  assert_true(type_equals(annotated.selects()[0], "BIGNUMERIC", dialect="bigquery"))
+  assert_true(
+    type_equals(annotated.selects()[0], "BIGNUMERIC", dialect="bigquery"),
+  )
   let annotated = qualify_and_annotate(
     "SELECT (SELECT col FROM t) as u FROM (SELECT 1 AS col) AS t",
     schema="{\"t\": {\"col\": \"TEXT\"}}",
@@ -412,10 +436,7 @@ test "annotate_types: ORDER BY aliases" {
     // Alias shadows column across cross-join (u also has x)
     ("SELECT t.z AS x FROM t, u ORDER BY x", ["TEXT"]),
     // CTE name collides with alias
-    (
-      "WITH y AS (SELECT 999 AS v) SELECT x + 1 AS y FROM t ORDER BY y",
-      ["INT"],
-    ),
+    ("WITH y AS (SELECT 999 AS v) SELECT x + 1 AS y FROM t ORDER BY y", ["INT"]),
     // Column name equals alias name (self-referential guard)
     ("SELECT x FROM t ORDER BY x", ["INT"]),
     // Multiple ORDER BY columns

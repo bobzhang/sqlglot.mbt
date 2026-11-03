@@ -1,5 +1,6 @@
 ///|
 /// Where a property is placed in a `CREATE` statement.
+#derive(Eq, Hash, Debug)
 pub(all) enum PropertiesLocation {
   PostCreate
   PostName
@@ -9,7 +10,7 @@ pub(all) enum PropertiesLocation {
   PostExpression
   PostIndex
   Unsupported
-} derive(Eq, Hash, Debug)
+}
 
 ///|
 #deprecated
@@ -25,13 +26,14 @@ pub extend PropertiesLocation with Debug::{to_repr}
 
 ///|
 /// How a dialect normalizes identifiers.
+#derive(Eq, Hash, Debug)
 pub(all) enum NormalizationStrategy {
   Lowercase
   Uppercase
   CaseSensitive
   CaseInsensitive
   CaseInsensitiveUppercase
-} derive(Eq, Hash, Debug)
+}
 
 ///|
 #deprecated
@@ -47,10 +49,11 @@ pub extend NormalizationStrategy with Debug::{to_repr}
 
 ///|
 /// A Python attribute whose value is either a string or a boolean.
+#derive(Eq, Debug)
 pub(all) enum StrOrBool {
   S(String)
   B(Bool)
-} derive(Eq, Debug)
+}
 
 ///|
 #deprecated

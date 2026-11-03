@@ -253,7 +253,7 @@ fn num_parts(v : Value) -> (Bool, Int64, Double) {
 ///|
 /// Exact comparison of an integer with a double (Python semantics): -1, 0, 1, or
 /// `None` when the double is NaN.
-fn cmp_int_double(i : Int64, d : Double) -> Int? {
+fn cmp_int_double(i : Int64, d : Double) -> Int32? {
   if d.is_nan() {
     return None
   }
@@ -285,7 +285,7 @@ fn cmp_int_double(i : Int64, d : Double) -> Int? {
 
 ///|
 /// Python numeric comparison: -1, 0, 1 or `None` (NaN involved).
-fn num_cmp(a : Value, b : Value) -> Int? {
+fn num_cmp(a : Value, b : Value) -> Int32? {
   let (af, ai, ad) = num_parts(a)
   let (bf, bi, bd) = num_parts(b)
   match (af, bf) {
@@ -416,7 +416,7 @@ fn seq_le(x : Array[Value], y : Array[Value]) -> Bool raise PyException {
 
 ///|
 /// Compares strings by code point (Python `str` ordering).
-fn str_cmp(a : String, b : String) -> Int {
+fn str_cmp(a : String, b : String) -> Int32 {
   let ai = a.iter()
   let bi = b.iter()
   for ;; {
@@ -442,7 +442,7 @@ pub fn py_iter(v : Value) -> Array[Value] raise PyException {
 
 ///|
 /// Python `len(value)`.
-pub fn py_len(v : Value) -> Int raise PyException {
+pub fn py_len(v : Value) -> Int32 raise PyException {
   match v {
     Str(s) => s.char_length()
     List(l) | Tuple(l) | Set(l) => l.length()
@@ -508,7 +508,7 @@ pub fn py_getitem(container : Value, key : Value) -> Value raise PyException {
 }
 
 ///|
-fn index_of(key : Value, container : Value) -> Int raise PyException {
+fn index_of(key : Value, container : Value) -> Int32 raise PyException {
   match key {
     Int(i) => i.to_int()
     Bool(b) => if b { 1 } else { 0 }
@@ -525,7 +525,7 @@ pub fn py_slice(
   v : Value,
   start : Value,
   stop : Value,
-  step? : Int = 1,
+  step~ : Int32 = 1,
 ) -> Value raise PyException {
   let items : Array[Value] = match v {
     Str(s) => s.iter().map(c => Str(c.to_string())).collect()
@@ -533,7 +533,7 @@ pub fn py_slice(
     _ => raise type_error("'\{v.type_name()}' object is not subscriptable")
   }
   let n = items.length()
-  fn bound(x : Value, default : Int) -> Int raise PyException {
+  fn bound(x : Value, default : Int32) -> Int32 raise PyException {
     match x {
       Null => default
       Int(_) | Bool(_) => {

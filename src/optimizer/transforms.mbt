@@ -49,7 +49,7 @@ fn transforms_alias_table(
 fn transforms_index_of(
   expressions : Array[@core.Expr],
   value : @core.Expr,
-) -> Int raise @core.SqlglotError {
+) -> Int32 raise @core.SqlglotError {
   match expressions.search(value) {
     Some(i) => i
     None => raise @core.ValueError("\{value.kind.name()} is not in list")
@@ -59,8 +59,8 @@ fn transforms_index_of(
 ///|
 /// Convert explode/posexplode projections into unnests.
 pub fn explode_projection_to_unnest(
-  index_offset? : Int = 0,
-  unnest_map? : Bool = false,
+  index_offset~ : Int32 = 0,
+  unnest_map~ : Bool = false,
 ) -> @core.Transform {
   fn(expression : @core.Expr) raise @core.SqlglotError {
     if expression.kind == Select {

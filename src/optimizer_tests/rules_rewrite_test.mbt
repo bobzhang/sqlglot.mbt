@@ -10,16 +10,16 @@ test "optimizer unnest_subqueries" {
 
 ///|
 test "optimizer optimize_joins" {
-  run_fixtures("optimize_joins", optimize_joins_fixtures, pretty=false, (e, _) => @optimizer.optimize_joins(
-    e,
-  ))
+  run_fixtures("optimize_joins", optimize_joins_fixtures, pretty=false, (e, _) => {
+    @optimizer.optimize_joins(e)
+  })
 }
 
 ///|
 test "optimizer eliminate_joins" {
-  run_fixtures("eliminate_joins", eliminate_joins_fixtures, pretty=true, (e, _) => @optimizer.eliminate_joins(
-    e,
-  ))
+  run_fixtures("eliminate_joins", eliminate_joins_fixtures, pretty=true, (e, _) => {
+    @optimizer.eliminate_joins(e)
+  })
 }
 
 ///|
@@ -43,14 +43,16 @@ test "optimizer merge_subqueries" {
     let e = @optimizer.qualify_columns(e, schema)
     @optimizer.merge_subqueries(
       e,
-      leave_tables_isolated=c.meta_bool("leave_tables_isolated").unwrap_or(false),
+      leave_tables_isolated=c
+        .meta_bool("leave_tables_isolated")
+        .unwrap_or(false),
     )
   })
 }
 
 ///|
 test "optimizer eliminate_ctes" {
-  run_fixtures("eliminate_ctes", eliminate_ctes_fixtures, pretty=true, (e, _) => @optimizer.eliminate_ctes(
-    e,
-  ))
+  run_fixtures("eliminate_ctes", eliminate_ctes_fixtures, pretty=true, (e, _) => {
+    @optimizer.eliminate_ctes(e)
+  })
 }

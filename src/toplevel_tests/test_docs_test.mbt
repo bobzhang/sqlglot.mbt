@@ -7,7 +7,7 @@
 // through `optimize_joins`.
 
 ///|
-fn doc_sql(e : @core.Expr, dialect? : String = "") -> String raise {
+fn doc_sql(e : @core.Expr, dialect~ : String = "") -> String raise {
   @sqlglot.generate(e, dialect~)
 }
 

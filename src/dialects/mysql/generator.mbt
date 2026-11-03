@@ -135,10 +135,7 @@ fn unix_to_time_sql(
         Some(
           @core.mk(Div, [
             ("this", timestamp),
-            (
-              "expression",
-              @core.func_("POW", [@core.literal_number("10"), s]),
-            ),
+            ("expression", @core.func_("POW", [@core.literal_number("10"), s])),
           ]),
         ),
         g.format_time(e),

@@ -7,7 +7,7 @@ fn canon_ident(ident : @core.Expr, name : String) -> Unit {
 }
 
 ///|
-fn expr_key(e : @core.Expr) -> Int {
+fn expr_key(e : @core.Expr) -> Int32 {
   e.uid * 2
 }
 
@@ -20,7 +20,7 @@ pub fn canonicalize_internal_names(
   if !expression.kind.is_a(Query) {
     return expression
   }
-  let output_scope_exprs : @set.Set[Int] = @set.Set([])
+  let output_scope_exprs : @set.Set[Int32] = @set.Set([])
   let stack = [expression]
   while stack.pop() is Some(node) {
     if node.kind.is_a(SetOperation) {
@@ -34,10 +34,10 @@ pub fn canonicalize_internal_names(
   }
   let next_table = @core.name_sequence("_t")
   let next_column = @core.name_sequence("_c")
-  let scope_table : Map[Int, String] = Map([])
-  let scope_outputs : Map[Int, Map[String, String]] = Map([])
-  let table_columns : Map[Int, Map[String, String]] = Map([])
-  let udtf_columns : Map[Int, Map[String, String]] = Map([])
+  let scope_table : Map[Int32, String] = Map([])
+  let scope_outputs : Map[Int32, Map[String, String]] = Map([])
+  let table_columns : Map[Int32, Map[String, String]] = Map([])
+  let udtf_columns : Map[Int32, Map[String, String]] = Map([])
   for scope in traverse_scope(expression) {
     let scope_expr = scope.expression
     let is_output_scope = output_scope_exprs.contains(scope_expr.uid)
@@ -156,7 +156,8 @@ pub fn canonicalize_internal_names(
           continue
         }
         let old_name = src_col.name()
-        let preserve_col = is_base_source || struct_field_names.contains(old_name)
+        let preserve_col = is_base_source ||
+          struct_field_names.contains(old_name)
         let canon_col = match name_map.get(old_name) {
           Some(c) => c
           None => {
@@ -192,10 +193,12 @@ pub fn canonicalize_internal_names(
               if !cols.is_empty() {
                 alias_.set(
                   "columns",
-                  cols.map(c => @core.to_identifier(
-                    name_map.get(c.name()).unwrap_or(c.name()),
-                    quoted=c.has("quoted"),
-                  )),
+                  cols.map(c => {
+                    @core.to_identifier(
+                      name_map.get(c.name()).unwrap_or(c.name()),
+                      quoted=c.has("quoted"),
+                    )
+                  }),
                 )
               }
             }
@@ -243,7 +246,8 @@ pub fn canonicalize_internal_names(
       }
     }
     for table in scope.tables() {
-      let (source_canon, ref_alias) = match table_map.get(table.alias_or_name()) {
+      let (source_canon, ref_alias) = match
+        table_map.get(table.alias_or_name()) {
         Some(e) => e
         None => continue
       }
@@ -263,10 +267,12 @@ pub fn canonicalize_internal_names(
             let tc = table_columns.get(expr_key(table)).unwrap_or({})
             alias_.set(
               "columns",
-              cols.map(c => @core.to_identifier(
-                tc.get(c.name()).unwrap_or(c.name()),
-                quoted=c.has("quoted"),
-              )),
+              cols.map(c => {
+                @core.to_identifier(
+                  tc.get(c.name()).unwrap_or(c.name()),
+                  quoted=c.has("quoted"),
+                )
+              }),
             )
           }
         }
@@ -320,7 +326,9 @@ pub fn canonicalize_internal_names(
       let left_scope = scope.set_operation_scopes[0]
       let right_scope = scope.set_operation_scopes[1]
       let left_out = scope_outputs.get(left_scope.expression.uid).unwrap_or({})
-      let right_out = scope_outputs.get(right_scope.expression.uid).unwrap_or({})
+      let right_out = scope_outputs
+        .get(right_scope.expression.uid)
+        .unwrap_or({})
       let rename : Map[String, String] = Map([])
       for orig_name, left_canon in left_out {
         match right_out.get(orig_name) {
@@ -343,7 +351,8 @@ pub fn canonicalize_internal_names(
           for sel in node.selects() {
             if sel.kind.is_a(Alias) {
               match sel.arg("alias") {
-                Some(aid) if aid.kind == Identifier && rename.contains(aid.name()) =>
+                Some(aid) if aid.kind == Identifier &&
+                  rename.contains(aid.name()) =>
                   canon_ident(aid, rename[aid.name()])
                 _ => ()
               }

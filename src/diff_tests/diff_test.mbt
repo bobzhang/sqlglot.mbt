@@ -1,7 +1,7 @@
 // Replays the diff() calls recorded from tests/test_diff.py (tools/gen_diff_fixtures.py).
 
 ///|
-fn py_cmp(a : String, b : String) -> Int {
+fn py_cmp(a : String, b : String) -> Int32 {
   let ai = a.iter()
   let bi = b.iter()
   for ;; {
@@ -23,10 +23,12 @@ fn edit_str(e : @diff.Edit) -> String raise {
   match e {
     Insert(x) => "Insert(\{s(x)})"
     Remove(x) => "Remove(\{s(x)})"
-    Move(source~, target~) => "Move(\{s(source)} -> \{@core.expr_to_sql(target)})"
+    Move(source~, target~) =>
+      "Move(\{s(source)} -> \{@core.expr_to_sql(target)})"
     Update(source~, target~) =>
       "Update(\{s(source)} -> \{@core.expr_to_sql(target)})"
-    Keep(source~, target~) => "Keep(\{s(source)} -> \{@core.expr_to_sql(target)})"
+    Keep(source~, target~) =>
+      "Keep(\{s(source)} -> \{@core.expr_to_sql(target)})"
   }
 }
 

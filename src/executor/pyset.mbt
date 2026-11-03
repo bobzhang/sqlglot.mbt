@@ -52,9 +52,9 @@ priv struct SetSim {
   keys : Array[Value]
   key_ids : Array[String]
   hashes : Array[Int64]
-  mut table : Array[Int]
-  mut mask : Int
-  mut fill : Int
+  mut table : Array[Int32]
+  mut mask : Int32
+  mut fill : Int32
 }
 
 ///|
@@ -70,14 +70,14 @@ fn SetSim::new() -> SetSim {
 }
 
 ///|
-let linear_probes : Int = 9
+let linear_probes : Int32 = 9
 
 ///|
 fn SetSim::insert_clean(
   self : SetSim,
-  table : Array[Int],
-  mask : Int,
-  idx : Int,
+  table : Array[Int32],
+  mask : Int32,
+  idx : Int32,
 ) -> Unit {
   let hash = self.hashes[idx].reinterpret_as_uint64()
   let mut perturb = hash
@@ -101,7 +101,7 @@ fn SetSim::insert_clean(
 }
 
 ///|
-fn SetSim::resize(self : SetSim, minused : Int) -> Unit {
+fn SetSim::resize(self : SetSim, minused : Int32) -> Unit {
   let mut newsize = 8
   while newsize <= minused {
     newsize = newsize << 1

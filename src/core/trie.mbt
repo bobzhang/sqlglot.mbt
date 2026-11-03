@@ -6,11 +6,12 @@ pub struct Trie {
 }
 
 ///|
+#derive(Eq, Debug)
 pub(all) enum TrieResult {
   Failed
   Prefix
   Exists
-} derive(Eq, Debug)
+}
 
 ///|
 #deprecated

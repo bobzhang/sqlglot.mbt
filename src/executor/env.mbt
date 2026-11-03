@@ -1,7 +1,12 @@
 // Port of sqlglot/executor/env.py: the functions available to generated code.
 
 ///|
-fn arity_error(name : String, min : Int, max : Int, got : Int) -> PyException {
+fn arity_error(
+  name : String,
+  min : Int32,
+  max : Int32,
+  got : Int32,
+) -> PyException {
   if got < min {
     type_error("\{name}() missing \{min - got} required positional argument(s)")
   } else {
@@ -15,8 +20,8 @@ fn arity_error(name : String, min : Int, max : Int, got : Int) -> PyException {
 /// A Python function with `min..=max` positional parameters (`max < 0`: variadic).
 fn pyfunc(
   name : String,
-  min : Int,
-  max : Int,
+  min : Int32,
+  max : Int32,
   f : (Array[Value]) -> Value raise,
 ) -> Value {
   Func({
@@ -35,10 +40,10 @@ fn pyfunc(
 /// position; all arguments when `required` is empty) is None.
 fn null_if_any(
   name : String,
-  min : Int,
-  max : Int,
+  min : Int32,
+  max : Int32,
   f : (Array[Value]) -> Value raise,
-  required? : Array[Int] = [],
+  required~ : Array[Int32] = [],
 ) -> Value {
   pyfunc(name, min, max, args => {
     if required.is_empty() {
@@ -61,7 +66,7 @@ fn null_if_any(
 fn filter_nulls(
   name : String,
   f : (Array[Value]) -> Value raise,
-  empty_null? : Bool = true,
+  empty_null~ : Bool = true,
 ) -> Value {
   pyfunc(name, 1, 1, args => {
     let filtered = py_iter(args[0]).filter(v => !(v is Null))

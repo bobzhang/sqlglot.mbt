@@ -5,9 +5,9 @@
 ///|
 fn explode_sql(
   sql : String,
-  index_offset~ : Int,
-  unnest_map? : Bool = false,
-  annotate? : Bool = false,
+  index_offset~ : Int32,
+  unnest_map~ : Bool = false,
+  annotate~ : Bool = false,
 ) -> String raise @core.SqlglotError {
   let spark = @sqlglot.dialect("spark")
   let e = @core.parse_one(sql, dialect=spark)
@@ -52,8 +52,7 @@ fn join_marks_sql(
   })
   match error.val {
     Some(err) => raise err
-    None =>
-      @sqlglot.generate(result, dialect~)
+    None => @sqlglot.generate(result, dialect~)
   }
 }
 

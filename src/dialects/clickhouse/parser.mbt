@@ -1,7 +1,7 @@
 // Port of sqlglot/parsers/clickhouse.py
 
 ///|
-fn arg(args : Array[@core.Expr], i : Int) -> @core.Expr? {
+fn arg(args : Array[@core.Expr], i : Int32) -> @core.Expr? {
   args.get(i)
 }
 

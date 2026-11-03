@@ -109,7 +109,7 @@ fn lenient_parse_format(fmt : String) -> String {
 
 ///|
 /// (FuncType, Multiplier)
-fn date_delta_interval(unit : String) -> (String, Int)? {
+fn date_delta_interval(unit : String) -> (String, Int32)? {
   match unit {
     "YEAR" => Some(("ADD_MONTHS", 12))
     "MONTH" => Some(("ADD_MONTHS", 1))

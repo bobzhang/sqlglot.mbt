@@ -10,7 +10,10 @@ fn canon_sql(
   db? : String,
   catalog? : String,
 ) -> String raise @core.SqlglotError {
-  gen_sql(canon_expr(qualify_expr(sql, schema?, dialect?, db?, catalog?)), dialect?)
+  gen_sql(
+    canon_expr(qualify_expr(sql, schema?, dialect?, db?, catalog?)),
+    dialect?,
+  )
 }
 
 ///|

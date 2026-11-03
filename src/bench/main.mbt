@@ -51,7 +51,7 @@ let rule_names : Array[String] = [
 
 ///|
 /// Times each default optimizer rule on `parsed` (applied in sequence, one run each).
-fn time_rules(name : String, n : Int, parsed : @core.Expr) -> Unit raise {
+fn time_rules(name : String, n : Int32, parsed : @core.Expr) -> Unit raise {
   let mut prefix = 0.0
   for i in 0..<@optimizer.rules.length() {
     let rules = @optimizer.rules[:i + 1].to_owned()
@@ -69,7 +69,7 @@ fn time_rules(name : String, n : Int, parsed : @core.Expr) -> Unit raise {
 /// Times the steps of `qualify` on `parsed` (one run each).
 fn time_qualify_steps(
   name : String,
-  n : Int,
+  n : Int32,
   parsed : @core.Expr,
 ) -> Unit raise {
   let schema = @optimizer.MappingSchema::new()

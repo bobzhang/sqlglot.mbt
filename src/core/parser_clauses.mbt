@@ -4,7 +4,7 @@
 ///|
 pub fn Parser::parse_prewhere(
   self : Parser,
-  skip_where_token? : Bool = false,
+  skip_where_token~ : Bool = false,
 ) -> Expr? raise SqlglotError {
   if !skip_where_token && !self.match_(PREWHERE) {
     return None
@@ -16,7 +16,7 @@ pub fn Parser::parse_prewhere(
 ///|
 pub fn Parser::parse_where(
   self : Parser,
-  skip_where_token? : Bool = false,
+  skip_where_token~ : Bool = false,
 ) -> Expr? raise SqlglotError {
   if !skip_where_token && !self.match_(WHERE) {
     return None
@@ -28,7 +28,7 @@ pub fn Parser::parse_where(
 ///|
 pub fn Parser::parse_group(
   self : Parser,
-  skip_group_by_token? : Bool = false,
+  skip_group_by_token~ : Bool = false,
 ) -> Expr? raise SqlglotError {
   if !skip_group_by_token && !self.match_(GROUP_BY) {
     return None
@@ -105,7 +105,7 @@ pub fn Parser::parse_group(
 ///|
 pub fn Parser::parse_cube_or_rollup(
   self : Parser,
-  with_prefix? : Bool = false,
+  with_prefix~ : Bool = false,
 ) -> Expr? raise SqlglotError {
   let kind = if self.match_(CUBE) {
     Cube
@@ -149,7 +149,7 @@ pub fn Parser::parse_grouping_set(self : Parser) -> Expr? raise SqlglotError {
 ///|
 pub fn Parser::parse_having(
   self : Parser,
-  skip_having_token? : Bool = false,
+  skip_having_token~ : Bool = false,
 ) -> Expr? raise SqlglotError {
   if !skip_having_token && !self.match_(HAVING) {
     return None
@@ -192,7 +192,7 @@ pub fn Parser::parse_connect_with_prior_base(
 ///|
 pub fn Parser::parse_connect(
   self : Parser,
-  skip_start_token? : Bool = false,
+  skip_start_token~ : Bool = false,
 ) -> Expr? raise SqlglotError {
   let mut start : Expr? = None
   if skip_start_token {
@@ -244,7 +244,7 @@ pub fn Parser::parse_interpolate(
 pub fn Parser::parse_order(
   self : Parser,
   this? : Expr?,
-  skip_order_token? : Bool = false,
+  skip_order_token~ : Bool = false,
 ) -> Expr? raise SqlglotError {
   let this : Expr? = match this {
     Some(t) => t
@@ -388,8 +388,8 @@ pub fn Parser::parse_limit_options(self : Parser) -> Expr? raise SqlglotError {
 pub fn Parser::parse_limit(
   self : Parser,
   this? : Expr?,
-  top? : Bool = false,
-  skip_limit_token? : Bool = false,
+  top~ : Bool = false,
+  skip_limit_token~ : Bool = false,
 ) -> Expr? raise SqlglotError {
   let this : Expr? = match this {
     Some(t) => t
@@ -576,7 +576,7 @@ pub fn Parser::parse_locks(self : Parser) -> Array[Expr] raise SqlglotError {
 pub fn Parser::parse_set_operation(
   self : Parser,
   this : Expr?,
-  consume_pipe? : Bool = false,
+  consume_pipe~ : Bool = false,
 ) -> Expr? raise SqlglotError {
   let start = self.index
   let (_, side_token, kind_token) = self.parse_join_parts()

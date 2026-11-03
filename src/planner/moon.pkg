@@ -2,4 +2,3 @@ import {
   "bobzhang/sqlglot/core",
   "bobzhang/sqlglot/optimizer",
 }
-

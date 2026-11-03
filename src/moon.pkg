@@ -4,4 +4,3 @@ import {
   "bobzhang/sqlglot/executor",
   "bobzhang/sqlglot/optimizer",
 }
-

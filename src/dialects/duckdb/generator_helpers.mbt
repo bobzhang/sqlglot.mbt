@@ -2,7 +2,7 @@
 
 ///|
 /// Whitespace control characters that DuckDB must process with `CHR({val})` calls
-let ws_control_chars_to_duck : Map[Char, Int] = {
+let ws_control_chars_to_duck : Map[Char, Int32] = {
   '\u000b': 11,
   '\u001c': 28,
   '\u001d': 29,
@@ -24,7 +24,7 @@ let regex_escape_replacements : Array[(Char, String)] = [
 let randstr_char_pool : String = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
 
 ///|
-let randstr_seed : Int = 123456
+let randstr_seed : Int32 = 123456
 
 ///|
 let snowflake_collation_defaults : Array[String] = ["cs", "as", "ps"]
@@ -62,7 +62,7 @@ fn has_timezone(ts : String) -> Bool {
   let chars = ts.to_array()
   let n = chars.length()
   // `\d` is any Unicode decimal digit; `.` doesn't match a newline.
-  let digit = (i : Int) => i < n && @core.is_decimal(chars[i])
+  let digit = (i : Int32) => i < n && @core.is_decimal(chars[i])
   for i in 0..<n {
     if chars[i] == ':' && digit(i + 1) && digit(i + 2) {
       for j in (i + 3)..<n {
@@ -82,7 +82,7 @@ fn has_timezone(ts : String) -> Bool {
 fn apply_base64_alphabet_replacements(
   result : @core.Expr,
   alphabet : @core.Expr?,
-  reverse? : Bool = false,
+  reverse~ : Bool = false,
 ) -> @core.Expr {
   let mut result = result
   match alphabet {
@@ -301,7 +301,7 @@ fn timediff_sql(
 ///|
 /// DuckDB override of `date_delta_to_binary_interval_op` handling NANOSECOND units and
 /// float/decimal interval values.
-fn duck_date_delta_to_binary_interval_op(cast? : Bool = true) -> @core.GenFn {
+fn duck_date_delta_to_binary_interval_op(cast~ : Bool = true) -> @core.GenFn {
   let base_impl = @core.date_delta_to_binary_interval_op(cast~)
   (g, e) => {
     let unit = e.arg("unit")
@@ -630,7 +630,7 @@ fn json_format_sql(
 /// Build a SEQ expression with the given base, byte width, and signedness.
 fn build_seq_expression(
   base : @core.Expr,
-  byte_width : Int,
+  byte_width : Int32,
   signed : Bool,
 ) -> @core.Expr raise @core.SqlglotError {
   let bits = byte_width * 8
@@ -647,7 +647,7 @@ fn build_seq_expression(
 }
 
 ///|
-fn pow2(bits : Int) -> String {
+fn pow2(bits : Int32) -> String {
   if bits >= 64 {
     // 2 ** 64 does not fit in a UInt64
     return "18446744073709551616"
@@ -656,7 +656,7 @@ fn pow2(bits : Int) -> String {
 }
 
 ///|
-fn seq_byte_width(kind : @core.Kind) -> Int? {
+fn seq_byte_width(kind : @core.Kind) -> Int32? {
   match kind {
     Seq1 => Some(1)
     Seq2 => Some(2)
@@ -685,7 +685,7 @@ fn seq_to_range_in_generator(
     _ => return expression
   }
   // Pre-compute the replacements, since `transform` callbacks can't raise
-  let replacements : Map[Int, @core.Expr] = Map([])
+  let replacements : Map[Int32, @core.Expr] = Map([])
   let nodes : Array[@core.Expr] = []
   for node in expression.dfs() {
     match seq_byte_width(node.kind) {
@@ -865,7 +865,7 @@ fn connect_by_to_recursive_cte(
 fn seq_sql(
   g : @core.Generator,
   e : @core.Expr,
-  byte_width : Int,
+  byte_width : Int32,
 ) -> String raise @core.SqlglotError {
   match e.find_ancestor([Where, Having, AggFunc, Order, Select]) {
     Some(ancestor) if (!ancestor.kind.is_a(Order) && ancestor.kind != Select) ||
@@ -900,7 +900,7 @@ fn unix_to_time_sql(
     Some(t) => t.is_type([TIMESTAMP, TIMESTAMPNTZ]) && t.kind == DataType
     None => false
   }
-  let scale_is = (n : Int) => {
+  let scale_is = (n : Int32) => {
     match scale {
       Some(s) => s.is_int() && to_int(s) == n
       None => false
@@ -953,7 +953,7 @@ fn arrow_json_extract_sql(
 ///|
 fn implicit_datetime_cast(
   arg : @core.Expr?,
-  type_? : @core.DType = DATE,
+  type_~ : @core.DType = DATE,
 ) -> @core.Expr? {
   match arg {
     Some(a) if a.kind == Literal && a.is_string() => {
@@ -969,7 +969,7 @@ fn implicit_datetime_cast(
 }
 
 ///|
-fn week_trunc_start_dow(unit : @core.Expr?) -> Int? {
+fn week_trunc_start_dow(unit : @core.Expr?) -> Int32? {
   // DuckDB's weeks are ISO 8601, so ISOWEEK maps to its plain WEEK unit
   match unit {
     Some(u) if u.kind == Literal && @core.py_upper(u.name()) == "ISOWEEK" =>
@@ -982,9 +982,9 @@ fn week_trunc_start_dow(unit : @core.Expr?) -> Int? {
 /// Build DATE_TRUNC expression for week boundaries with custom start day.
 fn build_week_trunc_expression(
   date_expr : @core.Expr,
-  start_dow : Int,
-  preserve_start_day? : Bool = false,
-  cast_to_date? : Bool = true,
+  start_dow : Int32,
+  preserve_start_day~ : Bool = false,
+  cast_to_date~ : Bool = true,
 ) -> @core.Expr {
   let shift_days = if start_dow == 7 { 1 } else { 1 - start_dow }
   let truncated = @core.mk(DateTrunc, [
@@ -1147,7 +1147,7 @@ fn day_navigation_sql(
   let isodow_call = func("ISODOW", [date_expr])
   let target_dow = if day_name_expr.kind == Literal {
     let day_name_str = @core.py_upper(day_name_expr.name())
-    let mut matching : Int? = None
+    let mut matching : Int32? = None
     for day, dow in @core.week_start_day_to_dow {
       if day.has_prefix(day_name_str) {
         matching = Some(dow)
@@ -1680,7 +1680,7 @@ fn sha_sql(
   g : @core.Generator,
   e : @core.Expr,
   hash_func : String,
-  binary? : Bool = false,
+  binary~ : Bool = false,
 ) -> String raise @core.SqlglotError {
   let mut arg = this_of(e)
   if hash_func == "SHA256" {

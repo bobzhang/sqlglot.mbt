@@ -106,14 +106,22 @@ test "annotate_types: json dot parts preserve meta" {
 test "annotate_types: semi-structured dot parts (duckdb)" {
   let schema = "{\"t\": {\"m\": \"MAP(VARCHAR, INT)\", \"v\": \"VARIANT\", \"j\": \"JSON\", \"s\": \"STRUCT(Foo INT)\"}}"
   let cases = [
-    ("SELECT m.Foo FROM t", "SELECT \"t\".\"m\".\"Foo\" AS \"foo\" FROM \"t\" AS \"t\""),
-    ("SELECT v.Foo FROM t", "SELECT \"t\".\"v\".\"Foo\" AS \"foo\" FROM \"t\" AS \"t\""),
+    (
+      "SELECT m.Foo FROM t", "SELECT \"t\".\"m\".\"Foo\" AS \"foo\" FROM \"t\" AS \"t\"",
+    ),
+    (
+      "SELECT v.Foo FROM t", "SELECT \"t\".\"v\".\"Foo\" AS \"foo\" FROM \"t\" AS \"t\"",
+    ),
     (
       "SELECT j.Foo.Bar FROM t", "SELECT \"t\".\"j\".\"Foo\".\"Bar\" AS \"bar\" FROM \"t\" AS \"t\"",
     ),
-    ("SELECT s.Foo FROM t", "SELECT \"t\".\"s\".\"foo\" AS \"foo\" FROM \"t\" AS \"t\""),
+    (
+      "SELECT s.Foo FROM t", "SELECT \"t\".\"s\".\"foo\" AS \"foo\" FROM \"t\" AS \"t\"",
+    ),
     // Roots that are already qualified drop a different number of leading dot parts
-    ("SELECT t.m.Foo FROM t", "SELECT \"t\".\"m\".\"Foo\" AS \"foo\" FROM \"t\" AS \"t\""),
+    (
+      "SELECT t.m.Foo FROM t", "SELECT \"t\".\"m\".\"Foo\" AS \"foo\" FROM \"t\" AS \"t\"",
+    ),
     (
       "SELECT t.j.Foo.Bar FROM t", "SELECT \"t\".\"j\".\"Foo\".\"Bar\" AS \"bar\" FROM \"t\" AS \"t\"",
     ),
@@ -181,7 +189,10 @@ test "annotate_types: cast" {
   )
   let expression = annotate_sql("ARRAY(1)::ARRAY<INT>")
   assert_true(
-    expression.get_type().unwrap().equal(@core.parse_one("ARRAY<INT>", into=[DataType])),
+    expression
+    .get_type()
+    .unwrap()
+    .equal(@core.parse_one("ARRAY<INT>", into=[DataType])),
   )
   let expression = annotate_sql("CAST(x AS INTERVAL)")
   assert_eq(tthis(expression), "INTERVAL")
@@ -238,14 +249,14 @@ test "annotate_types: bracket" {
   assert_eq(tsql(expression.this_()), "ARRAY<INT>")
   assert_eq(tsql(expression), "ARRAY<INT>")
   let expression = annotate_sql(
-    "SELECT ARRAY[ARRAY[1], ARRAY[2], ARRAY[3]][1][2]",
-  ).expressions()[0]
+      "SELECT ARRAY[ARRAY[1], ARRAY[2], ARRAY[3]][1][2]",
+    ).expressions()[0]
   assert_eq(tsql(expression.this_().this_()), "ARRAY<ARRAY<INT>>")
   assert_eq(tsql(expression.this_()), "ARRAY<INT>")
   assert_eq(tthis(expression), "INT")
   let expression = annotate_sql(
-    "SELECT ARRAY[ARRAY[1], ARRAY[2], ARRAY[3]][1:2]",
-  ).expressions()[0]
+      "SELECT ARRAY[ARRAY[1], ARRAY[2], ARRAY[3]][1:2]",
+    ).expressions()[0]
   assert_eq(tsql(expression), "ARRAY<ARRAY<INT>>")
   let expression = annotate_sql("MAP(1.0, 2, '2', 3.0)['2']", read="spark")
   assert_eq(tthis(expression), "DOUBLE")
@@ -254,10 +265,10 @@ test "annotate_types: bracket" {
   let expression = annotate_sql("MAP(ARRAY(1.0, x), ARRAY(2, 3.0))[x]")
   assert_eq(tthis(expression), "DOUBLE")
   let expression = annotate_sql(
-    "SELECT MAP(1.0, 2, 2, t.y)[2] FROM t",
-    read="spark",
-    schema="{\"t\": {\"y\": \"int\"}}",
-  ).expressions()[0]
+      "SELECT MAP(1.0, 2, 2, t.y)[2] FROM t",
+      read="spark",
+      schema="{\"t\": {\"y\": \"int\"}}",
+    ).expressions()[0]
   assert_eq(tthis(expression), "INT")
 }
 
@@ -288,7 +299,9 @@ test "annotate_types: interval math" {
     let (sql, expected_type) = case_
     let expression = annotate_sql(sql, schema~)
     if tthis(expression.expressions()[0]) != expected_type {
-      fail("\{sql}: expected \{expected_type}, got \{tthis(expression.expressions()[0])}")
+      fail(
+        "\{sql}: expected \{expected_type}, got \{tthis(expression.expressions()[0])}",
+      )
     }
     assert_eq(gen_sql(expression), sql)
   }
@@ -297,8 +310,8 @@ test "annotate_types: interval math" {
 ///|
 test "annotate_types: lateral" {
   let expression = @optimizer.optimize(
-    parse_sql("SELECT c FROM (select 1 a) as x LATERAL VIEW EXPLODE (a) AS c"),
-  ).expressions()[0]
+      parse_sql("SELECT c FROM (select 1 a) as x LATERAL VIEW EXPLODE (a) AS c"),
+    ).expressions()[0]
   assert_eq(tthis(expression), "INT")
 }
 
@@ -308,7 +321,12 @@ test "annotate_types: derived table columns" {
   let sql = "SELECT a.cola AS cola FROM (SELECT x.cola + y.cola AS cola FROM (SELECT x.cola AS cola FROM x AS x) AS x JOIN (SELECT y.cola AS cola FROM y AS y) AS y) AS a"
   let expression = annotate_sql(sql, schema~)
   assert_eq(tthis(expression.expressions()[0]), "FLOAT")
-  let addition_alias = expression.arg("from_").unwrap().this_().this_().expressions()[0]
+  let addition_alias = expression
+    .arg("from_")
+    .unwrap()
+    .this_()
+    .this_()
+    .expressions()[0]
   assert_eq(tthis(addition_alias), "FLOAT")
   let addition = addition_alias.this_()
   assert_eq(tthis(addition), "FLOAT")
@@ -409,8 +427,7 @@ fn udf_schema(
 test "annotate_types: udfs" {
   // Unqualified UDF
   let schema = udf_schema(
-    "{\"t\": {\"col\": \"INT\"}}",
-    "{\"my_func\": \"VARCHAR\"}",
+    "{\"t\": {\"col\": \"INT\"}}", "{\"my_func\": \"VARCHAR\"}",
   )
   let expr = @optimizer.annotate_types(
     parse_sql("SELECT my_func(col) FROM t"),
@@ -420,8 +437,7 @@ test "annotate_types: udfs" {
 
   // Qualified UDF (2-level)
   let schema = udf_schema(
-    "{\"db\": {\"t\": {\"col\": \"INT\"}}}",
-    "{\"db\": {\"my_func\": \"DOUBLE\"}}",
+    "{\"db\": {\"t\": {\"col\": \"INT\"}}}", "{\"db\": {\"my_func\": \"DOUBLE\"}}",
   )
   let expr = @optimizer.annotate_types(
     parse_sql("SELECT db.my_func(col) FROM db.t"),
@@ -434,8 +450,7 @@ test "annotate_types: udfs" {
 
   // Qualified UDF (3-level)
   let schema = udf_schema(
-    "{\"cat\": {\"db\": {\"t\": {\"col\": \"INT\"}}}}",
-    "{\"cat\": {\"db\": {\"my_func\": \"BOOLEAN\"}}}",
+    "{\"cat\": {\"db\": {\"t\": {\"col\": \"INT\"}}}}", "{\"cat\": {\"db\": {\"my_func\": \"BOOLEAN\"}}}",
   )
   let expr = @optimizer.annotate_types(
     parse_sql("SELECT cat.db.my_func(col) FROM cat.db.t"),
@@ -446,8 +461,7 @@ test "annotate_types: udfs" {
 
   // Unknown UDF returns UNKNOWN
   let schema = udf_schema(
-    "{\"t\": {\"col\": \"INT\"}}",
-    "{\"known_func\": \"DATE\"}",
+    "{\"t\": {\"col\": \"INT\"}}", "{\"known_func\": \"DATE\"}",
   )
   let expr = @optimizer.annotate_types(
     parse_sql("SELECT unknown_func(col) FROM t"),
@@ -466,9 +480,14 @@ test "annotate_types: udfs" {
     .name()
   }
   assert_eq(dtype("{\"my_func\": \"INT\"}", "my_func(x)"), "INT")
-  assert_eq(dtype("{\"db\": {\"my_func\": \"FLOAT\"}}", "db.my_func(x, y)"), "FLOAT")
   assert_eq(
-    dtype("{\"cat\": {\"db\": {\"my_func\": \"DATE\"}}}", "cat.db.my_func(a, b, c)"),
+    dtype("{\"db\": {\"my_func\": \"FLOAT\"}}", "db.my_func(x, y)"),
+    "FLOAT",
+  )
+  assert_eq(
+    dtype(
+      "{\"cat\": {\"db\": {\"my_func\": \"DATE\"}}}", "cat.db.my_func(a, b, c)",
+    ),
     "DATE",
   )
   // Unknown UDF string returns UNKNOWN

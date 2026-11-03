@@ -13,20 +13,20 @@
 /// `partners(a)` are the buckets holding every operand that may combine with `a` (`None`:
 /// any operand may).
 priv struct FlatIndex {
-  keys : (@core.Expr) -> Array[Int]
-  partners : (@core.Expr) -> Array[Int]?
+  keys : (@core.Expr) -> Array[Int32]
+  partners : (@core.Expr) -> Array[Int32]?
 }
 
 ///|
 /// Operands below this count use the plain scan.
-let flat_index_min_size : Int = 8
+let flat_index_min_size : Int32 = 8
 
 ///|
-let special_bucket : Int = -1
+let special_bucket : Int32 = -1
 
 ///|
 /// The comparison class of a connector operand (0..5), or -1.
-fn comparison_class(e : @core.Expr) -> Int {
+fn comparison_class(e : @core.Expr) -> Int32 {
   match e.kind {
     LT => 0
     LTE => 1
@@ -43,7 +43,7 @@ fn comparison_class(e : @core.Expr) -> Int {
 /// permutation checks there): both LT/LTE, both GT/GTE, and under AND also LT with GT/GTE,
 /// GT with LT/LTE and EQ with LT/LTE/GT/GTE/NEQ. EQ with EQ, NEQ with NEQ and IS never
 /// combine.
-fn comparison_partners(c : Int, or_ : Bool) -> Array[Int] {
+fn comparison_partners(c : Int32, or_ : Bool) -> Array[Int32] {
   if or_ {
     match c {
       0 | 1 => [0, 1]
@@ -64,7 +64,7 @@ fn comparison_partners(c : Int, or_ : Bool) -> Array[Int] {
 }
 
 ///|
-fn operand_bucket(operand : @core.Expr, class : Int) -> Int {
+fn operand_bucket(operand : @core.Expr, class : Int32) -> Int32 {
   // non-negative so it can't be `special_bucket`
   (operand.hash() * 8 + class) & 0x7fffffff
 }
@@ -87,7 +87,7 @@ fn connector_flat_index(or_ : Bool) -> FlatIndex {
       }
       let c = comparison_class(x)
       match (c, x.this(), x.expression()) {
-        (0..=5, Some(l), Some(r)) =>
+        (0..<=5, Some(l), Some(r)) =>
           [operand_bucket(l, c), operand_bucket(r, c)]
         _ => []
       }
@@ -99,7 +99,7 @@ fn connector_flat_index(or_ : Bool) -> FlatIndex {
       let out = [special_bucket]
       let c = comparison_class(a)
       match (c, a.this(), a.expression()) {
-        (0..=5, Some(l), Some(r)) =>
+        (0..<=5, Some(l), Some(r)) =>
           for p in comparison_partners(c, or_) {
             out.push(operand_bucket(l, p))
             out.push(operand_bucket(r, p))
@@ -114,7 +114,7 @@ fn connector_flat_index(or_ : Bool) -> FlatIndex {
 ///|
 /// The operand class `_simplify_binary` acts on: 0 number, 1 string, 2 interval, 3 date
 /// literal, -1 none.
-fn binary_operand_class(x : @core.Expr) -> Int {
+fn binary_operand_class(x : @core.Expr) -> Int32 {
   if x.is_number() {
     0
   } else if x.is_string() {
@@ -178,7 +178,7 @@ fn flat_simplify_indexed(
   let next = Array::makei(n, i => i + 1)
   let prev = Array::makei(n, i => i - 1)
   let mut head = 0
-  let remove = (i : Int) => {
+  let remove = (i : Int32) => {
     alive[i] = false
     if prev[i] >= 0 {
       next[prev[i]] = next[i]
@@ -189,7 +189,7 @@ fn flat_simplify_indexed(
       prev[next[i]] = prev[i]
     }
   }
-  let buckets : Map[Int, Array[Int]] = Map([])
+  let buckets : Map[Int32, Array[Int32]] = Map([])
   for i, item in items {
     for k in (index.keys)(item) {
       match buckets.get(k) {
@@ -199,7 +199,7 @@ fn flat_simplify_indexed(
     }
   }
   // per bucket: the first position that may still be alive
-  let starts : Map[Int, Int] = Map([])
+  let starts : Map[Int32, Int32] = Map([])
   let operands = []
   let mut pending : @core.Expr? = None
   for ;; {
@@ -217,7 +217,7 @@ fn flat_simplify_indexed(
         items[i]
       }
     }
-    let mut found : (Int, @core.Expr)? = None
+    let mut found : (Int32, @core.Expr)? = None
     match (index.partners)(a) {
       None => {
         let mut j = head
@@ -234,8 +234,8 @@ fn flat_simplify_indexed(
       }
       Some(keys) => {
         // k-way merge of the partner buckets in queue order
-        let lists : Array[Array[Int]] = []
-        let pos : Array[Int] = []
+        let lists : Array[Array[Int32]] = []
+        let pos : Array[Int32] = []
         for k in keys {
           match buckets.get(k) {
             Some(b) => {

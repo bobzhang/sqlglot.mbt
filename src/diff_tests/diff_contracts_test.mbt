@@ -21,14 +21,14 @@ fn validate_delta_only(
 fn diff_delta_only(
   source : @core.Expr,
   target : @core.Expr,
-  matchings? : Array[(@core.Expr, @core.Expr)] = [],
+  matchings~ : Array[(@core.Expr, @core.Expr)] = [],
   dialect? : @core.Dialect,
 ) -> Array[@diff.Edit] {
   @diff.diff(source, target, matchings~, delta_only=true, dialect?)
 }
 
 ///|
-fn num(n : Int) -> @core.Expr {
+fn num(n : Int32) -> @core.Expr {
   @core.literal_number(n.to_string())
 }
 

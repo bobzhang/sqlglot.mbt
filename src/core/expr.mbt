@@ -19,12 +19,12 @@ pub struct Expr {
   args : Args
   mut parent : Expr?
   mut arg_key : String?
-  mut index : Int?
+  mut index : Int32?
   mut comments : Array[String]?
   mut type_ : Expr?
   mut meta : Args?
   /// Unique identity of this node (Python `id(node)`).
-  uid : Int
+  uid : Int32
   /// Keys whose value is an explicit Python `None` (`exp.Foo(key=None)`). The port
   /// stores no None values in `args`; these keys are only visible to `has_key` and
   /// `arg_keys` (Python's `key in e.args`), everything else ignores them like Python.
@@ -37,17 +37,17 @@ pub struct Expr {
 
 ///|
 priv struct Pos {
-  line : Int
-  col : Int
-  start : Int
-  end : Int
+  line : Int32
+  col : Int32
+  start : Int32
+  end : Int32
 }
 
 ///|
-let expr_uid_counter : Ref[Int] = Ref(0)
+let expr_uid_counter : Ref[Int32] = Ref(0)
 
 ///|
-fn next_expr_uid() -> Int {
+fn next_expr_uid() -> Int32 {
   expr_uid_counter.val += 1
   expr_uid_counter.val
 }
@@ -78,7 +78,7 @@ pub impl IntoValue for Bool with fn into_value(self) {
 }
 
 ///|
-pub impl IntoValue for Int with fn into_value(self) {
+pub impl IntoValue for Int32 with fn into_value(self) {
   Some(Int(self.to_int64()))
 }
 
@@ -933,7 +933,7 @@ pub fn maybe_copy(e : Expr, copy : Bool) -> Expr {
 pub fn Expr::add_comments(
   self : Expr,
   comments : Array[String]?,
-  prepend? : Bool = false,
+  prepend~ : Bool = false,
 ) -> Unit {
   if self.comments is None {
     self.comments = Some([])
@@ -995,7 +995,7 @@ fn Expr::set_parent(
   self : Expr,
   arg_key : String,
   value : Value,
-  index : Int?,
+  index : Int32?,
 ) -> Unit {
   match value {
     Node(e) => {
@@ -1065,8 +1065,8 @@ pub fn Expr::set_at(
   self : Expr,
   arg_key : String,
   value : &IntoValue,
-  index : Int,
-  overwrite? : Bool = true,
+  index : Int32,
+  overwrite~ : Bool = true,
 ) -> Unit {
   let expressions = match self.args.get(arg_key) {
     Some(List(l)) => l
@@ -1079,7 +1079,7 @@ pub fn Expr::set_at(
   }
   let i = if index < 0 { n + index } else { index }
   // Python slice/insert position semantics for a (possibly negative) index
-  fn pos(len : Int) -> Int {
+  fn pos(len : Int32) -> Int32 {
     if index < 0 {
       let p = len + index
       if p < 0 {
@@ -1146,7 +1146,7 @@ pub fn Expr::set_parent_ref(self : Expr, parent : Expr?) -> Unit {
 
 ///|
 /// Depth of this node in the tree.
-pub fn Expr::depth(self : Expr) -> Int {
+pub fn Expr::depth(self : Expr) -> Int32 {
   match self.parent {
     Some(p) => p.depth() + 1
     None => 0
@@ -1157,7 +1157,7 @@ pub fn Expr::depth(self : Expr) -> Int {
 /// Yields all child expressions, exploding list args.
 pub fn Expr::iter_expressions(
   self : Expr,
-  reverse? : Bool = false,
+  reverse~ : Bool = false,
 ) -> Array[Expr] {
   let out = []
   for _, vs in self.args {
@@ -1245,7 +1245,7 @@ pub fn Expr::bfs(self : Expr, prune? : (Expr) -> Bool) -> Iter[Expr] {
 ///|
 pub fn Expr::walk(
   self : Expr,
-  bfs? : Bool = true,
+  bfs~ : Bool = true,
   prune? : (Expr) -> Bool,
 ) -> Iter[Expr] {
   if bfs {
@@ -1260,7 +1260,7 @@ pub fn Expr::walk(
 pub fn Expr::find(
   self : Expr,
   kinds : ArrayView[Kind],
-  bfs? : Bool = true,
+  bfs~ : Bool = true,
 ) -> Expr? {
   let it = self.walk(bfs~)
   while it.next() is Some(e) {
@@ -1276,7 +1276,7 @@ pub fn Expr::find(
 pub fn Expr::find_all(
   self : Expr,
   kinds : ArrayView[Kind],
-  bfs? : Bool = true,
+  bfs~ : Bool = true,
 ) -> Iter[Expr] {
   let kinds = kinds.to_owned()
   self.walk(bfs~).filter(e => e.kind.is_any(kinds))
@@ -1360,7 +1360,7 @@ pub fn Expr::unnest_operands(self : Expr) -> Array[Expr] {
 
 ///|
 /// Returns a generator which yields child nodes whose parents are the same class.
-pub fn Expr::flatten(self : Expr, unnest? : Bool = true) -> Iter[Expr] {
+pub fn Expr::flatten(self : Expr, unnest~ : Bool = true) -> Iter[Expr] {
   let kind = self.kind
   self
   .dfs(prune=n => n.parent is Some(_) && n.kind != kind)
@@ -1467,7 +1467,7 @@ pub fn Expr::pop(self : Expr) -> Expr {
 pub fn Expr::transform(
   self : Expr,
   fun : (Expr) -> Expr? raise?,
-  copy? : Bool = true,
+  copy~ : Bool = true,
 ) -> Expr raise? {
   let mut root : Expr? = None
   let mut new_node : Expr? = None
@@ -1560,7 +1560,7 @@ pub fn Expr::update_positions_from_token(self : Expr, token : Token) -> Expr {
 
 ///|
 /// Checks the arguments of an expression for errors.
-pub fn Expr::error_messages(self : Expr, nargs? : Int = 0) -> Array[String] {
+pub fn Expr::error_messages(self : Expr, nargs~ : Int32 = 0) -> Array[String] {
   let errors = []
   for kv in self.kind.arg_types() {
     if kv.1 {

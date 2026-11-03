@@ -278,7 +278,7 @@ fn dpipe_sql(
 /// Python `Python().generate(expression)`: renders an expression as Python code.
 pub fn python_generate(
   expression : @core.Expr,
-  identify? : Bool = false,
+  identify~ : Bool = false,
 ) -> String raise @core.SqlglotError {
   @core.Generator::new(
     python_dialect(),

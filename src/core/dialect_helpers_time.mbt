@@ -16,8 +16,8 @@ pub fn date_add_interval_sql(data_type : String, kind : String) -> GenFn {
 ///|
 /// Python `timestamptrunc_sql(func="DATE_TRUNC", zone=False)`.
 pub fn timestamptrunc_sql(
-  func? : String = "DATE_TRUNC",
-  zone? : Bool = false,
+  func~ : String = "DATE_TRUNC",
+  zone~ : Bool = false,
 ) -> GenFn {
   (g, e) => {
     let args : Array[&SqlArg] = [weekstart_unit_to_str(g, e), e.this()]
@@ -96,7 +96,7 @@ pub fn no_datetime_sql(g : Generator, e : Expr) -> String raise SqlglotError {
 pub fn timestrtotime_sql(
   g : Generator,
   e : Expr,
-  include_precision? : Bool = false,
+  include_precision~ : Bool = false,
 ) -> String raise SqlglotError {
   let builder = if e.has("zone") {
     DType::TIMESTAMPTZ
@@ -155,7 +155,7 @@ pub fn ts_or_ds_add_cast(e : Expr) -> Expr {
 /// Python `remove_ts_or_ds_to_date(to_sql=None, args=("this",))`.
 pub fn remove_ts_or_ds_to_date(
   to_sql? : GenFn,
-  args? : Array[String] = ["this"],
+  args~ : Array[String] = ["this"],
 ) -> GenFn {
   (g, e) => {
     for arg_key in args {
@@ -174,7 +174,7 @@ pub fn remove_ts_or_ds_to_date(
 
 ///|
 /// Python `date_delta_sql(name, cast=False)`: `name(unit, expression, this)`.
-pub fn date_delta_sql(name : String, cast? : Bool = false) -> GenFn {
+pub fn date_delta_sql(name : String, cast~ : Bool = false) -> GenFn {
   (g, e) => {
     let e = if cast && e.kind.is_a(TsOrDsAdd) {
       ts_or_ds_add_cast(e)
@@ -187,7 +187,7 @@ pub fn date_delta_sql(name : String, cast? : Bool = false) -> GenFn {
 
 ///|
 /// Python `date_delta_to_binary_interval_op(cast=True)`: `this +/- INTERVAL ...`.
-pub fn date_delta_to_binary_interval_op(cast? : Bool = true) -> GenFn {
+pub fn date_delta_to_binary_interval_op(cast~ : Bool = true) -> GenFn {
   (g, e) => {
     let mut this = e.this_()
     let unit = unit_to_var(e)
@@ -236,7 +236,7 @@ pub fn date_delta_to_binary_interval_op(cast? : Bool = true) -> GenFn {
 
 ///|
 /// Python `unit_to_str(expression, default="DAY")`. Pass `default=""` for Python `None`.
-pub fn unit_to_str(e : Expr, default? : String = "DAY") -> Expr? {
+pub fn unit_to_str(e : Expr, default~ : String = "DAY") -> Expr? {
   match e.get("unit") {
     Some(Node(unit)) =>
       if unit.kind.is_a(WeekStart) {
@@ -270,7 +270,7 @@ fn value_name(v : Value) -> String {
 pub fn weekstart_unit_to_str(
   g : Generator,
   e : Expr,
-  default? : String = "DAY",
+  default~ : String = "DAY",
 ) -> Expr? raise SqlglotError {
   match e.arg("unit") {
     Some(unit) if unit.kind.is_a(WeekStart) =>
@@ -281,7 +281,7 @@ pub fn weekstart_unit_to_str(
 
 ///|
 /// Python `unit_to_var(expression, default="DAY")`. Pass `default=""` for Python `None`.
-pub fn unit_to_var(e : Expr, default? : String = "DAY") -> Expr? {
+pub fn unit_to_var(e : Expr, default~ : String = "DAY") -> Expr? {
   let value = match e.get("unit") {
     Some(Node(unit)) => {
       if unit.kind.is_any([Var, Placeholder, WeekStart, Column]) {
@@ -302,7 +302,7 @@ pub fn unit_to_var(e : Expr, default? : String = "DAY") -> Expr? {
 ///|
 /// Python `WEEK_START_DAY_TO_DOW`: days of week to ISO 8601 day-of-week numbers
 /// (Monday=1, ..., Sunday=7).
-pub let week_start_day_to_dow : Map[String, Int] = {
+pub let week_start_day_to_dow : Map[String, Int32] = {
   "MONDAY": 1,
   "TUESDAY": 2,
   "WEDNESDAY": 3,
@@ -315,7 +315,7 @@ pub let week_start_day_to_dow : Map[String, Int] = {
 ///|
 /// Python `week_offset_to_dow(offset)`: converts a dialect's WEEK_OFFSET (days relative
 /// to Monday) to the ISO day number of its week start.
-pub fn week_offset_to_dow(offset : Int) -> Int {
+pub fn week_offset_to_dow(offset : Int32) -> Int32 {
   let m = offset % 7
   (if m < 0 { m + 7 } else { m }) + 1
 }
@@ -324,7 +324,7 @@ pub fn week_offset_to_dow(offset : Int) -> Int {
 /// Python `week_unit_to_dow(unit)`: the ISO 8601 week start day (Monday=1 .. Sunday=7) of
 /// a week-ish unit, e.g. BigQuery's WEEK(<day>) or ISOWEEK, or None if not a week unit or
 /// if the day is dynamic.
-pub fn week_unit_to_dow(unit : Expr?) -> Int? {
+pub fn week_unit_to_dow(unit : Expr?) -> Int32? {
   match unit {
     Some(u) if u.kind.is_a(Var) => {
       let n = py_upper(u.name())

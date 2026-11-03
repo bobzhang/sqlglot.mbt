@@ -36,8 +36,10 @@ pub fn TypeAnnotator::annotate_binary(
     }
   }
   if expression.kind.is_a(Is) ||
-    (left.meta_get("nonnull") is Some(Bool(true)) &&
-    right.meta_get("nonnull") is Some(Bool(true))) {
+    (
+      left.meta_get("nonnull") is Some(Bool(true)) &&
+      right.meta_get("nonnull") is Some(Bool(true))
+    ) {
     expression.get_meta()["nonnull"] = Bool(true)
   }
 }
@@ -86,8 +88,8 @@ pub fn TypeAnnotator::annotate_by_args(
   self : TypeAnnotator,
   expression : @core.Expr,
   args : Array[ArgRef],
-  promote? : Bool = false,
-  array? : Bool = false,
+  promote~ : Bool = false,
+  array~ : Bool = false,
 ) -> Unit {
   let mut literal_type : TType? = None
   let mut non_literal_type : TType? = None
@@ -134,10 +136,14 @@ pub fn TypeAnnotator::annotate_by_args(
     (Some(n), _, _) => result_type = Some(n)
     (None, Some(lt), Some(nlt)) => {
       if self.dialect.cfg.prioritize_non_literal_types {
-        if (ttype_in(lt, @core.dtype_integer_types) &&
-          ttype_in(nlt, @core.dtype_integer_types)) ||
-          (ttype_in(lt, @core.dtype_real_types) &&
-          ttype_in(nlt, @core.dtype_real_types)) {
+        if (
+            ttype_in(lt, @core.dtype_integer_types) &&
+            ttype_in(nlt, @core.dtype_integer_types)
+          ) ||
+          (
+            ttype_in(lt, @core.dtype_real_types) &&
+            ttype_in(nlt, @core.dtype_real_types)
+          ) {
           result_type = Some(nlt)
         }
       }
@@ -202,7 +208,10 @@ pub fn TypeAnnotator::annotate_bracket(
   if bracket_arg.kind.is_a(Slice) {
     self.set_type(expression, type_of(this))
   } else if this.is_type([ARRAY]) {
-    self.set_type_expr(expression, this.get_type().unwrap().expressions().get(0))
+    self.set_type_expr(
+      expression,
+      this.get_type().unwrap().expressions().get(0),
+    )
   } else if this.kind.is_any([Map, VarMap]) &&
     map_keys(this).contains(bracket_arg) {
     let keys = map_keys(this)
@@ -256,16 +265,16 @@ pub fn TypeAnnotator::annotate_div(
     @core.dtype_integer_types.contains(right_type) {
     self.set_dtype(expression, BIGINT)
   } else {
-    self.set_type(expression, Some(self.maybe_coerce(D(left_type), D(right_type))))
+    self.set_type(
+      expression,
+      Some(self.maybe_coerce(D(left_type), D(right_type))),
+    )
     match expression.get_type() {
       Some(t) =>
         match t.datatype_this() {
           Some(d) if @core.dtype_real_types.contains(d) => ()
           _ =>
-            self.set_type(
-              expression,
-              Some(self.maybe_coerce(T(t), D(DOUBLE))),
-            )
+            self.set_type(expression, Some(self.maybe_coerce(T(t), D(DOUBLE))))
         }
       None => ()
     }
@@ -308,7 +317,8 @@ pub fn TypeAnnotator::annotate_explode(
   expression : @core.Expr,
 ) -> Unit {
   match expression.this_().get_type() {
-    Some(t) if t.is_type([ARRAY]) => self.set_type_expr(expression, t.expressions().get(0))
+    Some(t) if t.is_type([ARRAY]) =>
+      self.set_type_expr(expression, t.expressions().get(0))
     _ => self.set_type(expression, None)
   }
 }
@@ -400,7 +410,11 @@ pub fn TypeAnnotator::annotate_map(
   match (keys, values) {
     (Some(k), Some(v)) if k.kind.is_a(Array) && v.kind.is_a(Array) => {
       let key_type = k.get_type().map(t => t.expressions()).unwrap_or([]).get(0)
-      let value_type = v.get_type().map(t => t.expressions()).unwrap_or([]).get(0)
+      let value_type = v
+        .get_type()
+        .map(t => t.expressions())
+        .unwrap_or([])
+        .get(0)
       match (key_type, value_type) {
         (Some(kt), Some(vt)) => {
           map_type.set("expressions", [kt, vt])

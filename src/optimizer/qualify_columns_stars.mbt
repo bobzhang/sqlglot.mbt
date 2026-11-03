@@ -25,8 +25,7 @@ fn expand_struct_stars_no_parens(expression : @core.Expr) -> Array[@core.Expr] {
         Some(t) if t.kind == Identifier => ()
         _ => return []
       }
-      if field.name() == part.name() &&
-        type_is(field.arg("kind"), [STRUCT]) {
+      if field.name() == part.name() && type_is(field.arg("kind"), [STRUCT]) {
         starting_struct = field
         found = true
         break
@@ -57,14 +56,18 @@ fn expand_struct_stars_no_parens(expression : @core.Expr) -> Array[@core.Expr] {
       table=dot_column.arg("table").map(t => t.copy()),
       fields=rest,
     )
-    new_selections.push(@core.alias_expr(new_column, Some(this.copy()), copy=false))
+    new_selections.push(
+      @core.alias_expr(new_column, Some(this.copy()), copy=false),
+    )
   }
   new_selections
 }
 
 ///|
 /// [RisingWave] Expand/Flatten (<exp>.bar).*, where bar is a struct column.
-fn expand_struct_stars_with_parens(expression : @core.Expr) -> Array[@core.Expr] {
+fn expand_struct_stars_with_parens(
+  expression : @core.Expr,
+) -> Array[@core.Expr] {
   match expression.this() {
     Some(t) if t.kind.is_a(Paren) => ()
     _ => return []
@@ -123,7 +126,7 @@ fn ilike_matches(
   backslash_escape : Bool,
 ) -> Bool {
   // Tokenize the pattern: Some(c) is a literal char, None is '_' and '%' is a wildcard.
-  let tokens : Array[Int] = [] // -1: any char, -2: any sequence, otherwise char code
+  let tokens : Array[Int32] = [] // -1: any char, -2: any sequence, otherwise char code
   let chars = pattern.to_array()
   let mut i = 0
   while i < chars.length() {
@@ -149,13 +152,13 @@ fn ilike_matches(
   let m = t.length()
   let dp = Array::make((n + 1) * (m + 1), false)
   dp[0] = true
-  for j in 1..=m {
+  for j in 1..<=m {
     if t[j - 1] == -2 {
       dp[j] = dp[j - 1]
     }
   }
-  for a in 1..=n {
-    for j in 1..=m {
+  for a in 1..<=n {
+    for j in 1..<=m {
       let tok = t[j - 1]
       let v = if tok == -2 {
         (s[a - 1] != nl && dp[(a - 1) * (m + 1) + j]) || dp[a * (m + 1) + j - 1]
@@ -163,8 +166,8 @@ fn ilike_matches(
         (
           tok >= 0 &&
           @core.re_ignorecase_char_eq(
-            Int::unsafe_to_char(tok),
-            Int::unsafe_to_char(s[a - 1]),
+            Int32::unsafe_to_char(tok),
+            Int32::unsafe_to_char(s[a - 1]),
           )
         ) {
         dp[(a - 1) * (m + 1) + j - 1]
@@ -399,10 +402,11 @@ fn expand_stars_impl(
       if columns.is_empty() {
         columns = scope.outer_columns
       }
-      if !pseudocolumns.is_empty() && dialect.cfg.excludes_pseudocolumns_from_star {
-        columns = columns.filter(name => !pseudocolumns.contains(
-          @core.py_upper(name),
-        ))
+      if !pseudocolumns.is_empty() &&
+        dialect.cfg.excludes_pseudocolumns_from_star {
+        columns = columns.filter(name => {
+          !pseudocolumns.contains(@core.py_upper(name))
+        })
       }
       if columns.is_empty() ||
         columns.contains("*") ||
@@ -488,9 +492,15 @@ fn expand_stars_impl(
         if using_column_tables.has(name, table) {
           coalesced_columns.add(name)
           let using_tables = using_column_tables.map[name]
-          let coalesce_args = using_tables.map(t => column_with_table(name, table=t))
+          let coalesce_args = using_tables.map(t => {
+            column_with_table(name, table=t)
+          })
           new_selections.push(
-            @core.alias_(@core.func_("coalesce", coalesce_args), name, copy=false),
+            @core.alias_(
+              @core.func_("coalesce", coalesce_args),
+              name,
+              copy=false,
+            ),
           )
         } else {
           let alias_ = match renamed_columns.get(name) {

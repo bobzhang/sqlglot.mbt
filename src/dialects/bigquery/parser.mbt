@@ -1,7 +1,7 @@
 // Port of sqlglot/parsers/bigquery.py
 
 ///|
-fn arg(args : Array[@core.Expr], i : Int) -> @core.Expr? {
+fn arg(args : Array[@core.Expr], i : Int32) -> @core.Expr? {
   args.get(i)
 }
 
@@ -168,7 +168,7 @@ fn build_parse_datetime(
 ///|
 /// Number of capturing groups of a (Python) regular expression, or `None` if the
 /// pattern is obviously invalid. Mirrors `re.compile(pattern).groups`.
-fn regex_group_count(pattern : String) -> Int? {
+fn regex_group_count(pattern : String) -> Int32? {
   let chars = pattern.to_array()
   let n = chars.length()
   let mut groups = 0
@@ -289,7 +289,7 @@ let domain_dot : String = "\u{0}"
 fn split_num_words(
   value : String,
   sep : String,
-  min_num_words : Int,
+  min_num_words : Int32,
 ) -> Array[String?] {
   let words : Array[String?] = value
     .split(sep)
@@ -307,7 +307,7 @@ fn split_num_words(
 /// A dotted reference (e.g. `project.dataset.table`) is split into a fixed number of parts,
 /// the first of which is the project. Domain-scoped (legacy) project IDs have the form
 /// `domain.com:project-id`, where the dots belong to the domain, not the path.
-fn split_qualified_name(name : String, min_num_words : Int) -> Array[String?] {
+fn split_qualified_name(name : String, min_num_words : Int32) -> Array[String?] {
   match name.find(":") {
     Some(colon) if @core.substr(name, 0, colon).contains(".") => {
       let masked = @core.substr(name, 0, colon).replace_all(
@@ -341,7 +341,7 @@ let dashed_table_part_follow_tokens : @core.TokenSet = @core.TokenSet::new([
 ])
 
 ///|
-fn bracket_offset(name : String) -> (Int, Bool)? {
+fn bracket_offset(name : String) -> (Int32, Bool)? {
   match name {
     "OFFSET" => Some((0, false))
     "ORDINAL" => Some((1, false))
@@ -881,7 +881,10 @@ fn parse_unnest(
   guard unnest is Some(u) else { return None }
   match u.expressions().get(0) {
     Some(unnest_expr) => {
-      let unnest_expr = @optimizer.annotate_types(unnest_expr, dialect=p.dialect)
+      let unnest_expr = @optimizer.annotate_types(
+        unnest_expr,
+        dialect=p.dialect,
+      )
       // Unnesting a nested array (i.e array of structs) explodes the top-level struct fields,
       // in contrast to other dialects such as DuckDB which flattens only the array by default
       let elems = match unnest_expr.get_type() {
@@ -917,7 +920,7 @@ fn parse_make_interval(p : @core.Parser) -> @core.Expr raise @core.SqlglotError 
 fn parse_ml(
   p : @core.Parser,
   kind : @core.Kind,
-  is_text? : Bool = false,
+  is_text~ : Bool = false,
 ) -> @core.Expr raise @core.SqlglotError {
   p.match_text_seq(["MODEL"]) |> ignore
   let this = p.parse_table()
@@ -971,7 +974,7 @@ fn parse_generate(
 }
 
 ///|
-fn token_text_at(p : @core.Parser, index : Int) -> String? {
+fn token_text_at(p : @core.Parser, index : Int32) -> String? {
   if index >= 0 && index < p.tokens.length() {
     Some(p.tokens[index].text)
   } else if index < 0 && -index <= p.tokens.length() {

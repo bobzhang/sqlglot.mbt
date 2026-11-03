@@ -26,7 +26,7 @@ pub fn gen_map_date_part(part : Expr?, dialect : Dialect) -> Expr? {
 
 ///|
 /// Python `dialects.dialect.unit_to_str`.
-pub fn gen_unit_to_str(expression : Expr, default? : String = "DAY") -> Expr? {
+pub fn gen_unit_to_str(expression : Expr, default~ : String = "DAY") -> Expr? {
   match expression.arg("unit") {
     None => if default != "" { Some(literal_string(default)) } else { None }
     Some(unit) =>
@@ -391,7 +391,7 @@ pub fn Generator::formatphrase_sql(
 pub fn Generator::jsonobject_sql(
   self : Generator,
   expression : Expr,
-  name? : String = "",
+  name~ : String = "",
 ) -> String raise SqlglotError {
   let null_handling = match expression.get("null_handling") {
     Some(v) if v.truthy() => " " + py_str_value(Some(v))
@@ -402,7 +402,10 @@ pub fn Generator::jsonobject_sql(
       " " + (if v.truthy() { "WITH" } else { "WITHOUT" }) + " UNIQUE KEYS"
     None => ""
   }
-  let return_type = g_pfx(" RETURNING ", self.sql_key(expression, "return_type"))
+  let return_type = g_pfx(
+    " RETURNING ",
+    self.sql_key(expression, "return_type"),
+  )
   let encoding = g_pfx(" ENCODING ", self.sql_key(expression, "encoding"))
   let name = if name == "" {
     if expression.kind.is_a(JSONObject) {
@@ -429,7 +432,10 @@ pub fn Generator::jsonarray_sql(
     Some(v) if v.truthy() => " " + py_str_value(Some(v))
     _ => ""
   }
-  let return_type = g_pfx(" RETURNING ", self.sql_key(expression, "return_type"))
+  let return_type = g_pfx(
+    " RETURNING ",
+    self.sql_key(expression, "return_type"),
+  )
   let strict = g_when(expression.has("strict"), " STRICT")
   self.func(
     "JSON_ARRAY",
@@ -449,7 +455,10 @@ pub fn Generator::jsonarrayagg_sql(
     Some(v) if v.truthy() => " " + py_str_value(Some(v))
     _ => ""
   }
-  let return_type = g_pfx(" RETURNING ", self.sql_key(expression, "return_type"))
+  let return_type = g_pfx(
+    " RETURNING ",
+    self.sql_key(expression, "return_type"),
+  )
   let strict = g_when(expression.has("strict"), " STRICT")
   self.func(
     "JSON_ARRAYAGG",
@@ -725,7 +734,7 @@ pub fn Generator::embed_ignore_nulls(
   if self.cfg.ignore_nulls_in_func && !expression.meta_bool("inline") {
     if self.cfg.ignore_nulls_before_order {
       let found = gen_find_all_in_scope(expression, [HavingMax, Order, Limit])
-      let priority = fn(x : Expr) -> Int {
+      let priority = fn(x : Expr) -> Int32 {
         if x.kind.is_a(HavingMax) {
           0
         } else if x.kind.is_a(Order) {
@@ -1222,7 +1231,7 @@ pub fn Generator::dateadd_sql(
 pub fn Generator::arrayinsert_sql_v(
   self : Generator,
   expression : Expr,
-  index_offset? : Int = 0,
+  index_offset~ : Int32 = 0,
 ) -> String raise SqlglotError {
   match self.fns.hooks.arrayinsert_sql {
     Some(f) => f(self, expression, index_offset)
@@ -1234,7 +1243,7 @@ pub fn Generator::arrayinsert_sql_v(
 pub fn Generator::arrayinsert_sql(
   self : Generator,
   expression : Expr,
-  index_offset? : Int = 0,
+  index_offset~ : Int32 = 0,
 ) -> String raise SqlglotError {
   let this = expression.this_()
   let mut position = expression.arg("position")
@@ -1418,7 +1427,10 @@ pub fn Generator::querytransform_sql(
   )
   let using_ = " USING " + self.sql_key(expression, "command_script")
   let schema = g_pfx(" AS ", self.sql_key(expression, "schema"))
-  let row_format_after = g_pfx(" ", self.sql_key(expression, "row_format_after"))
+  let row_format_after = g_pfx(
+    " ",
+    self.sql_key(expression, "row_format_after"),
+  )
   let record_reader = g_pfx(
     " RECORDREADER ",
     self.sql_key(expression, "record_reader"),
@@ -2317,7 +2329,9 @@ pub fn Generator::weekstart_name(
     None => ""
   }
   let dow_from_week_start_day = gen_week_start_day_to_dow.get(this)
-  let dow_from_week_offset = gen_week_offset_to_dow(self.dialect.cfg.week_offset)
+  let dow_from_week_offset = gen_week_offset_to_dow(
+    self.dialect.cfg.week_offset,
+  )
   if dow_from_week_start_day != Some(dow_from_week_offset) {
     self.unsupported(
       "WEEK(\{this}) is not supported; falling back to the default week start day",
@@ -2343,7 +2357,7 @@ pub fn Generator::weekstart_sql(
 pub fn Generator::chr_sql_v(
   self : Generator,
   expression : Expr,
-  name? : String = "CHR",
+  name~ : String = "CHR",
 ) -> String raise SqlglotError {
   match self.fns.hooks.chr_sql {
     Some(f) => f(self, expression, name)
@@ -2355,7 +2369,7 @@ pub fn Generator::chr_sql_v(
 pub fn Generator::chr_sql(
   self : Generator,
   expression : Expr,
-  name? : String = "CHR",
+  name~ : String = "CHR",
 ) -> String raise SqlglotError {
   let this = self.expressions(expression~)
   let charset = self.sql_key(expression, "charset")

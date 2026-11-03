@@ -9,28 +9,29 @@ fn run_qualify_columns(
   @optimizer.qualify(
     e,
     infer_schema=true,
-    validate_qualify_columns=c.meta_bool("validate_qualify_columns").unwrap_or(
-      true,
-    ),
+    validate_qualify_columns=c
+      .meta_bool("validate_qualify_columns")
+      .unwrap_or(true),
     identify=false,
     schema=c.schema(default_schema),
     dialect?=c.dialect,
-    canonicalize_table_aliases=c.meta_bool("canonicalize_table_aliases").unwrap_or(
-      false,
-    ),
+    canonicalize_table_aliases=c
+      .meta_bool("canonicalize_table_aliases")
+      .unwrap_or(false),
   )
 }
 
 ///|
 test "optimizer qualify_columns" {
-  run_fixtures("qualify_columns", qualify_columns_fixtures, pretty=false, (
-    e,
-    c,
-  ) => run_qualify_columns(e, c, test_schema_json))
-  run_fixtures("qualify_columns_ddl", qualify_columns_ddl_fixtures, pretty=false, (
-    e,
-    c,
-  ) => run_qualify_columns(e, c, test_schema_json))
+  run_fixtures("qualify_columns", qualify_columns_fixtures, pretty=false, (e, c) => {
+    run_qualify_columns(e, c, test_schema_json)
+  })
+  run_fixtures(
+    "qualify_columns_ddl",
+    qualify_columns_ddl_fixtures,
+    pretty=false,
+    (e, c) => run_qualify_columns(e, c, test_schema_json),
+  )
 }
 
 ///|
@@ -121,10 +122,12 @@ test "optimizer isolate_table_selects" {
     "isolate_table_selects",
     isolate_table_selects_fixtures,
     pretty=false,
-    (e, c) => @optimizer.isolate_table_selects(
-      e,
-      schema=c.schema(test_schema_json),
-      dialect?=c.dialect,
-    ),
+    (e, c) => {
+      @optimizer.isolate_table_selects(
+        e,
+        schema=c.schema(test_schema_json),
+        dialect?=c.dialect,
+      )
+    },
   )
 }

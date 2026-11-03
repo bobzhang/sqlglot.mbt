@@ -4,4 +4,3 @@ import {
   "bobzhang/sqlglot/optimizer",
   "moonbitlang/core/cmp",
 } for "test"
-

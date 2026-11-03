@@ -1,13 +1,14 @@
 // Port of sqlglot/planner.py.
 
 ///|
+#derive(Eq, Debug)
 pub(all) enum StepKind {
   Scan
   Join
   Aggregate
   Sort
   SetOperation
-} derive(Eq, Debug)
+}
 
 ///|
 #deprecated
@@ -29,7 +30,7 @@ pub struct JoinInfo {
 ///|
 /// A step of an execution plan.
 pub struct Step {
-  uid : Int
+  uid : Int32
   kind : StepKind
   mut name : String?
   dependencies : Array[Step]
@@ -59,15 +60,15 @@ pub struct Step {
 }
 
 ///|
-let step_counter : Ref[Int] = Ref(0)
+let step_counter : Ref[Int32] = Ref(0)
 
 ///|
 fn Step::new(
   kind : StepKind,
   op? : @core.Kind,
-  left? : String = "",
-  right? : String = "",
-  distinct? : Bool = false,
+  left~ : String = "",
+  right~ : String = "",
+  distinct~ : Bool = false,
 ) -> Step {
   step_counter.val += 1
   {
@@ -198,18 +199,13 @@ fn Step::context_lines(self : Step, indent : String) -> Array[String] {
       }
       lines
     }
-    SetOperation =>
-      if self.distinct {
-        ["\{indent}Distinct: True"]
-      } else {
-        []
-      }
+    SetOperation => if self.distinct { ["\{indent}Distinct: True"] } else { [] }
   }
 }
 
 ///|
 /// A readable representation of the step and its dependencies.
-pub fn Step::to_s(self : Step, level? : Int = 0) -> String {
+pub fn Step::to_s(self : Step, level~ : Int32 = 0) -> String {
   let indent = "  ".repeat(level)
   let nested = indent + "    "
   let context = self.context_lines(nested + "  ")
@@ -263,7 +259,7 @@ pub struct Plan {
 pub fn Plan::new(expression : @core.Expr) -> Plan raise @core.SqlglotError {
   let expression = expression.copy()
   let ctes = expression.arg("with_").map(w => w.copy())
-  { expression, ctes, root: step_from_expression(expression, {}) }
+  { expression, ctes, root: step_from_expression(expression, {}), }
 }
 
 ///|
@@ -414,9 +410,7 @@ pub fn step_from_expression(
     agg.name = step.name
     match expression.arg("having") {
       Some(having) =>
-        if extract_agg_operands(
-            @core.alias_(having.this_(), "_h", quoted=true),
-          ) {
+        if extract_agg_operands(@core.alias_(having.this_(), "_h", quoted=true)) {
           agg.condition = Some(column_of("_h", step.name, true))
         } else {
           agg.condition = having.this()
@@ -553,9 +547,11 @@ pub fn step_from_expression(
             key = key.copy()
             let to_replace = key
               .walk()
-              .filter(n => n.kind.is_a(Column) &&
+              .filter(n => {
+                n.kind.is_a(Column) &&
                 n.table_name() == "" &&
-                d.group.iter().any(kv => kv.0 == n.name()))
+                d.group.iter().any(kv => kv.0 == n.name())
+              })
               .collect()
             for node in to_replace {
               for kv in d.group {
@@ -567,14 +563,15 @@ pub fn step_from_expression(
             }
             if !key.kind.is_a(Column) {
               d.operands = d.operands + [@core.alias_(key, "_a_\{i}")]
-              key = @core.mk1(Column, @core.to_identifier("_a_\{i}", quoted=true))
+              key = @core.mk1(
+                Column,
+                @core.to_identifier("_a_\{i}", quoted=true),
+              )
             }
             d.aggregations.push(
               @core.alias_(@core.mk1(First, key), "_o_\{i}", quoted=true),
             )
-            ordered
-            .this_()
-            .replace(Some(column_of("_o_\{i}", step.name, true)))
+            ordered.this_().replace(Some(column_of("_o_\{i}", step.name, true)))
             |> ignore
           }
         None => ()

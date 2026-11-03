@@ -14,7 +14,7 @@ fn is_date_unit(expression : @core.Expr?) -> Bool {
 }
 
 ///|
-fn digits_at(chars : Array[Char], start : Int, n : Int) -> Int? {
+fn digits_at(chars : Array[Char], start : Int32, n : Int32) -> Int32? {
   if start + n > chars.length() {
     return None
   }
@@ -30,7 +30,7 @@ fn digits_at(chars : Array[Char], start : Int, n : Int) -> Int? {
 }
 
 ///|
-fn days_in_month(year : Int, month : Int) -> Int {
+fn days_in_month(year : Int32, month : Int32) -> Int32 {
   match month {
     1 | 3 | 5 | 7 | 8 | 10 | 12 => 31
     4 | 6 | 9 | 11 => 30
@@ -47,7 +47,7 @@ fn days_in_month(year : Int, month : Int) -> Int {
 ///|
 /// Parses an ISO date prefix, returning the number of chars consumed (Python 3.11+
 /// `date.fromisoformat` formats: YYYY-MM-DD, YYYYMMDD, YYYY-Www[-D], YYYYWww[D]).
-fn parse_iso_date_prefix(chars : Array[Char]) -> Int? {
+fn parse_iso_date_prefix(chars : Array[Char]) -> Int32? {
   let year = match digits_at(chars, 0, 4) {
     Some(y) if y >= 1 => y
     _ => return None
@@ -68,7 +68,12 @@ fn parse_iso_date_prefix(chars : Array[Char]) -> Int? {
         _ => None
       }
     } else {
-      match (digits_at(chars, 5, 2), n >= 8 && chars[7] == '-', digits_at(chars, 8, 2)) {
+      match
+        (
+          digits_at(chars, 5, 2),
+          n >= 8 && chars[7] == '-',
+          digits_at(chars, 8, 2),
+        ) {
         (Some(m), true, Some(d)) if m >= 1 &&
           m <= 12 &&
           d >= 1 &&

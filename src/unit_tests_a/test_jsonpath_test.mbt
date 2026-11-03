@@ -27,7 +27,7 @@ test "TestJsonpath.test_jsonpath" {
       @core.mk(JSONPathSlice, [
         ("start", 1),
         ("end", 5),
-        ("step", (None : Int?)),
+        ("step", (None : Int32?)),
       ]),
     ),
     @core.mk(JSONPathUnion, [

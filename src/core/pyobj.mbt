@@ -5,6 +5,7 @@
 ///|
 /// A host value, mirroring the Python objects that sqlglot's builder API accepts
 /// (`ExpOrStr`, and the values understood by `exp.convert`).
+#derive(Eq)
 pub(all) enum PyObj {
   PyExpr(Expr)
   PyStr(String)
@@ -21,29 +22,29 @@ pub(all) enum PyObj {
   /// An object with named attributes (a namedtuple or an object with a `__dict__`).
   PyObject(Array[(String, PyObj)])
   /// A `datetime.date`.
-  PyDate(year~ : Int, month~ : Int, day~ : Int)
+  PyDate(year~ : Int32, month~ : Int32, day~ : Int32)
   /// A `datetime.time`.
-  PyTime(hour~ : Int, minute~ : Int, second~ : Int, microsecond~ : Int)
+  PyTime(hour~ : Int32, minute~ : Int32, second~ : Int32, microsecond~ : Int32)
   /// A `datetime.datetime`; `tz` is the time zone name (`str(tzinfo)`) and its UTC offset
   /// in minutes, for aware datetimes.
   PyDateTime(
-    year~ : Int,
-    month~ : Int,
-    day~ : Int,
-    hour~ : Int,
-    minute~ : Int,
-    second~ : Int,
-    microsecond~ : Int,
-    tz~ : (String, Int)?
+    year~ : Int32,
+    month~ : Int32,
+    day~ : Int32,
+    hour~ : Int32,
+    minute~ : Int32,
+    second~ : Int32,
+    microsecond~ : Int32,
+    tz~ : (String, Int32)?
   )
-} derive(Eq)
+}
 
 ///|
 #deprecated
 pub extend PyObj with Eq::{not_equal, equal}
 
 ///|
-fn pad_int(n : Int, width : Int) -> String {
+fn pad_int(n : Int32, width : Int32) -> String {
   let s = n.abs().to_string()
   let s = if s.length() < width {
     "0".repeat(width - s.length()) + s
@@ -59,17 +60,17 @@ fn pad_int(n : Int, width : Int) -> String {
 
 ///|
 /// Python `date.isoformat()`.
-fn iso_date(year : Int, month : Int, day : Int) -> String {
+fn iso_date(year : Int32, month : Int32, day : Int32) -> String {
   "\{pad_int(year, 4)}-\{pad_int(month, 2)}-\{pad_int(day, 2)}"
 }
 
 ///|
 /// Python `time.isoformat()` (without a time zone).
 fn iso_time(
-  hour : Int,
-  minute : Int,
-  second : Int,
-  microsecond : Int,
+  hour : Int32,
+  minute : Int32,
+  second : Int32,
+  microsecond : Int32,
 ) -> String {
   let base = "\{pad_int(hour, 2)}:\{pad_int(minute, 2)}:\{pad_int(second, 2)}"
   if microsecond != 0 {
@@ -82,14 +83,14 @@ fn iso_time(
 ///|
 /// Python `datetime.isoformat(sep=" ")`.
 fn iso_datetime(
-  year : Int,
-  month : Int,
-  day : Int,
-  hour : Int,
-  minute : Int,
-  second : Int,
-  microsecond : Int,
-  tz : (String, Int)?,
+  year : Int32,
+  month : Int32,
+  day : Int32,
+  hour : Int32,
+  minute : Int32,
+  second : Int32,
+  microsecond : Int32,
+  tz : (String, Int32)?,
 ) -> String {
   let base = iso_date(year, month, day) +
     " " +
@@ -134,7 +135,7 @@ pub impl IntoPy for String with fn into_py(self) {
 }
 
 ///|
-pub impl IntoPy for Int with fn into_py(self) {
+pub impl IntoPy for Int32 with fn into_py(self) {
   PyInt(self.to_int64())
 }
 
@@ -285,9 +286,9 @@ pub fn PyObj::py_str(self : PyObj) -> String {
         let c = byte.to_int()
         if c == '\\'.to_int() || c == '\''.to_int() {
           sb.write_char('\\')
-          sb.write_char(Int::unsafe_to_char(c))
+          sb.write_char(Int32::unsafe_to_char(c))
         } else if c >= 32 && c < 127 {
-          sb.write_char(Int::unsafe_to_char(c))
+          sb.write_char(Int32::unsafe_to_char(c))
         } else {
           let hex = "0123456789abcdef"
           sb.write_string("\\x")
@@ -328,8 +329,8 @@ pub fn[T : IntoPy] maybe_parse(
   into? : ArrayView[Kind],
   dialect? : Dialect,
   prefix? : String,
-  copy? : Bool = false,
-  error_level? : ErrorLevel = Immediate,
+  copy~ : Bool = false,
+  error_level~ : ErrorLevel = Immediate,
 ) -> Expr raise SqlglotError {
   let obj = sql_or_expression.into_py()
   match obj {
@@ -350,7 +351,7 @@ pub fn[T : IntoPy] maybe_parse(
 /// when a conversion is not possible.
 pub fn[T : IntoPy] convert(
   value : T,
-  copy? : Bool = false,
+  copy~ : Bool = false,
 ) -> Expr raise SqlglotError {
   convert_obj(value.into_py(), copy~)
 }
@@ -490,7 +491,7 @@ pub fn Expr::to_s(self : Expr) -> String {
 }
 
 ///|
-fn to_s_value(value : Value, level : Int, repr_str : Bool) -> String {
+fn to_s_value(value : Value, level : Int32, repr_str : Bool) -> String {
   let indent = "\n" + "  ".repeat(level + 1)
   let delim = ",\{indent}"
   match value {
@@ -518,7 +519,7 @@ fn to_s_value(value : Value, level : Int, repr_str : Bool) -> String {
 /// `textwrap.dedent(s.strip("\n")).splitlines()`
 fn to_s_dedent(s : String) -> Array[String] {
   let lines = strip_chars(s, "\n").split("\n").map(l => l.to_owned()).collect()
-  let mut margin : Int? = None
+  let mut margin : Int32? = None
   for line in lines {
     if py_strip(line).is_empty() {
       continue
@@ -547,7 +548,7 @@ fn to_s_dedent(s : String) -> Array[String] {
 }
 
 ///|
-fn to_s_node(node : Expr, level : Int) -> String {
+fn to_s_node(node : Expr, level : Int32) -> String {
   let mut indent = "\n" + "  ".repeat(level + 1)
   let mut delim = ",\{indent}"
   let items : Array[(String, String)] = []

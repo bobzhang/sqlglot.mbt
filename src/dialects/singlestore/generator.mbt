@@ -25,7 +25,7 @@ fn mysql_format_time(
 }
 
 ///|
-fn hex_value(s : String) -> Int {
+fn hex_value(s : String) -> Int32 {
   let mut n = 0
   for c in s {
     let d = if c >= '0' && c <= '9' {

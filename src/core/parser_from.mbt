@@ -239,8 +239,8 @@ pub fn Parser::parse_using_identifiers(
 ///|
 pub fn Parser::parse_join(
   self : Parser,
-  skip_join_token? : Bool = false,
-  parse_bracket? : Bool = false,
+  skip_join_token~ : Bool = false,
+  parse_bracket~ : Bool = false,
   alias_tokens? : TokenSet,
 ) -> Expr? raise SqlglotError {
   match self.fns.hooks.parse_join {
@@ -253,8 +253,8 @@ pub fn Parser::parse_join(
 ///|
 pub fn Parser::parse_join_base(
   self : Parser,
-  skip_join_token? : Bool = false,
-  parse_bracket? : Bool = false,
+  skip_join_token~ : Bool = false,
+  parse_bracket~ : Bool = false,
   alias_tokens? : TokenSet,
 ) -> Expr? raise SqlglotError {
   if self.match_(COMMA) {
@@ -466,7 +466,7 @@ pub fn Parser::parse_index_params_base(
 pub fn Parser::parse_index(
   self : Parser,
   index? : Expr?,
-  anonymous? : Bool = false,
+  anonymous~ : Bool = false,
 ) -> Expr? raise SqlglotError {
   let mut index : Expr? = match index {
     Some(i) => i
@@ -560,7 +560,7 @@ pub fn Parser::parse_table_hints_base(
 ///|
 pub fn Parser::parse_table_part(
   self : Parser,
-  schema? : Bool = false,
+  schema~ : Bool = false,
 ) -> Expr? raise SqlglotError {
   match self.fns.hooks.parse_table_part {
     Some(f) => f(self, schema)
@@ -571,7 +571,7 @@ pub fn Parser::parse_table_part(
 ///|
 pub fn Parser::parse_table_part_base(
   self : Parser,
-  schema? : Bool = false,
+  schema~ : Bool = false,
 ) -> Expr? raise SqlglotError {
   let f = if !schema {
     self.parse_function(optional_parens=false)
@@ -661,10 +661,10 @@ pub fn Parser::parse_table_parts_fast(
 ///|
 pub fn Parser::parse_table_parts(
   self : Parser,
-  schema? : Bool = false,
-  is_db_reference? : Bool = false,
-  wildcard? : Bool = false,
-  fast? : Bool = false,
+  schema~ : Bool = false,
+  is_db_reference~ : Bool = false,
+  wildcard~ : Bool = false,
+  fast~ : Bool = false,
 ) -> Expr? raise SqlglotError {
   match self.fns.hooks.parse_table_parts {
     Some(f) => f(self, schema, is_db_reference, wildcard, fast)
@@ -676,10 +676,10 @@ pub fn Parser::parse_table_parts(
 ///|
 pub fn Parser::parse_table_parts_base(
   self : Parser,
-  schema? : Bool = false,
-  is_db_reference? : Bool = false,
-  wildcard? : Bool = false,
-  fast? : Bool = false,
+  schema~ : Bool = false,
+  is_db_reference~ : Bool = false,
+  wildcard~ : Bool = false,
+  fast~ : Bool = false,
 ) -> Expr? raise SqlglotError {
   if fast {
     return self.parse_table_parts_fast()
@@ -781,13 +781,13 @@ pub fn token_repr(t : Token) -> String {
 ///|
 pub fn Parser::parse_table(
   self : Parser,
-  schema? : Bool = false,
-  joins? : Bool = false,
+  schema~ : Bool = false,
+  joins~ : Bool = false,
   alias_tokens? : TokenSet,
-  parse_bracket? : Bool = false,
-  is_db_reference? : Bool = false,
-  parse_partition? : Bool = false,
-  consume_pipe? : Bool = false,
+  parse_bracket~ : Bool = false,
+  is_db_reference~ : Bool = false,
+  parse_partition~ : Bool = false,
+  consume_pipe~ : Bool = false,
 ) -> Expr? raise SqlglotError {
   let args : TableArgs = {
     schema,
@@ -1091,7 +1091,7 @@ pub fn Parser::parse_changes(self : Parser) -> Expr? raise SqlglotError {
 ///|
 pub fn Parser::parse_unnest(
   self : Parser,
-  with_alias? : Bool = true,
+  with_alias~ : Bool = true,
 ) -> Expr? raise SqlglotError {
   match self.fns.hooks.parse_unnest {
     Some(f) => f(self, with_alias)
@@ -1102,7 +1102,7 @@ pub fn Parser::parse_unnest(
 ///|
 pub fn Parser::parse_unnest_base(
   self : Parser,
-  with_alias? : Bool = true,
+  with_alias~ : Bool = true,
 ) -> Expr? raise SqlglotError {
   if !self.match_pair(UNNEST, L_PAREN, advance=false) {
     return None
@@ -1159,7 +1159,7 @@ pub fn Parser::parse_unnest_base(
 ///|
 pub fn Parser::parse_derived_table_values(
   self : Parser,
-  allow_value_synonym? : Bool = false,
+  allow_value_synonym~ : Bool = false,
 ) -> Expr? raise SqlglotError {
   let is_derived = self.match_pair(L_PAREN, VALUES)
   if !is_derived &&
@@ -1184,7 +1184,7 @@ pub fn Parser::parse_derived_table_values(
 ///|
 pub fn Parser::parse_table_sample(
   self : Parser,
-  as_modifier? : Bool = false,
+  as_modifier~ : Bool = false,
 ) -> Expr? raise SqlglotError {
   match self.fns.hooks.parse_table_sample {
     Some(f) => f(self, as_modifier)
@@ -1195,7 +1195,7 @@ pub fn Parser::parse_table_sample(
 ///|
 pub fn Parser::parse_table_sample_base(
   self : Parser,
-  as_modifier? : Bool = false,
+  as_modifier~ : Bool = false,
 ) -> Expr? raise SqlglotError {
   if !self.match_(TABLE_SAMPLE) &&
     !(as_modifier && self.match_text_seq(["USING", "SAMPLE"])) {

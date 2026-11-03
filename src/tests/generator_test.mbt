@@ -9,7 +9,7 @@ fn col(name : String) -> @core.Expr {
 ///|
 fn gen(
   e : @core.Expr,
-  pretty? : Bool = false,
+  pretty~ : Bool = false,
 ) -> String raise @core.SqlglotError {
   @core.Generator::new(@core.base_dialect(), pretty~).generate(e)
 }

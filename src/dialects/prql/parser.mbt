@@ -190,7 +190,7 @@ fn parse_selection(
   p : @core.Parser,
   query : @core.Expr,
   parse_method? : (@core.Parser) -> @core.Expr? raise @core.SqlglotError,
-  append? : Bool = true,
+  append~ : Bool = true,
 ) -> @core.Expr raise @core.SqlglotError {
   let parse_method = match parse_method {
     Some(f) => f

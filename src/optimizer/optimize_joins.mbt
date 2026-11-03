@@ -242,22 +242,33 @@ pub fn eliminate_joins(
 }
 
 ///|
-fn should_eliminate_join(scope : Scope, join : @core.Expr, alias_ : String) -> Bool {
+fn should_eliminate_join(
+  scope : Scope,
+  join : @core.Expr,
+  alias_ : String,
+) -> Bool {
   match scope.sources.get(alias_) {
     Some(ScopeSource(inner)) =>
       !join_is_used(scope, join, alias_) &&
-      ((@core.py_upper(join.text("side")) == "LEFT" &&
-      is_joined_on_all_unique_outputs(inner, join)) ||
-      (!join.has("on") && has_single_output_row(inner)))
+      (
+        (
+          @core.py_upper(join.text("side")) == "LEFT" &&
+          is_joined_on_all_unique_outputs(inner, join)
+        ) ||
+        (!join.has("on") && has_single_output_row(inner))
+      )
     _ => false
   }
 }
 
 ///|
 fn join_is_used(scope : Scope, join : @core.Expr, alias_ : String) -> Bool {
-  let on_ids : @set.Set[Int] = @set.Set([])
+  let on_ids : @set.Set[Int32] = @set.Set([])
   match join.arg("on") {
-    Some(on) => for c in on.find_all([Column]) { on_ids.add(c.uid) }
+    Some(on) =>
+      for c in on.find_all([Column]) {
+        on_ids.add(c.uid)
+      }
     None => ()
   }
   scope.source_columns(alias_).iter().any(c => !on_ids.contains(c.uid))
@@ -313,9 +324,11 @@ fn unique_outputs(scope : Scope) -> Array[String] {
 fn has_single_output_row(scope : Scope) -> Bool {
   let e = scope.expression
   e.kind.is_a(Select) &&
-  (e.selects().iter().all(s => s.unalias().kind.is_a(AggFunc)) ||
-  is_limit_1(scope) ||
-  !e.has("from_"))
+  (
+    e.selects().iter().all(s => s.unalias().kind.is_a(AggFunc)) ||
+    is_limit_1(scope) ||
+    !e.has("from_")
+  )
 }
 
 ///|
