@@ -13,14 +13,18 @@ concurrency:
 
 jobs:
   check:
-    name: check (warnings, API summaries)
+    name: check (${{ matrix.moonbit }}, warnings, API summaries)
+    strategy:
+      fail-fast: false
+      matrix:
+        moonbit: [latest, pre-release]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
 
       - name: Install MoonBit
         run: |
-          curl -fsSL https://cli.moonbitlang.com/install/unix.sh | bash
+          curl -fsSL https://cli.moonbitlang.com/install/unix.sh | bash -s -- "${{ matrix.moonbit }}"
           echo "$HOME/.moon/bin" >> "$GITHUB_PATH"
 
       - name: moon version
@@ -35,19 +39,18 @@ jobs:
           git diff --exit-code -- '*.mbti'
 
   test:
-    name: test (${{ matrix.os }}, ${{ matrix.target }})
+    name: test (${{ matrix.os }}, ${{ matrix.target }}, ${{ matrix.moonbit }})
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - os: ubuntu-latest
-            target: wasm-gc
-          - os: ubuntu-latest
-            target: js
-          - os: ubuntu-latest
-            target: native
+        moonbit: [latest, pre-release]
+        os: [ubuntu-latest, macos-latest]
+        target: [wasm-gc, js, native]
+        exclude:
           - os: macos-latest
-            target: native
+            target: wasm-gc
+          - os: macos-latest
+            target: js
     runs-on: ${{ matrix.os }}
     timeout-minutes: 60
     steps:
@@ -55,7 +58,7 @@ jobs:
 
       - name: Install MoonBit
         run: |
-          curl -fsSL https://cli.moonbitlang.com/install/unix.sh | bash
+          curl -fsSL https://cli.moonbitlang.com/install/unix.sh | bash -s -- "${{ matrix.moonbit }}"
           echo "$HOME/.moon/bin" >> "$GITHUB_PATH"
 
       - name: moon version

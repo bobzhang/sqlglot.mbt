@@ -15,7 +15,7 @@ pub fn build_formatted_time_expr(
   args : Array[Expr],
   dialect : Dialect,
   dialect_override? : String,
-  default? : Bool = false,
+  default~ : Bool = false,
   default_format? : String,
 ) -> Expr raise SqlglotError {
   let target_dialect = match dialect_override {
@@ -43,7 +43,7 @@ pub fn build_formatted_time_expr(
 pub fn build_formatted_time(
   kind : Kind,
   dialect_override? : String,
-  default? : Bool = false,
+  default~ : Bool = false,
   default_format? : String,
 ) -> FuncBuilder {
   fn(args, p) raise SqlglotError {
@@ -64,8 +64,8 @@ pub fn build_formatted_time(
 pub fn build_date_delta(
   kind : Kind,
   unit_mapping? : Map[String, String],
-  default_unit? : String = "DAY",
-  supports_timezone? : Bool = false,
+  default_unit~ : String = "DAY",
+  supports_timezone~ : Bool = false,
 ) -> FuncBuilder {
   fn(args, _p) {
     let unit_based = args.length() >= 3
@@ -174,10 +174,10 @@ pub fn build_timestamp_trunc(args : Array[Expr]) -> Expr {
 pub fn build_trunc(
   args : Array[Expr],
   dialect : Dialect,
-  date_trunc_unabbreviate? : Bool = true,
+  date_trunc_unabbreviate~ : Bool = true,
   default_date_trunc_unit? : String,
-  date_trunc_requires_part? : Bool = true,
-  fractions_supported? : Bool = false,
+  date_trunc_requires_part~ : Bool = true,
+  fractions_supported~ : Bool = false,
 ) -> Expr raise SqlglotError {
   let mut this = arg(args, 0)
   let mut second = arg(args, 1)
@@ -240,8 +240,8 @@ pub fn isnull_to_is_null(args : Array[Expr]) -> Expr {
 /// elements when the path is built.
 pub fn build_json_extract_path(
   kind : Kind,
-  zero_based_indexing? : Bool = true,
-  arrow_req_json_type? : Bool = false,
+  zero_based_indexing~ : Bool = true,
+  arrow_req_json_type~ : Bool = false,
   json_type? : String,
 ) -> FuncBuilder {
   (args, _p) => {
@@ -310,8 +310,8 @@ pub fn build_json_extract_path(
 /// Python `build_default_decimal_type(precision=None, scale=None)`: a DataType
 /// converter that adds default DECIMAL parameters.
 pub fn build_default_decimal_type(
-  precision? : Int,
-  scale? : Int,
+  precision? : Int32,
+  scale? : Int32,
 ) -> (Expr) -> Expr {
   fn(dtype) {
     match precision {
@@ -349,7 +349,7 @@ pub fn build_timestamp_from_parts(args : Array[Expr]) -> Expr {
 ///|
 /// Python `build_like(expr_type, not_like=False)` from dialects/dialect.py (named
 /// `build_like_fn` because the parser's `build_like(args)` already exists).
-pub fn build_like_fn(kind : Kind, not_like? : Bool = false) -> FuncBuilder {
+pub fn build_like_fn(kind : Kind, not_like~ : Bool = false) -> FuncBuilder {
   fn(args, _p) {
     let mut like_expr = mk(kind, [
       ("this", arg(args, 0)),

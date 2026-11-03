@@ -10,24 +10,24 @@
 /// `generate`).
 pub fn transpile(
   sql : String,
-  read? : String = "",
+  read~ : String = "",
   write? : String,
-  identity? : Bool = true,
-  error_level? : @core.ErrorLevel = Immediate,
-  error_message_context? : Int = 100,
-  max_errors? : Int = 3,
-  max_nodes? : Int = -1,
+  identity~ : Bool = true,
+  error_level~ : @core.ErrorLevel = Immediate,
+  error_message_context~ : Int32 = 100,
+  max_errors~ : Int32 = 3,
+  max_nodes~ : Int32 = -1,
   pretty? : Bool,
-  identify? : Identify = Never,
-  normalize? : Bool = false,
-  pad? : Int = 2,
-  indent? : Int = 2,
+  identify~ : Identify = Never,
+  normalize~ : Bool = false,
+  pad~ : Int32 = 2,
+  indent~ : Int32 = 2,
   normalize_functions? : NormalizeFunctions,
-  unsupported_level? : @core.ErrorLevel = Warn,
-  max_unsupported? : Int = 3,
-  leading_comma? : Bool = false,
-  max_text_width? : Int = 80,
-  comments? : Bool = true,
+  unsupported_level~ : @core.ErrorLevel = Warn,
+  max_unsupported~ : Int32 = 3,
+  leading_comma~ : Bool = false,
+  max_text_width~ : Int32 = 80,
+  comments~ : Bool = true,
 ) -> Array[String] raise @core.SqlglotError {
   let r = @core.Dialect::get_or_raise(read)
   let w = match write {
@@ -73,13 +73,13 @@ pub fn transpile(
 /// (Python `into=[exp.X, exp.Y]`) tries each type in turn.
 pub fn parse_one(
   sql : String,
-  read? : String = "",
+  read~ : String = "",
   into? : @core.Kind,
   into_any? : Array[@core.Kind],
-  error_level? : @core.ErrorLevel = Immediate,
-  error_message_context? : Int = 100,
-  max_errors? : Int = 3,
-  max_nodes? : Int = -1,
+  error_level~ : @core.ErrorLevel = Immediate,
+  error_message_context~ : Int32 = 100,
+  max_errors~ : Int32 = 3,
+  max_nodes~ : Int32 = -1,
 ) -> @core.Expr raise @core.SqlglotError {
   let (into, into_is_list) = match (into, into_any) {
     (Some(k), _) => (Some([k]), false)
@@ -102,11 +102,11 @@ pub fn parse_one(
 /// Parses all statements of `sql` in dialect `read` (Python `sqlglot.parse`).
 pub fn parse(
   sql : String,
-  read? : String = "",
-  error_level? : @core.ErrorLevel = Immediate,
-  error_message_context? : Int = 100,
-  max_errors? : Int = 3,
-  max_nodes? : Int = -1,
+  read~ : String = "",
+  error_level~ : @core.ErrorLevel = Immediate,
+  error_message_context~ : Int32 = 100,
+  max_errors~ : Int32 = 3,
+  max_nodes~ : Int32 = -1,
 ) -> Array[@core.Expr?] raise @core.SqlglotError {
   @core.parse(
     sql,
@@ -130,19 +130,19 @@ pub fn parse(
 /// - `leading_comma`, `max_text_width`, `comments`: further formatting options.
 pub fn generate(
   expression : @core.Expr,
-  dialect? : String = "",
-  copy? : Bool = true,
+  dialect~ : String = "",
+  copy~ : Bool = true,
   pretty? : Bool,
-  identify? : Identify = Never,
-  normalize? : Bool = false,
-  pad? : Int = 2,
-  indent? : Int = 2,
+  identify~ : Identify = Never,
+  normalize~ : Bool = false,
+  pad~ : Int32 = 2,
+  indent~ : Int32 = 2,
   normalize_functions? : NormalizeFunctions,
-  unsupported_level? : @core.ErrorLevel = Warn,
-  max_unsupported? : Int = 3,
-  leading_comma? : Bool = false,
-  max_text_width? : Int = 80,
-  comments? : Bool = true,
+  unsupported_level~ : @core.ErrorLevel = Warn,
+  max_unsupported~ : Int32 = 3,
+  leading_comma~ : Bool = false,
+  max_text_width~ : Int32 = 80,
+  comments~ : Bool = true,
 ) -> String raise @core.SqlglotError {
   @core.Generator::new(
     @core.Dialect::get_or_raise(dialect),

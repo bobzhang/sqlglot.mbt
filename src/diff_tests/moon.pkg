@@ -4,4 +4,3 @@ import {
   "bobzhang/sqlglot/diff",
   "moonbitlang/core/json",
 } for "test"
-

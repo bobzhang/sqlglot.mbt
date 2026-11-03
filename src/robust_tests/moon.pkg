@@ -5,4 +5,3 @@ import {
   "bobzhang/sqlglot/executor",
   "moonbitlang/core/json",
 } for "test"
-

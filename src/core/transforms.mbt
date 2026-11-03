@@ -85,9 +85,11 @@ pub fn unnest_generate_date_array_using_recursive_cte(
         _ => None
       }
       // `maybe_parse(column_name)`: the identifier itself, or the parsed column
-      let column_expr = () => match column_ident {
-        Some(c) => c.copy()
-        None => column_of("date_value")
+      let column_expr = () => {
+        match column_ident {
+          Some(c) => c.copy()
+          None => column_of("date_value")
+        }
       }
       let start = cast_(start, DType::DATE)
       let date_add = func_("date_add", [
@@ -124,10 +126,13 @@ pub fn unnest_generate_date_array_using_recursive_cte(
       cte
       .arg("alias")
       .unwrap()
-      .append("columns", match column_ident {
-        Some(c) => c.copy()
-        None => to_identifier("date_value")
-      })
+      .append(
+        "columns",
+        match column_ident {
+          Some(c) => c.copy()
+          None => to_identifier("date_value")
+        },
+      )
       recursive_ctes.push(cte)
       count += 1
     }
@@ -230,7 +235,9 @@ pub fn eliminate_distinct_on(expression : Expr) -> Expr raise SqlglotError {
         } else {
           None
         }
-        select = select.replace(Some(alias_(select, new_alias, quoted?))).unwrap()
+        select = select
+          .replace(Some(alias_(select, new_alias, quoted?)))
+          .unwrap()
       }
       taken_names.push(select.output_name())
       new_selects.push(select.arg("alias").unwrap())
@@ -382,7 +389,7 @@ pub fn unqualify_unnest(expression : Expr) -> Expr raise SqlglotError {
 
 ///|
 /// Convert cross join unnest into lateral view explode.
-pub fn unnest_to_explode(unnest_using_arrays_zip? : Bool = true) -> Transform {
+pub fn unnest_to_explode(unnest_using_arrays_zip~ : Bool = true) -> Transform {
   fn(expression : Expr) raise SqlglotError {
     fn unnest_zip_exprs(
       u : Expr,
@@ -751,7 +758,7 @@ pub fn remove_unique_constraints(expression : Expr) -> Expr raise SqlglotError {
 
 ///|
 pub fn ctas_with_tmp_tables_to_create_tmp_view(
-  tmp_storage_provider? : (Expr) -> Expr raise SqlglotError = e => e,
+  tmp_storage_provider~ : (Expr) -> Expr raise SqlglotError = e => e,
 ) -> Transform {
   fn(expression : Expr) raise SqlglotError {
     let temporary = match expression.arg("properties") {

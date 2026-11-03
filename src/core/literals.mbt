@@ -19,7 +19,7 @@ pub fn literal_number(text : String) -> Expr {
 
 ///|
 /// Builds a number literal from an integer.
-pub fn literal_int(n : Int) -> Expr {
+pub fn literal_int(n : Int32) -> Expr {
   literal_number(n.to_string())
 }
 

@@ -123,11 +123,13 @@ fn unnest(
     Some(p) => p
     None => return
   }
-  if (predicate.kind.is_a(Func) &&
-    (match predicate.parent {
-      Some(p) => p.kind.is_any([Table, From, Join])
-      None => false
-    })) ||
+  if (
+      predicate.kind.is_a(Func) &&
+      (match predicate.parent {
+        Some(p) => p.kind.is_any([Table, From, Join])
+        None => false
+      })
+    ) ||
     !same_select(predicate.parent_select(), parent_select) ||
     !parent_select.has("from_") ||
     (predicate.kind.is_a(In) && is_negated(predicate)) {
@@ -138,10 +140,12 @@ fn unnest(
     let inner_alias = next_alias_name()
     let projections = select
       .selects()
-      .map(s => @core.alias_(
-        column_with_table(s.alias_or_name(), table=inner_alias),
-        s.alias_or_name(),
-      ))
+      .map(s => {
+        @core.alias_(
+          column_with_table(s.alias_or_name(), table=inner_alias),
+          s.alias_or_name(),
+        )
+      })
     select = @core.select_(projections).from_(
       @core.mk(Subquery, [
         ("this", select.copy()),
@@ -165,12 +169,16 @@ fn unnest(
       None => false
     }
     if (clause_is_having && same_select(clause_parent_select, parent_select)) ||
-      ((clause is None || !same_select(clause_parent_select, parent_select)) &&
-      (parent_select.has("group") ||
-      parent_select
-      .selects()
-      .iter()
-      .any(s => find_in_scope(s, [AggFunc]) is Some(_)))) {
+      (
+        (clause is None || !same_select(clause_parent_select, parent_select)) &&
+        (
+          parent_select.has("group") ||
+          parent_select
+          .selects()
+          .iter()
+          .any(s => find_in_scope(s, [AggFunc]) is Some(_))
+        )
+      ) {
       column = @core.mk1(Max, column)
     } else if !parent_is(select, [Subquery]) {
       return
@@ -220,7 +228,10 @@ fn unnest(
       if !same {
         let sub = select.subquery(alias_="_q", copy=false)
         select = @core.select_([
-            @core.alias_(column_with_table(value.alias_(), table="_q"), value.alias_()),
+            @core.alias_(
+              column_with_table(value.alias_(), table="_q"),
+              value.alias_(),
+            ),
           ])
           .from_(sub, copy=false)
           .group_by([column_with_table(value.alias_(), table="_q")], copy=false)
@@ -250,8 +261,10 @@ fn is_plain_group(group : @core.Expr) -> Bool {
   !group
   .expressions()
   .iter()
-  .any(e => e.kind.is_any([Rollup, Cube, GroupingSets]) ||
-    (e.kind.is_a(Tuple) && e.expressions().is_empty()))
+  .any(e => {
+    e.kind.is_any([Rollup, Cube, GroupingSets]) ||
+    (e.kind.is_a(Tuple) && e.expressions().is_empty())
+  })
 }
 
 ///|
@@ -296,7 +309,8 @@ fn decorrelate(
     Some(w) => w
     None => return
   }
-  if where_.find([Or]) is Some(_) || select.find([Limit, Offset, Fetch]) is Some(_) {
+  if where_.find([Or]) is Some(_) ||
+    select.find([Limit, Offset, Fetch]) is Some(_) {
     return
   }
   let mut parent_predicate = select.find_ancestor([Predicate])
@@ -330,7 +344,7 @@ fn decorrelate(
   let table_alias = next_alias_name()
   let keys : Array[(@core.Expr, @core.Expr, @core.Expr)] = []
   let mut eq_count = 0
-  let external_ids : @set.Set[Int] = @set.Set([])
+  let external_ids : @set.Set[Int32] = @set.Set([])
   for column in external_columns {
     match column.find_ancestor([Where]) {
       Some(w) if physical_equal(w, where_) => ()
@@ -431,7 +445,14 @@ fn decorrelate(
   if !value.kind.is_a(Subquery) &&
     find_in_scope(value, [AggFunc]) is None &&
     !group_by_has_value(group_by) {
-    let agg = @core.mk1(if is_subquery_projection { Max } else { ArrayAgg }, value_this)
+    let agg = @core.mk1(
+      if is_subquery_projection {
+        Max
+      } else {
+        ArrayAgg
+      },
+      value_this,
+    )
     select.select_(
       [@core.alias_(agg, value.alias_(), quoted=false, copy=true)],
       append=false,
@@ -454,7 +475,9 @@ fn decorrelate(
       |> ignore
     }
   }
-  let array_keys = key_aliases.filter(kv => !group_by.contains(kv.0)).map(kv => kv.0)
+  let array_keys = key_aliases
+    .filter(kv => !group_by.contains(kv.0))
+    .map(kv => kv.0)
   let use_struct = array_keys.length() > 1
   let mut array_alias = ""
   if !array_keys.is_empty() {
@@ -467,11 +490,13 @@ fn decorrelate(
       @core.mk(Struct, [
         (
           "expressions",
-          array_keys.map(key => @core.mk2(
-            PropertyEQ,
-            @core.to_identifier(assoc_get(key_aliases, key).unwrap()),
-            key.copy(),
-          )),
+          array_keys.map(key => {
+            @core.mk2(
+              PropertyEQ,
+              @core.to_identifier(assoc_get(key_aliases, key).unwrap()),
+              key.copy(),
+            )
+          }),
         ),
       ])
     } else {
@@ -521,7 +546,9 @@ fn decorrelate(
     Some(pp) if pp.kind.is_a(Any) =>
       if group_by_has_value(group_by) {
         let predicate = @core.mk2(op_type.unwrap(), other, alias_)
-        parent_predicate = Some(replace_with_condition(pp.parent.unwrap(), predicate))
+        parent_predicate = Some(
+          replace_with_condition(pp.parent.unwrap(), predicate),
+        )
       } else {
         let predicate = @core.mk2(
           op_type.unwrap(),
@@ -563,12 +590,14 @@ fn decorrelate(
       if find_in_scope(value, [Count]) is Some(_) {
         let removed = value
           .this_()
-          .transform(node => if node.kind.is_a(Count) {
-            Some(@core.literal_int(0))
-          } else if node.kind.is_a(AggFunc) {
-            Some(@core.null_())
-          } else {
-            Some(node)
+          .transform(node => {
+            if node.kind.is_a(Count) {
+              Some(@core.literal_int(0))
+            } else if node.kind.is_a(AggFunc) {
+              Some(@core.null_())
+            } else {
+              Some(node)
+            }
           })
         replacement = @core.mk(Coalesce, [
           ("this", replacement),
@@ -584,7 +613,12 @@ fn decorrelate(
     predicate.replace(Some(@core.true_())) |> ignore
     if group_by.contains(key) {
       key.replace(
-        Some(column_with_table(assoc_get(key_aliases, key).unwrap(), table=table_alias)),
+        Some(
+          column_with_table(
+            assoc_get(key_aliases, key).unwrap(),
+            table=table_alias,
+          ),
+        ),
       )
       |> ignore
     } else {

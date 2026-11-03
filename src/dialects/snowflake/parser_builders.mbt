@@ -1,7 +1,7 @@
 // Port of the module-level function builders of sqlglot/parsers/snowflake.py
 
 ///|
-fn seq_get(args : Array[@core.Expr], i : Int) -> @core.Expr? {
+fn seq_get(args : Array[@core.Expr], i : Int32) -> @core.Expr? {
   if i >= 0 && i < args.length() {
     Some(args[i])
   } else {
@@ -90,7 +90,7 @@ fn timestamp_type_func(dtype : @core.DType) -> String? {
 fn build_datetime(
   name : String,
   kind : @core.DType,
-  safe? : Bool = false,
+  safe~ : Bool = false,
 ) -> @core.FuncBuilder {
   (args, p) => {
     let value = seq_get(args, 0)
@@ -437,7 +437,7 @@ fn build_object_construct(args : Array[@core.Expr]) -> @core.Expr {
 }
 
 ///|
-fn map_date_part_arg(args : Array[@core.Expr], i : Int) -> @core.Expr? {
+fn map_date_part_arg(args : Array[@core.Expr], i : Int32) -> @core.Expr? {
   @core.map_date_part(seq_get(args, i))
 }
 

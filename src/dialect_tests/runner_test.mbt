@@ -3,7 +3,7 @@
 
 ///|
 /// Maximum number of mismatches printed per module.
-let max_printed : Int = 25
+let max_printed : Int32 = 25
 
 ///|
 fn get_dialect(name : String) -> @core.Dialect raise @core.SqlglotError {

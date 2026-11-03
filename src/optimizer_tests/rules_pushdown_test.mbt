@@ -2,10 +2,12 @@
 
 ///|
 test "optimizer pushdown_predicates" {
-  run_fixtures("pushdown_predicates", pushdown_predicates_fixtures, pretty=false, (
-    e,
-    c,
-  ) => @optimizer.pushdown_predicates(e, dialect?=c.dialect))
+  run_fixtures(
+    "pushdown_predicates",
+    pushdown_predicates_fixtures,
+    pretty=false,
+    (e, c) => @optimizer.pushdown_predicates(e, dialect?=c.dialect),
+  )
 }
 
 ///|

@@ -6,10 +6,10 @@ let snowflake_date_parts : Array[String] = [
 ]
 
 ///|
-const SNOWFLAKE_MAX_PRECISION : Int = 38
+const SNOWFLAKE_MAX_PRECISION : Int32 = 38
 
 ///|
-const SNOWFLAKE_MAX_SCALE : Int = 37
+const SNOWFLAKE_MAX_SCALE : Int32 = 37
 
 ///|
 fn snowflake_datatype(

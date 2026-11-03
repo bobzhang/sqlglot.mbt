@@ -1,7 +1,7 @@
 // Compares plans of optimized queries with Python's (tools/gen_planner_fixtures.py).
 
 ///|
-fn py_cmp(a : String, b : String) -> Int {
+fn py_cmp(a : String, b : String) -> Int32 {
   let ai = a.iter()
   let bi = b.iter()
   for ;; {
@@ -16,7 +16,7 @@ fn py_cmp(a : String, b : String) -> Int {
 
 ///|
 /// The step's text without its trailing ` (<uid>)` and with sorted dependencies.
-fn canonical(step : @planner.Step, level : Int) -> String {
+fn canonical(step : @planner.Step, level : Int32) -> String {
   let indent = "  ".repeat(level)
   let nested = indent + "    "
   let text = step.to_s(level~)
@@ -30,7 +30,9 @@ fn canonical(step : @planner.Step, level : Int) -> String {
   }
   let suffix = " (\{step.uid})"
   if head[0].has_suffix(suffix) {
-    head[0] = head[0].view(end_offset=head[0].length() - suffix.length()).to_owned()
+    head[0] = head[0]
+      .view(end_offset=head[0].length() - suffix.length())
+      .to_owned()
   }
   let deps = step.dependencies.map(d => canonical(d, level + 1))
   deps.sort_by(py_cmp)
@@ -54,7 +56,7 @@ test "planner fixtures" {
     let expected = planner_fixtures[i + 2]
     i += 3
     total += 1
-    let got = (try {
+    let got = try {
       let mapping = @optimizer.schema_from_json_string(
         if schema_name == "tpch" {
           tpch_schema_json
@@ -70,7 +72,7 @@ test "planner fixtures" {
       canonical(@planner.Plan::new(optimized).root, 0)
     } catch {
       err => "ERROR: \{err}"
-    })
+    }
     if got == expected {
       passed += 1
     } else if total - passed <= 3 {

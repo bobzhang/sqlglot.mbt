@@ -47,7 +47,7 @@ pub struct PythonExecutor {
 /// Creates an executor. `env` adds or overrides functions available to the generated
 /// code.
 pub fn PythonExecutor::new(
-  env? : Map[String, Value] = {},
+  env~ : Map[String, Value] = {},
   tables? : Tables,
 ) -> PythonExecutor raise @core.SqlglotError {
   let all_env : Map[String, Value] = Map([])
@@ -90,7 +90,7 @@ pub fn PythonExecutor::new(
 /// The number of distinct subquery plans and the size of each one's result cache.
 pub fn PythonExecutor::subquery_cache_sizes(
   self : PythonExecutor,
-) -> Array[Int] {
+) -> Array[Int32] {
   self.subquery_plans.map(kv => kv.1.cache.length())
 }
 
@@ -124,7 +124,7 @@ fn PythonExecutor::execute_plan(
 ) -> Table raise {
   let finished : Array[@planner.Step] = []
   let queue = plan.leaves()
-  let contexts : Map[Int, Context] = Map([])
+  let contexts : Map[Int32, Context] = Map([])
   while queue.pop() is Some(node) {
     try {
       let tables : Array[(String?, Table)] = []
@@ -172,7 +172,7 @@ fn PythonExecutor::execute_plan(
 }
 
 ///|
-fn slice_rows(rows : Array[Row], start : Int, end : Int?) -> Array[Row] {
+fn slice_rows(rows : Array[Row], start : Int32, end : Int32?) -> Array[Row] {
   let n = rows.length()
   let s = if start > n { n } else { start }
   let e = match end {
@@ -595,7 +595,7 @@ fn PythonExecutor::join(
   let source = step.source_name
   let source_table = context.get_table(source)
   let mut source_context = self.context([(source, source_table)])
-  let column_ranges : Array[(String?, (Int, Int))] = [
+  let column_ranges : Array[(String?, (Int32, Int32))] = [
     (source, (0, source_table.columns.length())),
   ]
   for entry in step.joins {
@@ -674,9 +674,9 @@ fn PythonExecutor::join(
 
 ///|
 fn set_range_entry(
-  ranges : Array[(String?, (Int, Int))],
+  ranges : Array[(String?, (Int32, Int32))],
   name : String?,
-  r : (Int, Int),
+  r : (Int32, Int32),
 ) -> Unit {
   for i, e in ranges {
     if e.0 == name {
@@ -713,8 +713,8 @@ fn PythonExecutor::nested_loop_join(
   )
   let source_rows = source_context.table().rows
   let join_rows = join_context.table().rows
-  let matched_source : Map[Int, Unit] = Map([])
-  let matched_join : Map[Int, Unit] = Map([])
+  let matched_source : Map[Int32, Unit] = Map([])
+  let matched_join : Map[Int32, Unit] = Map([])
   for source_index, source_row in source_rows {
     for join_index, join_row in join_rows {
       let row = source_row + join_row
@@ -742,9 +742,9 @@ fn PythonExecutor::hash_join(
 ) -> Table raise {
   let source_key = self.generate_tuple(join.source_key)
   let join_key = self.generate_tuple(join.join_key)
-  let groups : Map[String, Int] = Map([])
-  let results : Array[(Array[(Int, Row)], Array[(Int, Row)])] = []
-  fn group_of(key : Array[Value]) -> Int raise {
+  let groups : Map[String, Int32] = Map([])
+  let results : Array[(Array[(Int32, Row)], Array[(Int32, Row)])] = []
+  fn group_of(key : Array[Value]) -> Int32 raise {
     let k = hash_key(Tuple(key))
     match groups.get(k) {
       Some(g) => g
@@ -776,8 +776,8 @@ fn PythonExecutor::hash_join(
   let table = Table::new(
     columns=source_context.columns() + join_context.columns(),
   )
-  let matched_source : Map[Int, Unit] = Map([])
-  let matched_join : Map[Int, Unit] = Map([])
+  let matched_source : Map[Int32, Unit] = Map([])
+  let matched_join : Map[Int32, Unit] = Map([])
   for group in results {
     let (source_group, join_group) = group
     for s in source_group {
@@ -808,8 +808,8 @@ fn append_unmatched_join_rows(
   join : @planner.JoinInfo,
   source_rows : Array[Row],
   join_rows : Array[Row],
-  matched_source : Map[Int, Unit],
-  matched_join : Map[Int, Unit],
+  matched_source : Map[Int32, Unit],
+  matched_join : Map[Int32, Unit],
 ) -> Unit raise {
   let side = join.side
   if side == "LEFT" || side == "FULL" {
@@ -990,7 +990,7 @@ fn PythonExecutor::sort(
 }
 
 ///|
-fn slice_values(row : Row, start : Int, end : Int) -> Row {
+fn slice_values(row : Row, start : Int32, end : Int32) -> Row {
   let n = row.length()
   let s = @cmp.minimum(start, n)
   let e = @cmp.maximum(s, @cmp.minimum(end, n))
@@ -1008,7 +1008,7 @@ fn PythonExecutor::set_operation(
   let sink = Table::new(columns=left.columns)
   let op = step.op.unwrap()
   if op.is_a(Intersect) || op.is_a(Except) {
-    let right_counts : Map[String, Int] = Map([])
+    let right_counts : Map[String, Int32] = Map([])
     for row in right.rows {
       let k = hash_key(Tuple(row))
       right_counts[k] = right_counts.get(k).unwrap_or(0) + 1

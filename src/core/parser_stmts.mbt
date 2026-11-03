@@ -971,7 +971,7 @@ pub fn Parser::parse_set_item_assignment(
 ///|
 pub fn Parser::parse_set_transaction(
   self : Parser,
-  global_? : Bool = false,
+  global_~ : Bool = false,
 ) -> Expr raise SqlglotError {
   self.match_text("TRANSACTION") |> ignore
   let characteristics = self.parse_csv(() => {
@@ -997,8 +997,8 @@ pub fn Parser::parse_set_item(self : Parser) -> Expr? raise SqlglotError {
 ///|
 pub fn Parser::parse_set(
   self : Parser,
-  unset? : Bool = false,
-  tag? : Bool = false,
+  unset~ : Bool = false,
+  tag~ : Bool = false,
 ) -> Expr? raise SqlglotError {
   match self.fns.hooks.parse_set {
     Some(f) => f(self, unset, tag)
@@ -1009,8 +1009,8 @@ pub fn Parser::parse_set(
 ///|
 pub fn Parser::parse_set_base(
   self : Parser,
-  unset? : Bool = false,
-  tag? : Bool = false,
+  unset~ : Bool = false,
+  tag~ : Bool = false,
 ) -> Expr? raise SqlglotError {
   let index = self.index
   let set_ = self.expression(

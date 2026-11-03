@@ -17,7 +17,11 @@ pub fn dialect() -> @core.Dialect {
   match dialect_cell.val {
     Some(d) => d
     None => {
-      let d = @core.Dialect::subclass(@core.base_dialect(), "postgres", configure)
+      let d = @core.Dialect::subclass(
+        @core.base_dialect(),
+        "postgres",
+        configure,
+      )
       dialect_cell.val = Some(d)
       d
     }

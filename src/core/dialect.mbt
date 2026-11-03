@@ -16,7 +16,7 @@ pub struct Dialect {
   gen_fns : GeneratorFns
   hooks : DialectHooks
   mut normalization_strategy : NormalizationStrategy
-  mut version : (Int, Int, Int)
+  mut version : (Int32, Int32, Int32)
   settings : Map[String, String]
   /// `SUPPORTED_SETTINGS`
   mut supported_settings : Array[String]
@@ -379,7 +379,7 @@ fn similarity_ratio(a : String, b : String) -> Double {
         cur[j]
       }
     }
-    for j in 0..=b.length() {
+    for j in 0..<=b.length() {
       prev[j] = cur[j]
     }
   }
@@ -452,7 +452,7 @@ pub fn Dialect::case_sensitive(self : Dialect, text : String) -> Bool {
 pub fn Dialect::can_quote(
   self : Dialect,
   identifier : Expr,
-  identify? : String = "safe",
+  identify~ : String = "safe",
 ) -> Bool {
   match self.hooks.can_quote {
     Some(f) => f(self, identifier, identify)
@@ -464,7 +464,7 @@ pub fn Dialect::can_quote(
 pub fn Dialect::can_quote_base(
   self : Dialect,
   identifier : Expr,
-  identify? : String = "safe",
+  identify~ : String = "safe",
 ) -> Bool {
   if identifier.has("quoted") {
     return true
@@ -493,7 +493,7 @@ pub fn Dialect::can_quote_base(
 pub fn Dialect::quote_identifier(
   self : Dialect,
   expression : Expr,
-  identify? : Bool = true,
+  identify~ : Bool = true,
 ) -> Expr {
   if expression.kind == Identifier {
     expression.set(

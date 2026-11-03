@@ -435,10 +435,13 @@ pub fn Parser::build_pipe_cte(
     Some(i) => i.copy()
     None => to_identifier("")
   }
-  new_select.set("from_", match alias_cte {
-    Some(a) => mk1(From, a.copy())
-    None => mk1(From, mk1(Table, table_name))
-  })
+  new_select.set(
+    "from_",
+    match alias_cte {
+      Some(a) => mk1(From, a.copy())
+      None => mk1(From, mk1(Table, table_name))
+    },
+  )
   match ctes {
     Some(c) => new_select.set("with_", c)
     None => ()
@@ -530,7 +533,7 @@ pub fn Parser::parse_pipe_syntax_aggregate_fields(
 pub fn Parser::parse_pipe_syntax_aggregate_group_order_by(
   self : Parser,
   query : Expr,
-  group_by_exists? : Bool = true,
+  group_by_exists~ : Bool = true,
 ) -> Expr raise SqlglotError {
   let expr = self.parse_csv(() => self.parse_pipe_syntax_aggregate_fields())
   let aggregates_or_groups = []

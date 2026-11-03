@@ -51,7 +51,7 @@ pub fn pushdown_predicates(
         let joins = select.list("joins")
         match select.arg("where") {
           Some(where_) => {
-            let join_index : Map[String, Int] = Map([])
+            let join_index : Map[String, Int32] = Map([])
             for i, join in joins {
               join_index[join.alias_or_name()] = i
             }
@@ -118,9 +118,9 @@ pub fn pushdown_predicates(
 fn pushdown(
   condition : @core.Expr?,
   sources : Map[String, (@core.Expr, Source)],
-  scope_ref_count : Map[Int, Int],
+  scope_ref_count : Map[Int32, Int32],
   dialect : @core.Dialect,
-  join_index : Map[String, Int]?,
+  join_index : Map[String, Int32]?,
 ) -> Unit raise @core.SqlglotError {
   let condition = match condition {
     Some(c) => c
@@ -146,8 +146,8 @@ fn pushdown(
 fn pushdown_cnf(
   predicates : Array[@core.Expr],
   sources : Map[String, (@core.Expr, Source)],
-  scope_ref_count : Map[Int, Int],
-  join_index : Map[String, Int]?,
+  scope_ref_count : Map[Int32, Int32],
+  join_index : Map[String, Int32]?,
 ) -> Unit raise @core.SqlglotError {
   // The predicates are the operands of one connector: their JOIN/WHERE ancestor is
   // found once for the whole chain (pushing a predicate replaces it by TRUE, which
@@ -170,7 +170,9 @@ fn pushdown_cnf(
               Some(i) => i
               None => raise @core.OptimizeError("KeyError: \{name}")
             }
-            if predicate_tables.iter().all(t => ji.get(t).unwrap_or(-1) < this_index) {
+            if predicate_tables
+              .iter()
+              .all(t => ji.get(t).unwrap_or(-1) < this_index) {
               predicate.replace(Some(@core.true_())) |> ignore
               join_on(node, predicate)
               break
@@ -196,8 +198,8 @@ fn pushdown_cnf(
 fn pushdown_dnf(
   predicates : Array[@core.Expr],
   sources : Map[String, (@core.Expr, Source)],
-  scope_ref_count : Map[Int, Int],
-  join_index : Map[String, Int]?,
+  scope_ref_count : Map[Int32, Int32],
+  join_index : Map[String, Int32]?,
 ) -> Unit raise @core.SqlglotError {
   let pushdown_tables : Array[String] = []
   for a in predicates {
@@ -237,8 +239,13 @@ fn pushdown_dnf(
               Some(i) => i
               None => raise @core.OptimizeError("KeyError: \{name}")
             }
-            let predicate_tables = @core.column_table_names(predicate, exclude=name)
-            if !predicate_tables.iter().all(t => ji.get(t).unwrap_or(-1) < this_index) {
+            let predicate_tables = @core.column_table_names(
+              predicate,
+              exclude=name,
+            )
+            if !predicate_tables
+              .iter()
+              .all(t => ji.get(t).unwrap_or(-1) < this_index) {
               continue
             }
           }
@@ -261,7 +268,7 @@ fn pushdown_dnf(
 fn nodes_for_predicate(
   predicate : @core.Expr,
   sources : Map[String, (@core.Expr, Source)],
-  scope_ref_count : Map[Int, Int],
+  scope_ref_count : Map[Int32, Int32],
   clauses? : AncestorCache,
 ) -> Map[String, @core.Expr] raise @core.SqlglotError {
   let nodes : Map[String, @core.Expr] = Map([])

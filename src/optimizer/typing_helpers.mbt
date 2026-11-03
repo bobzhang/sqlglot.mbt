@@ -86,7 +86,7 @@ fn returns_from_str(sql : String) -> TypeSpec {
 
 ///|
 /// The integer value of a DataType parameter (Python `param.this.to_py()`).
-fn datatype_param_int(param : @core.Expr?, default : Int) -> Int {
+fn datatype_param_int(param : @core.Expr?, default : Int32) -> Int32 {
   match param {
     Some(p) => {
       let v = match p.this() {

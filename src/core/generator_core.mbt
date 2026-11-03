@@ -44,7 +44,7 @@ pub(all) struct GeneratorHooks {
   // `_sql` methods with extra parameters: virtual wrapper `Generator::<name>_v`,
   // base `Generator::<name>`. These hooks are also used by `sql()` dispatch.
   mut alterrename_sql : ((Generator, Expr, Bool) -> String raise SqlglotError)?
-  mut arrayinsert_sql : ((Generator, Expr, Int) -> String raise SqlglotError)?
+  mut arrayinsert_sql : ((Generator, Expr, Int32) -> String raise SqlglotError)?
   mut cast_sql : ((Generator, Expr, String?) -> String raise SqlglotError)?
   mut chr_sql : ((Generator, Expr, String) -> String raise SqlglotError)?
   mut columndef_sql : ((Generator, Expr, String) -> String raise SqlglotError)?
@@ -116,7 +116,7 @@ pub(all) struct GeneratorFns {
   /// Typed overrides of helper methods / methods with extra parameters.
   mut hooks : GeneratorHooks
   /// `TYPE_PARAM_SETTINGS`: dtype -> (defaults, bounds)
-  mut type_param_settings : Map[DType, (Array[Int], Array[Int?])]
+  mut type_param_settings : Map[DType, (Array[Int32], Array[Int32?])]
   /// `AFTER_HAVING_MODIFIER_TRANSFORMS`
   mut after_having_modifier_transforms : Array[(String, GenFn)]
 }
@@ -142,14 +142,14 @@ pub(all) struct Generator {
   /// Python `identify`: "" (False), "always" (True), "safe" or "unsafe".
   mut identify : String
   normalize : Bool
-  pad : Int
-  indent_size : Int
+  pad : Int32
+  indent_size : Int32
   /// Python `normalize_functions`: "upper", "lower" or "" (False).
   normalize_functions : String
   unsupported_level : ErrorLevel
-  max_unsupported : Int
+  max_unsupported : Int32
   leading_comma : Bool
-  max_text_width : Int
+  max_text_width : Int32
   comments : Bool
   mut unsupported_messages : Array[String]
   escaped_quote_end : String
@@ -170,16 +170,16 @@ pub let default_pretty : Ref[Bool] = Ref(false)
 pub fn Generator::new(
   dialect : Dialect,
   pretty? : Bool,
-  identify? : String = "",
-  normalize? : Bool = false,
-  pad? : Int = 2,
-  indent? : Int = 2,
+  identify~ : String = "",
+  normalize~ : Bool = false,
+  pad~ : Int32 = 2,
+  indent~ : Int32 = 2,
   normalize_functions? : String,
-  unsupported_level? : ErrorLevel = Warn,
-  max_unsupported? : Int = 3,
-  leading_comma? : Bool = false,
-  max_text_width? : Int = 80,
-  comments? : Bool = true,
+  unsupported_level~ : ErrorLevel = Warn,
+  max_unsupported~ : Int32 = 3,
+  leading_comma~ : Bool = false,
+  max_text_width~ : Int32 = 80,
+  comments~ : Bool = true,
 ) -> Generator {
   let normalize_functions = match normalize_functions {
     Some(n) => n
@@ -247,7 +247,7 @@ pub fn expr_to_sql(expression : Expr) -> String raise SqlglotError {
 pub fn Generator::generate(
   self : Generator,
   expression : Expr,
-  copy? : Bool = true,
+  copy~ : Bool = true,
 ) -> String raise SqlglotError {
   match self.fns.hooks.generate {
     Some(f) => f(self, expression, copy)
@@ -259,7 +259,7 @@ pub fn Generator::generate(
 pub fn Generator::generate_base(
   self : Generator,
   expression : Expr,
-  copy? : Bool = true,
+  copy~ : Bool = true,
 ) -> String raise SqlglotError {
   let expression = if copy { expression.copy() } else { expression }
   let expression = self.preprocess(expression)
@@ -340,7 +340,7 @@ pub fn Generator::unsupported(
 }
 
 ///|
-pub fn Generator::sep(self : Generator, sep? : String = " ") -> String {
+pub fn Generator::sep(self : Generator, sep~ : String = " ") -> String {
   if self.pretty {
     py_strip(sep) + "\n"
   } else {
@@ -352,7 +352,7 @@ pub fn Generator::sep(self : Generator, sep? : String = " ") -> String {
 pub fn Generator::seg(
   self : Generator,
   sql : String,
-  sep? : String = " ",
+  sep~ : String = " ",
 ) -> String {
   self.sep(sep~) + sql
 }
@@ -381,7 +381,7 @@ pub fn Generator::maybe_comment(
   sql : String,
   expression? : Expr,
   comments? : Array[String],
-  separated? : Bool = false,
+  separated~ : Bool = false,
 ) -> String {
   let comments = if self.comments {
     match comments {
@@ -488,10 +488,10 @@ pub fn Generator::normalize_func(self : Generator, name : String) -> String {
 pub fn Generator::indent(
   self : Generator,
   sql : String,
-  level? : Int = 0,
-  pad? : Int,
-  skip_first? : Bool = false,
-  skip_last? : Bool = false,
+  level~ : Int32 = 0,
+  pad? : Int32,
+  skip_first~ : Bool = false,
+  skip_last~ : Bool = false,
 ) -> String {
   if !self.pretty || sql == "" {
     return sql
@@ -519,7 +519,7 @@ pub fn Generator::indent(
 pub fn Generator::sql(
   self : Generator,
   expression : Expr?,
-  comment? : Bool = true,
+  comment~ : Bool = true,
 ) -> String raise SqlglotError {
   guard expression is Some(e) else { return "" }
   let kind = e.kind
@@ -571,7 +571,7 @@ fn is_unary_chain_kind(kind : Kind) -> Bool {
 
 ///|
 /// Chains shorter than this are generated recursively.
-let unary_chain_min_length : Int = 64
+let unary_chain_min_length : Int32 = 64
 
 ///|
 /// Generates a long chain of NOT / unary minus / ~ / parentheses (e.g. `NOT NOT ... x`
@@ -674,7 +674,7 @@ pub fn Generator::sql_key(
 pub fn Generator::sql_value(
   self : Generator,
   value : Value,
-  comment? : Bool = true,
+  comment~ : Bool = true,
 ) -> String raise SqlglotError {
   match value {
     Node(e) => self.sql(Some(e), comment~)
@@ -769,9 +769,9 @@ pub fn Generator::func(
   self : Generator,
   name : String,
   args : Array[&SqlArg],
-  prefix? : String = "(",
-  suffix? : String = ")",
-  normalize? : Bool = true,
+  prefix~ : String = "(",
+  suffix~ : String = ")",
+  normalize~ : Bool = true,
 ) -> String raise SqlglotError {
   let name = if normalize { self.normalize_func(name) } else { name }
   name + prefix + self.format_args(args) + suffix
@@ -781,7 +781,7 @@ pub fn Generator::func(
 pub fn Generator::format_args(
   self : Generator,
   args : Array[&SqlArg],
-  sep? : String = ", ",
+  sep~ : String = ", ",
 ) -> String raise SqlglotError {
   let arg_sqls = []
   for arg in args {
@@ -853,14 +853,14 @@ pub fn Generator::expressions(
   expression? : Expr,
   key? : String,
   sqls? : Array[Value],
-  flat? : Bool = false,
-  indent? : Bool = true,
-  skip_first? : Bool = false,
-  skip_last? : Bool = false,
-  sep? : String = ", ",
-  prefix? : String = "",
-  dynamic? : Bool = false,
-  new_line? : Bool = false,
+  flat~ : Bool = false,
+  indent~ : Bool = true,
+  skip_first~ : Bool = false,
+  skip_last~ : Bool = false,
+  sep~ : String = ", ",
+  prefix~ : String = "",
+  dynamic~ : Bool = false,
+  new_line~ : Bool = false,
 ) -> String raise SqlglotError {
   let items : Array[Value] = match expression {
     Some(e) => {
@@ -948,7 +948,7 @@ pub fn Generator::op_expressions(
   self : Generator,
   op : String,
   expression : Expr,
-  flat? : Bool = false,
+  flat~ : Bool = false,
 ) -> String raise SqlglotError {
   let flat = flat ||
     (match expression.parent {

@@ -11,7 +11,7 @@ fn isa(e : @core.Expr?, kind : @core.Kind) -> Bool {
 
 ///|
 /// Python `expression.meta` as sorted (key, int) pairs.
-fn meta_of(e : @core.Expr?) -> Array[(String, Int)] {
+fn meta_of(e : @core.Expr?) -> Array[(String, Int32)] {
   match e {
     None => []
     Some(e) => {
@@ -29,7 +29,7 @@ fn meta_of(e : @core.Expr?) -> Array[(String, Int)] {
 }
 
 ///|
-fn sorted_meta(pairs : Array[(String, Int)]) -> Array[(String, Int)] {
+fn sorted_meta(pairs : Array[(String, Int32)]) -> Array[(String, Int32)] {
   let out = pairs.copy()
   out.sort_by((a, b) => a.0.compare(b.0))
   out
@@ -45,7 +45,7 @@ fn gen_opt(e : @core.Expr?) -> String raise {
 }
 
 ///|
-fn po(sql : String, read? : String = "") -> @core.Expr raise {
+fn po(sql : String, read~ : String = "") -> @core.Expr raise {
   @sqlglot.parse_one(sql, read~)
 }
 

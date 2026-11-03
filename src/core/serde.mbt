@@ -38,7 +38,7 @@ let serde_data_type : String = "DataType.Type"
 ///|
 priv struct SerdeStackVal {
   node : Value
-  index : Int?
+  index : Int32?
   arg_key : String?
   is_array : Bool
 }

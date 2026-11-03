@@ -4,8 +4,8 @@
 /// Rewrite the AST to simplify expressions.
 pub fn simplify(
   expression : @core.Expr,
-  constant_propagation? : Bool = false,
-  coalesce_simplification? : Bool = false,
+  constant_propagation~ : Bool = false,
+  coalesce_simplification~ : Bool = false,
   dialect? : @core.Dialect,
 ) -> @core.Expr raise @core.SqlglotError {
   Simplifier::new(dialect?).simplify(
@@ -25,7 +25,7 @@ pub struct Simplifier {
 ///|
 pub fn Simplifier::new(
   dialect? : @core.Dialect,
-  annotate_new_expressions? : Bool = true,
+  annotate_new_expressions~ : Bool = true,
 ) -> Simplifier {
   let dialect = get_dialect(dialect)
   let schema = MappingSchema::new(dialect~) catch {
@@ -113,8 +113,8 @@ fn is_comparison(e : @core.Expr) -> Bool {
 pub fn Simplifier::simplify(
   self : Simplifier,
   expression : @core.Expr,
-  constant_propagation? : Bool = false,
-  coalesce_simplification? : Bool = false,
+  constant_propagation~ : Bool = false,
+  coalesce_simplification~ : Bool = false,
 ) -> @core.Expr raise @core.SqlglotError {
   let mut expression = expression
   let wheres = []
@@ -459,7 +459,7 @@ priv enum CmpVal {
 }
 
 ///|
-fn cmpval_cmp(a : CmpVal, b : CmpVal) -> Int raise @core.SqlglotError {
+fn cmpval_cmp(a : CmpVal, b : CmpVal) -> Int32 raise @core.SqlglotError {
   match (a, b) {
     (CNum(x), CNum(y)) => pynum_cmp(x, y)
     (CStr(x), CStr(y)) => py_str_cmp(x, y)
@@ -483,7 +483,7 @@ fn cmpval_eq(a : CmpVal, b : CmpVal) -> Bool {
 /// lookups.
 priv struct ExprSet {
   items : Array[@core.Expr]
-  index : Map[Int, Array[Int]]
+  index : Map[Int32, Array[Int32]]
 }
 
 ///|
@@ -492,7 +492,7 @@ fn ExprSet::new() -> ExprSet {
 }
 
 ///|
-fn ExprSet::find(self : ExprSet, x : @core.Expr, h : Int) -> Int {
+fn ExprSet::find(self : ExprSet, x : @core.Expr, h : Int32) -> Int32 {
   match self.index.get(h) {
     Some(bucket) =>
       for i in bucket {
@@ -512,7 +512,7 @@ fn ExprSet::contains(self : ExprSet, x : @core.Expr) -> Bool {
 
 ///|
 /// Adds `x` unless an equal expression is present; returns its position.
-fn ExprSet::add(self : ExprSet, x : @core.Expr) -> Int {
+fn ExprSet::add(self : ExprSet, x : @core.Expr) -> Int32 {
   let h = x.hash()
   let i = self.find(x, h)
   if i >= 0 {
@@ -592,8 +592,9 @@ fn Simplifier::simplify_comparison_impl(
   let largs = expr_set([ll, lr])
   let rargs = expr_set([rl, rr])
   let matching = largs.filter(x => rargs.contains(x))
-  let columns = matching.filter(m => !is_constant_expr(m) &&
-    m.find([Rand, Randn]) is None)
+  let columns = matching.filter(m => {
+    !is_constant_expr(m) && m.find([Rand, Randn]) is None
+  })
   if matching.is_empty() || columns.is_empty() {
     return None
   }
@@ -727,7 +728,7 @@ pub fn Simplifier::uniq_sort(
       }
     } else {
       // dict {gen(e): e}: first position, last value
-      let positions : Map[String, Int] = Map([])
+      let positions : Map[String, Int32] = Map([])
       for e in flattened {
         let key = gen(e)
         match positions.get(key) {
@@ -813,10 +814,10 @@ pub fn Simplifier::absorb_and_eliminate(
 
     // defaultdict(list) keyed by frozenset({a, b}), bucketed by an order-independent hash
     let pairs : Map[
-      Int,
+      Int32,
       Array[(@core.Expr, @core.Expr, Array[(@core.Expr, @core.Expr)])],
     ] = Map([])
-    fn pair_hash(a : @core.Expr, b : @core.Expr) -> Int {
+    fn pair_hash(a : @core.Expr, b : @core.Expr) -> Int32 {
       let ha = a.hash()
       let hb = b.hash()
       if ha < hb {
@@ -890,14 +891,18 @@ pub fn Simplifier::absorb_and_eliminate(
       if a.kind.is_a(Not) &&
         op_set.contains(a.this_()) &&
         a.this_().meta_get("nonnull") is Some(Bool(true)) {
-        a.replace(Some(if kind == And { @core.true_() } else { @core.false_() }))
+        a.replace(
+          Some(if kind == And { @core.true_() } else { @core.false_() }),
+        )
         |> ignore
         continue
       }
       if b.kind.is_a(Not) &&
         op_set.contains(b.this_()) &&
         b.this_().meta_get("nonnull") is Some(Bool(true)) {
-        b.replace(Some(if kind == And { @core.true_() } else { @core.false_() }))
+        b.replace(
+          Some(if kind == And { @core.true_() } else { @core.false_() }),
+        )
         |> ignore
         continue
       }
@@ -905,7 +910,9 @@ pub fn Simplifier::absorb_and_eliminate(
       if superset
         .iter()
         .any(i => subops_get(i).iter().any(s => is_proper_subset(s, superset))) {
-        op.replace(Some(if kind == And { @core.false_() } else { @core.true_() }))
+        op.replace(
+          Some(if kind == And { @core.false_() } else { @core.true_() }),
+        )
         |> ignore
         continue
       }
@@ -967,7 +974,9 @@ fn Simplifier::simplify_equality_impl(
     ()
   } else if !a_predicate(b) && b_predicate(a) {
     if l.kind.is_a(Sub) {
-      let k = inverse_comparisons.get(expression.kind).unwrap_or(expression.kind)
+      let k = inverse_comparisons
+        .get(expression.kind)
+        .unwrap_or(expression.kind)
       return @core.mk2(k, b, @core.mk2(Sub, a, r))
     }
     let tmp = a
@@ -1000,7 +1009,8 @@ pub fn Simplifier::simplify_literals(
   expression : @core.Expr,
   root : Bool,
 ) -> @core.Expr raise @core.SqlglotError {
-  let result = if expression.kind.is_a(Binary) && !expression.kind.is_a(Connector) {
+  let result = if expression.kind.is_a(Binary) &&
+    !expression.kind.is_a(Connector) {
     self.flat_simplify(
       expression,
       (e, a, b) => self.simplify_binary(e, a, b),
@@ -1014,7 +1024,12 @@ pub fn Simplifier::simplify_literals(
     }) {
     expression.this_().this_()
   } else if inverse_date_ops.contains(expression.kind) {
-    match self.simplify_binary(expression, expression.this_(), interval_of(expression)) {
+    match
+      self.simplify_binary(
+        expression,
+        expression.this_(),
+        interval_of(expression),
+      ) {
       Some(r) => r
       None => expression
     }
@@ -1100,7 +1115,8 @@ fn Simplifier::simplify_binary(
     }
   } else if expression.kind.is_any([NullSafeEQ, NullSafeNEQ, PropertyEQ]) {
     return None
-  } else if (is_null(Some(a)) || is_null(Some(b))) && parent_is(expression, [If]) {
+  } else if (is_null(Some(a)) || is_null(Some(b))) &&
+    parent_is(expression, [If]) {
     return Some(@core.null_())
   }
   if a.is_number() && b.is_number() {
@@ -1136,18 +1152,18 @@ fn Simplifier::simplify_binary(
       }
       return Some(literal_from_pynum(pynum_div(num_a, num_b)))
     }
-    let boolean = eval_boolean_cmp(
-      expression,
-      () => pynum_cmp(num_a, num_b),
-      () => pynum_cmp(num_a, num_b) == 0,
-    )
+    let boolean = eval_boolean_cmp(expression, () => pynum_cmp(num_a, num_b), () => {
+      pynum_cmp(num_a, num_b) == 0
+    })
     if boolean is Some(_) {
       return boolean
     }
   } else if a.is_string() && b.is_string() {
     let sa = a.text("this")
     let sb = b.text("this")
-    let boolean = eval_boolean_cmp(expression, () => py_str_cmp(sa, sb), () => sa == sb)
+    let boolean = eval_boolean_cmp(expression, () => py_str_cmp(sa, sb), () => {
+      sa == sb
+    })
     if boolean is Some(_) {
       return boolean
     }
@@ -1155,10 +1171,14 @@ fn Simplifier::simplify_binary(
     match (extract_date(a), extract_interval(b)) {
       (Some(date), Some(delta)) => {
         if expression.kind.is_any([Add, DateAdd, DatetimeAdd]) {
-          return Some(date_literal(add_reldelta(date, delta), extract_type([a])))
+          return Some(
+            date_literal(add_reldelta(date, delta), extract_type([a])),
+          )
         }
         if expression.kind.is_any([Sub, DateSub, DatetimeSub]) {
-          return Some(date_literal(add_reldelta(date, delta.neg()), extract_type([a])))
+          return Some(
+            date_literal(add_reldelta(date, delta.neg()), extract_type([a])),
+          )
         }
       }
       _ => ()
@@ -1167,7 +1187,9 @@ fn Simplifier::simplify_binary(
     match (extract_interval(a), extract_date(b)) {
       (Some(delta), Some(date)) =>
         if expression.kind.is_a(Add) {
-          return Some(date_literal(add_reldelta(date, delta), extract_type([b])))
+          return Some(
+            date_literal(add_reldelta(date, delta), extract_type([b])),
+          )
         }
       _ => ()
     }
@@ -1175,11 +1197,9 @@ fn Simplifier::simplify_binary(
     if expression.kind.is_a(Predicate) {
       let da = extract_date(a).unwrap()
       let db = extract_date(b).unwrap()
-      let boolean = eval_boolean_cmp(
-        expression,
-        () => pydt_cmp(da, db),
-        () => pydt_eq(da, db),
-      )
+      let boolean = eval_boolean_cmp(expression, () => pydt_cmp(da, db), () => {
+        pydt_eq(da, db)
+      })
       if boolean is Some(_) {
         return boolean
       }
@@ -1202,8 +1222,10 @@ fn Simplifier::simplify_coalesce_impl(
   expression : @core.Expr,
 ) -> @core.Expr {
   if expression.kind.is_a(Coalesce) &&
-    (expression.expressions().is_empty() ||
-    is_nonnull_constant(expression.this_())) &&
+    (
+      expression.expressions().is_empty() ||
+      is_nonnull_constant(expression.this_())
+    ) &&
     !parent_is(expression, [Hint]) {
     return expression.this_()
   }
@@ -1245,7 +1267,11 @@ fn Simplifier::simplify_coalesce_impl(
   }
   let substituted = expression.copy()
   substituted.set(
-    if physical_equal(coalesce, left) { "this" } else { "expression" },
+    if physical_equal(coalesce, left) {
+      "this"
+    } else {
+      "expression"
+    },
     arg.copy(),
   )
   @core.paren(
@@ -1415,7 +1441,9 @@ pub fn Simplifier::simplify_startswith(
   let result = if expression.kind.is_a(StartsWith) &&
     expression.this_().is_string() &&
     expression.expression_().is_string() {
-    boolean_literal(expression.name().has_prefix(expression.expression_().name()))
+    boolean_literal(
+      expression.name().has_prefix(expression.expression_().name()),
+    )
   } else {
     expression
   }
@@ -1505,11 +1533,16 @@ fn Simplifier::simplify_datetrunc_impl(
       GT => Some(ge_(trunc_arg, date_literal(add(floor), target_type)))
       LTE => Some(lt_(trunc_arg, date_literal(add(floor), target_type)))
       GTE =>
-        Some(ge_(trunc_arg, date_literal(date_ceil(date, unit, dialect), target_type)))
+        Some(
+          ge_(
+            trunc_arg,
+            date_literal(date_ceil(date, unit, dialect), target_type),
+          ),
+        )
       EQ =>
-        datetrunc_range(date, unit, dialect).map(dr => datetrunc_eq_expression(
-          trunc_arg, dr, target_type,
-        ))
+        datetrunc_range(date, unit, dialect).map(dr => {
+          datetrunc_eq_expression(trunc_arg, dr, target_type)
+        })
       NEQ =>
         datetrunc_range(date, unit, dialect).map(dr => {
           @core.or_(
@@ -1575,9 +1608,12 @@ pub fn Simplifier::sort_comparison(
       (r_const && !l_const) ||
       r.kind.is_a(SubqueryPredicate) {
       ()
-    } else if (r_column && !l_column) || (l_const && !r_const) ||
+    } else if (r_column && !l_column) ||
+      (l_const && !r_const) ||
       py_str_cmp(gen(l), gen(r)) > 0 {
-      let k = inverse_comparisons.get(expression.kind).unwrap_or(expression.kind)
+      let k = inverse_comparisons
+        .get(expression.kind)
+        .unwrap_or(expression.kind)
       result = @core.mk2(k, r, l)
     }
   }

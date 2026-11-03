@@ -8,7 +8,7 @@ pub fn to_interval(interval : String) -> @core.Expr raise @core.SqlglotError {
 }
 
 ///|
-fn seq_get(args : Array[@core.Expr], i : Int) -> @core.Expr? {
+fn seq_get(args : Array[@core.Expr], i : Int32) -> @core.Expr? {
   if i >= 0 && i < args.length() {
     Some(args[i])
   } else {

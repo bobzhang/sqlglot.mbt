@@ -601,7 +601,7 @@ fn any_to_has(
   g : @core.Generator,
   e : @core.Expr,
   default : @core.GenFn,
-  prefix? : String = "",
+  prefix~ : String = "",
 ) -> String raise @core.SqlglotError {
   let left = e.this()
   let right = e.expression()

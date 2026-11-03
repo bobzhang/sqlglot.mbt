@@ -127,7 +127,7 @@ pub fn to_ascii_decimal(text : String) -> String {
     if c.to_int() < 128 {
       sb.write_char(c)
     } else if d >= 0 {
-      sb.write_char(Int::unsafe_to_char('0'.to_int() + d))
+      sb.write_char(Int32::unsafe_to_char('0'.to_int() + d))
     } else if is_space(c) {
       sb.write_char(' ')
     } else {
@@ -249,7 +249,7 @@ pub fn parse_int_checked(text : String) -> Int64? raise SqlglotError {
 
 ///|
 /// `str(int(text) + delta)` for an integer literal `text` of any size, else `None`.
-pub fn py_int_text_add(text : String, delta : Int) -> String? {
+pub fn py_int_text_add(text : String, delta : Int32) -> String? {
   if !is_int_str(text) {
     return None
   }
@@ -303,7 +303,7 @@ pub fn name_sequence(prefix : String) -> () -> String {
 
 ///|
 /// Python `str[start:end]` on code points.
-pub fn substr(s : String, start : Int, end : Int) -> String {
+pub fn substr(s : String, start : Int32, end : Int32) -> String {
   // Without surrogate pairs, code point and UTF-16 indices coincide: slice directly
   // instead of materializing the code points.
   let bmp = !has_surrogates(s)
@@ -340,7 +340,7 @@ fn has_surrogates(s : String) -> Bool {
 ///|
 /// The UTF-16 offset of every code point of `s`, plus `s.length()` at the end; `[]` when
 /// `s` has no surrogate pairs (offsets equal code point indices).
-pub fn code_point_offsets(s : String) -> Array[Int] {
+pub fn code_point_offsets(s : String) -> Array[Int32] {
   if !has_surrogates(s) {
     return []
   }
@@ -363,7 +363,7 @@ pub fn code_point_offsets(s : String) -> Array[Int] {
 
 ///|
 /// Number of code points of a string (Python `len`).
-pub fn py_len(s : String) -> Int {
+pub fn py_len(s : String) -> Int32 {
   s.char_length()
 }
 
@@ -442,7 +442,7 @@ pub fn is_safe_identifier(text : String) -> Bool {
 }
 
 ///|
-pub fn min_int(a : Int, b : Int) -> Int {
+pub fn min_int(a : Int32, b : Int32) -> Int32 {
   if a < b {
     a
   } else {
@@ -451,7 +451,7 @@ pub fn min_int(a : Int, b : Int) -> Int {
 }
 
 ///|
-pub fn max_int(a : Int, b : Int) -> Int {
+pub fn max_int(a : Int32, b : Int32) -> Int32 {
   if a > b {
     a
   } else {

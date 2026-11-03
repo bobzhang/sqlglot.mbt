@@ -14,7 +14,7 @@ pub fn[T : @core.IntoPy] maybe_parse(
   into? : Array[@core.Kind],
   dialect? : String,
   prefix? : String,
-  copy? : Bool = false,
+  copy~ : Bool = false,
 ) -> @core.Expr raise @core.SqlglotError {
   @core.maybe_parse(
     sql_or_expression,
@@ -30,7 +30,7 @@ pub fn[T : @core.IntoPy] maybe_parse(
 pub fn[T : @core.IntoPy] select(
   expressions : Array[T],
   dialect? : String,
-  copy? : Bool = true,
+  copy~ : Bool = true,
 ) -> @core.Expr raise @core.SqlglotError {
   @core.select_(expressions, dialect=dialect_opt(dialect), copy~)
 }
@@ -40,7 +40,7 @@ pub fn[T : @core.IntoPy] select(
 pub fn[T : @core.IntoPy] from_(
   expression : T,
   dialect? : String,
-  copy? : Bool = true,
+  copy~ : Bool = true,
 ) -> @core.Expr raise @core.SqlglotError {
   @core.mk0(Select).from_(expression, dialect=dialect_opt(dialect), copy~)
 }
@@ -50,7 +50,7 @@ pub fn[T : @core.IntoPy] from_(
 pub fn[T : @core.IntoPy] condition(
   expression : T,
   dialect? : String,
-  copy? : Bool = true,
+  copy~ : Bool = true,
 ) -> @core.Expr raise @core.SqlglotError {
   @core.condition(expression, dialect=dialect_opt(dialect), copy~)
 }
@@ -60,8 +60,8 @@ pub fn[T : @core.IntoPy] condition(
 pub fn[T : @core.IntoPy] and_(
   expressions : Array[T],
   dialect? : String,
-  copy? : Bool = true,
-  wrap? : Bool = true,
+  copy~ : Bool = true,
+  wrap~ : Bool = true,
 ) -> @core.Expr raise @core.SqlglotError {
   @core.combine_py(
     @core.py_list(expressions),
@@ -77,8 +77,8 @@ pub fn[T : @core.IntoPy] and_(
 pub fn[T : @core.IntoPy] or_(
   expressions : Array[T],
   dialect? : String,
-  copy? : Bool = true,
-  wrap? : Bool = true,
+  copy~ : Bool = true,
+  wrap~ : Bool = true,
 ) -> @core.Expr raise @core.SqlglotError {
   @core.combine_py(
     @core.py_list(expressions),
@@ -94,8 +94,8 @@ pub fn[T : @core.IntoPy] or_(
 pub fn[T : @core.IntoPy] xor(
   expressions : Array[T],
   dialect? : String,
-  copy? : Bool = true,
-  wrap? : Bool = true,
+  copy~ : Bool = true,
+  wrap~ : Bool = true,
 ) -> @core.Expr raise @core.SqlglotError {
   @core.combine_py(
     @core.py_list(expressions),
@@ -111,7 +111,7 @@ pub fn[T : @core.IntoPy] xor(
 pub fn[T : @core.IntoPy] not_(
   expression : T,
   dialect? : String,
-  copy? : Bool = true,
+  copy~ : Bool = true,
 ) -> @core.Expr raise @core.SqlglotError {
   @core.not_(
     @core.condition(expression, dialect=dialect_opt(dialect), copy~),
@@ -123,7 +123,7 @@ pub fn[T : @core.IntoPy] not_(
 /// `exp.paren(expression)`
 pub fn[T : @core.IntoPy] paren(
   expression : T,
-  copy? : Bool = true,
+  copy~ : Bool = true,
 ) -> @core.Expr raise @core.SqlglotError {
   @core.mk1(Paren, @core.maybe_parse(expression, copy~))
 }
@@ -135,7 +135,7 @@ pub fn[T : @core.IntoPy] paren(
 pub fn[T : @core.IntoPy] to_identifier(
   name : T,
   quoted? : Bool,
-  copy? : Bool = true,
+  copy~ : Bool = true,
 ) -> @core.Expr? raise @core.SqlglotError {
   match name.into_py() {
     PyNone => None
@@ -154,11 +154,11 @@ pub fn[T : @core.IntoPy] to_identifier(
 pub fn[T : @core.IntoPy, A : @core.IntoPy] alias_(
   expression : T,
   alias_name : A,
-  table? : Bool = false,
-  table_columns? : Array[String] = [],
+  table~ : Bool = false,
+  table_columns~ : Array[String] = [],
   quoted? : Bool,
   dialect? : String,
-  copy? : Bool = true,
+  copy~ : Bool = true,
 ) -> @core.Expr raise @core.SqlglotError {
   let exp = @core.maybe_parse(expression, dialect=dialect_opt(dialect), copy~)
   let alias_id = to_identifier(alias_name, quoted?)
@@ -178,7 +178,7 @@ pub fn[T : @core.IntoPy, A : @core.IntoPy] alias_(
 pub fn case(
   expression? : &@core.IntoPy,
   dialect? : String,
-  copy? : Bool = true,
+  copy~ : Bool = true,
 ) -> @core.Expr raise @core.SqlglotError {
   let this = match expression {
     Some(e) =>
@@ -194,8 +194,8 @@ pub fn case(
 pub fn[T : @core.IntoPy] datatype_build(
   dtype : T,
   dialect? : String,
-  udt? : Bool = false,
-  copy? : Bool = true,
+  udt~ : Bool = false,
+  copy~ : Bool = true,
 ) -> @core.Expr raise @core.SqlglotError {
   match dtype.into_py() {
     PyStr(s) => @core.datatype_from_str(s, dialect=dialect_opt(dialect), udt~)
@@ -215,7 +215,7 @@ pub fn[T : @core.IntoPy] datatype_build(
 pub fn[T : @core.IntoPy] datatype_is_type(
   dt : @core.Expr,
   dtypes : Array[T],
-  check_nullable? : Bool = false,
+  check_nullable~ : Bool = false,
 ) -> Bool raise @core.SqlglotError {
   let self_is_nullable = dt.bool_arg("nullable")
   for dtype in dtypes {
@@ -248,7 +248,7 @@ pub fn[T : @core.IntoPy] datatype_is_type(
 pub fn[T : @core.IntoPy] is_type(
   expression : @core.Expr,
   dtypes : Array[T],
-  check_nullable? : Bool = false,
+  check_nullable~ : Bool = false,
 ) -> Bool raise @core.SqlglotError {
   match expression.get_type() {
     Some(t) => datatype_is_type(t, dtypes, check_nullable~)
@@ -261,7 +261,7 @@ pub fn[T : @core.IntoPy] is_type(
 pub fn[T : @core.IntoPy, D : @core.IntoPy] cast(
   expression : T,
   to : D,
-  copy? : Bool = true,
+  copy~ : Bool = true,
   dialect? : String,
 ) -> @core.Expr raise @core.SqlglotError {
   let d = dialect_opt(dialect)
@@ -297,9 +297,9 @@ pub fn[T : @core.IntoPy] column(
   table? : &@core.IntoPy,
   db? : &@core.IntoPy,
   catalog? : &@core.IntoPy,
-  fields? : Array[&@core.IntoPy] = [],
+  fields~ : Array[&@core.IntoPy] = [],
   quoted? : Bool,
-  copy? : Bool = true,
+  copy~ : Bool = true,
 ) -> @core.Expr raise @core.SqlglotError {
   let col = match col.into_py() {
     PyExpr(e) if e.kind == Star => Some(e)
@@ -335,9 +335,9 @@ pub fn[T : @core.IntoPy] column(
 /// function if `name` doesn't correspond to a known function.
 pub fn func(
   name : String,
-  args? : Array[&@core.IntoPy] = [],
-  kwargs? : Map[String, &@core.IntoPy] = Map([]),
-  copy? : Bool = true,
+  args~ : Array[&@core.IntoPy] = [],
+  kwargs~ : Map[String, &@core.IntoPy] = Map([]),
+  copy~ : Bool = true,
   dialect? : String,
 ) -> @core.Expr raise @core.SqlglotError {
   if !args.is_empty() && !kwargs.is_empty() {
@@ -426,9 +426,9 @@ fn set_operation_builder(
 /// `exp.union(*expressions, distinct=...)`
 pub fn[T : @core.IntoPy] union(
   expressions : Array[T],
-  distinct? : Bool = true,
+  distinct~ : Bool = true,
   dialect? : String,
-  copy? : Bool = true,
+  copy~ : Bool = true,
 ) -> @core.Expr raise @core.SqlglotError {
   set_operation_builder(
     @core.py_list(expressions),
@@ -444,9 +444,9 @@ pub fn[T : @core.IntoPy] union(
 /// `exp.intersect(*expressions, distinct=...)`
 pub fn[T : @core.IntoPy] intersect(
   expressions : Array[T],
-  distinct? : Bool = true,
+  distinct~ : Bool = true,
   dialect? : String,
-  copy? : Bool = true,
+  copy~ : Bool = true,
 ) -> @core.Expr raise @core.SqlglotError {
   set_operation_builder(
     @core.py_list(expressions),
@@ -462,9 +462,9 @@ pub fn[T : @core.IntoPy] intersect(
 /// `exp.except_(*expressions, distinct=...)`
 pub fn[T : @core.IntoPy] except_(
   expressions : Array[T],
-  distinct? : Bool = true,
+  distinct~ : Bool = true,
   dialect? : String,
-  copy? : Bool = true,
+  copy~ : Bool = true,
 ) -> @core.Expr raise @core.SqlglotError {
   set_operation_builder(
     @core.py_list(expressions),
@@ -480,12 +480,12 @@ pub fn[T : @core.IntoPy] except_(
 /// `exp.update(table, properties, where=..., from_=..., with_=...)`
 pub fn[T : @core.IntoPy] update(
   table : T,
-  properties? : Map[String, &@core.IntoPy] = Map([]),
+  properties~ : Map[String, &@core.IntoPy] = Map([]),
   where_? : &@core.IntoPy,
   from_? : &@core.IntoPy,
-  with_? : Map[String, &@core.IntoPy] = Map([]),
+  with_~ : Map[String, &@core.IntoPy] = Map([]),
   dialect? : String,
-  copy? : Bool = true,
+  copy~ : Bool = true,
 ) -> @core.Expr raise @core.SqlglotError {
   let d = dialect_opt(dialect)
   let update_expr = @core.mk1(
@@ -575,11 +575,11 @@ pub fn[T : @core.IntoPy] delete(
 pub fn[T : @core.IntoPy, I : @core.IntoPy] insert(
   expression : T,
   into : I,
-  columns? : Array[String] = [],
+  columns~ : Array[String] = [],
   overwrite? : Bool,
   returning? : &@core.IntoPy,
   dialect? : String,
-  copy? : Bool = true,
+  copy~ : Bool = true,
 ) -> @core.Expr raise @core.SqlglotError {
   let d = dialect_opt(dialect)
   let expr = @core.maybe_parse(expression, dialect=d, copy~)
@@ -612,7 +612,7 @@ pub fn[I : @core.IntoPy, U : @core.IntoPy, O : @core.IntoPy] merge(
   on~ : O,
   returning? : &@core.IntoPy,
   dialect? : String,
-  copy? : Bool = true,
+  copy~ : Bool = true,
 ) -> @core.Expr raise @core.SqlglotError {
   let d = dialect_opt(dialect)
   let expressions = []
@@ -685,7 +685,7 @@ pub fn[T : @core.IntoPy] to_interval(
 fn split_num_words(
   value : String,
   sep : String,
-  min_num_words : Int,
+  min_num_words : Int32,
 ) -> Array[String?] {
   let words : Array[String?] = @core.py_split(value, sep).map(w => Some(w))
   let out : Array[String?] = []
@@ -701,8 +701,8 @@ fn split_num_words(
 pub fn[T : @core.IntoPy] to_table(
   sql_path : T,
   dialect? : String,
-  copy? : Bool = true,
-  kwargs? : Map[String, @core.Value] = Map([]),
+  copy~ : Bool = true,
+  kwargs~ : Map[String, @core.Value] = Map([]),
 ) -> @core.Expr raise @core.SqlglotError {
   let path = sql_path.into_py()
   let table = match path {
@@ -732,8 +732,8 @@ pub fn[T : @core.IntoPy] to_column(
   sql_path : T,
   quoted? : Bool,
   dialect? : String,
-  copy? : Bool = true,
-  kwargs? : Map[String, @core.Value] = Map([]),
+  copy~ : Bool = true,
+  kwargs~ : Map[String, @core.Value] = Map([]),
 ) -> @core.Expr raise @core.SqlglotError {
   let path = sql_path.into_py()
   match path {
@@ -775,7 +775,7 @@ pub fn[T : @core.IntoPy] subquery(
   expression : T,
   alias_? : String,
   dialect? : String,
-  copy? : Bool = true,
+  copy~ : Bool = true,
 ) -> @core.Expr raise @core.SqlglotError {
   let d = dialect_opt(dialect)
   let expr = @core.maybe_parse(expression, dialect=d)
@@ -819,7 +819,7 @@ pub fn table_(
 pub fn values(
   values : Array[@core.PyObj],
   alias_? : String,
-  columns? : Array[String] = [],
+  columns~ : Array[String] = [],
 ) -> @core.Expr raise @core.SqlglotError {
   if !columns.is_empty() && alias_.unwrap_or("").is_empty() {
     raise @core.ValueError("Alias is required when providing columns")
@@ -908,7 +908,7 @@ pub fn[T : @core.IntoPy, O : @core.IntoPy, N : @core.IntoPy] rename_column(
 pub fn[T : @core.IntoPy] table_name(
   table : T,
   dialect? : String,
-  identify? : Bool = false,
+  identify~ : Bool = false,
 ) -> String raise @core.SqlglotError {
   let d = dialect_opt(dialect)
   let expr = @core.maybe_parse(table, into=[Table], dialect=d)
@@ -934,7 +934,7 @@ pub fn[T : @core.IntoPy] table_name(
 pub fn[T : @core.IntoPy] normalize_table_name(
   table : T,
   dialect? : String,
-  copy? : Bool = true,
+  copy~ : Bool = true,
 ) -> String raise @core.SqlglotError {
   let d = dialect_opt(dialect)
   @core.normalize_identifiers(to_table(table, dialect?, copy~), d)
@@ -950,7 +950,7 @@ pub fn replace_tables(
   expression : @core.Expr,
   mapping : Map[String, String],
   dialect? : String,
-  copy? : Bool = true,
+  copy~ : Bool = true,
 ) -> @core.Expr raise @core.SqlglotError {
   let normalized : Map[String, String] = Map([])
   for k, v in mapping {
@@ -986,8 +986,8 @@ pub fn replace_tables(
 /// with `args` (in order) and named placeholders with `kwargs`.
 pub fn replace_placeholders(
   expression : @core.Expr,
-  args? : Array[&@core.IntoPy] = [],
-  kwargs? : Map[String, &@core.IntoPy] = Map([]),
+  args~ : Array[&@core.IntoPy] = [],
+  kwargs~ : Map[String, &@core.IntoPy] = Map([]),
 ) -> @core.Expr raise @core.SqlglotError {
   let mut next_arg = 0
   expression.transform(node => {
@@ -1019,7 +1019,7 @@ pub fn expand(
   expression : @core.Expr,
   sources : Map[String, () -> @core.Expr raise @core.SqlglotError],
   dialect? : String,
-  copy? : Bool = true,
+  copy~ : Bool = true,
 ) -> @core.Expr raise @core.SqlglotError {
   let normalized : Map[String, () -> @core.Expr raise @core.SqlglotError] = Map([],
   )
@@ -1052,7 +1052,7 @@ pub fn expand(
 /// `exp.array(*expressions)`
 pub fn[T : @core.IntoPy] array(
   expressions : Array[T],
-  copy? : Bool = true,
+  copy~ : Bool = true,
   dialect? : String,
 ) -> @core.Expr raise @core.SqlglotError {
   let d = dialect_opt(dialect)
@@ -1067,7 +1067,7 @@ pub fn[T : @core.IntoPy] array(
 /// `exp.tuple_(*expressions)`
 pub fn[T : @core.IntoPy] tuple_(
   expressions : Array[T],
-  copy? : Bool = true,
+  copy~ : Bool = true,
   dialect? : String,
 ) -> @core.Expr raise @core.SqlglotError {
   let d = dialect_opt(dialect)

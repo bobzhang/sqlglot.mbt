@@ -567,7 +567,7 @@ pub fn Parser::parse_on_handling(
 ///|
 pub fn Parser::parse_json_object(
   self : Parser,
-  agg? : Bool = false,
+  agg~ : Bool = false,
 ) -> Expr? raise SqlglotError {
   match self.fns.hooks.parse_json_object {
     Some(f) => f(self, agg)
@@ -578,7 +578,7 @@ pub fn Parser::parse_json_object(
 ///|
 pub fn Parser::parse_json_object_base(
   self : Parser,
-  agg? : Bool = false,
+  agg~ : Bool = false,
 ) -> Expr? raise SqlglotError {
   let star = self.parse_star()
   let expressions = match star {
@@ -756,7 +756,7 @@ pub fn Parser::parse_open_json(self : Parser) -> Expr? raise SqlglotError {
 ///|
 pub fn Parser::parse_position(
   self : Parser,
-  haystack_first? : Bool = false,
+  haystack_first~ : Bool = false,
 ) -> Expr? raise SqlglotError {
   match self.fns.hooks.parse_position {
     Some(f) => f(self, haystack_first)
@@ -767,7 +767,7 @@ pub fn Parser::parse_position(
 ///|
 pub fn Parser::parse_position_base(
   self : Parser,
-  haystack_first? : Bool = false,
+  haystack_first~ : Bool = false,
 ) -> Expr? raise SqlglotError {
   let args = self.parse_csv(() => self.parse_bitwise())
   if self.match_(IN) {
@@ -937,7 +937,7 @@ pub fn Parser::parse_having_max(
 pub fn Parser::parse_window(
   self : Parser,
   this : Expr?,
-  alias_? : Bool = false,
+  alias_~ : Bool = false,
 ) -> Expr? raise SqlglotError {
   match self.fns.hooks.parse_window {
     Some(f) => f(self, this, alias_)
@@ -949,7 +949,7 @@ pub fn Parser::parse_window(
 pub fn Parser::parse_window_base(
   self : Parser,
   this : Expr?,
-  alias_? : Bool = false,
+  alias_~ : Bool = false,
 ) -> Expr? raise SqlglotError {
   let func = this
   let comments = match func {

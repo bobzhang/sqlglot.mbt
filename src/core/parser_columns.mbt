@@ -3,10 +3,10 @@
 ///|
 pub fn Parser::parse_types(
   self : Parser,
-  check_func? : Bool = false,
-  schema? : Bool = false,
-  allow_identifiers? : Bool = true,
-  with_collation? : Bool = false,
+  check_func~ : Bool = false,
+  schema~ : Bool = false,
+  allow_identifiers~ : Bool = true,
+  with_collation~ : Bool = false,
 ) -> Expr? raise SqlglotError {
   match self.fns.hooks.parse_types {
     Some(f) => f(self, check_func, schema, allow_identifiers, with_collation)
@@ -23,10 +23,10 @@ pub fn Parser::parse_types(
 ///|
 pub fn Parser::parse_types_base(
   self : Parser,
-  check_func? : Bool = false,
-  schema? : Bool = false,
-  allow_identifiers? : Bool = true,
-  with_collation? : Bool = false,
+  check_func~ : Bool = false,
+  schema~ : Bool = false,
+  allow_identifiers~ : Bool = true,
+  with_collation~ : Bool = false,
 ) -> Expr? raise SqlglotError {
   let index = self.index
   let mut this : Expr? = None
@@ -395,7 +395,7 @@ pub fn Parser::parse_vector_expressions(
 ///|
 pub fn Parser::parse_struct_types(
   self : Parser,
-  type_required? : Bool = false,
+  type_required~ : Bool = false,
 ) -> Expr? raise SqlglotError {
   match self.fns.hooks.parse_struct_types {
     Some(f) => f(self, type_required)
@@ -406,7 +406,7 @@ pub fn Parser::parse_struct_types(
 ///|
 pub fn Parser::parse_struct_types_base(
   self : Parser,
-  type_required? : Bool = false,
+  type_required~ : Bool = false,
 ) -> Expr? raise SqlglotError {
   let index = self.index
   let this = if self.curr.ok() &&
@@ -946,9 +946,9 @@ pub fn Parser::parse_primary_base(self : Parser) -> Expr? raise SqlglotError {
 ///|
 pub fn Parser::parse_field(
   self : Parser,
-  any_token? : Bool = false,
+  any_token~ : Bool = false,
   tokens? : TokenSet,
-  anonymous_func? : Bool = false,
+  anonymous_func~ : Bool = false,
 ) -> Expr? raise SqlglotError {
   let after_dot = self.cfg.supports_digit_prefixed_field_names &&
     self.prev.token_type == DOT
@@ -985,9 +985,9 @@ pub fn Parser::parse_field(
 pub fn Parser::parse_function(
   self : Parser,
   functions? : Map[String, FuncBuilder],
-  anonymous? : Bool = false,
-  optional_parens? : Bool = true,
-  any_token? : Bool = false,
+  anonymous~ : Bool = false,
+  optional_parens~ : Bool = true,
+  any_token~ : Bool = false,
 ) -> Expr? raise SqlglotError {
   match self.fns.hooks.parse_function {
     Some(f) => f(self, functions, anonymous, optional_parens, any_token)
@@ -1005,9 +1005,9 @@ pub fn Parser::parse_function(
 pub fn Parser::parse_function_base(
   self : Parser,
   functions? : Map[String, FuncBuilder],
-  anonymous? : Bool = false,
-  optional_parens? : Bool = true,
-  any_token? : Bool = false,
+  anonymous~ : Bool = false,
+  optional_parens~ : Bool = true,
+  any_token~ : Bool = false,
 ) -> Expr? raise SqlglotError {
   let mut fn_syntax = false
   if self.match_(L_BRACE, advance=false) &&

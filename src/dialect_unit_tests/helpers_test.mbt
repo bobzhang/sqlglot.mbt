@@ -17,7 +17,7 @@ priv struct T {
 
 ///|
 /// A validator for `dialect` (Python `Validator.dialect`; "" is the base dialect).
-fn t(dialect? : String = "") -> T {
+fn t(dialect~ : String = "") -> T {
   @sqlglot.register_dialects()
   @core.take_log_messages() |> ignore
   { dialect, fails: [], }
@@ -88,7 +88,7 @@ fn T::eq_expr(
 fn T::ok(
   self : T,
   cond : Bool,
-  msg? : String = "condition is false",
+  msg~ : String = "condition is false",
   loc~ : SourceLoc,
 ) -> Unit {
   if !cond {
@@ -257,7 +257,7 @@ fn T::raises(
 fn T::assert_logs(
   self : T,
   f : () -> Unit raise,
-  level? : String = "INFO",
+  level~ : String = "INFO",
   loc~ : SourceLoc,
 ) -> Array[String] {
   @core.take_log_messages() |> ignore
@@ -272,7 +272,7 @@ fn T::assert_logs(
 ///|
 /// The log messages since the last call in Python's `assertLogs` output format
 /// ("WARNING:sqlglot:message"), keeping only those of `level` or higher.
-fn captured_logs(level? : String = "INFO") -> Array[String] {
+fn captured_logs(level~ : String = "INFO") -> Array[String] {
   let rank = (l : String) => {
     match l {
       "DEBUG" => 0
@@ -301,7 +301,7 @@ fn T::parse_one(
   self : T,
   sql : String,
   error_level? : @core.ErrorLevel,
-  max_nodes? : Int,
+  max_nodes? : Int32,
 ) -> @core.Expr raise {
   @sqlglot.parse_one(sql, read=self.dialect, error_level?, max_nodes?)
 }
@@ -314,9 +314,9 @@ fn T::validate_identity(
   self : T,
   sql : String,
   write_sql? : String,
-  pretty? : Bool = false,
-  check_command_warning? : Bool = false,
-  identify? : Bool = false,
+  pretty~ : Bool = false,
+  check_command_warning~ : Bool = false,
+  identify~ : Bool = false,
   loc~ : SourceLoc,
 ) -> @core.Expr raise {
   if check_command_warning {
@@ -354,11 +354,11 @@ fn T::validate_identity(
 fn T::validate_all(
   self : T,
   sql : String,
-  read? : Map[String, String] = {},
-  write? : Map[String, String] = {},
-  write_unsupported? : Array[String] = [],
-  pretty? : Bool = false,
-  identify? : Bool = false,
+  read~ : Map[String, String] = {},
+  write~ : Map[String, String] = {},
+  write_unsupported~ : Array[String] = [],
+  pretty~ : Bool = false,
+  identify~ : Bool = false,
   loc~ : SourceLoc,
 ) -> Unit raise {
   let expression = self.parse_one(sql)
@@ -405,7 +405,7 @@ fn T::validate_all(
 
 ///|
 /// `parse_one(sql, read=read)` (the module-level function, not the validator's).
-fn parse_one(sql : String, read? : String = "") -> @core.Expr raise {
+fn parse_one(sql : String, read~ : String = "") -> @core.Expr raise {
   @sqlglot.parse_one(sql, read~)
 }
 
@@ -413,10 +413,10 @@ fn parse_one(sql : String, read? : String = "") -> @core.Expr raise {
 /// `expression.sql(dialect)`.
 fn sql(
   e : @core.Expr,
-  dialect? : String = "",
-  pretty? : Bool = false,
-  identify? : Bool = false,
-  unsupported_level? : @core.ErrorLevel = Warn,
+  dialect~ : String = "",
+  pretty~ : Bool = false,
+  identify~ : Bool = false,
+  unsupported_level~ : @core.ErrorLevel = Warn,
 ) -> String raise {
   @sqlglot.generate(
     e,

@@ -30,7 +30,7 @@ test "TestHelper.test_name_sequence" {
 
 ///|
 test "TestHelper.test_merge_ranges" {
-  let empty : Array[(Int, Int)] = []
+  let empty : Array[(Int32, Int32)] = []
   assert_eq(empty, @core.merge_ranges(empty))
   assert_eq([(0, 1)], @core.merge_ranges([(0, 1)]))
   assert_eq([(0, 1), (2, 3)], @core.merge_ranges([(0, 1), (2, 3)]))

@@ -50,7 +50,7 @@ fn d_slice(s : String, start : Int64, end : Int64) -> String {
 
 ///|
 /// Python `s.count(sub)` (non-overlapping occurrences).
-fn d_count(s : String, sub : String) -> Int {
+fn d_count(s : String, sub : String) -> Int32 {
   let mut n = 0
   let mut rest = s
   while rest.find(sub) is Some(i) {

@@ -53,7 +53,7 @@ fn expr_sql(e : @core.Expr) -> String {
 pub fn sql_of(
   e : @core.Expr,
   dialect? : @core.Dialect,
-  pretty? : Bool = false,
+  pretty~ : Bool = false,
 ) -> String raise @core.SqlglotError {
   let d = match dialect {
     Some(d) => d
@@ -73,7 +73,11 @@ fn get_dialect(dialect : @core.Dialect?) -> @core.Dialect {
 
 ///|
 /// `exp.column(name, table=table)` with string parts.
-fn column_with_table(name : String, table? : String, quoted? : Bool) -> @core.Expr {
+fn column_with_table(
+  name : String,
+  table? : String,
+  quoted? : Bool,
+) -> @core.Expr {
   let col = @core.mk1(Column, @core.to_identifier(name, quoted?))
   match table {
     Some(t) if t != "" => col.set("table", @core.to_identifier(t, quoted?))
@@ -90,7 +94,7 @@ fn column_with_ident(name : @core.Expr, table? : @core.Expr) -> @core.Expr {
 
 ///|
 /// Python `exp.Literal.number(i)`
-fn lit_num(i : Int) -> @core.Expr {
+fn lit_num(i : Int32) -> @core.Expr {
   @core.literal_number(i.to_string())
 }
 
@@ -106,7 +110,7 @@ fn type_is(t : @core.Expr?, dtypes : Array[@core.DType]) -> Bool {
 ///|
 /// Python string ordering (lexicographic by code point); MoonBit's `compare` on
 /// strings orders by length first.
-fn py_str_cmp(a : String, b : String) -> Int {
+fn py_str_cmp(a : String, b : String) -> Int32 {
   let ai = a.iter()
   let bi = b.iter()
   for ;; {
@@ -114,10 +118,7 @@ fn py_str_cmp(a : String, b : String) -> Int {
       (None, None) => return 0
       (None, Some(_)) => return -1
       (Some(_), None) => return 1
-      (Some(x), Some(y)) =>
-        if x != y {
-          return if x < y { -1 } else { 1 }
-        }
+      (Some(x), Some(y)) => if x != y { return if x < y { -1 } else { 1 } }
     }
   }
 }
@@ -140,7 +141,7 @@ fn req(e : @core.Expr?, what : String) -> @core.Expr raise @core.SqlglotError {
 /// otherwise cost O(depth) per node, e.g. for the columns of a long AND chain.)
 priv struct AncestorCache {
   kinds : Array[@core.Kind]
-  memo : Map[Int, @core.Expr?]
+  memo : Map[Int32, @core.Expr?]
 }
 
 ///|

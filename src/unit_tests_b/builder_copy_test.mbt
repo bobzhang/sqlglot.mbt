@@ -31,7 +31,7 @@ fn check_tree_integrity(e : @core.Expr) -> Unit raise {
 }
 
 ///|
-fn node_uids(e : @core.Expr) -> @set.Set[Int] {
+fn node_uids(e : @core.Expr) -> @set.Set[Int32] {
   let out = @set.Set([])
   for n in e.walk() {
     out.add(n.uid)

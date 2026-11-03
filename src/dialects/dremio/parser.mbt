@@ -1,7 +1,7 @@
 // Port of sqlglot/parsers/dremio.py
 
 ///|
-fn seq_get(args : Array[@core.Expr], i : Int) -> @core.Expr? {
+fn seq_get(args : Array[@core.Expr], i : Int32) -> @core.Expr? {
   if i >= 0 && i < args.length() {
     Some(args[i])
   } else {
@@ -53,7 +53,7 @@ fn build_date_delta_with_cast_interval(kind : @core.Kind) -> @core.FuncBuilder {
 }
 
 ///|
-fn pad_int(v : Int64, width : Int) -> String {
+fn pad_int(v : Int64, width : Int32) -> String {
   let neg = v < 0L
   let s = (if neg { -v } else { v }).to_string()
   let padded = if s.length() < width {

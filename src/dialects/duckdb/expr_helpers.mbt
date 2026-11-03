@@ -17,7 +17,7 @@ fn parse(sql : String) -> @core.Expr raise @core.SqlglotError {
 }
 
 ///|
-fn num(n : Int) -> @core.Expr {
+fn num(n : Int32) -> @core.Expr {
   @core.literal_int(n)
 }
 
@@ -172,7 +172,7 @@ fn tmpl(
 
 ///|
 /// Python `expression.to_py()` for an integer literal.
-fn to_int(e : @core.Expr) -> Int {
+fn to_int(e : @core.Expr) -> Int32 {
   match e.to_py_int() {
     Some(v) => v.to_int()
     None => 0

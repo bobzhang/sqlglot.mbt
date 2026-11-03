@@ -1383,7 +1383,7 @@ test "TestTranspile.test_unsupported_level" {
   let output = logged("WARNING").join("\n")
   let expected = [error, error, error, error].join("\n")
   t.ok(output.contains(expected), msg="Expected '\{expected}' not in \{output}")
-  fn count(s : String, sub : String) -> Int {
+  fn count(s : String, sub : String) -> Int32 {
     s.split(sub).count() - 1
   }
 
@@ -1408,8 +1408,8 @@ test "TestTranspile.test_recursion" {
 /// Python's error dict: `{"description": ..., "line": ..., ...}`.
 fn info(
   description : String,
-  line : Int,
-  col : Int,
+  line : Int32,
+  col : Int32,
   start_context : String,
   highlight : String,
   end_context : String,

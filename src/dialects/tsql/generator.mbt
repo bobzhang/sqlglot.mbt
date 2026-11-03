@@ -94,7 +94,7 @@ pub fn qualify_derived_table_outputs(
       // themselves, because the latter are going to be replaced by new nodes when the aliases
       // are added and hence we won't be able to reach these newly added Alias parents
       guard expression.this() is Some(query) else { return expression }
-      let unaliased_column_indexes : Array[Int] = []
+      let unaliased_column_indexes : Array[Int32] = []
       for i, c in query.selects() {
         if c.kind.is_a(Column) && c.alias_() == "" {
           unaliased_column_indexes.push(i)

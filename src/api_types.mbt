@@ -32,6 +32,7 @@ pub using @dialects {register_dialects, dialect_names}
 
 ///|
 /// When identifiers should be quoted by the generator (Python `identify`).
+#derive(Eq, Debug)
 pub(all) enum Identify {
   /// Never quote, except where it's mandatory for the dialect (Python `False`).
   Never
@@ -41,7 +42,7 @@ pub(all) enum Identify {
   Safe
   /// Only quote case-sensitive identifiers (Python `"unsafe"`).
   Unsafe
-} derive(Eq, Debug)
+}
 
 ///|
 #deprecated
@@ -64,6 +65,7 @@ fn Identify::to_option(self : Identify) -> String {
 
 ///|
 /// How the generator normalizes function names (Python `normalize_functions`).
+#derive(Eq, Debug)
 pub(all) enum NormalizeFunctions {
   /// Convert names to uppercase (Python `"upper"` or `True`).
   Upper
@@ -71,7 +73,7 @@ pub(all) enum NormalizeFunctions {
   Lower
   /// Keep names as written (Python `False`).
   Keep
-} derive(Eq, Debug)
+}
 
 ///|
 #deprecated

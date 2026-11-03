@@ -11,9 +11,12 @@ test "qualify_tables: on_qualify" {
   )
   |> ignore
   tables.sort_by(py_cmp)
-  debug_inspect(tables, content=(
-    #|["bar", "baz"]
-  ))
+  debug_inspect(
+    tables,
+    content=(
+      #|["bar", "baz"]
+    ),
+  )
 
   // Tables referenced by lateral sources (e.g. UNNEST) must only be qualified once
   let qualified : Array[String] = []
@@ -24,9 +27,12 @@ test "qualify_tables: on_qualify" {
     on_qualify=t => qualified.push(@core.expr_to_sql(t)) catch { _ => () },
   )
   |> ignore
-  debug_inspect(qualified, content=(
-    #|["c.db.t AS t"]
-  ))
+  debug_inspect(
+    qualified,
+    content=(
+      #|["c.db.t AS t"]
+    ),
+  )
 }
 
 ///|
@@ -72,7 +78,9 @@ test "qualify_tables: inline asserts" {
     "SELECT a FROM b AS b",
   )
   assert_eq(
-    gen_sql(@optimizer.qualify_tables(parse_sql("select a from b"), db="\"DB\"")),
+    gen_sql(
+      @optimizer.qualify_tables(parse_sql("select a from b"), db="\"DB\""),
+    ),
     "SELECT a FROM \"DB\".b AS b",
   )
 }
@@ -82,15 +90,21 @@ test "qualify_tables: copies typed alias columns" {
   let expression = parse_sql(
     "SELECT * FROM JSON_TO_RECORDSET(z) AS y(\"rank\" INT)",
   )
-  let original = expression.find([Table]).unwrap().arg("alias").unwrap().list(
-    "columns",
-  )[0]
+  let original = expression
+    .find([Table])
+    .unwrap()
+    .arg("alias")
+    .unwrap()
+    .list("columns")[0]
   assert_true(original.kind == ColumnDef)
   @optimizer.qualify_tables(expression, canonicalize_table_aliases=true)
   |> ignore
-  let new = expression.find([Table]).unwrap().arg("alias").unwrap().list(
-    "columns",
-  )[0]
+  let new = expression
+    .find([Table])
+    .unwrap()
+    .arg("alias")
+    .unwrap()
+    .list("columns")[0]
   assert_true(new.kind == ColumnDef)
   assert_false(physical_equal(original, new))
   assert_eq(gen_sql(original), gen_sql(new))
@@ -543,13 +557,15 @@ fn select_types(
 ) -> Array[(String, String)] raise @core.SqlglotError {
   e
   .selects()
-  .map(s => (
-    s.alias_or_name(),
-    match s.get_type() {
-      Some(t) => gen_sql(t, dialect?)
-      None => "None"
-    },
-  ))
+  .map(s => {
+    (
+      s.alias_or_name(),
+      match s.get_type() {
+        Some(t) => gen_sql(t, dialect?)
+        None => "None"
+      },
+    )
+  })
 }
 
 ///|
@@ -609,8 +625,7 @@ test "annotate_types: multiple pivots" {
 test "annotate_types: unpivot of a cte" {
   let expression = qualify_annotate(
     "WITH c AS (SELECT id, jan, feb FROM t) SELECT * FROM c UNPIVOT(v FOR m IN (jan, feb))",
-    "{\"t\": {\"id\": \"int\", \"jan\": \"int\", \"feb\": \"int\"}}",
-    "duckdb",
+    "{\"t\": {\"id\": \"int\", \"jan\": \"int\", \"feb\": \"int\"}}", "duckdb",
   )
   debug_inspect(
     select_types(expression),
@@ -637,7 +652,11 @@ test "qualify: unnest type trace is memoized" {
   )
   let sql = "WITH " + ctes.join(", ") + " SELECT * FROM non_null_attrs"
   let before = @optimizer.column_type_trace_calls.val
-  qualify_expr(sql, dialect="bigquery", schema="{\"orders\": {\"id\": \"INT64\"}}")
+  qualify_expr(
+    sql,
+    dialect="bigquery",
+    schema="{\"orders\": {\"id\": \"INT64\"}}",
+  )
   |> ignore
   let calls = @optimizer.column_type_trace_calls.val - before
   assert_true(
@@ -660,8 +679,10 @@ test "TestOptimizer.test_annotate_types_caches_schema_lookups" {
 ///|
 test "qualify: validate columns" {
   assert_raises_with(
-    () => qualify_expr("select foo from x", schema="{\"foo\": {\"y\": \"int\"}}")
-    |> ignore,
+    () => {
+      qualify_expr("select foo from x", schema="{\"foo\": {\"y\": \"int\"}}")
+      |> ignore
+    },
     "Column 'foo' could not be resolved. Line: 1, Col: 10",
   )
   // ambiguous columns error with PIVOT (which skips the "could not be resolved" check)
@@ -734,12 +755,14 @@ test "qualify: spark lateral view explode" {
 ///|
 test "qualify: unresolvable snowflake lateral column" {
   assert_raises_with(
-    () => qualify_expr(
-      "SELECT f.value AS v FROM my_db.raw.events, LATERAL FLATTEN(items) AS f",
-      dialect="snowflake",
-      schema="{\"my_db\": {\"other\": {\"some_view\": {\"v\": \"VARIANT\"}}}}",
-    )
-    |> ignore,
+    () => {
+      qualify_expr(
+        "SELECT f.value AS v FROM my_db.raw.events, LATERAL FLATTEN(items) AS f",
+        dialect="snowflake",
+        schema="{\"my_db\": {\"other\": {\"some_view\": {\"v\": \"VARIANT\"}}}}",
+      )
+      |> ignore
+    },
     "Column 'ITEMS' could not be resolved",
   )
 }
@@ -852,9 +875,7 @@ test "optimize: error highlighting" {
   let sql = "SELECT nonexistent FROM x"
   let schema = mapping_schema(test_schema_json)
   let with_sql = try
-    @optimizer.optimize(parse_sql(sql), schema~, sql~)
-    |> ignore
-    |> Ok
+    @optimizer.optimize(parse_sql(sql), schema~, sql~) |> ignore |> Ok
   catch {
     e => Err(e.message())
   }
@@ -862,9 +883,7 @@ test "optimize: error highlighting" {
   assert_true(msg.contains("Column 'nonexistent' could not be resolved"))
   assert_true(msg.contains("\{ansi_underline}nonexistent\{ansi_reset}"))
   let without_sql = try
-    @optimizer.optimize(parse_sql(sql), schema~)
-    |> ignore
-    |> Ok
+    @optimizer.optimize(parse_sql(sql), schema~) |> ignore |> Ok
   catch {
     e => Err(e.message())
   }
@@ -875,10 +894,7 @@ test "optimize: error highlighting" {
 
 ///|
 test "normalize_identifiers: string input" {
-  assert_eq(
-    gen_sql(@optimizer.normalize_identifier_str("a%")),
-    "\"a%\"",
-  )
+  assert_eq(gen_sql(@optimizer.normalize_identifier_str("a%")), "\"a%\"")
 }
 
 ///|

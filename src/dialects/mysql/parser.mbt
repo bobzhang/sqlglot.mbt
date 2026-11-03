@@ -2,7 +2,7 @@
 
 ///|
 /// Python `seq_get(args, i)`.
-pub fn seq_get(args : Array[@core.Expr], i : Int) -> @core.Expr? {
+pub fn seq_get(args : Array[@core.Expr], i : Int32) -> @core.Expr? {
   if i >= 0 && i < args.length() {
     Some(args[i])
   } else {
@@ -61,8 +61,8 @@ fn ts_or_ds_to_date(e : @core.Expr?) -> @core.Expr {
 pub fn show_parser(
   this : String,
   target? : String,
-  full? : Bool = false,
-  global_? : Bool = false,
+  full~ : Bool = false,
+  global_~ : Bool = false,
 ) -> @core.ParseFn {
   p => Some(parse_show_mysql(p, this, target?, full~, global_~))
 }
@@ -378,7 +378,7 @@ fn parse_range(
 /// CHANGE [COLUMN] old_col_name new_col_name column_definition [FIRST | AFTER col_name]
 fn parse_alter_table_modify(
   p : @core.Parser,
-  rename? : Bool = false,
+  rename~ : Bool = false,
 ) -> @core.Expr? raise @core.SqlglotError {
   p.match_(COLUMN) |> ignore
   guard p.parse_field(any_token=true) is Some(column) else { return None }
@@ -603,8 +603,8 @@ pub fn parse_show_mysql(
   p : @core.Parser,
   this : String,
   target? : String,
-  full? : Bool = false,
-  global_? : Bool = false,
+  full~ : Bool = false,
+  global_~ : Bool = false,
 ) -> @core.Expr raise @core.SqlglotError {
   let json = p.match_text_seq(["JSON"])
   let mut target_id = match target {

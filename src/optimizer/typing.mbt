@@ -43,21 +43,35 @@ fn subclasses(bases : Array[@core.Kind]) -> Array[@core.Kind] {
 
 ///|
 let timestamp_expressions : Array[@core.Kind] = [
-  CurrentTimestamp, StrToTime, TimeStrToTime, TimestampAdd, TimestampSub, UnixToTime,
+  CurrentTimestamp,
+  StrToTime,
+  TimeStrToTime,
+  TimestampAdd,
+  TimestampSub,
+  UnixToTime,
 ]
 
 ///|
 fn build_base_expression_metadata() -> ExprMetadata {
   let m : ExprMetadata = Map([])
   annotate_all(m, subclasses([Binary]), (s, e) => s.annotate_binary(e))
-  annotate_all(m, subclasses([Unary, Alias, IgnoreNulls, RespectNulls]), (s, e) => s.annotate_unary(
-    e,
-  ))
+  annotate_all(m, subclasses([Unary, Alias, IgnoreNulls, RespectNulls]), (s, e) => {
+    s.annotate_unary(e)
+  })
   returns_all(
     m,
     [
-      ApproxDistinct, ArraySize, CountIf, DenseRank, Int64, Ntile, Rank, RowNumber,
-      UnixSeconds, UnixMicros, UnixMillis,
+      ApproxDistinct,
+      ArraySize,
+      CountIf,
+      DenseRank,
+      Int64,
+      Ntile,
+      Rank,
+      RowNumber,
+      UnixSeconds,
+      UnixMicros,
+      UnixMillis,
     ],
     BIGINT,
   )
@@ -65,36 +79,113 @@ fn build_base_expression_metadata() -> ExprMetadata {
   returns_all(
     m,
     [
-      All, Any, Between, Boolean, Contains, EndsWith, Exists, In, IsInf, IsNan, LogicalAnd,
-      LogicalOr, StartsWith,
+      All,
+      Any,
+      Between,
+      Boolean,
+      Contains,
+      EndsWith,
+      Exists,
+      In,
+      IsInf,
+      IsNan,
+      LogicalAnd,
+      LogicalOr,
+      StartsWith,
     ],
     BOOLEAN,
   )
   returns_all(
     m,
     [
-      CurrentDate, Date, DateFromParts, DateStrToDate, DiToDate, LastDay, StrToDate,
-      TimeStrToDate, TsOrDsToDate,
+      CurrentDate,
+      Date,
+      DateFromParts,
+      DateStrToDate,
+      DiToDate,
+      LastDay,
+      StrToDate,
+      TimeStrToDate,
+      TsOrDsToDate,
     ],
     DATE,
   )
-  returns_all(m, [CurrentDatetime, Datetime, DatetimeAdd, DatetimeSub], DATETIME)
+  returns_all(
+    m,
+    [CurrentDatetime, Datetime, DatetimeAdd, DatetimeSub],
+    DATETIME,
+  )
   returns_all(
     m,
     [
-      Asin, Asinh, Acos, CovarPop, CovarSamp, Acosh, ApproxQuantile, Atan, Atanh, Avg,
-      Cbrt, Cos, Cosh, Cot, Degrees, Exp, Kurtosis, Ln, Log, Pi, Pow, PercentileCont, Quantile,
-      Radians, Round, SafeDivide, Sin, Sinh, Sqrt, Stddev, StddevPop, StddevSamp, Rand,
-      Tan, Tanh, ToDouble, CumeDist, PercentRank, Variance, VariancePop, Skewness,
+      Asin,
+      Asinh,
+      Acos,
+      CovarPop,
+      CovarSamp,
+      Acosh,
+      ApproxQuantile,
+      Atan,
+      Atanh,
+      Avg,
+      Cbrt,
+      Cos,
+      Cosh,
+      Cot,
+      Degrees,
+      Exp,
+      Kurtosis,
+      Ln,
+      Log,
+      Pi,
+      Pow,
+      PercentileCont,
+      Quantile,
+      Radians,
+      Round,
+      SafeDivide,
+      Sin,
+      Sinh,
+      Sqrt,
+      Stddev,
+      StddevPop,
+      StddevSamp,
+      Rand,
+      Tan,
+      Tanh,
+      ToDouble,
+      CumeDist,
+      PercentRank,
+      Variance,
+      VariancePop,
+      Skewness,
     ],
     DOUBLE,
   )
   returns_all(
     m,
     [
-      Ascii, BitLength, Ceil, DatetimeDiff, DayOfMonth, DayOfWeek, DayOfYear, Floor, Getbit,
-      Hour, TimestampDiff, TimeDiff, Unicode, DateToDi, Levenshtein, Length, Sign, StrPosition,
-      TsOrDiToDi, Quarter, UnixDate,
+      Ascii,
+      BitLength,
+      Ceil,
+      DatetimeDiff,
+      DayOfMonth,
+      DayOfWeek,
+      DayOfYear,
+      Floor,
+      Getbit,
+      Hour,
+      TimestampDiff,
+      TimeDiff,
+      Unicode,
+      DateToDi,
+      Levenshtein,
+      Length,
+      Sign,
+      StrPosition,
+      TsOrDiToDi,
+      Quarter,
+      UnixDate,
     ],
     INT,
   )
@@ -110,122 +201,152 @@ fn build_base_expression_metadata() -> ExprMetadata {
   returns_all(m, timestamp_expressions, TIMESTAMP)
   returns_all(
     m,
-    [Day, DayOfWeekIso, Month, Week, WeekOfYear, Year, YearOfWeek, YearOfWeekIso],
+    [
+      Day,
+      DayOfWeekIso,
+      Month,
+      Week,
+      WeekOfYear,
+      Year,
+      YearOfWeek,
+      YearOfWeekIso,
+    ],
     TINYINT,
   )
   returns_all(
     m,
     [
-      ArrayToString, Concat, ConcatWs, Chr, CurrentCatalog, CurrentRole, CurrentSchema,
-      CurrentVersion, CurrentUser, Dayname, DateToDateStr, DPipe, GroupConcat, Initcap,
-      Lower, MD5, Monthname, RawString, Repeat, SHA, SHA2, SessionUser, Space, String, Substring,
-      TimeToStr, TimeToTimeStr, Trim, ToBase32, ToBase64, Translate, TsOrDsToDateStr, Typeof,
-      UnixToStr, UnixToTimeStr, Upper,
+      ArrayToString,
+      Concat,
+      ConcatWs,
+      Chr,
+      CurrentCatalog,
+      CurrentRole,
+      CurrentSchema,
+      CurrentVersion,
+      CurrentUser,
+      Dayname,
+      DateToDateStr,
+      DPipe,
+      GroupConcat,
+      Initcap,
+      Lower,
+      MD5,
+      Monthname,
+      RawString,
+      Repeat,
+      SHA,
+      SHA2,
+      SessionUser,
+      Space,
+      String,
+      Substring,
+      TimeToStr,
+      TimeToTimeStr,
+      Trim,
+      ToBase32,
+      ToBase64,
+      Translate,
+      TsOrDsToDateStr,
+      Typeof,
+      UnixToStr,
+      UnixToTimeStr,
+      Upper,
     ],
     VARCHAR,
   )
   annotate_all(
     m,
     [
-      Abs, AnyValue, ArrayConcatAgg, ArrayReverse, ArraySlice, Filter, FirstValue, HavingMax,
-      LastValue, Limit, NthValue, Order, SortArray, Window,
+      Abs,
+      AnyValue,
+      ArrayConcatAgg,
+      ArrayReverse,
+      ArraySlice,
+      Filter,
+      FirstValue,
+      HavingMax,
+      LastValue,
+      Limit,
+      NthValue,
+      Order,
+      SortArray,
+      Window,
     ],
     (s, e) => s.annotate_by_args(e, [Key("this")]),
   )
-  annotate_all(
-    m,
-    [ArrayConcat, Coalesce, Greatest, Least, Max, Min],
-    (s, e) => s.annotate_by_args(e, [Key("this"), Key("expressions")]),
-  )
-  annotate_all(m, [ArrayFirst, ArrayLast], (s, e) => s.annotate_by_array_element(
-    e,
-  ))
-  m[Anonymous] = Annotator((s, e) => s.set_type(
-    e,
-    Some(T(s.schema.get_udf_type(e))),
-  ))
-  annotate_all(m, [DateAdd, DateSub, DateTrunc], (s, e) => s.annotate_timeunit(e))
+  annotate_all(m, [ArrayConcat, Coalesce, Greatest, Least, Max, Min], (s, e) => {
+    s.annotate_by_args(e, [Key("this"), Key("expressions")])
+  })
+  annotate_all(m, [ArrayFirst, ArrayLast], (s, e) => {
+    s.annotate_by_array_element(e)
+  })
+  m[Anonymous] = Annotator((s, e) => {
+    s.set_type(e, Some(T(s.schema.get_udf_type(e))))
+  })
+  annotate_all(m, [DateAdd, DateSub, DateTrunc], (s, e) => {
+    s.annotate_timeunit(e)
+  })
   annotate_all(m, [Cast, TryCast], (s, e) => s.set_type_expr(e, e.arg("to")))
   annotate_all(m, [Map, VarMap], (s, e) => s.annotate_map(e))
-  m[Array] = Annotator((s, e) => s.annotate_by_args(
-    e,
-    [Key("expressions")],
-    array=true,
-  ))
-  m[ArrayAgg] = Annotator((s, e) => s.annotate_by_args(e, [Key("this")], array=true))
+  m[Array] = Annotator((s, e) => {
+    s.annotate_by_args(e, [Key("expressions")], array=true)
+  })
+  m[ArrayAgg] = Annotator((s, e) => {
+    s.annotate_by_args(e, [Key("this")], array=true)
+  })
   m[Bracket] = Annotator((s, e) => s.annotate_bracket(e))
   m[Case] = Annotator((s, e) => {
-    let args = e.list("ifs").map(if_expr => ArgRef::Node(if_expr.arg("true").unwrap()))
+    let args = e
+      .list("ifs")
+      .map(if_expr => ArgRef::Node(if_expr.arg("true").unwrap()))
     args.push(Key("default"))
     s.annotate_by_args(e, args)
   })
-  m[Count] = Annotator((s, e) => s.set_dtype(
-    e,
-    if e.has("big_int") {
-      BIGINT
-    } else {
-      INT
-    },
-  ))
-  m[DateDiff] = Annotator((s, e) => s.set_dtype(
-    e,
-    if e.has("big_int") {
-      BIGINT
-    } else {
-      INT
-    },
-  ))
+  m[Count] = Annotator((s, e) => {
+    s.set_dtype(e, if e.has("big_int") { BIGINT } else { INT })
+  })
+  m[DateDiff] = Annotator((s, e) => {
+    s.set_dtype(e, if e.has("big_int") { BIGINT } else { INT })
+  })
   m[DataType] = Annotator((_, _) => ())
   m[Div] = Annotator((s, e) => s.annotate_div(e))
   m[Distinct] = Annotator((s, e) => s.annotate_by_args(e, [Key("expressions")]))
   m[Dot] = Annotator((s, e) => s.annotate_dot(e))
   m[Explode] = Annotator((s, e) => s.annotate_explode(e))
   m[Extract] = Annotator((s, e) => s.annotate_extract(e))
-  m[HexString] = Annotator((s, e) => s.set_dtype(
-    e,
-    if e.has("is_integer") {
-      BIGINT
-    } else {
-      BINARY
-    },
-  ))
-  m[GenerateSeries] = Annotator((s, e) => s.annotate_by_args(
-    e,
-    [Key("start"), Key("end"), Key("step")],
-    array=true,
-  ))
-  m[GenerateDateArray] = Annotator((s, e) => s.set_type_expr(
-    e,
-    Some(@core.datatype_from_str("ARRAY<DATE>")),
-  ))
-  m[GenerateTimestampArray] = Annotator((s, e) => s.set_type_expr(
-    e,
-    Some(@core.datatype_from_str("ARRAY<TIMESTAMP>")),
-  ))
+  m[HexString] = Annotator((s, e) => {
+    s.set_dtype(e, if e.has("is_integer") { BIGINT } else { BINARY })
+  })
+  m[GenerateSeries] = Annotator((s, e) => {
+    s.annotate_by_args(e, [Key("start"), Key("end"), Key("step")], array=true)
+  })
+  m[GenerateDateArray] = Annotator((s, e) => {
+    s.set_type_expr(e, Some(@core.datatype_from_str("ARRAY<DATE>")))
+  })
+  m[GenerateTimestampArray] = Annotator((s, e) => {
+    s.set_type_expr(e, Some(@core.datatype_from_str("ARRAY<TIMESTAMP>")))
+  })
   m[If] = Annotator((s, e) => s.annotate_by_args(e, [Key("true"), Key("false")]))
-  m[Lag] = Annotator((s, e) => s.annotate_by_args(e, [Key("this"), Key("default")]))
-  m[Lead] = Annotator((s, e) => s.annotate_by_args(e, [Key("this"), Key("default")]))
+  m[Lag] = Annotator((s, e) => {
+    s.annotate_by_args(e, [Key("this"), Key("default")])
+  })
+  m[Lead] = Annotator((s, e) => {
+    s.annotate_by_args(e, [Key("this"), Key("default")])
+  })
   m[Literal] = Annotator((s, e) => s.annotate_literal(e))
   m[Null] = Returns(D(NULL))
-  m[Nullif] = Annotator((s, e) => s.annotate_by_args(e, [
-    Key("this"),
-    Key("expression"),
-  ]))
+  m[Nullif] = Annotator((s, e) => {
+    s.annotate_by_args(e, [Key("this"), Key("expression")])
+  })
   m[PropertyEQ] = Annotator((s, e) => s.annotate_by_args(e, [Key("expression")]))
   m[Struct] = Annotator((s, e) => s.annotate_struct(e))
-  m[Sum] = Annotator((s, e) => s.annotate_by_args(
-    e,
-    [Key("this"), Key("expressions")],
-    promote=true,
-  ))
-  m[Timestamp] = Annotator((s, e) => s.set_dtype(
-    e,
-    if e.has("with_tz") {
-      TIMESTAMPTZ
-    } else {
-      TIMESTAMP
-    },
-  ))
+  m[Sum] = Annotator((s, e) => {
+    s.annotate_by_args(e, [Key("this"), Key("expressions")], promote=true)
+  })
+  m[Timestamp] = Annotator((s, e) => {
+    s.set_dtype(e, if e.has("with_tz") { TIMESTAMPTZ } else { TIMESTAMP })
+  })
   m[ToMap] = Annotator((s, e) => s.annotate_to_map(e))
   m[Unnest] = Annotator((s, e) => s.annotate_unnest(e))
   m[WithinGroup] = Annotator((s, e) => s.annotate_within_group(e))
@@ -252,7 +373,8 @@ let coerces_to_builders : Map[
 ] = Map([])
 
 ///|
-let coerces_to_cache : Map[String, Map[@core.DType, @set.Set[@core.DType]]] = Map([])
+let coerces_to_cache : Map[String, Map[@core.DType, @set.Set[@core.DType]]] = Map([],
+)
 
 ///|
 /// Registers the expression metadata of a dialect (by name). Dialects that don't register

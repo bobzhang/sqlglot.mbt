@@ -2,12 +2,12 @@
 // produced by running sqlglot/__main__.py.
 
 ///|
-fn run(argv : Array[String], stdin? : String = "") -> @cli.CliResult {
+fn run(argv : Array[String], stdin~ : String = "") -> @cli.CliResult {
   @cli.run(argv, () => stdin)
 }
 
 ///|
-fn stdout_of(argv : Array[String], stdin? : String = "") -> String raise {
+fn stdout_of(argv : Array[String], stdin~ : String = "") -> String raise {
   let r = run(argv, stdin~)
   assert_eq(r.stderr, "")
   assert_eq(r.exit_code, 0)

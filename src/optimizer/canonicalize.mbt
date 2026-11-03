@@ -22,14 +22,46 @@ pub fn replace_tree(
 
 ///|
 let canonicalize_kinds : Array[@core.Kind] = [
-  Add, Date, TsOrDsToDate, Timestamp, Sub, EQ, NEQ, GT, GTE, LT, LTE, NullSafeEQ, NullSafeNEQ,
-  Between, Extract, DateAdd, DateSub, DateTrunc, DateDiff, Cast, Connector, Not, If, Where,
-  Having, Ordered,
+  Add,
+  Date,
+  TsOrDsToDate,
+  Timestamp,
+  Sub,
+  EQ,
+  NEQ,
+  GT,
+  GTE,
+  LT,
+  LTE,
+  NullSafeEQ,
+  NullSafeNEQ,
+  Between,
+  Extract,
+  DateAdd,
+  DateSub,
+  DateTrunc,
+  DateDiff,
+  Cast,
+  Connector,
+  Not,
+  If,
+  Where,
+  Having,
+  Ordered,
 ]
 
 ///|
 let coercible_date_ops : Array[@core.Kind] = [
-  Add, Sub, EQ, NEQ, GT, GTE, LT, LTE, NullSafeEQ, NullSafeNEQ,
+  Add,
+  Sub,
+  EQ,
+  NEQ,
+  GT,
+  GTE,
+  LT,
+  LTE,
+  NullSafeEQ,
+  NullSafeNEQ,
 ]
 
 ///|
@@ -176,7 +208,8 @@ fn canonicalize_ensure_bools(
 
 ///|
 fn remove_ascending_order(expression : @core.Expr) -> @core.Expr {
-  if expression.kind.is_a(Ordered) && expression.get("desc") is Some(Bool(false)) {
+  if expression.kind.is_a(Ordered) &&
+    expression.get("desc") is Some(Bool(false)) {
     expression.set("desc", @core.null_arg)
   }
   expression

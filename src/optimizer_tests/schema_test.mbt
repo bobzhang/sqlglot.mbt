@@ -4,7 +4,7 @@
 fn schema_of(
   json : String,
   dialect? : String,
-  normalize? : Bool = true,
+  normalize~ : Bool = true,
 ) -> @optimizer.MappingSchema raise @core.SqlglotError {
   let dialect = match dialect {
     Some(d) => Some(@core.Dialect::get_or_raise(d))
@@ -136,17 +136,29 @@ test "schema: test_schema_add_table_with_and_without_mapping" {
   schema.add_table(test_)
   debug_inspect(schema.column_names(test_), content="[]")
   schema.add_table(test_, column_mapping={ "x": Type("string") })
-  debug_inspect(schema.column_names(test_), content=(
-    #|["x"]
-  ))
-  schema.add_table(test_, column_mapping={ "x": Type("string"), "y": Type("int") })
-  debug_inspect(schema.column_names(test_), content=(
-    #|["x", "y"]
-  ))
+  debug_inspect(
+    schema.column_names(test_),
+    content=(
+      #|["x"]
+    ),
+  )
+  schema.add_table(test_, column_mapping={
+    "x": Type("string"),
+    "y": Type("int"),
+  })
+  debug_inspect(
+    schema.column_names(test_),
+    content=(
+      #|["x", "y"]
+    ),
+  )
   schema.add_table(test_)
-  debug_inspect(schema.column_names(test_), content=(
-    #|["x", "y"]
-  ))
+  debug_inspect(
+    schema.column_names(test_),
+    content=(
+      #|["x", "y"]
+    ),
+  )
 }
 
 ///|
@@ -198,16 +210,25 @@ test "schema: test_schema_normalization" {
   )
   let table_z = @core.to_table("x.y.Z")
   let table_w = @core.to_table("x.y.w")
-  debug_inspect(schema.column_names(table_z), content=(
-    #|["a", "B"]
-  ))
-  debug_inspect(schema.column_names(table_w), content=(
-    #|["C"]
-  ))
+  debug_inspect(
+    schema.column_names(table_z),
+    content=(
+      #|["a", "B"]
+    ),
+  )
+  debug_inspect(
+    schema.column_names(table_w),
+    content=(
+      #|["C"]
+    ),
+  )
   let schema = schema_of("{\"x\": {\"`y`\": \"INT\"}}", dialect="clickhouse")
-  debug_inspect(schema.column_names(@core.to_table("x")), content=(
-    #|["y"]
-  ))
+  debug_inspect(
+    schema.column_names(@core.to_table("x")),
+    content=(
+      #|["y"]
+    ),
+  )
 
   // add_table normalizes both the table and the column names to be added / updated
   let schema = @optimizer.MappingSchema::new()
@@ -227,9 +248,12 @@ test "schema: test_schema_normalization" {
     "{\"x\": {\"foo\": \"int\", \"\\\"bLa\\\"\": \"int\"}}",
     dialect="snowflake",
   )
-  debug_inspect(schema.column_names(@core.to_table("x")), content=(
-    #|["FOO", "bLa"]
-  ))
+  debug_inspect(
+    schema.column_names(@core.to_table("x")),
+    content=(
+      #|["FOO", "bLa"]
+    ),
+  )
 
   // switching off the normalization logic
   let schema = schema_of(
@@ -237,9 +261,12 @@ test "schema: test_schema_normalization" {
     normalize=false,
     dialect="snowflake",
   )
-  debug_inspect(schema.column_names(@core.to_table("x")), content=(
-    #|["foo"]
-  ))
+  debug_inspect(
+    schema.column_names(@core.to_table("x")),
+    content=(
+      #|["foo"]
+    ),
+  )
 
   // the correct dialect is used when calling schema methods
   let schema = schema_of("{\"[Fo]\": {\"x\": \"int\"}}", dialect="tsql")
@@ -248,9 +275,12 @@ test "schema: test_schema_normalization" {
     schema.column_names(table_in("[Fo]", "tsql")),
     schema.column_names(table_in("`fo`", "clickhouse"), dialect=clickhouse),
   )
-  debug_inspect(schema.column_names(table_in("[Fo]", "tsql")), content=(
-    #|["x"]
-  ))
+  debug_inspect(
+    schema.column_names(table_in("[Fo]", "tsql")),
+    content=(
+      #|["x"]
+    ),
+  )
 
   // BigQuery: all column identifiers are lowercased, even quoted ones; tables aren't
   let schema = schema_of("{\"Foo\": {\"`BaR`\": \"int\"}}", dialect="bigquery")
@@ -339,22 +369,28 @@ test "schema: test_same_number_of_qualifiers" {
     "Table z must match the schema's nesting level: 2.",
   )
   expect_schema_error(
-    () => schema_of("{\"x\": {\"y\": {\"c1\": \"int\"}}, \"z\": {\"c2\": \"int\"}}")
-    |> ignore,
+    () => {
+      schema_of("{\"x\": {\"y\": {\"c1\": \"int\"}}, \"z\": {\"c2\": \"int\"}}")
+      |> ignore
+    },
     "Table z must match the schema's nesting level: 2.",
   )
   expect_schema_error(
-    () => schema_of(
-      "{\"catalog\": {\"db\": {\"tbl\": {\"col\": \"a\"}}}, \"tbl2\": {\"col\": \"b\"}}",
-    )
-    |> ignore,
+    () => {
+      schema_of(
+        "{\"catalog\": {\"db\": {\"tbl\": {\"col\": \"a\"}}}, \"tbl2\": {\"col\": \"b\"}}",
+      )
+      |> ignore
+    },
     "Table tbl2 must match the schema's nesting level: 3.",
   )
   expect_schema_error(
-    () => schema_of(
-      "{\"tbl2\": {\"col\": \"b\"}, \"catalog\": {\"db\": {\"tbl\": {\"col\": \"a\"}}}}",
-    )
-    |> ignore,
+    () => {
+      schema_of(
+        "{\"tbl2\": {\"col\": \"b\"}, \"catalog\": {\"db\": {\"tbl\": {\"col\": \"a\"}}}}",
+      )
+      |> ignore
+    },
     "Table catalog.db.tbl must match the schema's nesting level: 1.",
   )
 }
@@ -370,9 +406,12 @@ test "schema: test_has_column" {
 test "schema: test_find" {
   let schema = schema_of("{\"x\": {\"c\": \"int\"}}")
   let found = schema.find(@core.to_table("x")).unwrap()
-  debug_inspect(found.keys().collect(), content=(
-    #|["c"]
-  ))
+  debug_inspect(
+    found.keys().collect(),
+    content=(
+      #|["c"]
+    ),
+  )
   guard found.get("c") is Some(Type("int")) else { fail("expected 'int'") }
   let found = schema.find_column_types(@core.to_table("x")).unwrap()
   guard found.get("c") is Some(Some(dt)) else { fail("expected a type") }

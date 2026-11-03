@@ -111,7 +111,7 @@ pub fn Generator::columnposition_sql(
 pub fn Generator::columndef_sql_v(
   self : Generator,
   expression : Expr,
-  sep? : String = " ",
+  sep~ : String = " ",
 ) -> String raise SqlglotError {
   match self.fns.hooks.columndef_sql {
     Some(f) => f(self, expression, sep)
@@ -123,7 +123,7 @@ pub fn Generator::columndef_sql_v(
 pub fn Generator::columndef_sql(
   self : Generator,
   expression : Expr,
-  sep? : String = " ",
+  sep~ : String = " ",
 ) -> String raise SqlglotError {
   let column = self.sql_key(expression, "this")
   let kind = self.sql_key(expression, "kind")
@@ -660,7 +660,11 @@ pub fn Generator::drop_sql(
   expression : Expr,
 ) -> String raise SqlglotError {
   let tables = self.expressions(expression~, key="tables", flat=true)
-  let expressions = g_around(" (", self.expressions(expression~, flat=true), ")")
+  let expressions = g_around(
+    " (",
+    self.expressions(expression~, flat=true),
+    ")",
+  )
   let mut kind = py_str_value(expression.get("kind"))
   match self.dialect.cfg.inverse_creatable_kind_mapping.get(kind) {
     Some(k) if k != "" => kind = k
@@ -793,10 +797,7 @@ pub fn Generator::property_location(
 ) -> PropertiesLocation raise SqlglotError {
   match self.cfg.properties_location.get(p.kind) {
     Some(loc) => loc
-    None =>
-      raise ValueError(
-        "KeyError: \{p.kind.class_path()}",
-      )
+    None => raise ValueError("KeyError: \{p.kind.class_path()}")
   }
 }
 
@@ -842,10 +843,10 @@ pub fn Generator::root_properties(
 pub fn Generator::properties(
   self : Generator,
   properties : Expr,
-  prefix? : String = "",
-  sep? : String = ", ",
-  suffix? : String = "",
-  wrapped? : Bool = true,
+  prefix~ : String = "",
+  sep~ : String = ", ",
+  suffix~ : String = "",
+  wrapped~ : Bool = true,
 ) -> String raise SqlglotError {
   if !properties.expressions().is_empty() {
     let expressions = self.expressions(
@@ -927,7 +928,7 @@ pub fn Generator::locate_properties_base(
 pub fn Generator::property_name(
   self : Generator,
   expression : Expr,
-  string_key? : Bool = false,
+  string_key~ : Bool = false,
 ) -> String raise SqlglotError {
   match expression.this() {
     Some(t) if t.kind.is_a(Dot) => return self.sql_key(expression, "this")
@@ -1285,7 +1286,10 @@ pub fn Generator::rowformatdelimitedproperty_sql(
   self : Generator,
   expression : Expr,
 ) -> String raise SqlglotError {
-  let fields = g_pfx(" FIELDS TERMINATED BY ", self.sql_key(expression, "fields"))
+  let fields = g_pfx(
+    " FIELDS TERMINATED BY ",
+    self.sql_key(expression, "fields"),
+  )
   let escaped = g_pfx(" ESCAPED BY ", self.sql_key(expression, "escaped"))
   let items = g_pfx(
     " COLLECTION ITEMS TERMINATED BY ",
@@ -1352,7 +1356,11 @@ pub fn Generator::foreignkey_sql(
   self : Generator,
   expression : Expr,
 ) -> String raise SqlglotError {
-  let expressions = g_around(" (", self.expressions(expression~, flat=true), ")")
+  let expressions = g_around(
+    " (",
+    self.expressions(expression~, flat=true),
+    ")",
+  )
   let reference = g_pfx(" ", self.sql_key(expression, "reference"))
   let delete = g_pfx(" ON DELETE ", self.sql_key(expression, "delete"))
   let update = g_pfx(" ON UPDATE ", self.sql_key(expression, "update"))
@@ -1661,7 +1669,7 @@ pub fn Generator::altersortkey_sql(
 pub fn Generator::alterrename_sql_v(
   self : Generator,
   expression : Expr,
-  include_to? : Bool = true,
+  include_to~ : Bool = true,
 ) -> String raise SqlglotError {
   match self.fns.hooks.alterrename_sql {
     Some(f) => f(self, expression, include_to)
@@ -1673,7 +1681,7 @@ pub fn Generator::alterrename_sql_v(
 pub fn Generator::alterrename_sql(
   self : Generator,
   expression : Expr,
-  include_to? : Bool = true,
+  include_to~ : Bool = true,
 ) -> String raise SqlglotError {
   let mut expression = expression
   if !self.cfg.rename_table_with_db {
@@ -1903,7 +1911,7 @@ pub fn Generator::duplicatekeyproperty_sql(
 pub fn Generator::uniquekeyproperty_sql_v(
   self : Generator,
   expression : Expr,
-  prefix? : String = "UNIQUE KEY",
+  prefix~ : String = "UNIQUE KEY",
 ) -> String raise SqlglotError {
   match self.fns.hooks.uniquekeyproperty_sql {
     Some(f) => f(self, expression, prefix)
@@ -1915,7 +1923,7 @@ pub fn Generator::uniquekeyproperty_sql_v(
 pub fn Generator::uniquekeyproperty_sql(
   self : Generator,
   expression : Expr,
-  prefix? : String = "UNIQUE KEY",
+  prefix~ : String = "UNIQUE KEY",
 ) -> String raise SqlglotError {
   prefix + " (" + self.expressions(expression~, flat=true) + ")"
 }
@@ -2020,8 +2028,15 @@ pub fn Generator::indexcolumnconstraint_sql(
   let kind = if kind != "" { kind + " INDEX" } else { "INDEX" }
   let this = g_pfx(" ", self.sql_key(expression, "this"))
   let index_type = g_pfx(" USING ", self.sql_key(expression, "index_type"))
-  let expressions = g_around(" (", self.expressions(expression~, flat=true), ")")
-  let options = g_pfx(" ", self.expressions(expression~, key="options", sep=" "))
+  let expressions = g_around(
+    " (",
+    self.expressions(expression~, flat=true),
+    ")",
+  )
+  let options = g_pfx(
+    " ",
+    self.expressions(expression~, key="options", sep=" "),
+  )
   kind + this + index_type + expressions + options
 }
 
@@ -2034,7 +2049,11 @@ pub fn Generator::truncatetable_sql(
   let tables = " " + self.expressions(expression~)
   let exists = g_when(expression.has("exists"), " IF EXISTS")
   let on_cluster = g_pfx(" ", self.sql_key(expression, "cluster"))
-  let identity = g_around(" ", self.sql_key(expression, "identity"), " IDENTITY")
+  let identity = g_around(
+    " ",
+    self.sql_key(expression, "identity"),
+    " IDENTITY",
+  )
   let option = g_pfx(" ", self.sql_key(expression, "option"))
   let partition = g_pfx(" ", self.sql_key(expression, "partition"))
   "TRUNCATE " +
@@ -2386,9 +2405,15 @@ pub fn Generator::analyze_sql(
   self : Generator,
   expression : Expr,
 ) -> String raise SqlglotError {
-  let options = g_pfx(" ", self.expressions(expression~, key="options", sep=" "))
+  let options = g_pfx(
+    " ",
+    self.expressions(expression~, key="options", sep=" "),
+  )
   let kind = g_pfx(" ", self.sql_key(expression, "kind"))
-  let tables = g_pfx(" ", self.expressions(expression~, key="tables", flat=true))
+  let tables = g_pfx(
+    " ",
+    self.expressions(expression~, key="tables", flat=true),
+  )
   let mode = g_pfx(" ", self.sql_key(expression, "mode"))
   let properties = g_pfx(" ", self.sql_key(expression, "properties"))
   let partition = g_pfx(" ", self.sql_key(expression, "partition"))
@@ -2637,8 +2662,8 @@ pub fn Generator::grant_or_revoke_sql(
   expression : Expr,
   keyword~ : String,
   preposition~ : String,
-  grant_option_prefix? : String = "",
-  grant_option_suffix? : String = "",
+  grant_option_prefix~ : String = "",
+  grant_option_suffix~ : String = "",
 ) -> String raise SqlglotError {
   let privileges_sql = self.expressions(
     expression~,

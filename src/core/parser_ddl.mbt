@@ -31,7 +31,7 @@ pub fn Parser::match_texts_upper(
 ///|
 pub fn Parser::parse_comment(
   self : Parser,
-  allow_exists? : Bool = true,
+  allow_exists~ : Bool = true,
 ) -> Expr? raise SqlglotError {
   let start = self.prev
   let exists = if allow_exists { self.parse_exists() } else { None }
@@ -211,7 +211,7 @@ pub fn Parser::parse_statement_base(self : Parser) -> Expr? raise SqlglotError {
 ///|
 pub fn Parser::parse_drop(
   self : Parser,
-  exists? : Bool = false,
+  exists~ : Bool = false,
 ) -> Expr? raise SqlglotError {
   let start = self.prev
   let temporary = self.match_(TEMPORARY)
@@ -283,7 +283,7 @@ pub fn Parser::parse_drop(
 
 ///|
 /// `IF [NOT] EXISTS`. Returns None when `IF` isn't matched (Python `None`).
-pub fn Parser::parse_exists(self : Parser, not_? : Bool = false) -> Bool? {
+pub fn Parser::parse_exists(self : Parser, not_~ : Bool = false) -> Bool? {
   if !self.match_text("IF") {
     return Some(false)
   }
@@ -1049,7 +1049,7 @@ pub fn var_of_expr(e : Expr) -> Expr {
 pub fn Parser::parse_property_assignment(
   self : Parser,
   kind : Kind,
-  kwargs? : ArrayView[(String, &IntoValue)] = [],
+  kwargs~ : ArrayView[(String, &IntoValue)] = [],
 ) -> Expr raise SqlglotError {
   self.match_(EQ) |> ignore
   self.match_(ALIAS) |> ignore
@@ -1063,7 +1063,7 @@ pub fn Parser::parse_property_assignment(
 ///|
 pub fn Parser::parse_properties(
   self : Parser,
-  before? : Bool = false,
+  before~ : Bool = false,
 ) -> Expr? raise SqlglotError {
   let properties = []
   while true {
@@ -1097,7 +1097,7 @@ pub fn Parser::parse_properties(
 ///|
 pub fn Parser::parse_fallback(
   self : Parser,
-  no? : Bool = false,
+  no~ : Bool = false,
 ) -> Expr raise SqlglotError {
   self.expression(
     mk(FallbackProperty, [
@@ -1174,7 +1174,7 @@ pub fn Parser::parse_retention_period(self : Parser) -> Expr raise SqlglotError 
 ///|
 pub fn Parser::parse_system_versioning_property(
   self : Parser,
-  with_? : Bool = false,
+  with_~ : Bool = false,
 ) -> Expr raise SqlglotError {
   self.match_(EQ) |> ignore
   let prop = self.expression(
@@ -1376,7 +1376,7 @@ pub fn Parser::parse_withjournaltable(self : Parser) -> Expr raise SqlglotError 
 ///|
 pub fn Parser::parse_log(
   self : Parser,
-  no? : Bool = false,
+  no~ : Bool = false,
 ) -> Expr raise SqlglotError {
   self.expression(mk(LogProperty, [("no", no)]))
 }
@@ -1492,8 +1492,8 @@ pub fn Parser::parse_freespace(self : Parser) -> Expr raise SqlglotError {
 ///|
 pub fn Parser::parse_mergeblockratio(
   self : Parser,
-  no? : Bool = false,
-  default? : Bool = false,
+  no~ : Bool = false,
+  default~ : Bool = false,
 ) -> Expr raise SqlglotError {
   if self.match_(EQ) {
     let this = self.parse_number()
@@ -1733,7 +1733,7 @@ pub fn Parser::parse_partitioned_by_base(
 ///|
 pub fn Parser::parse_withdata(
   self : Parser,
-  no? : Bool = false,
+  no~ : Bool = false,
 ) -> Expr raise SqlglotError {
   let statistics : Bool? = if self.match_text_seq(["AND", "STATISTICS"]) {
     Some(true)
@@ -1847,7 +1847,7 @@ pub fn Parser::parse_create_like(self : Parser) -> Expr? raise SqlglotError {
 ///|
 pub fn Parser::parse_sortkey(
   self : Parser,
-  compound? : Bool = false,
+  compound~ : Bool = false,
 ) -> Expr raise SqlglotError {
   self.expression(
     mk(SortKeyProperty, [
@@ -1860,7 +1860,7 @@ pub fn Parser::parse_sortkey(
 ///|
 pub fn Parser::parse_character_set(
   self : Parser,
-  default? : Bool = false,
+  default~ : Bool = false,
 ) -> Expr raise SqlglotError {
   self.match_(EQ) |> ignore
   self.expression(

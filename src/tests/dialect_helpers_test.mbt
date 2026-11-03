@@ -33,20 +33,15 @@ test "dialect helpers: generator helpers" {
     content="CASE WHEN STRPOS(SUBSTRING(a, 3), 'x') = 0 THEN 0 ELSE STRPOS(SUBSTRING(a, 3), 'x') + 3 - 1 END",
   )
   inspect(
-    run_helper("STR_POSITION(a, 'x', 3)", (g, e) => @core.strposition_sql(
-      g,
-      e,
-      func_name="LOCATE",
-      supports_position=true,
-    )),
+    run_helper("STR_POSITION(a, 'x', 3)", (g, e) => {
+      @core.strposition_sql(g, e, func_name="LOCATE", supports_position=true)
+    }),
     content="LOCATE('x', a, 3)",
   )
   inspect(
-    run_helper("STR_POSITION(a, 'x')", (g, e) => @core.strposition_sql(
-      g,
-      e,
-      func_name="POSITION",
-    )),
+    run_helper("STR_POSITION(a, 'x')", (g, e) => {
+      @core.strposition_sql(g, e, func_name="POSITION")
+    }),
     content="POSITION('x' IN a)",
   )
   inspect(
@@ -55,8 +50,7 @@ test "dialect helpers: generator helpers" {
   )
   inspect(
     run_helper(
-      "GENERATE_SERIES(CAST('2020-01-01' AS DATE), x, INTERVAL '1' DAY)",
-      @core.sequence_sql,
+      "GENERATE_SERIES(CAST('2020-01-01' AS DATE), x, INTERVAL '1' DAY)", @core.sequence_sql,
     ),
     content="SEQUENCE(CAST('2020-01-01' AS DATE), CAST(x AS DATE), INTERVAL '1' DAY)",
   )
@@ -91,7 +85,9 @@ test "dialect helpers: generator helpers" {
     content="LOWER(a) LIKE LOWER('x')",
   )
   inspect(
-    run_helper("MAP(ARRAY(1, 2), ARRAY(3, 4))", (g, e) => @core.var_map_sql(g, e)),
+    run_helper("MAP(ARRAY(1, 2), ARRAY(3, 4))", (g, e) => {
+      @core.var_map_sql(g, e)
+    }),
     content="MAP(1, 3, 2, 4)",
   )
   inspect(
@@ -120,7 +116,10 @@ test "dialect helpers: generator helpers" {
   )
   inspect(run_helper("GETBIT(a, 2)", @core.getbit_sql), content="GET_BIT(a, 2)")
   inspect(
-    run_helper("JAROWINKLER_SIMILARITY(a, b)", @core.jarowinkler_similarity("JW")),
+    run_helper(
+      "JAROWINKLER_SIMILARITY(a, b)",
+      @core.jarowinkler_similarity("JW"),
+    ),
     content="JW(a, b)",
   )
   inspect(
@@ -128,7 +127,9 @@ test "dialect helpers: generator helpers" {
     content="IF(a, b, NULL)",
   )
   inspect(
-    run_helper("JSON_EXTRACT(x, '$.a')", (g, e) => @core.arrow_json_extract_sql(g, e)),
+    run_helper("JSON_EXTRACT(x, '$.a')", (g, e) => {
+      @core.arrow_json_extract_sql(g, e)
+    }),
     content="x -> '$.a'",
   )
   inspect(
@@ -147,13 +148,17 @@ test "dialect helpers: generator helpers" {
     content="REGEXP_EXTRACT(a, 'x')",
   )
   let lateral = @core.parse_one(
-    "SELECT * FROM x LATERAL VIEW POSEXPLODE(y) t AS pos, col",
-  ).find([Lateral]).unwrap()
+      "SELECT * FROM x LATERAL VIEW POSEXPLODE(y) t AS pos, col",
+    )
+    .find([Lateral])
+    .unwrap()
   inspect(
     @core.explode_to_unnest_sql(gen_base(), lateral),
     content=" CROSS JOIN LATERAL (SELECT pos - 1 AS pos, col FROM UNNEST(y) WITH ORDINALITY AS t(col, pos))",
   )
-  let lateral = @core.parse_one("SELECT * FROM x LATERAL VIEW EXPLODE(y) t AS col")
+  let lateral = @core.parse_one(
+      "SELECT * FROM x LATERAL VIEW EXPLODE(y) t AS col",
+    )
     .find([Lateral])
     .unwrap()
   inspect(
@@ -197,11 +202,9 @@ test "dialect helpers: date and time" {
     content="CAST(CAST(x AS DATE) + CAST(y AS TIME) AS TIMESTAMP)",
   )
   inspect(
-    run_helper("TIME_STR_TO_TIME('2020-01-01 12:13:14.123')", (g, e) => @core.timestrtotime_sql(
-      g,
-      e,
-      include_precision=true,
-    )),
+    run_helper("TIME_STR_TO_TIME('2020-01-01 12:13:14.123')", (g, e) => {
+      @core.timestrtotime_sql(g, e, include_precision=true)
+    }),
     content="CAST('2020-01-01 12:13:14.123' AS TIMESTAMP(3))",
   )
   inspect(
@@ -251,7 +254,11 @@ test "dialect helpers: parser builders" {
     g.sql(Some(@core.build_date_delta(DateAdd)(args, p))),
     content="DATE_ADD(x, 1, 'MONTH')",
   )
-  let args = [@core.parse_one("x"), @core.parse_one("'a'"), @core.parse_one("1")]
+  let args = [
+    @core.parse_one("x"),
+    @core.parse_one("'a'"),
+    @core.parse_one("1"),
+  ]
   inspect(
     g.sql(Some(@core.build_json_extract_path(JSONExtract)(args, p))),
     content="JSON_EXTRACT(x, '$.a[1]')",
@@ -305,11 +312,9 @@ test "dialect helpers: more generator helpers" {
     content="RANGEX(1, 10)",
   )
   inspect(
-    run_helper("DECODE(a, 'utf-8')", (g, e) => @core.encode_decode_sql(
-      g,
-      e,
-      "FROM_UTF8",
-    )),
+    run_helper("DECODE(a, 'utf-8')", (g, e) => {
+      @core.encode_decode_sql(g, e, "FROM_UTF8")
+    }),
     content="FROM_UTF8(a)",
   )
   inspect(run_helper("SHA2(a, 512)", @core.sha256_sql), content="SHA512(a)")
@@ -362,10 +367,14 @@ test "dialect helpers: more generator helpers" {
     ),
     content="DATEDIFF(a, b)",
   )
-  inspect(run_helper("TRIM(y)", (g, e) => @core.trim_sql(g, e)), content="TRIM(y)")
+  inspect(
+    run_helper("TRIM(y)", (g, e) => @core.trim_sql(g, e)),
+    content="TRIM(y)",
+  )
   let tf = @core.time_format()
   inspect(
-    tf(gen_base(), @core.parse_one("UNIX_TO_STR(x, '%Y-%m-%d %H:%M:%S')")) is None,
+    tf(gen_base(), @core.parse_one("UNIX_TO_STR(x, '%Y-%m-%d %H:%M:%S')"))
+    is None,
     content="true",
   )
   inspect(
@@ -381,13 +390,18 @@ test "dialect helpers: more parser builders" {
   let g = gen_base()
   let e = (sql : String) => @core.parse_one(sql)
   inspect(
-    g.sql(Some(@core.build_regexp_extract(RegexpExtract)([e("a"), e("'x'")], p))),
+    g.sql(
+      Some(@core.build_regexp_extract(RegexpExtract)([e("a"), e("'x'")], p)),
+    ),
     content="REGEXP_EXTRACT(a, 'x', 0)",
   )
   inspect(
     g.sql(
       Some(
-        @core.build_like_fn(ILike, not_like=true)([e("a"), e("'x'"), e("'!'")], p),
+        @core.build_like_fn(ILike, not_like=true)(
+          [e("a"), e("'x'"), e("'!'")],
+          p,
+        ),
       ),
     ),
     content="NOT a ILIKE 'x' ESCAPE '!'",
@@ -426,10 +440,7 @@ test "dialect helpers: more parser builders" {
     g.sql(Some(@core.build_timestamp_from_parts([e("a"), e("b")]))),
     content="TIMESTAMP_FROM_PARTS(a, b)",
   )
-  inspect(
-    g.sql(Some(@core.isnull_to_is_null([e("a")]))),
-    content="(a IS NULL)",
-  )
+  inspect(g.sql(Some(@core.isnull_to_is_null([e("a")]))), content="(a IS NULL)")
   inspect(
     g.sql(
       Some(

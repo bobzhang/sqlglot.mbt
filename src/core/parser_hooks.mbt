@@ -103,7 +103,7 @@ pub(all) struct ParserHooks {
   mut parse_wrapped_id_vars : ((Parser, Bool) -> Array[Expr] raise SqlglotError)?
   mut parse_wrapped_select : ((Parser, Bool) -> Expr? raise SqlglotError)?
   mut pivot_column_names : ((Parser, Array[Expr]) -> Array[String] raise SqlglotError)?
-  mut to_prop_eq : ((Parser, Expr, Int) -> Expr raise SqlglotError)?
+  mut to_prop_eq : ((Parser, Expr, Int32) -> Expr raise SqlglotError)?
   mut build_cast : ((Parser, Bool, Array[(String, Value?)]) -> Expr raise SqlglotError)?
   mut parse : ((Parser, Array[Token], String) -> Array[Expr?] raise SqlglotError)?
   mut parse_into : ((Parser, Array[Kind], Array[Token], String) -> Array[Expr?] raise SqlglotError)?

@@ -31,10 +31,10 @@ pub fn Dialect::tokenize_base(
 /// Creates a parser for this dialect.
 pub fn Dialect::parser(
   self : Dialect,
-  error_level? : ErrorLevel = Immediate,
-  error_message_context? : Int = 100,
-  max_errors? : Int = 3,
-  max_nodes? : Int = -1,
+  error_level~ : ErrorLevel = Immediate,
+  error_message_context~ : Int32 = 100,
+  max_errors~ : Int32 = 3,
+  max_nodes~ : Int32 = -1,
 ) -> Parser {
   Parser::new(
     self,
@@ -50,10 +50,10 @@ pub fn Dialect::parser(
 pub fn Dialect::parse(
   self : Dialect,
   sql : String,
-  error_level? : ErrorLevel = Immediate,
-  error_message_context? : Int = 100,
-  max_errors? : Int = 3,
-  max_nodes? : Int = -1,
+  error_level~ : ErrorLevel = Immediate,
+  error_message_context~ : Int32 = 100,
+  max_errors~ : Int32 = 3,
+  max_nodes~ : Int32 = -1,
 ) -> Array[Expr?] raise SqlglotError {
   let p = self.parser(
     error_level~,
@@ -73,11 +73,11 @@ pub fn Dialect::parse_into(
   self : Dialect,
   into : Array[Kind],
   sql : String,
-  error_level? : ErrorLevel = Immediate,
-  error_message_context? : Int = 100,
-  max_errors? : Int = 3,
-  max_nodes? : Int = -1,
-  into_is_list? : Bool = false,
+  error_level~ : ErrorLevel = Immediate,
+  error_message_context~ : Int32 = 100,
+  max_errors~ : Int32 = 3,
+  max_nodes~ : Int32 = -1,
+  into_is_list~ : Bool = false,
 ) -> Array[Expr?] raise SqlglotError {
   let p = self.parser(
     error_level~,
@@ -97,11 +97,11 @@ pub fn parse_one(
   sql : String,
   dialect? : Dialect,
   into? : Array[Kind],
-  error_level? : ErrorLevel = Immediate,
-  error_message_context? : Int = 100,
-  max_errors? : Int = 3,
-  max_nodes? : Int = -1,
-  into_is_list? : Bool = false,
+  error_level~ : ErrorLevel = Immediate,
+  error_message_context~ : Int32 = 100,
+  max_errors~ : Int32 = 3,
+  max_nodes~ : Int32 = -1,
+  into_is_list~ : Bool = false,
 ) -> Expr raise SqlglotError {
   let d = match dialect {
     Some(d) => d
@@ -119,7 +119,13 @@ pub fn parse_one(
         into_is_list~,
       )
     None =>
-      d.parse(sql, error_level~, error_message_context~, max_errors~, max_nodes~)
+      d.parse(
+        sql,
+        error_level~,
+        error_message_context~,
+        max_errors~,
+        max_nodes~,
+      )
   }
   if result.is_empty() || result[0] is None {
     raise ParseError("No expression was parsed from '\{sql}'", [])
@@ -146,10 +152,10 @@ pub fn parse_one_with(
 pub fn parse(
   sql : String,
   dialect? : Dialect,
-  error_level? : ErrorLevel = Immediate,
-  error_message_context? : Int = 100,
-  max_errors? : Int = 3,
-  max_nodes? : Int = -1,
+  error_level~ : ErrorLevel = Immediate,
+  error_message_context~ : Int32 = 100,
+  max_errors~ : Int32 = 3,
+  max_nodes~ : Int32 = -1,
 ) -> Array[Expr?] raise SqlglotError {
   let d = match dialect {
     Some(d) => d
@@ -163,7 +169,7 @@ pub fn parse(
 pub fn datatype_from_str(
   dtype : String,
   dialect? : Dialect,
-  udt? : Bool = false,
+  udt~ : Bool = false,
 ) -> Expr raise SqlglotError {
   if py_upper(dtype) == "UNKNOWN" {
     return mk1(DataType, DType::UNKNOWN)
@@ -186,9 +192,9 @@ pub fn transpile(
   read? : Dialect,
   write? : Dialect,
   pretty? : Bool,
-  identify? : String = "",
-  error_level? : ErrorLevel = Immediate,
-  unsupported_level? : ErrorLevel = Warn,
+  identify~ : String = "",
+  error_level~ : ErrorLevel = Immediate,
+  unsupported_level~ : ErrorLevel = Warn,
 ) -> Array[String] raise SqlglotError {
   let r = match read {
     Some(d) => d

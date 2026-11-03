@@ -154,7 +154,7 @@ fn sat_add64(a : Int64, b : Int64) -> Int64 {
 ///|
 /// `v` clamped to the Int range: slicing a row list by a bound beyond Int behaves like
 /// slicing by the clamped bound.
-fn clamp_int(v : Int64) -> Int {
+fn clamp_int(v : Int64) -> Int32 {
   if v > 2147483647L {
     2147483647
   } else if v < -2147483648L {

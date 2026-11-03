@@ -221,7 +221,7 @@ fn big_true_div(a : @bigint.BigInt, b : @bigint.BigInt) -> Double {
 }
 
 ///|
-fn ldexp(x : Double, e : Int) -> Double {
+fn ldexp(x : Double, e : Int32) -> Double {
   let mut r = x
   let mut e = e
   while e > 0 {
@@ -620,7 +620,7 @@ pub fn py_round(x : Value, ndigits : Value) -> Value raise PyException {
 
 ///|
 /// Correctly rounded `round(d, n)` (half to even on the exact binary value).
-fn round_float_digits(d : Double, n : Int) -> Double {
+fn round_float_digits(d : Double, n : Int32) -> Double {
   if d.is_nan() || d.is_inf() || d == 0.0 {
     return d
   }

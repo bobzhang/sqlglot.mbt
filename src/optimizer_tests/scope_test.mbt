@@ -29,7 +29,10 @@ fn both_traversals(
 
 ///|
 test "scope: columns of a bigquery UNNEST predicate" {
-  let ast = parse_sql("SELECT IF(a IN UNNEST(b), 1, 0) AS c FROM t", read="bigquery")
+  let ast = parse_sql(
+    "SELECT IF(a IN UNNEST(b), 1, 0) AS c FROM t",
+    read="bigquery",
+  )
   let columns = @optimizer.build_scope(ast).unwrap().columns()
   assert_eq(columns.length(), 2)
   assert_true(columns[0].equal(@core.column_of("a")))
@@ -38,8 +41,12 @@ test "scope: columns of a bigquery UNNEST predicate" {
 
 ///|
 test "scope: many unions" {
-  let many_unions = parse_sql(Array::make(10000, "SELECT x FROM t").join(" UNION ALL "))
-  let scopes_using_traverse = @optimizer.build_scope(many_unions).unwrap().traverse()
+  let many_unions = parse_sql(
+    Array::make(10000, "SELECT x FROM t").join(" UNION ALL "),
+  )
+  let scopes_using_traverse = @optimizer.build_scope(many_unions)
+    .unwrap()
+    .traverse()
   let scopes_using_traverse_scope = @optimizer.traverse_scope(many_unions)
   assert_eq(
     scopes_using_traverse.length(),
@@ -90,9 +97,12 @@ test "scope: ctes, joins and subqueries" {
       "SELECT MAX(x.a) FROM x WHERE x.b = s.b",
     )
     assert_eq(gen_sql(scopes[6].expression), gen_sql(parse_sql(sql)))
-    debug_inspect(source_names(scopes[6]), content=(
-      #|["q", "r", "s", "z"]
-    ))
+    debug_inspect(
+      source_names(scopes[6]),
+      content=(
+        #|["q", "r", "s", "z"]
+      ),
+    )
     assert_eq(scopes[6].columns().length(), 6)
     debug_inspect(
       sorted_set(scopes[6].columns().map(c => c.table_name())),
@@ -130,9 +140,12 @@ test "scope: ctes, joins and subqueries" {
       in_scope.push(gen_sql(node))
     }
   }
-  debug_inspect(sorted_set(in_scope), content=(
-    #|["s.b"]
-  ))
+  debug_inspect(
+    sorted_set(in_scope),
+    content=(
+      #|["s.b"]
+    ),
+  )
 }
 
 ///|
@@ -141,24 +154,36 @@ test "scope: parentheses don't introduce a scope without an alias" {
   both_traversals(parse_sql(sql), scopes => {
     assert_eq(scopes.length(), 4)
     assert_eq(gen_sql(scopes[0].expression), "t1, t2")
-    debug_inspect(source_names(scopes[0]), content=(
-      #|["t1", "t2"]
-    ))
+    debug_inspect(
+      source_names(scopes[0]),
+      content=(
+        #|["t1", "t2"]
+      ),
+    )
     assert_eq(gen_sql(scopes[1].expression), "SELECT * FROM (t1, t2) AS t3")
-    debug_inspect(source_names(scopes[1]), content=(
-      #|["t3"]
-    ))
+    debug_inspect(
+      source_names(scopes[1]),
+      content=(
+        #|["t3"]
+      ),
+    )
     assert_eq(gen_sql(scopes[2].expression), "SELECT * FROM t4")
-    debug_inspect(source_names(scopes[2]), content=(
-      #|["t4"]
-    ))
+    debug_inspect(
+      source_names(scopes[2]),
+      content=(
+        #|["t4"]
+      ),
+    )
     assert_eq(
       gen_sql(scopes[3].expression),
       "SELECT * FROM (((SELECT * FROM (t1, t2) AS t3), (SELECT * FROM t4)))",
     )
-    debug_inspect(source_names(scopes[3]), content=(
-      #|[""]
-    ))
+    debug_inspect(
+      source_names(scopes[3]),
+      content=(
+        #|[""]
+      ),
+    )
   })
 }
 
@@ -170,18 +195,27 @@ test "scope: udtfs" {
     both_traversals(parse_sql(sql), scopes => {
       assert_eq(scopes.length(), 3)
       assert_eq(gen_sql(scopes[0].expression), inner_query)
-      debug_inspect(source_names(scopes[0]), content=(
-        #|["baz"]
-      ))
+      debug_inspect(
+        source_names(scopes[0]),
+        content=(
+          #|["baz"]
+        ),
+      )
       assert_eq(gen_sql(scopes[1].expression), udtf)
       // foo is a lateral source
-      debug_inspect(source_names(scopes[1]), content=(
-        #|["", "foo"]
-      ))
+      debug_inspect(
+        source_names(scopes[1]),
+        content=(
+          #|["", "foo"]
+        ),
+      )
       assert_eq(gen_sql(scopes[2].expression), sql)
-      debug_inspect(source_names(scopes[2]), content=(
-        #|["", "foo"]
-      ))
+      debug_inspect(
+        source_names(scopes[2]),
+        content=(
+          #|["", "foo"]
+        ),
+      )
     })
   }
 }
@@ -196,30 +230,45 @@ test "scope: DML statements" {
   let scopes = @optimizer.traverse_scope(parse_sql(sql))
   assert_eq(scopes.length(), 2)
   assert_eq(gen_sql(scopes[0].expression), "SELECT x FROM t2")
-  debug_inspect(source_names(scopes[0]), content=(
-    #|["t2"]
-  ))
+  debug_inspect(
+    source_names(scopes[0]),
+    content=(
+      #|["t2"]
+    ),
+  )
   assert_true(scopes[0].is_derived_table())
-  debug_inspect(source_names(scopes[1]), content=(
-    #|["s"]
-  ))
+  debug_inspect(
+    source_names(scopes[1]),
+    content=(
+      #|["s"]
+    ),
+  )
 
   // Joins and column lists attached to the FROM-position subquery are not lost
   let sql = "UPDATE t1 SET x = s.renamed FROM (SELECT y FROM t2) AS s(renamed) CROSS JOIN v WHERE v.id = t1.id"
   let scopes = @optimizer.traverse_scope(parse_sql(sql))
   assert_eq(scopes.length(), 2)
-  debug_inspect(scopes[0].outer_columns, content=(
-    #|["renamed"]
-  ))
-  debug_inspect(source_names(scopes[1]), content=(
-    #|["s", "v"]
-  ))
+  debug_inspect(
+    scopes[0].outer_columns,
+    content=(
+      #|["renamed"]
+    ),
+  )
+  debug_inspect(
+    source_names(scopes[1]),
+    content=(
+      #|["s", "v"]
+    ),
+  )
   let sql = "UPDATE t1 SET x = 1 FROM (t2 JOIN v ON t2.id = v.id) WHERE t1.id = t2.id"
   let scopes = @optimizer.traverse_scope(parse_sql(sql))
   assert_eq(scopes.length(), 1)
-  debug_inspect(source_names(scopes[0]), content=(
-    #|["t2", "v"]
-  ))
+  debug_inspect(
+    source_names(scopes[0]),
+    content=(
+      #|["t2", "v"]
+    ),
+  )
   let sql = "UPDATE tbl1 SET col = 1 WHERE EXISTS (SELECT 1 FROM tbl2 WHERE tbl1.id = tbl2.id)"
   assert_eq(@optimizer.traverse_scope(parse_sql(sql)).length(), 1)
   let sql = "UPDATE tbl1 SET col = 0"
@@ -229,24 +278,36 @@ test "scope: DML statements" {
   let sql = "UPDATE t1 SET x = u.x FROM c.db.u AS u"
   let scopes = @optimizer.traverse_scope(parse_sql(sql))
   assert_eq(scopes.length(), 1)
-  debug_inspect(source_names(scopes[0]), content=(
-    #|["u"]
-  ))
+  debug_inspect(
+    source_names(scopes[0]),
+    content=(
+      #|["u"]
+    ),
+  )
   let sql = "MERGE INTO t1 USING c.db.u AS u ON t1.id = u.id WHEN MATCHED THEN UPDATE SET x = u.x"
   let scopes = @optimizer.traverse_scope(parse_sql(sql))
   assert_eq(scopes.length(), 1)
-  debug_inspect(source_names(scopes[0]), content=(
-    #|["u"]
-  ))
+  debug_inspect(
+    source_names(scopes[0]),
+    content=(
+      #|["u"]
+    ),
+  )
   let sql = "WITH source AS (SELECT * FROM c.db.real) DELETE FROM t1 USING source JOIN c.db.lookup AS l ON source.id = l.id"
   let scopes = @optimizer.traverse_scope(parse_sql(sql, read="duckdb"))
   assert_eq(scopes.length(), 2)
-  debug_inspect(source_names(scopes[0]), content=(
-    #|["real"]
-  ))
-  debug_inspect(source_names(scopes[1]), content=(
-    #|["l", "source"]
-  ))
+  debug_inspect(
+    source_names(scopes[0]),
+    content=(
+      #|["real"]
+    ),
+  )
+  debug_inspect(
+    source_names(scopes[1]),
+    content=(
+      #|["l", "source"]
+    ),
+  )
   guard scopes[1].sources.get("source") is Some(ScopeSource(s)) else {
     fail("expected a scope source")
   }
@@ -256,12 +317,18 @@ test "scope: DML statements" {
   let sql = "UPDATE t1 SET x = q.x FROM c.db.u AS u JOIN (SELECT * FROM c.db.v) AS q ON u.id = q.id"
   let scopes = @optimizer.traverse_scope(parse_sql(sql))
   assert_eq(scopes.length(), 2)
-  debug_inspect(source_names(scopes[0]), content=(
-    #|["v"]
-  ))
-  debug_inspect(source_names(scopes[1]), content=(
-    #|["q", "u"]
-  ))
+  debug_inspect(
+    source_names(scopes[0]),
+    content=(
+      #|["v"]
+    ),
+  )
+  debug_inspect(
+    source_names(scopes[1]),
+    content=(
+      #|["q", "u"]
+    ),
+  )
 }
 
 ///|
@@ -275,25 +342,35 @@ test "scope: DML value-position subqueries can be correlated" {
   )
 
   // The query of an INSERT / CTAS is scoped as a derived table
-  for sql in [
-    "INSERT INTO t (SELECT a FROM x)", "CREATE TABLE t AS (SELECT a FROM x)",
-  ] {
+  for
+    sql in [
+      "INSERT INTO t (SELECT a FROM x)", "CREATE TABLE t AS (SELECT a FROM x)",
+    ] {
     let scopes = @optimizer.traverse_scope(parse_sql(sql))
     assert_eq(scopes.length(), 2)
     assert_eq(gen_sql(scopes[0].expression), "SELECT a FROM x")
-    debug_inspect(source_names(scopes[0]), content=(
-      #|["x"]
-    ))
-    debug_inspect(source_names(scopes[1]), content=(
-      #|[""]
-    ))
+    debug_inspect(
+      source_names(scopes[0]),
+      content=(
+        #|["x"]
+      ),
+    )
+    debug_inspect(
+      source_names(scopes[1]),
+      content=(
+        #|[""]
+      ),
+    )
   }
   let sql = "MERGE INTO t USING (SELECT id, a FROM u) AS s ON t.id = s.id WHEN MATCHED THEN UPDATE SET x = s.a"
   let scopes = @optimizer.traverse_scope(parse_sql(sql))
   assert_eq(scopes.length(), 1)
-  debug_inspect(source_names(scopes[0]), content=(
-    #|["u"]
-  ))
+  debug_inspect(
+    source_names(scopes[0]),
+    content=(
+      #|["u"]
+    ),
+  )
   assert_true(scopes[0].is_subquery())
   assert_eq(
     qualify_sql(
@@ -330,23 +407,30 @@ test "scope: chained bigquery UNNEST sources" {
   let scope = @optimizer.build_scope(parse_sql(sql, read="bigquery")).unwrap()
   let names = scope.selected_sources().keys().collect()
   names.sort_by(py_cmp)
-  debug_inspect(names, content=(
-    #|["a1", "a2", "t"]
-  ))
+  debug_inspect(
+    names,
+    content=(
+      #|["a1", "a2", "t"]
+    ),
+  )
 }
 
 ///|
 test "scope: correlated subqueries through ctes" {
-  for sql in [
-    // the outer table name collides with a CTE name
-    "WITH x AS (SELECT 1 AS id) SELECT x.id, (SELECT MAX(x2.id) FROM x AS x2 WHERE x2.id = x.id) AS mx FROM x",
-    // a CTE defined in the same WITH clause as another CTE used in the outer query
-    "WITH x AS (SELECT 1 AS id), y AS (SELECT 2 AS id) SELECT (SELECT y.id FROM y WHERE y.id = x.id) FROM x",
-    // an outer CTE referenced through a derived table
-    "WITH x AS (SELECT 1 AS id) SELECT (SELECT x.id FROM (SELECT * FROM x) AS sub) FROM x",
-  ] {
+  for
+    sql in [
+      // the outer table name collides with a CTE name
+      "WITH x AS (SELECT 1 AS id) SELECT x.id, (SELECT MAX(x2.id) FROM x AS x2 WHERE x2.id = x.id) AS mx FROM x",
+      // a CTE defined in the same WITH clause as another CTE used in the outer query
+       "WITH x AS (SELECT 1 AS id), y AS (SELECT 2 AS id) SELECT (SELECT y.id FROM y WHERE y.id = x.id) FROM x",
+      // an outer CTE referenced through a derived table
+       "WITH x AS (SELECT 1 AS id) SELECT (SELECT x.id FROM (SELECT * FROM x) AS sub) FROM x",
+    ] {
     let scopes = @optimizer.traverse_scope(parse_sql(sql))
-    let subquery_scope = scopes.search_by(s => s.is_subquery()).map(i => scopes[i]).unwrap()
+    let subquery_scope = scopes
+      .search_by(s => s.is_subquery())
+      .map(i => scopes[i])
+      .unwrap()
     assert_true(subquery_scope.is_correlated_subquery())
     assert_true(
       subquery_scope.external_columns().map(c => gen_sql(c)).contains("x.id"),
@@ -414,10 +498,16 @@ test "scope: recursive cte sources" {
     ks.sort_by(py_cmp)
     ks
   }
-  debug_inspect(names(cte_scopes[0]), content=(
-    #|["t"]
-  ))
-  debug_inspect(names(cte_scopes[1]), content=(
-    #|["t", "y"]
-  ))
+  debug_inspect(
+    names(cte_scopes[0]),
+    content=(
+      #|["t"]
+    ),
+  )
+  debug_inspect(
+    names(cte_scopes[1]),
+    content=(
+      #|["t", "y"]
+    ),
+  )
 }

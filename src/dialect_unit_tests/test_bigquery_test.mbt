@@ -497,7 +497,7 @@ test "TestBigQuery.test_json_object" {
 ///|
 test "TestBigQuery.test_convert" {
   let t = t(dialect="bigquery")
-  let dt = (h : Int, m : Int, s : Int, tz : (String, Int)?) => {
+  let dt = (h : Int32, m : Int32, s : Int32, tz : (String, Int32)?) => {
     @core.PyDateTime(
       year=2023,
       month=1,

@@ -31,7 +31,7 @@ fn opt_item(e : @core.Expr?) -> GenItem? {
 /// `comments` controls whether the expressions' comments are included.
 pub fn gen(
   expression : @core.Expr,
-  comments? : Bool = false,
+  comments~ : Bool = false,
 ) -> String raise @core.SqlglotError {
   let stack : Array[GenItem?] = [Some(GE(expression))]
   let sqls = StringBuilder()
@@ -43,7 +43,7 @@ pub fn gen(
     stack.push(Some(GS(x)))
   }
 
-  fn args(node : @core.Expr, arg_index : Int) -> Bool {
+  fn args(node : @core.Expr, arg_index : Int32) -> Bool {
     let kvs : Array[GenItem?] = []
     let arg_types = node.kind.arg_types()
     for i in arg_index..<arg_types.length() {
@@ -196,7 +196,8 @@ pub fn gen(
           }
           "intdiv" => binary(e, " DIV ")
           "is" => binary(e, if e.has("negate") { " IS NOT " } else { " IS " })
-          "like" => binary(e, if e.has("negate") { " NOT Like " } else { " Like " })
+          "like" =>
+            binary(e, if e.has("negate") { " NOT Like " } else { " Like " })
           "literal" =>
             if e.is_string() {
               s("'" + e.text("this").replace_all(old="'", new="''") + "'")

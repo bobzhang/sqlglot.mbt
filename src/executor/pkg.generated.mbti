@@ -56,7 +56,7 @@ pub fn py_iter(Value) -> Array[Value] raise PyException
 
 pub fn py_le(Value, Value) -> Bool raise PyException
 
-pub fn py_len(Value) -> Int raise PyException
+pub fn py_len(Value) -> Int32 raise PyException
 
 pub fn py_lt(Value, Value) -> Bool raise PyException
 
@@ -80,7 +80,7 @@ pub fn py_set(Array[Value]) -> Array[Value] raise PyException
 
 pub fn py_set_union(Array[Value], Array[Value]) -> Array[Value] raise PyException
 
-pub fn py_slice(Value, Value, Value, step? : Int) -> Value raise PyException
+pub fn py_slice(Value, Value, Value, step? : Int32) -> Value raise PyException
 
 pub fn py_sub(Value, Value) -> Value raise PyException
 
@@ -144,18 +144,19 @@ pub fn Context::eval(Self, Code) -> Value raise
 pub fn Context::eval_tuple(Self, Array[Code]) -> Array[Value] raise
 pub fn Context::get_table(Self, String?) -> Table raise PyException
 pub fn Context::new(Array[(String?, Table)], env? : Map[String, Value], outer? : Map[String?, Reader]) -> Self
-pub fn Context::set_index(Self, Int) -> Unit raise PyException
-pub fn Context::set_range(Self, Int, Int) -> Unit
+pub fn Context::set_index(Self, Int32) -> Unit raise PyException
+pub fn Context::set_range(Self, Int32, Int32) -> Unit
 pub fn Context::set_row(Self, Array[Value]) -> Unit
 pub fn Context::sort(Self, Array[Code]) -> Unit raise
 pub fn Context::table(Self) -> Table raise PyException
 pub fn Context::table_iter(Self, String?) -> TableIter raise PyException
 
+#derive(Eq)
 pub(all) struct PyDate {
-  year : Int
-  month : Int
-  day : Int
-} derive(Eq)
+  year : Int32
+  month : Int32
+  day : Int32
+}
 #deprecated
 pub fn PyDate::equal(Self, Self) -> Bool
 pub fn PyDate::isoformat(Self) -> String
@@ -163,12 +164,12 @@ pub fn PyDate::isoformat(Self) -> String
 pub fn PyDate::not_equal(Self, Self) -> Bool
 pub fn PyDate::repr(Self) -> String
 pub fn PyDate::toordinal(Self) -> Int64
-pub fn PyDate::weekday(Self) -> Int
+pub fn PyDate::weekday(Self) -> Int32
 
 pub(all) struct PyDateTime {
   date : PyDate
   time : PyTime
-  tz : Int?
+  tz : Int32?
 }
 pub fn PyDateTime::isoformat(Self, sep? : String) -> String
 pub fn PyDateTime::repr(Self) -> String
@@ -178,12 +179,13 @@ pub(all) struct PyFunc {
   call : (Array[Value]) -> Value raise
 }
 
+#derive(Eq)
 pub(all) struct PyTime {
-  hour : Int
-  minute : Int
-  second : Int
-  microsecond : Int
-} derive(Eq)
+  hour : Int32
+  minute : Int32
+  second : Int32
+  microsecond : Int32
+}
 #deprecated
 pub fn PyTime::equal(Self, Self) -> Bool
 pub fn PyTime::isoformat(Self) -> String
@@ -191,11 +193,12 @@ pub fn PyTime::isoformat(Self) -> String
 pub fn PyTime::not_equal(Self, Self) -> Bool
 pub fn PyTime::repr(Self) -> String
 
+#derive(Eq)
 pub(all) struct PyTimeDelta {
   days : Int64
-  seconds : Int
-  microseconds : Int
-} derive(Eq)
+  seconds : Int32
+  microseconds : Int32
+}
 #deprecated
 pub fn PyTimeDelta::equal(Self, Self) -> Bool
 pub fn PyTimeDelta::from_us(Int64) -> Self
@@ -214,15 +217,15 @@ pub fn PythonExecutor::context(Self, Array[(String?, Table)]) -> Context
 pub fn PythonExecutor::execute(Self, @planner.Plan, outer_scope? : Map[String?, Reader]) -> Table raise
 pub fn PythonExecutor::generate(Self, @core.Expr?) -> Code? raise
 pub fn PythonExecutor::new(env? : Map[String, Value], tables? : Tables) -> Self raise @core.SqlglotError
-pub fn PythonExecutor::subquery_cache_sizes(Self) -> Array[Int]
+pub fn PythonExecutor::subquery_cache_sizes(Self) -> Array[Int32]
 
 pub struct RangeReader {
   mut table : Table?
-  mut start : Int
-  mut stop : Int
+  mut start : Int32
+  mut stop : Int32
 }
 pub fn RangeReader::get(Self, String) -> Value raise PyException
-pub fn RangeReader::length(Self) -> Int
+pub fn RangeReader::length(Self) -> Int32
 
 pub enum Reader {
   Row(RowReader)
@@ -231,30 +234,30 @@ pub enum Reader {
 pub fn Reader::get(Self, String) -> Value raise PyException
 
 pub struct RowReader {
-  columns : Map[String, Int]
+  columns : Map[String, Int32]
   mut row : Array[Value]
 }
 pub fn RowReader::get(Self, String) -> Value raise PyException
-pub fn RowReader::new(columns? : Array[String], column_range? : (Int, Int)) -> Self
+pub fn RowReader::new(columns? : Array[String], column_range? : (Int32, Int32)) -> Self
 
 pub struct Table {
   mut columns : Array[String]
-  mut column_range : (Int, Int)?
+  mut column_range : (Int32, Int32)?
   mut reader : RowReader
   mut rows : Array[Array[Value]]
   range_reader : RangeReader
 }
 pub fn Table::add_columns(Self, Array[String]) -> Unit
 pub fn Table::append(Self, Array[Value]) -> Unit raise PyException
-pub fn Table::get_row(Self, Int) -> RowReader raise PyException
-pub fn Table::length(Self) -> Int
-pub fn Table::new(columns? : Array[String], rows? : Array[Array[Value]], column_range? : (Int, Int)) -> Self
+pub fn Table::get_row(Self, Int32) -> RowReader raise PyException
+pub fn Table::length(Self) -> Int32
+pub fn Table::new(columns? : Array[String], rows? : Array[Array[Value]], column_range? : (Int32, Int32)) -> Self
 #deprecated
 pub fn Table::output(Self, &Logger) -> Unit
 pub fn Table::pop(Self) -> Unit
 pub fn Table::to_pylist(Self) -> Array[Array[(String, Value)]]
 pub fn Table::to_string(Self) -> String
-pub fn Table::width(Self) -> Int
+pub fn Table::width(Self) -> Int32
 pub impl Show for Table
 
 pub(all) enum TableData {
@@ -265,7 +268,7 @@ pub(all) enum TableData {
 
 pub struct TableIter {
   table : Table
-  mut index : Int
+  mut index : Int32
 }
 pub fn TableIter::next(Self) -> RowReader? raise PyException
 

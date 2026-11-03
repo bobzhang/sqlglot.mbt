@@ -12,8 +12,8 @@ fn sql_or_error(e : @core.Expr, dialect : @core.Dialect?) -> String {
 fn dump(
   node : @lineage.Node,
   dialect : @core.Dialect?,
-  depth : Int,
-  seen : Array[Int],
+  depth : Int32,
+  seen : Array[Int32],
 ) -> String {
   let head = "\{node.name} | \{node.source_name} | \{node.reference_node_name} | \{sql_or_error(node.expression, dialect)} | \{sql_or_error(node.source, dialect)}"
   if seen.contains(node.id) || depth > 30 {
@@ -35,7 +35,7 @@ fn dump(
 }
 
 ///|
-fn py_cmp(a : String, b : String) -> Int {
+fn py_cmp(a : String, b : String) -> Int32 {
   let ai = a.iter()
   let bi = b.iter()
   for ;; {

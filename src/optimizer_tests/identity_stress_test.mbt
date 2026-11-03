@@ -3,7 +3,7 @@
 
 ///|
 test "optimizer identity stress" {
-  let totals : Map[String, (Int, Int)] = Map([])
+  let totals : Map[String, (Int32, Int32)] = Map([])
   let mut reported = 0
   let mut i = 0
   while i + 4 < identity_stress_fixtures.length() {
@@ -11,7 +11,7 @@ test "optimizer identity stress" {
     let sql = identity_stress_fixtures[i + 3]
     let expected = identity_stress_fixtures[i + 4]
     i += 5
-    let got = (try {
+    let got = try {
       let e = @core.parse_one(sql)
       match mode {
         "optimize" => @optimizer.sql_of(@optimizer.optimize(e))
@@ -27,7 +27,7 @@ test "optimizer identity stress" {
       }
     } catch {
       err => "ERROR: \{err}"
-    })
+    }
     let ok = outcome_matches(got, expected)
     let (t, p) = totals.get(mode).unwrap_or((0, 0))
     totals[mode] = (t + 1, if ok { p + 1 } else { p })

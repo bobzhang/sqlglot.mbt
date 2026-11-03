@@ -4,7 +4,7 @@
 ///|
 struct Report {
   name : String
-  mut passed : Int
+  mut passed : Int32
   failures : Array[String]
 }
 
@@ -40,12 +40,12 @@ fn Report::finish(self : Report) -> Unit raise {
 }
 
 ///|
-fn fnv(h : Int, v : Int) -> Int {
+fn fnv(h : Int32, v : Int32) -> Int32 {
   (h ^ v) * 16777619
 }
 
 ///|
-fn fnv_string(h : Int, s : String) -> Int {
+fn fnv_string(h : Int32, s : String) -> Int32 {
   let mut h = fnv(h, s.char_length())
   for c in s {
     h = fnv(h, c.to_int())
@@ -54,7 +54,7 @@ fn fnv_string(h : Int, s : String) -> Int {
 }
 
 ///|
-fn cp_flags(c : Char) -> Int {
+fn cp_flags(c : Char) -> Int32 {
   let bits = [
     @core.is_alpha(c),
     @core.is_decimal(c),
@@ -90,7 +90,7 @@ test "unicode: every code point's case mappings and classes match Python" {
       if c >= 0xD800 && c < 0xE000 {
         continue
       }
-      let ch = Int::unsafe_to_char(c)
+      let ch = Int32::unsafe_to_char(c)
       let s = ch.to_string()
       h = fnv(h, c)
       h = fnv(h, cp_flags(ch))
@@ -114,9 +114,9 @@ test "unicode: re.IGNORECASE character equivalence matches Python" {
   let pool = uc_ignorecase.map(x => x.0)
   for row in uc_ignorecase {
     let (p, matches) = row
-    let pc = Int::unsafe_to_char(p)
+    let pc = Int32::unsafe_to_char(p)
     let actual = pool.filter(c => {
-      c != p && @core.re_ignorecase_char_eq(pc, Int::unsafe_to_char(c))
+      c != p && @core.re_ignorecase_char_eq(pc, Int32::unsafe_to_char(c))
     })
     r.expect(
       "U+\{p.to_string(radix=16)}",

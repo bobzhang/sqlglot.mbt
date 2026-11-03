@@ -4,18 +4,18 @@
 /// Caps the number of nodes copied by merges (relative to the statement size).
 pub struct CopyBudget {
   expression : @core.Expr
-  max_copy_factor : Int?
-  min_copy_budget : Int
-  mut remaining : Int?
+  max_copy_factor : Int32?
+  min_copy_budget : Int32
+  mut remaining : Int32?
 }
 
 ///|
 pub fn CopyBudget::new(
   expression : @core.Expr,
-  max_copy_factor? : Int? = Some(8),
-  min_copy_budget? : Int = 1000,
+  max_copy_factor~ : Int32? = Some(8),
+  min_copy_budget~ : Int32 = 1000,
 ) -> CopyBudget {
-  { expression, max_copy_factor, min_copy_budget, remaining: None }
+  { expression, max_copy_factor, min_copy_budget, remaining: None, }
 }
 
 ///|
@@ -35,7 +35,7 @@ pub fn CopyBudget::consume(
     self.remaining = Some(@core.max_int(factor * size, self.min_copy_budget))
   }
   let remaining = self.remaining.unwrap()
-  let references : Map[String, Int] = Map([])
+  let references : Map[String, Int32] = Map([])
   for c in outer_scope.columns() {
     if c.table_name() == alias_ {
       references[c.name()] = references.get_or_default(c.name(), 0) + 1
@@ -61,12 +61,16 @@ pub fn CopyBudget::consume(
 /// Rewrite the AST to merge derived tables into the outer query.
 pub fn merge_subqueries(
   expression : @core.Expr,
-  leave_tables_isolated? : Bool = false,
-  max_copy_factor? : Int? = Some(8),
-  min_copy_budget? : Int = 1000,
+  leave_tables_isolated~ : Bool = false,
+  max_copy_factor~ : Int32? = Some(8),
+  min_copy_budget~ : Int32 = 1000,
 ) -> @core.Expr raise @core.SqlglotError {
   let mut scopes = traverse_scope(expression)
-  let copy_budget = CopyBudget::new(expression, max_copy_factor~, min_copy_budget~)
+  let copy_budget = CopyBudget::new(
+    expression,
+    max_copy_factor~,
+    min_copy_budget~,
+  )
   let (expression, merged_ctes) = merge_ctes(
     expression,
     leave_tables_isolated~,
@@ -76,7 +80,12 @@ pub fn merge_subqueries(
   if merged_ctes {
     scopes = traverse_scope(expression)
   }
-  merge_derived_tables(expression, leave_tables_isolated~, scopes~, copy_budget~)
+  merge_derived_tables(
+    expression,
+    leave_tables_isolated~,
+    scopes~,
+    copy_budget~,
+  )
 }
 
 ///|
@@ -94,7 +103,7 @@ let unmergable_args : Array[String] = {
 ///|
 pub fn merge_ctes(
   expression : @core.Expr,
-  leave_tables_isolated? : Bool = false,
+  leave_tables_isolated~ : Bool = false,
   scopes? : Array[Scope],
   copy_budget? : CopyBudget,
 ) -> (@core.Expr, Bool) raise @core.SqlglotError {
@@ -106,7 +115,7 @@ pub fn merge_ctes(
     Some(s) => s
     None => traverse_scope(expression)
   }
-  let cte_selections : Map[Int, Array[(Scope, Scope, @core.Expr)]] = Map([])
+  let cte_selections : Map[Int32, Array[(Scope, Scope, @core.Expr)]] = Map([])
   for outer_scope in scopes {
     for _, v in outer_scope.selected_sources() {
       let (table, source) = v
@@ -155,7 +164,7 @@ pub fn merge_ctes(
 ///|
 pub fn merge_derived_tables(
   expression : @core.Expr,
-  leave_tables_isolated? : Bool = false,
+  leave_tables_isolated~ : Bool = false,
   scopes? : Array[Scope],
   copy_budget? : CopyBudget,
 ) -> @core.Expr raise @core.SqlglotError {
@@ -179,7 +188,9 @@ pub fn merge_derived_tables(
         Some(_) => continue
         None => raise @core.OptimizeError("KeyError: \{alias_}")
       }
-      if mergeable(outer_scope, inner_scope, leave_tables_isolated, from_or_join) &&
+      if mergeable(
+          outer_scope, inner_scope, leave_tables_isolated, from_or_join,
+        ) &&
         copy_budget.consume(outer_scope, inner_scope, alias_) {
         rename_inner_sources(outer_scope, inner_scope, alias_)
         merge_from(outer_scope, inner_scope, subquery, alias_)
@@ -219,12 +230,16 @@ fn mergeable(
     !outer_scope.pivots().is_empty() ||
     (leave_tables_isolated && outer_scope.selected_sources().length() > 1) ||
     (is_join && inner_select.has("joins")) ||
-    (is_join &&
-    inner_select.has("where") &&
-    side_in(from_or_join, ["FULL", "LEFT", "RIGHT"])) ||
-    (from_or_join.kind.is_a(From) &&
-    inner_select.has("where") &&
-    outer.list("joins").iter().any(j => side_in(j, ["FULL", "RIGHT"]))) ||
+    (
+      is_join &&
+      inner_select.has("where") &&
+      side_in(from_or_join, ["FULL", "LEFT", "RIGHT"])
+    ) ||
+    (
+      from_or_join.kind.is_a(From) &&
+      inner_select.has("where") &&
+      outer.list("joins").iter().any(j => side_in(j, ["FULL", "RIGHT"]))
+    ) ||
     (inner_select.has("order") && outer_scope.is_set_operation()) ||
     (match inner_select.expressions().get(0) {
       Some(e) => e.kind.is_a(QueryTransform)
@@ -243,7 +258,11 @@ fn mergeable(
     }
     for node in s.walk() {
       if node.kind.is_any([
-          AggFunc, Select, Anonymous, UDTF, ExplodingGenerateSeries,
+          AggFunc,
+          Select,
+          Anonymous,
+          UDTF,
+          ExplodingGenerateSeries,
         ]) {
         return false
       }
@@ -274,7 +293,9 @@ fn mergeable(
                 Some(p) => p
                 None => raise @core.OptimizeError("KeyError: \{selection}")
               }
-              if p.find_all([Column]).any(col => col.table_name() != inner_from_table) {
+              if p
+                .find_all([Column])
+                .any(col => col.table_name() != inner_from_table) {
                 found = true
                 break
               }
@@ -294,9 +315,11 @@ fn mergeable(
     outer_scope
     .columns()
     .iter()
-    .any(column => column.table_name() == inner_name &&
+    .any(column => {
+      column.table_name() == inner_name &&
       window_aliases.contains(column.name()) &&
-      column.find_ancestor([Group, Order, Having, AggFunc]) is Some(_))
+      column.find_ancestor([Group, Order, Having, AggFunc]) is Some(_)
+    })
   }
   // _literal_group_unmergeable
   let literal_group = match outer.arg("group") {
@@ -304,7 +327,7 @@ fn mergeable(
     Some(_) if number_literal_aliases.is_empty() => false
     Some(group) => {
       let grouped = []
-      let top_level_ids : @set.Set[Int] = @set.Set([])
+      let top_level_ids : @set.Set[Int32] = @set.Set([])
       for e in group.expressions() {
         top_level_ids.add(e.unnest().uid)
       }
@@ -495,7 +518,11 @@ fn merge_expressions(
     }
     let expression = expression.unalias()
     let must_wrap_expression = !expression.kind.is_any([
-      Column, EQ, Func, NEQ, Paren,
+      Column,
+      EQ,
+      Func,
+      NEQ,
+      Paren,
     ])
     let is_number = expression.is_number()
     let last = columns_to_replace.length() - 1
@@ -534,7 +561,11 @@ fn merge_expressions(
           None => ()
         }
       }
-      let mut replacement = if i < last { expression.copy() } else { expression }
+      let mut replacement = if i < last {
+        expression.copy()
+      } else {
+        expression
+      }
       if (match parent {
           Some(p) => p.kind.is_any([Unary, Binary])
           None => false

@@ -13,12 +13,12 @@ test "optimizer canonicalize_internal_names" {
         catalog="c",
         db="db",
         dialect?=c.dialect,
-        validate_qualify_columns=c.meta_bool("validate_qualify_columns").unwrap_or(
-          true,
-        ),
-        canonicalize_table_aliases=c.meta_bool("canonicalize_table_aliases").unwrap_or(
-          false,
-        ),
+        validate_qualify_columns=c
+          .meta_bool("validate_qualify_columns")
+          .unwrap_or(true),
+        canonicalize_table_aliases=c
+          .meta_bool("canonicalize_table_aliases")
+          .unwrap_or(false),
       )
       @optimizer.canonicalize_internal_names(e)
     },

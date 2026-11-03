@@ -16,7 +16,7 @@ pub fn record(journal : Journal, node : @core.Expr, arg_key : String) -> Unit {
 
 ///|
 /// Restores every argument recorded from `start` onwards, newest first.
-pub fn revert(journal : Journal, start? : Int = 0) -> Unit {
+pub fn revert(journal : Journal, start~ : Int32 = 0) -> Unit {
   let mut i = journal.length() - 1
   while i >= start {
     let (node, arg_key, value) = journal[i]
@@ -44,28 +44,28 @@ pub fn pushdown_projections(
 pub struct ProjectionReachability {
   scopes : Array[Scope]
   /// scope id -> bitset of root outputs requiring the scope
-  live : Map[Int, Int64]
+  live : Map[Int32, Int64]
   /// scope id -> per output column bitsets
-  selections : Map[Int, Array[Int64]]
-  is_agg : Map[Int, Bool]
-  group_by_ordinals : Map[Int, Array[(@core.Expr, @core.Expr)]]
-  set_names : Map[Int, Array[String]]
+  selections : Map[Int32, Array[Int64]]
+  is_agg : Map[Int32, Bool]
+  group_by_ordinals : Map[Int32, Array[(@core.Expr, @core.Expr)]]
+  set_names : Map[Int32, Array[String]]
 }
 
 ///|
 priv struct DepNode {
-  id : Int
+  id : Int32
   mut required_by : Int64
   dependencies : Array[DepNode]
 }
 
 ///|
-let dep_node_counter : Ref[Int] = Ref(0)
+let dep_node_counter : Ref[Int32] = Ref(0)
 
 ///|
 fn DepNode::new() -> DepNode {
   dep_node_counter.val += 1
-  { id: dep_node_counter.val, required_by: 0L, dependencies: [] }
+  { id: dep_node_counter.val, required_by: 0L, dependencies: [], }
 }
 
 ///|
@@ -84,7 +84,7 @@ fn empty_reachability(scopes : Array[Scope]) -> ProjectionReachability {
 /// Find which scopes and projections each outermost output reaches through dependencies.
 pub fn projection_reachability(
   expression : @core.Expr,
-  whole_query? : Bool = false,
+  whole_query~ : Bool = false,
 ) -> ProjectionReachability raise @core.SqlglotError {
   if !whole_query && !expression.kind.is_a(Query) {
     raise @core.OptimizeError("projection_reachability requires a query")
@@ -117,14 +117,14 @@ pub fn projection_reachability(
       return r
     }
   }
-  let scope_nodes : Map[Int, DepNode] = Map([])
-  let output_names : Map[Int, Array[String]] = Map([])
-  let output_nodes : Map[Int, Array[DepNode]] = Map([])
-  let outputs_by_name : Map[Int, Map[String, Array[DepNode]]] = Map([])
-  let owners : Map[Int, DepNode] = Map([])
-  let scopes_by_expression : Map[Int, Scope] = Map([])
-  let is_agg : Map[Int, Bool] = Map([])
-  let group_by_ordinals : Map[Int, Array[(@core.Expr, @core.Expr)]] = Map([])
+  let scope_nodes : Map[Int32, DepNode] = Map([])
+  let output_names : Map[Int32, Array[String]] = Map([])
+  let output_nodes : Map[Int32, Array[DepNode]] = Map([])
+  let outputs_by_name : Map[Int32, Map[String, Array[DepNode]]] = Map([])
+  let owners : Map[Int32, DepNode] = Map([])
+  let scopes_by_expression : Map[Int32, Scope] = Map([])
+  let is_agg : Map[Int32, Bool] = Map([])
+  let group_by_ordinals : Map[Int32, Array[(@core.Expr, @core.Expr)]] = Map([])
   for scope in scopes {
     let query = scope.expression
     if query.kind.is_a(Select) && query.is_star() {
@@ -177,7 +177,7 @@ pub fn projection_reachability(
     owners[node.uid]
   }
 
-  fn by_name_get(scope_id : Int, name : String) -> Array[DepNode] {
+  fn by_name_get(scope_id : Int32, name : String) -> Array[DepNode] {
     match outputs_by_name[scope_id].get(name) {
       Some(l) => l
       None => []
@@ -255,7 +255,8 @@ pub fn projection_reachability(
             match ordered.this() {
               Some(t) if t.kind.is_a(Literal) && t.is_int() =>
                 match t.to_py_int() {
-                  Some(v) => max_ordinal = @core.max_int(max_ordinal, v.to_int())
+                  Some(v) =>
+                    max_ordinal = @core.max_int(max_ordinal, v.to_int())
                   None => ()
                 }
               _ => ()
@@ -280,7 +281,7 @@ pub fn projection_reachability(
       let windows = query.list("windows")
       let group_all = is_implicit_group_by_all(query)
       group_by_ordinals[scope.id] = group_by_ordinal_refs(query)
-      let ordinals : @set.Set[Int] = @set.Set([])
+      let ordinals : @set.Set[Int32] = @set.Set([])
       for r in group_by_ordinals[scope.id] {
         ordinals.add(r.1.uid)
       }
@@ -304,7 +305,9 @@ pub fn projection_reachability(
         if group_all && !aggregate && has_column {
           has_grouping_key = true
         }
-        if ordinals.contains(selection.uid) || (group_all && !aggregate) || has_srf {
+        if ordinals.contains(selection.uid) ||
+          (group_all && !aggregate) ||
+          has_srf {
           scope_node.dependencies.push(output_node)
         }
       }
@@ -342,7 +345,8 @@ pub fn projection_reachability(
           scope_node.dependencies.push(n)
         }
       }
-      for i in 0..<@core.min_int(
+      for
+        i in 0..<@core.min_int(
           reference.alias_column_names().length(),
           source_outputs.length(),
         ) {
@@ -350,7 +354,11 @@ pub fn projection_reachability(
       }
     }
     for col in scope.columns() {
-      let key = if col.table_name() != "" { col.table_name() } else { col.name() }
+      let key = if col.table_name() != "" {
+        col.table_name()
+      } else {
+        col.name()
+      }
       match scope.sources.get(key) {
         Some(ScopeSource(s)) => {
           let source = scopes_by_expression[s.expression.uid]
@@ -383,13 +391,15 @@ pub fn projection_reachability(
   let roots = if expression.kind.is_a(Query) {
     [scopes[scopes.length() - 1]]
   } else {
-    scopes.filter(s => match s.parent {
-      Some(p) => !scope_nodes.contains(p.id)
-      None => true
+    scopes.filter(s => {
+      match s.parent {
+        Some(p) => !scope_nodes.contains(p.id)
+        None => true
+      }
     })
   }
   let pending : @deque.Deque[DepNode] = @deque.Deque([])
-  let queued : @set.Set[Int] = @set.Set([])
+  let queued : @set.Set[Int32] = @set.Set([])
   for root in roots {
     let root_outputs = output_nodes[root.id]
     let all_roots = if whole_query {
@@ -424,7 +434,7 @@ pub fn projection_reachability(
   let r = empty_reachability(scopes)
   // `named_selects` of a set operation is that of its left operand: memoized by
   // expression so that a long left-deep chain isn't walked once per set operation
-  let set_names_by_expr : Map[Int, Array[String]] = Map([])
+  let set_names_by_expr : Map[Int32, Array[String]] = Map([])
   for scope in scopes {
     r.live[scope.id] = scope_nodes[scope.id].required_by
     r.selections[scope.id] = output_nodes[scope.id].map(o => o.required_by)
@@ -455,9 +465,9 @@ pub fn projection_reachability(
 /// Prune the analyzed tree to the scopes and projections reachable from output `root`.
 pub fn prune_projections(
   reachability : ProjectionReachability,
-  root : Int,
+  root : Int32,
   journal? : Journal,
-  remove_ctes? : Bool = true,
+  remove_ctes~ : Bool = true,
 ) -> Unit {
   let bit = 1L << root
   let scopes = reachability.scopes.copy()
@@ -504,7 +514,9 @@ pub fn prune_projections(
     if subset.length() == selects.length() {
       continue
     }
-    let ordinal_refs = reachability.group_by_ordinals.get(scope.id).unwrap_or([])
+    let ordinal_refs = reachability.group_by_ordinals
+      .get(scope.id)
+      .unwrap_or([])
     if subset.is_empty() {
       let agg = reachability.is_agg.get(scope.id).unwrap_or(false)
       let placeholder = default_selection(agg)
@@ -544,7 +556,7 @@ pub fn prune_projections(
     }
     expression.set("expressions", subset)
     if !ordinal_refs.is_empty() {
-      let new_pos : Map[Int, Int] = Map([])
+      let new_pos : Map[Int32, Int32] = Map([])
       for i, selection in subset {
         new_pos[selection.uid] = i + 1
       }
@@ -575,9 +587,15 @@ fn projection_properties(
   let mut has_aggregate_or_window = false
   let mut has_column = false
   let mut has_srf = false
-  for node in find_all_in_scope(selection, [
-    AggFunc, Window, Column, Anonymous, UDTF, ExplodingGenerateSeries,
-  ]) {
+  for
+    node in find_all_in_scope(selection, [
+      AggFunc,
+      Window,
+      Column,
+      Anonymous,
+      UDTF,
+      ExplodingGenerateSeries,
+    ]) {
     if node.kind.is_any([AggFunc, Window]) {
       has_aggregate_or_window = true
     }
@@ -696,7 +714,7 @@ pub fn projection_has_aggregate(
   projection : @core.Expr,
   windows : Array[@core.Expr],
 ) -> Bool {
-  let windowed_aggregates : @set.Set[Int] = @set.Set([])
+  let windowed_aggregates : @set.Set[Int32] = @set.Set([])
   let remaining_windows : Map[String, @core.Expr] = Map([])
   for w in windows {
     remaining_windows[w.name()] = w

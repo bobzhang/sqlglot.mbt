@@ -3,7 +3,7 @@
 
 ///|
 test "optimizer dialect stress" {
-  let totals : Map[String, (Int, Int)] = Map([])
+  let totals : Map[String, (Int32, Int32)] = Map([])
   let mut reported = 0
   let mut i = 0
   while i + 2 < dialect_stress_fixtures.length() {
@@ -11,7 +11,7 @@ test "optimizer dialect stress" {
     let sql = dialect_stress_fixtures[i + 1]
     let expected = dialect_stress_fixtures[i + 2]
     i += 3
-    let got = (try {
+    let got = try {
       let dialect = if read == "" {
         None
       } else {
@@ -21,7 +21,7 @@ test "optimizer dialect stress" {
       @optimizer.sql_of(@optimizer.optimize(e, dialect?), dialect?)
     } catch {
       err => "ERROR: \{err}"
-    })
+    }
     let ok = outcome_matches(got, expected)
     let (t, p) = totals.get(read).unwrap_or((0, 0))
     totals[read] = (t + 1, if ok { p + 1 } else { p })

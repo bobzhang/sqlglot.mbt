@@ -19,7 +19,7 @@ pub struct Context {
 /// a Python dict); `outer` are the readers of an enclosing query.
 pub fn Context::new(
   tables : Array[(String?, Table)],
-  env? : Map[String, Value] = {},
+  env~ : Map[String, Value] = {},
   outer? : Map[String?, Reader],
 ) -> Context {
   let deduped : Array[(String?, Table)] = []
@@ -194,7 +194,7 @@ pub fn Context::set_row(self : Context, row : Row) -> Unit {
 ///|
 pub fn Context::set_index(
   self : Context,
-  index : Int,
+  index : Int32,
 ) -> Unit raise PyException {
   for kv in self.tables {
     kv.1.get_row(index) |> ignore
@@ -203,7 +203,7 @@ pub fn Context::set_index(
 }
 
 ///|
-pub fn Context::set_range(self : Context, start : Int, end : Int) -> Unit {
+pub fn Context::set_range(self : Context, start : Int32, end : Int32) -> Unit {
   for kv in self.tables {
     match self.range_readers.get(kv.0) {
       Some(Range(r)) => {
@@ -225,7 +225,7 @@ pub fn Context::contains(self : Context, name : String?) -> Bool {
 /// Python `TableIter`.
 pub struct TableIter {
   table : Table
-  mut index : Int
+  mut index : Int32
 }
 
 ///|
@@ -240,14 +240,17 @@ pub fn TableIter::next(self : TableIter) -> RowReader? raise PyException {
 
 ///|
 /// A stable sort (like Python's `list.sort`) of indices by `<` on the keys.
-fn stable_sort_indices(keys : Array[Value]) -> Array[Int] raise PyException {
+fn stable_sort_indices(keys : Array[Value]) -> Array[Int32] raise PyException {
   let idx = Array::makei(keys.length(), i => i)
   merge_sort(idx, keys)
   idx
 }
 
 ///|
-fn merge_sort(idx : Array[Int], keys : Array[Value]) -> Unit raise PyException {
+fn merge_sort(
+  idx : Array[Int32],
+  keys : Array[Value],
+) -> Unit raise PyException {
   let n = idx.length()
   if n < 2 {
     return

@@ -10,7 +10,7 @@ pub fn datatype_of(dtype : DType) -> Expr {
 /// `DataType.build(dtype, **kwargs)` for a `DType`.
 pub fn datatype_build(
   dtype : DType,
-  kwargs? : ArrayView[(String, &IntoValue)] = [],
+  kwargs~ : ArrayView[(String, &IntoValue)] = [],
 ) -> Expr {
   let dt = datatype_of(dtype)
   for kv in kwargs {

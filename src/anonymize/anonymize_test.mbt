@@ -14,8 +14,8 @@ fn token_triples(
 fn assert_anonymized(
   sql : String,
   expected : Array[(String, String)],
-  dialect? : String = "",
-  comments? : (Int, Array[String]),
+  dialect~ : String = "",
+  comments? : (Int32, Array[String]),
 ) -> Unit raise {
   // Make sure the facade (which registers the dialects) is linked in.
   ignore(@sqlglot.dialect(dialect))
@@ -34,7 +34,7 @@ fn assert_anonymized(
 fn assert_rendered(
   sql : String,
   expected : String,
-  dialect? : String = "",
+  dialect~ : String = "",
 ) -> Unit raise {
   ignore(@sqlglot.dialect(dialect))
   let rendered = @anonymize.render(

@@ -2,12 +2,12 @@
 // helpers of sqlglot/parser.py (build_like, build_logarithm, ...), which dialects reuse.
 
 ///|
-fn arg(args : Array[Expr], i : Int) -> Expr? {
+fn arg(args : Array[Expr], i : Int32) -> Expr? {
   args.get(i)
 }
 
 ///|
-fn rest(args : Array[Expr], from : Int) -> Array[Expr] {
+fn rest(args : Array[Expr], from : Int32) -> Array[Expr] {
   if from >= args.length() {
     []
   } else {
@@ -50,7 +50,7 @@ pub fn build_like(args : Array[Expr]) -> Expr {
 /// `binary_range_parser(expr_type, reverse_args)`
 pub fn binary_range_parser(
   kind : Kind,
-  reverse_args? : Bool = false,
+  reverse_args~ : Bool = false,
 ) -> ParseFn1 {
   (p, this) => {
     let expression = p.parse_bitwise()
@@ -138,7 +138,7 @@ pub fn build_mod(args : Array[Expr]) -> Expr {
 }
 
 ///|
-pub fn build_pad(args : Array[Expr], is_left? : Bool = true) -> Expr {
+pub fn build_pad(args : Array[Expr], is_left~ : Bool = true) -> Expr {
   mk(Pad, [
     ("this", arg(args, 0)),
     ("expression", arg(args, 1)),
@@ -169,8 +169,8 @@ pub fn build_convert_timezone(
 ///|
 pub fn build_trim(
   args : Array[Expr],
-  is_left? : Bool = true,
-  reverse_args? : Bool = false,
+  is_left~ : Bool = true,
+  reverse_args~ : Bool = false,
 ) -> Expr {
   let mut this = arg(args, 0)
   let mut expression = arg(args, 1)
@@ -576,16 +576,12 @@ fn base_property_parsers() -> Map[String, PropertyFn] {
     )
   }
   m["HANDLER"] = (p, _) => node(p.parse_property_assignment(HandlerProperty))
-  m["EXECUTE"] = (p, _) => {
-    node(p.parse_property_assignment(ExecuteAsProperty))
-  }
+  m["EXECUTE"] = (p, _) => node(p.parse_property_assignment(ExecuteAsProperty))
   m["EXTERNAL"] = (p, _) => node(p.expression(mk0(ExternalProperty)))
   m["FALLBACK"] = (p, kw) => {
     node(p.parse_fallback(no=kw.get("no").unwrap_or(false)))
   }
-  m["FORMAT"] = (p, _) => {
-    node(p.parse_property_assignment(FileFormatProperty))
-  }
+  m["FORMAT"] = (p, _) => node(p.parse_property_assignment(FileFormatProperty))
   m["FREESPACE"] = (p, _) => node(p.parse_freespace())
   m["GLOBAL"] = (p, _) => node(p.expression(mk0(GlobalProperty)))
   m["HEAP"] = (p, _) => node(p.expression(mk0(HeapProperty)))
@@ -606,15 +602,11 @@ fn base_property_parsers() -> Map[String, PropertyFn] {
     node(p.expression(mk1(InputModelProperty, p.parse_schema())))
   }
   m["JOURNAL"] = (p, kw) => node(p.parse_journal(kw))
-  m["LANGUAGE"] = (p, _) => {
-    node(p.parse_property_assignment(LanguageProperty))
-  }
+  m["LANGUAGE"] = (p, _) => node(p.parse_property_assignment(LanguageProperty))
   m["LAYOUT"] = (p, _) => opt(p.parse_dict_property("LAYOUT"))
   m["LIFETIME"] = (p, _) => opt(p.parse_dict_range("LIFETIME"))
   m["LIKE"] = (p, _) => opt(p.parse_create_like())
-  m["LOCATION"] = (p, _) => {
-    node(p.parse_property_assignment(LocationProperty))
-  }
+  m["LOCATION"] = (p, _) => node(p.parse_property_assignment(LocationProperty))
   m["LOCK"] = (p, _) => node(p.parse_locking())
   m["LOCKING"] = (p, _) => node(p.parse_locking())
   m["LOG"] = (p, kw) => node(p.parse_log(no=kw.get("no").unwrap_or(false)))
@@ -659,9 +651,7 @@ fn base_property_parsers() -> Map[String, PropertyFn] {
   m["SECURE"] = (p, _) => node(p.expression(mk0(SecureProperty)))
   m["SECURITY"] = (p, _) => node(p.parse_sql_security())
   m["SQL SECURITY"] = (p, _) => node(p.parse_sql_security())
-  m["SET"] = (p, _) => {
-    node(p.expression(mk(SetProperty, [("multi", false)])))
-  }
+  m["SET"] = (p, _) => node(p.expression(mk(SetProperty, [("multi", false)])))
   m["SETTINGS"] = (p, _) => node(p.parse_settings_property())
   m["SHARING"] = (p, _) => node(p.parse_property_assignment(SharingProperty))
   m["SORTKEY"] = (p, _) => node(p.parse_sortkey())
@@ -670,9 +660,7 @@ fn base_property_parsers() -> Map[String, PropertyFn] {
     node(p.expression(mk1(StabilityProperty, literal_string("STABLE"))))
   }
   m["STORED"] = (p, _) => node(p.parse_stored())
-  m["SYSTEM_VERSIONING"] = (p, _) => {
-    node(p.parse_system_versioning_property())
-  }
+  m["SYSTEM_VERSIONING"] = (p, _) => node(p.parse_system_versioning_property())
   m["TBLPROPERTIES"] = (p, _) => {
     Some(List(p.parse_wrapped_properties().map(x => Node(x))))
   }
@@ -690,9 +678,7 @@ fn base_property_parsers() -> Map[String, PropertyFn] {
     )
   }
   m["TTL"] = (p, _) => opt(p.parse_ttl())
-  m["USING"] = (p, _) => {
-    node(p.parse_property_assignment(FileFormatProperty))
-  }
+  m["USING"] = (p, _) => node(p.parse_property_assignment(FileFormatProperty))
   m["UNLOGGED"] = (p, _) => node(p.expression(mk0(UnloggedProperty)))
   m["VOLATILE"] = (p, _) => node(p.parse_volatile_property())
   m["WITH"] = (p, _) => p.parse_with_property()
@@ -1119,7 +1105,7 @@ pub fn base_parser_fns() -> ParserFns {
     (DataType, p => p.parse_types(allow_identifiers=false, schema=true)),
     // Python `exp.Expr`
     (Expression, p => p.parse_expression()),
-    (From,p => p.parse_from(joins=true)),
+    (From, p => p.parse_from(joins=true)),
     (GrantPrincipal, p => p.parse_grant_principal()),
     (GrantPrivilege, p => p.parse_grant_privilege()),
     (Group, p => p.parse_group()),
@@ -1173,7 +1159,7 @@ pub fn base_parser_fns() -> ParserFns {
     key : String,
     f : (Parser) -> Expr? raise SqlglotError,
   ) -> (Parser) -> (String, Value?) raise SqlglotError {
-    (p) => (key, f(p).map(x => Node(x)))
+    p => (key, f(p).map(x => Node(x)))
   }
   let query_modifier_parsers : Map[
     TokenType,

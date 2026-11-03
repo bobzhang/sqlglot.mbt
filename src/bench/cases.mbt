@@ -5,17 +5,17 @@
 /// timed on it ("parse", "generate", "pretty", "copy", "simplify", "optimize").
 struct Case {
   name : String
-  sizes : Array[Int]
-  sql : (Int) -> String
+  sizes : Array[Int32]
+  sql : (Int32) -> String
   ops : Array[String]
   /// Builds the tree directly instead of parsing `sql(n)` (to reach depths the
   /// recursive-descent parser can't)
-  build : ((Int) -> @core.Expr)?
+  build : ((Int32) -> @core.Expr)?
 }
 
 ///|
 /// `SELECT <wrap^n(x)> FROM t`, built without parsing.
-fn built_select(n : Int, wrap : (@core.Expr) -> @core.Expr) -> @core.Expr {
+fn built_select(n : Int32, wrap : (@core.Expr) -> @core.Expr) -> @core.Expr {
   let mut e = @core.column_of("x")
   for _ in 0..<n {
     e = wrap(e)
@@ -27,7 +27,7 @@ fn built_select(n : Int, wrap : (@core.Expr) -> @core.Expr) -> @core.Expr {
 }
 
 ///|
-fn doubling(from : Int, to : Int) -> Array[Int] {
+fn doubling(from : Int32, to : Int32) -> Array[Int32] {
   let out = []
   let mut n = from
   while n <= to {
@@ -38,7 +38,7 @@ fn doubling(from : Int, to : Int) -> Array[Int] {
 }
 
 ///|
-fn joined(n : Int, sep : String, item : (Int) -> String) -> String {
+fn joined(n : Int32, sep : String, item : (Int32) -> String) -> String {
   let sb = StringBuilder()
   for i in 0..<n {
     if i > 0 {
@@ -50,7 +50,7 @@ fn joined(n : Int, sep : String, item : (Int) -> String) -> String {
 }
 
 ///|
-fn nested(n : Int, open : String, inner : String, close : String) -> String {
+fn nested(n : Int32, open : String, inner : String, close : String) -> String {
   let sb = StringBuilder()
   for _ in 0..<n {
     sb.write_string(open)

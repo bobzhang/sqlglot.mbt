@@ -46,7 +46,7 @@ fn is_rewritten_type(t : @core.TokenType) -> Bool {
 /// are registered by the `bobzhang/sqlglot` facade package).
 pub fn anonymize(
   sql : String,
-  dialect? : String = "",
+  dialect~ : String = "",
 ) -> Array[@core.Token] raise @core.SqlglotError {
   let d = @core.Dialect::get_or_raise(dialect)
   let (tokens, errored) = tokenize_partial(d, sql)
@@ -94,7 +94,7 @@ pub fn anonymize(
 /// returns it.
 pub fn anonymize_tokens(
   tokens : Array[@core.Token],
-  dialect? : String = "",
+  dialect~ : String = "",
 ) -> Array[@core.Token] raise @core.SqlglotError {
   anonymize_impl(tokens, @core.Dialect::get_or_raise(dialect))
   tokens
@@ -208,7 +208,7 @@ fn anonymize_impl(tokens : Array[@core.Token], d : @core.Dialect) -> Unit {
 pub fn render(
   sql : String,
   tokens : Array[@core.Token],
-  dialect? : String = "",
+  dialect~ : String = "",
 ) -> String raise @core.SqlglotError {
   let settings = @core.Dialect::get_or_raise(dialect).tokenizer
   let comments : Array[(String, String?)] = settings.comments_map
@@ -256,7 +256,7 @@ pub fn render(
 
 ///|
 /// Python `s[a:b]` for non-negative bounds.
-fn slice(s : Array[Char], a : Int, b : Int) -> ArrayView[Char] {
+fn slice(s : Array[Char], a : Int32, b : Int32) -> ArrayView[Char] {
   let n = s.length()
   let a = @cmp.minimum(@cmp.maximum(a, 0), n)
   let b = @cmp.minimum(@cmp.maximum(b, 0), n)
@@ -269,8 +269,8 @@ fn slice(s : Array[Char], a : Int, b : Int) -> ArrayView[Char] {
 
 ///|
 /// Python's `sorted(items, key=key, reverse=True)`: stable, descending.
-fn[T] stable_sort_desc(items : Array[T], key : (T) -> Array[Int]) -> Unit {
-  fn greater(a : Array[Int], b : Array[Int]) -> Bool {
+fn[T] stable_sort_desc(items : Array[T], key : (T) -> Array[Int32]) -> Unit {
+  fn greater(a : Array[Int32], b : Array[Int32]) -> Bool {
     for i in 0..<a.length() {
       if a[i] != b[i] {
         return a[i] > b[i]
@@ -293,7 +293,7 @@ fn[T] stable_sort_desc(items : Array[T], key : (T) -> Array[Int]) -> Unit {
 }
 
 ///|
-fn starts_with_at(s : ArrayView[Char], prefix : String, i : Int) -> Bool {
+fn starts_with_at(s : ArrayView[Char], prefix : String, i : Int32) -> Bool {
   let p = prefix.to_array()
   if i < 0 || i + p.length() > s.length() {
     return false
@@ -308,7 +308,7 @@ fn starts_with_at(s : ArrayView[Char], prefix : String, i : Int) -> Bool {
 
 ///|
 /// Python `s.find(needle, start)`.
-fn find_from(s : ArrayView[Char], needle : String, start : Int) -> Int {
+fn find_from(s : ArrayView[Char], needle : String, start : Int32) -> Int32 {
   let n = needle.to_array().length()
   for i = @cmp.maximum(start, 0); i + n <= s.length(); i = i + 1 {
     if starts_with_at(s, needle, i) {
@@ -320,7 +320,7 @@ fn find_from(s : ArrayView[Char], needle : String, start : Int) -> Int {
 
 ///|
 /// Python `s.rfind(needle, 0, end)`.
-fn rfind_before(s : ArrayView[Char], needle : String, end : Int) -> Int {
+fn rfind_before(s : ArrayView[Char], needle : String, end : Int32) -> Int32 {
   let n = needle.to_array().length()
   for i = @cmp.minimum(end, s.length()) - n; i >= 0; i = i - 1 {
     if starts_with_at(s, needle, i) {
@@ -331,7 +331,7 @@ fn rfind_before(s : ArrayView[Char], needle : String, end : Int) -> Int {
 }
 
 ///|
-fn word_alias(counter : Int, text : String) -> String {
+fn word_alias(counter : Int32, text : String) -> String {
   let digits : Array[Char] = []
   let mut c = counter
   while c != 0 {
@@ -364,12 +364,12 @@ fn word_alias(counter : Int, text : String) -> String {
 }
 
 ///|
-fn pow10(n : Int) -> @bigint.BigInt {
+fn pow10(n : Int32) -> @bigint.BigInt {
   @bigint.BigInt::from_int(10).pow(@bigint.BigInt::from_int(n))
 }
 
 ///|
-fn number_alias(counter : Int, text : String) -> String {
+fn number_alias(counter : Int32, text : String) -> String {
   let chars = text.to_array()
   if chars.length() > 4000 {
     let mut digits_seen = false
@@ -501,11 +501,11 @@ fn blank(s : ArrayView[Char]) -> String {
 /// Blanks the body of the comment at `i`, returning its text and the index past it.
 fn blank_comment(
   sql : ArrayView[Char],
-  i : Int,
+  i : Int32,
   start : String,
   end : String?,
   nested : Bool,
-) -> (String, Int) {
+) -> (String, Int32) {
   let body = i + start.to_array().length()
   let end = match end {
     Some(e) if !e.is_empty() => e
@@ -542,7 +542,7 @@ fn blank_comment(
 }
 
 ///|
-fn slice_view(s : ArrayView[Char], a : Int, b : Int) -> ArrayView[Char] {
+fn slice_view(s : ArrayView[Char], a : Int32, b : Int32) -> ArrayView[Char] {
   let n = s.length()
   let a = @cmp.minimum(@cmp.maximum(a, 0), n)
   let b = @cmp.minimum(@cmp.maximum(b, 0), n)

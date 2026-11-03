@@ -19,7 +19,9 @@ pub(all) enum SchemaNode {
 /// Builds a schema mapping from JSON: objects become `Dict`s, strings become `Type`s,
 /// `null` becomes `Null` and arrays of strings become `Names`.
 /// `{"__nonnull__": "INT"}` builds a non-nullable `DataType`.
-pub fn SchemaNode::from_json(json : Json) -> SchemaNode raise @core.SqlglotError {
+pub fn SchemaNode::from_json(
+  json : Json,
+) -> SchemaNode raise @core.SqlglotError {
   match json {
     Object(m) => {
       if m.length() == 1 {
@@ -42,9 +44,11 @@ pub fn SchemaNode::from_json(json : Json) -> SchemaNode raise @core.SqlglotError
     Null => Null
     Array(a) =>
       Names(
-        a.map(x => match x {
-          String(s) => s
-          _ => ""
+        a.map(x => {
+          match x {
+            String(s) => s
+            _ => ""
+          }
         }),
       )
     _ => Null
@@ -67,7 +71,7 @@ pub fn schema_from_json_string(
 
 ///|
 /// Python `dict_depth`.
-fn dict_depth(d : SchemaNode) -> Int {
+fn dict_depth(d : SchemaNode) -> Int32 {
   match d {
     Dict(m) =>
       match m.values().next() {
@@ -79,7 +83,7 @@ fn dict_depth(d : SchemaNode) -> Int {
 }
 
 ///|
-fn map_depth(m : Map[String, SchemaNode]) -> Int {
+fn map_depth(m : Map[String, SchemaNode]) -> Int32 {
   dict_depth(Dict(m))
 }
 
@@ -87,8 +91,8 @@ fn map_depth(m : Map[String, SchemaNode]) -> Int {
 /// Python `flatten_schema`.
 fn flatten_schema(
   schema : Map[String, SchemaNode],
-  depth? : Int,
-  keys? : Array[String] = [],
+  depth? : Int32,
+  keys~ : Array[String] = [],
 ) -> Array[Array[String]] {
   let tables = []
   let depth = match depth {
@@ -97,13 +101,12 @@ fn flatten_schema(
   }
   for k, v in schema {
     match v {
-      Dict(sub) if depth != 1 => {
+      Dict(sub) if depth != 1 =>
         if depth >= 2 {
           for t in flatten_schema(sub, depth=depth - 1, keys=keys + [k]) {
             tables.push(t)
           }
         }
-      }
       _ => tables.push(keys + [k])
     }
   }
@@ -115,7 +118,7 @@ fn flatten_schema(
 fn nested_get(
   d : Map[String, SchemaNode],
   path : Array[(String, String)],
-  raise_on_missing? : Bool = true,
+  raise_on_missing~ : Bool = true,
 ) -> SchemaNode? raise @core.SqlglotError {
   let mut result : SchemaNode = Dict(d)
   for p in path {
@@ -173,7 +176,7 @@ priv struct PartTrie {
 
 ///|
 fn PartTrie::new() -> PartTrie {
-  { children: {}, terminal: false }
+  { children: {}, terminal: false, }
 }
 
 ///|
@@ -232,7 +235,7 @@ fn PartTrie::flatten(self : PartTrie) -> Array[Array[String]] {
 }
 
 ///|
-fn trie_from_mapping(m : Map[String, SchemaNode], depth : Int) -> PartTrie {
+fn trie_from_mapping(m : Map[String, SchemaNode], depth : Int32) -> PartTrie {
   let trie = PartTrie::new()
   for t in flatten_schema(m, depth~) {
     let r = t.copy()
@@ -255,7 +258,7 @@ pub struct MappingSchema {
   visible : Map[String, SchemaNode]
   normalize : Bool
   dialect : @core.Dialect
-  priv mut depth_ : Int
+  priv mut depth_ : Int32
   priv mut supported_table_args_ : Array[String]
   priv type_mapping_cache : Map[String, @core.Expr]
   /// Python `_find_cache`: `find` results by (table, ensure_data_types).
@@ -271,7 +274,7 @@ priv enum FindResult {
 
 ///|
 /// The number of entries of the `find` cache (Python `len(schema._find_cache)`).
-pub fn MappingSchema::find_cache_size(self : MappingSchema) -> Int {
+pub fn MappingSchema::find_cache_size(self : MappingSchema) -> Int32 {
   self.find_cache.length()
 }
 
@@ -281,11 +284,11 @@ pub fn MappingSchema::find_cache_size(self : MappingSchema) -> Int {
 /// `schema` is a mapping in one of the forms `{table: {col: type}}`,
 /// `{db: {table: {col: type}}}` or `{catalog: {db: {table: {col: type}}}}`.
 pub fn MappingSchema::new(
-  schema? : Map[String, SchemaNode] = {},
-  visible? : Map[String, SchemaNode] = {},
+  schema~ : Map[String, SchemaNode] = {},
+  visible~ : Map[String, SchemaNode] = {},
   dialect? : @core.Dialect,
-  normalize? : Bool = true,
-  udf_mapping? : Map[String, SchemaNode] = {},
+  normalize~ : Bool = true,
+  udf_mapping~ : Map[String, SchemaNode] = {},
 ) -> MappingSchema raise @core.SqlglotError {
   let dialect = match dialect {
     Some(d) => d
@@ -355,7 +358,7 @@ pub fn MappingSchema::empty(self : MappingSchema) -> Bool {
 }
 
 ///|
-pub fn MappingSchema::depth(self : MappingSchema) -> Int {
+pub fn MappingSchema::depth(self : MappingSchema) -> Int32 {
   if !self.empty() && self.depth_ == 0 {
     self.depth_ = map_depth(self.mapping) - 1
   }
@@ -363,7 +366,7 @@ pub fn MappingSchema::depth(self : MappingSchema) -> Int {
 }
 
 ///|
-fn MappingSchema::udf_depth(self : MappingSchema) -> Int {
+fn MappingSchema::udf_depth(self : MappingSchema) -> Int32 {
   map_depth(self.udf_mapping)
 }
 
@@ -393,7 +396,10 @@ fn table_parts(table : @core.Expr) -> Array[String] {
 }
 
 ///|
-fn MappingSchema::udf_parts(self : MappingSchema, udf : @core.Expr) -> Array[String] {
+fn MappingSchema::udf_parts(
+  self : MappingSchema,
+  udf : @core.Expr,
+) -> Array[String] {
   let parts = match udf.parent {
     Some(p) if p.kind == Dot => p.flatten().map(x => x.name()).collect()
     _ => [udf.name()]
@@ -420,7 +426,9 @@ fn find_in_part_trie(
         if raise_on_missing {
           let joined = parts.join(".")
           let message = possibilities.map(p => p.join(".")).join(", ")
-          raise @core.SchemaError("Ambiguous mapping for \{joined}: \{message}.")
+          raise @core.SchemaError(
+            "Ambiguous mapping for \{joined}: \{message}.",
+          )
         }
         None
       }
@@ -434,7 +442,7 @@ fn MappingSchema::nested_get_parts(
   self : MappingSchema,
   parts : Array[String],
   d? : Map[String, SchemaNode],
-  raise_on_missing? : Bool = true,
+  raise_on_missing~ : Bool = true,
 ) -> SchemaNode? raise @core.SqlglotError {
   let d = match d {
     Some(d) if !d.is_empty() => d
@@ -455,7 +463,7 @@ fn MappingSchema::nested_get_parts(
 pub fn MappingSchema::find(
   self : MappingSchema,
   table : @core.Expr,
-  raise_on_missing? : Bool = true,
+  raise_on_missing~ : Bool = true,
 ) -> Map[String, SchemaNode]? raise @core.SqlglotError {
   // like Python, a cached None is looked up again
   if self.find_cache.get((table, false)) is Some(Raw(Some(_) as cached)) {
@@ -471,7 +479,7 @@ pub fn MappingSchema::find(
 fn MappingSchema::find_uncached(
   self : MappingSchema,
   table : @core.Expr,
-  raise_on_missing? : Bool = true,
+  raise_on_missing~ : Bool = true,
 ) -> Map[String, SchemaNode]? raise @core.SqlglotError {
   let n = self.supported_table_args().length()
   let all_parts = table_parts(table)
@@ -527,10 +535,10 @@ fn MappingSchema::find_column_types_uncached(
 pub fn MappingSchema::add_table(
   self : MappingSchema,
   table : @core.Expr,
-  column_mapping? : Map[String, SchemaNode] = {},
+  column_mapping~ : Map[String, SchemaNode] = {},
   dialect? : @core.Dialect,
   normalize? : Bool,
-  match_depth? : Bool = true,
+  match_depth~ : Bool = true,
 ) -> Unit raise @core.SqlglotError {
   let normalized_table = self.normalize_table(table, dialect?, normalize?)
   if match_depth &&
@@ -564,11 +572,11 @@ pub fn MappingSchema::add_table(
 pub fn MappingSchema::add_table_str(
   self : MappingSchema,
   table : String,
-  columns? : Array[String] = [],
-  column_types? : Map[String, SchemaNode] = {},
+  columns~ : Array[String] = [],
+  column_types~ : Map[String, SchemaNode] = {},
   dialect? : @core.Dialect,
   normalize? : Bool,
-  match_depth? : Bool = true,
+  match_depth~ : Bool = true,
 ) -> Unit raise @core.SqlglotError {
   let d = match dialect {
     Some(d) => d
@@ -587,7 +595,7 @@ pub fn MappingSchema::add_table_str(
 pub fn MappingSchema::column_names(
   self : MappingSchema,
   table : @core.Expr,
-  only_visible? : Bool = false,
+  only_visible~ : Bool = false,
   dialect? : @core.Dialect,
   normalize? : Bool,
 ) -> Array[String] raise @core.SqlglotError {
@@ -734,7 +742,10 @@ pub fn MappingSchema::get_udf_type_str(
   } else {
     match parsed.expression() {
       Some(e) if parsed.kind == Dot && e.kind == Anonymous => e
-      _ => raise @core.SchemaError("Unable to parse UDF from: \{@core.py_repr_str(udf)}")
+      _ =>
+        raise @core.SchemaError(
+          "Unable to parse UDF from: \{@core.py_repr_str(udf)}",
+        )
     }
   }
   self.get_udf_type(udf_expr, dialect?, normalize?)
@@ -793,7 +804,9 @@ fn MappingSchema::normalize_udfs(
   for keys in flatten_schema(udfs, depth=map_depth(udfs)) {
     match nested_get(udfs, keys.map(k => (k, k))) {
       Some(udf_type) => {
-        let normalized_keys = keys.map(k => self.normalize_name(k, is_table=true))
+        let normalized_keys = keys.map(k => {
+          self.normalize_name(k, is_table=true)
+        })
         nested_set(normalized_mapping, normalized_keys, udf_type)
       }
       None => ()
@@ -838,7 +851,7 @@ fn MappingSchema::normalize_name(
   self : MappingSchema,
   name : String,
   dialect? : @core.Dialect,
-  is_table? : Bool = false,
+  is_table~ : Bool = false,
   normalize? : Bool,
 ) -> String {
   let normalize = match normalize {
@@ -908,8 +921,8 @@ fn MappingSchema::to_data_type(
 pub fn normalize_name(
   identifier : String,
   dialect? : @core.Dialect,
-  is_table? : Bool = false,
-  normalize? : Bool = true,
+  is_table~ : Bool = false,
+  normalize~ : Bool = true,
 ) -> @core.Expr {
   let dialect = match dialect {
     Some(d) => d
@@ -928,7 +941,7 @@ pub fn normalize_name(
 pub fn normalize_name_ident(
   identifier : @core.Expr,
   dialect : @core.Dialect,
-  is_table? : Bool = false,
+  is_table~ : Bool = false,
 ) -> @core.Expr {
   let ident = identifier.copy()
   ident.get_meta()["is_table"] = Bool(is_table)

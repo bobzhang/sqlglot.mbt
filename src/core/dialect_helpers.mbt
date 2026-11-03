@@ -70,7 +70,7 @@ pub fn approx_count_distinct_sql(
 
 ///|
 /// Python `if_sql(name, false_value)`.
-pub fn if_sql(name? : String = "IF", false_value? : Expr) -> GenFn {
+pub fn if_sql(name~ : String = "IF", false_value? : Expr) -> GenFn {
   (g, e) => {
     let false_ : &SqlArg = match e.get("false") {
       Some(v) if v.truthy() => (v : &SqlArg)
@@ -82,7 +82,7 @@ pub fn if_sql(name? : String = "IF", false_value? : Expr) -> GenFn {
 
 ///|
 /// Python `if_sql(name, false_value)` with a string `false_value` (raw SQL).
-pub fn if_sql_str(name? : String = "IF", false_value : String) -> GenFn {
+pub fn if_sql_str(name~ : String = "IF", false_value : String) -> GenFn {
   (g, e) => {
     let false_ : &SqlArg = match e.get("false") {
       Some(v) if v.truthy() => (v : &SqlArg)
@@ -238,10 +238,10 @@ pub fn property_sql(g : Generator, e : Expr) -> String raise SqlglotError {
 pub fn strposition_sql(
   g : Generator,
   e : Expr,
-  func_name? : String = "STRPOS",
-  supports_position? : Bool = false,
-  supports_occurrence? : Bool = false,
-  use_ansi_position? : Bool = true,
+  func_name~ : String = "STRPOS",
+  supports_position~ : Bool = false,
+  supports_occurrence~ : Bool = false,
+  use_ansi_position~ : Bool = true,
 ) -> String raise SqlglotError {
   let mut string = e.this()
   let substr = e.arg("substr")
@@ -319,7 +319,7 @@ pub fn struct_extract_sql(g : Generator, e : Expr) -> String raise SqlglotError 
 ///|
 /// Python `array_append_sql(name, swap_params)`: transpiles ARRAY_APPEND/ARRAY_PREPEND
 /// between dialects with different NULL propagation semantics.
-pub fn array_append_sql(name : String, swap_params? : Bool = false) -> GenFn {
+pub fn array_append_sql(name : String, swap_params~ : Bool = false) -> GenFn {
   (g, e) => {
     let this = e.this()
     let element = e.expression()
@@ -458,7 +458,7 @@ pub fn array_concat_sql(name : String) -> GenFn {
 pub fn var_map_sql(
   g : Generator,
   e : Expr,
-  map_func_name? : String = "MAP",
+  map_func_name~ : String = "MAP",
 ) -> String raise SqlglotError {
   let keys = e.arg("keys")
   let values = e.arg("values")
@@ -570,7 +570,7 @@ pub fn encode_decode_sql(
   g : Generator,
   e : Expr,
   name : String,
-  replace? : Bool = true,
+  replace~ : Bool = true,
 ) -> String raise SqlglotError {
   match e.arg("charset") {
     Some(charset) => {
@@ -617,7 +617,7 @@ pub fn count_if_to_sum(g : Generator, e : Expr) -> String raise SqlglotError {
 pub fn trim_sql(
   g : Generator,
   e : Expr,
-  default_trim_type? : String = "",
+  default_trim_type~ : String = "",
 ) -> String raise SqlglotError {
   let remove_chars = g.sql_key(e, "expression")
   if remove_chars == "" {
@@ -846,7 +846,7 @@ pub fn merge_without_target_sql(
 /// Python `json_extract_segments(name, quoted_index, op)`.
 pub fn json_extract_segments(
   name : String,
-  quoted_index? : Bool = true,
+  quoted_index~ : Bool = true,
   op? : String,
 ) -> GenFn {
   (g, e) => {
@@ -1156,7 +1156,7 @@ pub fn timestampdiff_sql(g : Generator, e : Expr) -> String raise SqlglotError {
 pub fn no_make_interval_sql(
   g : Generator,
   e : Expr,
-  sep? : String = ", ",
+  sep~ : String = ", ",
 ) -> String raise SqlglotError {
   let args : Array[&SqlArg] = []
   for unit, value in e.args {
@@ -1196,10 +1196,10 @@ pub fn length_or_char_length_sql(
 pub fn groupconcat_sql(
   g : Generator,
   e : Expr,
-  func_name? : String = "LISTAGG",
-  sep? : String = ",",
-  within_group? : Bool = true,
-  on_overflow? : Bool = false,
+  func_name~ : String = "LISTAGG",
+  sep~ : String = ",",
+  within_group~ : Bool = true,
+  on_overflow~ : Bool = false,
 ) -> String raise SqlglotError {
   let mut this = e.this_()
   let separator = match e.arg("separator") {
@@ -1324,6 +1324,9 @@ pub fn jarowinkler_similarity(func : String) -> GenFn {
 
 ///|
 /// Python `concat_to_dpipe_sql` (same as `Generator::concat_to_dpipe_sql`).
-pub fn concat_to_dpipe_sql(g : Generator, e : Expr) -> String raise SqlglotError {
+pub fn concat_to_dpipe_sql(
+  g : Generator,
+  e : Expr,
+) -> String raise SqlglotError {
   g.concat_to_dpipe_sql(e)
 }

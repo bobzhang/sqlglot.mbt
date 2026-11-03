@@ -4,7 +4,7 @@
 ///|
 pub fn Parser::parse_function_args(
   self : Parser,
-  alias_? : Bool = false,
+  alias_~ : Bool = false,
 ) -> Array[Expr] raise SqlglotError {
   self.parse_csv(() => self.parse_lambda(alias_~))
 }
@@ -25,9 +25,9 @@ pub fn Parser::parse_connector_function(
 pub fn Parser::parse_function_call(
   self : Parser,
   functions? : Map[String, FuncBuilder],
-  anonymous? : Bool = false,
-  optional_parens? : Bool = true,
-  any_token? : Bool = false,
+  anonymous~ : Bool = false,
+  optional_parens~ : Bool = true,
+  any_token~ : Bool = false,
 ) -> Expr? raise SqlglotError {
   match self.fns.hooks.parse_function_call {
     Some(f) => f(self, functions, anonymous, optional_parens, any_token)
@@ -45,9 +45,9 @@ pub fn Parser::parse_function_call(
 pub fn Parser::parse_function_call_base(
   self : Parser,
   functions? : Map[String, FuncBuilder],
-  anonymous? : Bool = false,
-  optional_parens? : Bool = true,
-  any_token? : Bool = false,
+  anonymous~ : Bool = false,
+  optional_parens~ : Bool = true,
+  any_token~ : Bool = false,
 ) -> Expr? raise SqlglotError {
   if !self.curr.ok() {
     return None
@@ -179,7 +179,7 @@ pub fn Parser::parse_function_call_base(
 pub fn Parser::to_prop_eq(
   self : Parser,
   expression : Expr,
-  index : Int,
+  index : Int32,
 ) -> Expr raise SqlglotError {
   match self.fns.hooks.to_prop_eq {
     Some(f) => f(self, expression, index)
@@ -191,7 +191,7 @@ pub fn Parser::to_prop_eq(
 pub fn Parser::kv_to_prop_eq(
   self : Parser,
   expressions : Array[Expr],
-  parse_map? : Bool = false,
+  parse_map~ : Bool = false,
 ) -> Array[Expr] raise SqlglotError {
   let transformed = []
   for index, e in expressions {
@@ -412,7 +412,7 @@ pub fn Parser::parse_lambda_arg(self : Parser) -> Expr? raise SqlglotError {
 ///|
 pub fn Parser::parse_lambda(
   self : Parser,
-  alias_? : Bool = false,
+  alias_~ : Bool = false,
 ) -> Expr? raise SqlglotError {
   match self.fns.hooks.parse_lambda {
     Some(f) => f(self, alias_)
@@ -423,7 +423,7 @@ pub fn Parser::parse_lambda(
 ///|
 pub fn Parser::parse_lambda_base(
   self : Parser,
-  alias_? : Bool = false,
+  alias_~ : Bool = false,
 ) -> Expr? raise SqlglotError {
   let next_token_type = self.next.token_type
   if self.cfg.lambda_arg_terminators.contains(next_token_type) {
@@ -504,7 +504,7 @@ pub fn Parser::parse_field_def(self : Parser) -> Expr? raise SqlglotError {
 pub fn Parser::parse_column_def(
   self : Parser,
   this : Expr?,
-  computed_column? : Bool = true,
+  computed_column~ : Bool = true,
 ) -> Expr? raise SqlglotError {
   match self.fns.hooks.parse_column_def {
     Some(f) => f(self, this, computed_column)
@@ -516,7 +516,7 @@ pub fn Parser::parse_column_def(
 pub fn Parser::parse_column_def_base(
   self : Parser,
   this : Expr?,
-  computed_column? : Bool = true,
+  computed_column~ : Bool = true,
 ) -> Expr? raise SqlglotError {
   let mut this = this
   match this {
@@ -1023,7 +1023,7 @@ pub fn Parser::parse_key_constraint_options(
 ///|
 pub fn Parser::parse_references(
   self : Parser,
-  match_? : Bool = true,
+  match_~ : Bool = true,
 ) -> Expr? raise SqlglotError {
   if match_ && !self.match_(REFERENCES) {
     return None
@@ -1111,9 +1111,9 @@ pub fn Parser::parse_period_for_system_time(
 ///|
 pub fn Parser::parse_primary_key(
   self : Parser,
-  wrapped_optional? : Bool = false,
-  in_props? : Bool = false,
-  named_primary_key? : Bool = false,
+  wrapped_optional~ : Bool = false,
+  in_props~ : Bool = false,
+  named_primary_key~ : Bool = false,
 ) -> Expr? raise SqlglotError {
   match self.fns.hooks.parse_primary_key {
     Some(f) => f(self, wrapped_optional, in_props, named_primary_key)
@@ -1129,9 +1129,9 @@ pub fn Parser::parse_primary_key(
 ///|
 pub fn Parser::parse_primary_key_base(
   self : Parser,
-  wrapped_optional? : Bool = false,
-  in_props? : Bool = false,
-  named_primary_key? : Bool = false,
+  wrapped_optional~ : Bool = false,
+  in_props~ : Bool = false,
+  named_primary_key~ : Bool = false,
 ) -> Expr? raise SqlglotError {
   let desc : Bool? = if self.match_any([ASC, DESC]) {
     Some(self.prev.token_type == DESC)
@@ -1176,7 +1176,7 @@ pub fn Parser::parse_primary_key_base(
 ///|
 pub fn Parser::parse_bracket_key_value(
   self : Parser,
-  is_map? : Bool = false,
+  is_map~ : Bool = false,
 ) -> Expr? raise SqlglotError {
   match self.fns.hooks.parse_bracket_key_value {
     Some(f) => f(self, is_map)
@@ -1353,7 +1353,7 @@ pub fn Parser::identifier_expression(
 pub fn Parser::parse_distinct_arg_function(
   self : Parser,
   kind : Kind,
-  distinct_index? : Int = 0,
+  distinct_index~ : Int32 = 0,
 ) -> Expr? raise SqlglotError {
   let is_distinct = self.match_(DISTINCT)
   if !is_distinct {

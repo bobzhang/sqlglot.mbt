@@ -3,11 +3,11 @@
 ///|
 pub fn Parser::parse_select(
   self : Parser,
-  nested? : Bool = false,
-  table? : Bool = false,
-  parse_subquery_alias? : Bool = true,
-  parse_set_operation? : Bool = true,
-  consume_pipe? : Bool = true,
+  nested~ : Bool = false,
+  table~ : Bool = false,
+  parse_subquery_alias~ : Bool = true,
+  parse_set_operation~ : Bool = true,
+  consume_pipe~ : Bool = true,
   from_? : Expr,
 ) -> Expr? raise SqlglotError {
   let mut query = self.parse_select_query(
@@ -37,10 +37,10 @@ pub fn Parser::parse_select(
 ///|
 pub fn Parser::parse_select_query(
   self : Parser,
-  nested? : Bool = false,
-  table? : Bool = false,
-  parse_subquery_alias? : Bool = true,
-  parse_set_operation? : Bool = true,
+  nested~ : Bool = false,
+  table~ : Bool = false,
+  parse_subquery_alias~ : Bool = true,
+  parse_set_operation~ : Bool = true,
 ) -> Expr? raise SqlglotError {
   let cte = self.parse_with()
   match cte {
@@ -224,7 +224,7 @@ pub fn Parser::parse_recursive_with_search(
 ///|
 pub fn Parser::parse_with(
   self : Parser,
-  skip_with_token? : Bool = false,
+  skip_with_token~ : Bool = false,
 ) -> Expr? raise SqlglotError {
   if !skip_with_token && !self.match_(WITH) {
     return None
@@ -385,7 +385,7 @@ pub fn Parser::parse_table_alias(
 pub fn Parser::parse_subquery(
   self : Parser,
   this : Expr?,
-  parse_alias? : Bool = true,
+  parse_alias~ : Bool = true,
 ) -> Expr? raise SqlglotError {
   let this = match this {
     Some(t) => t
@@ -638,9 +638,9 @@ pub fn Parser::parse_into_clause_base(
 ///|
 pub fn Parser::parse_from(
   self : Parser,
-  joins? : Bool = false,
-  skip_from_token? : Bool = false,
-  consume_pipe? : Bool = false,
+  joins~ : Bool = false,
+  skip_from_token~ : Bool = false,
+  consume_pipe~ : Bool = false,
 ) -> Expr? raise SqlglotError {
   match self.fns.hooks.parse_from {
     Some(f) => f(self, joins, skip_from_token, consume_pipe)
@@ -651,9 +651,9 @@ pub fn Parser::parse_from(
 ///|
 pub fn Parser::parse_from_base(
   self : Parser,
-  joins? : Bool = false,
-  skip_from_token? : Bool = false,
-  consume_pipe? : Bool = false,
+  joins~ : Bool = false,
+  skip_from_token~ : Bool = false,
+  consume_pipe~ : Bool = false,
 ) -> Expr? raise SqlglotError {
   if !skip_from_token && !self.match_(FROM) {
     return None

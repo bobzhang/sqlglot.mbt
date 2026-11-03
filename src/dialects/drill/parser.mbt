@@ -2,7 +2,7 @@
 
 ///|
 fn build_ilike(args : Array[@core.Expr]) -> @core.Expr {
-  let get = (i : Int) => if i < args.length() { Some(args[i]) } else { None }
+  let get = (i : Int32) => if i < args.length() { Some(args[i]) } else { None }
   let ilike = @core.mk(ILike, [("this", get(0)), ("expression", get(1))])
   match get(2) {
     Some(escape) => @core.mk(Escape, [("this", ilike), ("expression", escape)])

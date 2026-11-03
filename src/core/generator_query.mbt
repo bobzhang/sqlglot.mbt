@@ -35,7 +35,10 @@ pub fn Generator::with_sql(
   self : Generator,
   expression : Expr,
 ) -> String raise SqlglotError {
-  let udfs = g_pfx("WITH ", self.expressions(expression~, key="udfs", flat=true))
+  let udfs = g_pfx(
+    "WITH ",
+    self.expressions(expression~, key="udfs", flat=true),
+  )
   let sql = self.expressions(expression~, flat=true)
   let recursive = g_when(
     self.cfg.cte_recursive_keyword_required && expression.has("recursive"),
@@ -306,7 +309,7 @@ pub fn Generator::simplify_unless_literal(
 pub fn Generator::limit_sql(
   self : Generator,
   expression : Expr,
-  top? : Bool = false,
+  top~ : Bool = false,
 ) -> String raise SqlglotError {
   let this = self.sql_key(expression, "this")
   let args = []
@@ -397,7 +400,7 @@ pub fn Generator::table_parts_base(
 pub fn Generator::table_sql_v(
   self : Generator,
   expression : Expr,
-  sep? : String = " AS ",
+  sep~ : String = " AS ",
 ) -> String raise SqlglotError {
   match self.fns.hooks.table_sql {
     Some(f) => f(self, expression, sep)
@@ -409,7 +412,7 @@ pub fn Generator::table_sql_v(
 pub fn Generator::table_sql(
   self : Generator,
   expression : Expr,
-  sep? : String = " AS ",
+  sep~ : String = " AS ",
 ) -> String raise SqlglotError {
   let mut table = self.table_parts(expression)
   let only = g_when(expression.has("only"), "ONLY ")
@@ -855,7 +858,7 @@ pub fn Generator::update_sql(
 pub fn Generator::values_sql_v(
   self : Generator,
   expression : Expr,
-  values_as_table? : Bool = true,
+  values_as_table~ : Bool = true,
 ) -> String raise SqlglotError {
   match self.fns.hooks.values_sql {
     Some(f) => f(self, expression, values_as_table)
@@ -867,7 +870,7 @@ pub fn Generator::values_sql_v(
 pub fn Generator::values_sql(
   self : Generator,
   expression : Expr,
-  values_as_table? : Bool = true,
+  values_as_table~ : Bool = true,
 ) -> String raise SqlglotError {
   let values_as_table = values_as_table && self.cfg.values_as_table
   if values_as_table || expression.find_ancestor([From, Join]) is None {
@@ -1332,7 +1335,7 @@ pub fn Generator::lock_sql(
 pub fn Generator::order_sql(
   self : Generator,
   expression : Expr,
-  flat? : Bool = false,
+  flat~ : Bool = false,
 ) -> String raise SqlglotError {
   let this = self.sql_key(expression, "this")
   let this = if this != "" { this + " " } else { this }
@@ -1924,7 +1927,7 @@ pub fn Generator::star_sql(
 pub fn Generator::subquery_sql(
   self : Generator,
   expression : Expr,
-  sep? : String = " AS ",
+  sep~ : String = " AS ",
 ) -> String raise SqlglotError {
   let mut alias_ = g_pfx(sep, self.sql_key(expression, "alias"))
   let sample = self.sql_key(expression, "sample")
@@ -2309,7 +2312,11 @@ pub fn Generator::merge_sql(
   let mut whens = self.sql_key(expression, "whens")
   let mut on = g_pfx("ON ", self.sql_key(expression, "on"))
   if on == "" {
-    on = g_around("USING (", self.expressions(expression~, key="using_cond"), ")")
+    on = g_around(
+      "USING (",
+      self.expressions(expression~, key="using_cond"),
+      ")",
+    )
   }
   let returning = self.sql_key(expression, "returning")
   if returning != "" {

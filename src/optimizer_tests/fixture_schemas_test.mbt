@@ -20,4 +20,3 @@ let tpcds_schema_json : String = "{\"catalog_sales\": {\"cs_sold_date_sk\": \"bi
 
 ///|
 let invisible_json : String = "{\"x\": [\"a\"], \"y\": [\"b\"], \"z\": [\"b\"]}"
-

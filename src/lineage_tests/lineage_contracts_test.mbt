@@ -79,7 +79,7 @@ test "TestLineage.test_lineage_no_self_loops_with_multi_aliased_union_cte" {
     #|)
     #|SELECT a FROM attached
   let node = @lineage.lineage("a", @sqlglot.parse_one(query))
-  let visited : Map[Int, Bool] = Map([])
+  let visited : Map[Int32, Bool] = Map([])
   let stack = [(node, [node.id])]
   while stack.pop() is Some((current, path)) {
     if visited.contains(current.id) {
@@ -155,7 +155,7 @@ test "TestLineage.test_lineage_shared_cte_performance" {
   )
   // walk() yields each node exactly once (identity = the node's id; ids are unique
   // per created node, and physically distinct nodes never share one)
-  let ids : Map[Int, @lineage.Node] = Map([])
+  let ids : Map[Int32, @lineage.Node] = Map([])
   for n in all_nodes {
     assert_true(!ids.contains(n.id))
     ids[n.id] = n
@@ -294,13 +294,13 @@ test "TestLineage.test_lineage_all_columns_with_prebuilt_scope" {
 
 ///|
 test "TestLineage.test_lineage_on_node_orders_children_before_parents" {
-  let order : Array[Int] = []
+  let order : Array[Int32] = []
   let result = @lineage.lineage_all(
     @sqlglot.parse_one("WITH t AS (SELECT a + 1 AS v FROM x) SELECT v FROM t"),
     schema=schema_of({ "x": { "a": "int" } }),
     on_node=node => order.push(node.id),
   )
-  let position : Map[Int, Int] = Map([])
+  let position : Map[Int32, Int32] = Map([])
   for i, id in order {
     position[id] = i
   }
@@ -316,7 +316,7 @@ test "TestLineage.test_lineage_on_node_orders_children_before_parents" {
 
 ///|
 test "TestLineage.test_lineage_on_node_fires_once_per_node" {
-  let counts : Map[Int, Int] = Map([])
+  let counts : Map[Int32, Int32] = Map([])
   let result = @lineage.lineage_all(
     @sqlglot.parse_one(
       "WITH t AS (SELECT a, b FROM x) SELECT a, a + b AS ab FROM t",
@@ -324,7 +324,7 @@ test "TestLineage.test_lineage_on_node_fires_once_per_node" {
     schema=schema_of({ "x": { "a": "int", "b": "int" } }),
     on_node=node => counts[node.id] = counts.get(node.id).unwrap_or(0) + 1,
   )
-  let seen : Map[Int, Bool] = Map([])
+  let seen : Map[Int32, Bool] = Map([])
   for _, top in result {
     for node in top.walk() {
       seen[node.id] = true

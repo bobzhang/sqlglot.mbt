@@ -10,14 +10,15 @@ pub let version : String = "0.1.0"
 
 ///|
 /// The result of a command line invocation.
+#derive(Debug, Eq)
 pub(all) struct CliResult {
   /// Text for standard output.
   stdout : String
   /// Text for standard error.
   stderr : String
   /// The process exit code.
-  exit_code : Int
-} derive(Debug, Eq)
+  exit_code : Int32
+}
 
 ///|
 #deprecated

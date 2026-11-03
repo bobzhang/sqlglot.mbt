@@ -13,35 +13,32 @@ fn run_optimize(
     dialect?=c.dialect,
     infer_schema?,
     leave_tables_isolated=c.meta_bool("leave_tables_isolated").unwrap_or(false),
-    validate_qualify_columns=c.meta_bool("validate_qualify_columns").unwrap_or(
-      true,
-    ),
-    canonicalize_table_aliases=c.meta_bool("canonicalize_table_aliases").unwrap_or(
-      false,
-    ),
+    validate_qualify_columns=c
+      .meta_bool("validate_qualify_columns")
+      .unwrap_or(true),
+    canonicalize_table_aliases=c
+      .meta_bool("canonicalize_table_aliases")
+      .unwrap_or(false),
   )
 }
 
 ///|
 test "optimizer optimizer" {
-  run_fixtures("optimizer", optimizer_fixtures, pretty=true, (e, c) => run_optimize(
-    e,
-    c,
-    optimizer_schema_json,
-    infer_schema=true,
-  ))
+  run_fixtures("optimizer", optimizer_fixtures, pretty=true, (e, c) => {
+    run_optimize(e, c, optimizer_schema_json, infer_schema=true)
+  })
 }
 
 ///|
 test "optimizer tpch" {
-  run_fixtures("tpch", tpch_fixtures, pretty=true, (e, c) => run_optimize(
-    e, c, tpch_schema_json,
-  ))
+  run_fixtures("tpch", tpch_fixtures, pretty=true, (e, c) => {
+    run_optimize(e, c, tpch_schema_json)
+  })
 }
 
 ///|
 test "optimizer tpcds" {
-  run_fixtures("tpcds", tpcds_fixtures, pretty=true, (e, c) => run_optimize(
-    e, c, tpcds_schema_json,
-  ))
+  run_fixtures("tpcds", tpcds_fixtures, pretty=true, (e, c) => {
+    run_optimize(e, c, tpcds_schema_json)
+  })
 }

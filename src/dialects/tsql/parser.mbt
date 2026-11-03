@@ -112,7 +112,7 @@ pub let options_that_require_equal : Array[String] = [
 let column_definition_modes : Array[String] = ["OUT", "OUTPUT", "READONLY"]
 
 ///|
-fn seq_get(args : Array[@core.Expr], i : Int) -> @core.Expr? {
+fn seq_get(args : Array[@core.Expr], i : Int32) -> @core.Expr? {
   args.get(i)
 }
 
@@ -123,7 +123,7 @@ let tsql_time_mapping : Ref[Map[String, String]] = Ref({})
 ///|
 fn build_formatted_time(
   kind : @core.Kind,
-  full_format_mapping? : Bool = false,
+  full_format_mapping~ : Bool = false,
 ) -> @core.FuncBuilder {
   (args, _) => {
     let fmt = match seq_get(args, 0) {
@@ -274,7 +274,7 @@ fn civil_from_days(z : Int64) -> (Int64, Int64, Int64) {
 }
 
 ///|
-fn pad_int(n : Int64, width : Int) -> String {
+fn pad_int(n : Int64, width : Int32) -> String {
   let s = n.to_string()
   if s.length() >= width {
     s
@@ -295,7 +295,7 @@ fn default_start_date_plus(days : Int64) -> String {
 fn build_date_delta(
   kind : @core.Kind,
   unit_mapping? : Map[String, String],
-  big_int? : Bool = false,
+  big_int~ : Bool = false,
 ) -> @core.FuncBuilder {
   (args, _) => {
     let mut unit = seq_get(args, 0)

@@ -10,7 +10,10 @@ fn dialect_of(name : String?) -> @core.Dialect? raise @core.SqlglotError {
 
 ///|
 /// `parse_one(sql, read=read)`.
-fn parse_sql(sql : String, read? : String) -> @core.Expr raise @core.SqlglotError {
+fn parse_sql(
+  sql : String,
+  read? : String,
+) -> @core.Expr raise @core.SqlglotError {
   @core.parse_one(sql, dialect?=dialect_of(read))
 }
 
@@ -19,7 +22,7 @@ fn parse_sql(sql : String, read? : String) -> @core.Expr raise @core.SqlglotErro
 fn gen_sql(
   e : @core.Expr,
   dialect? : String,
-  pretty? : Bool = false,
+  pretty~ : Bool = false,
 ) -> String raise @core.SqlglotError {
   @optimizer.sql_of(e, dialect?=dialect_of(dialect), pretty~)
 }
@@ -129,7 +132,7 @@ fn assert_raises_with(
 
 ///|
 /// Lexicographic string comparison.
-fn py_cmp(a : String, b : String) -> Int {
+fn py_cmp(a : String, b : String) -> Int32 {
   let n = @core.min_int(a.length(), b.length())
   for i in 0..<n {
     if a[i] != b[i] {

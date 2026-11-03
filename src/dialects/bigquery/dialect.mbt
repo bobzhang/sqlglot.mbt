@@ -17,7 +17,11 @@ pub fn dialect() -> @core.Dialect {
   match dialect_cell.val {
     Some(d) => d
     None => {
-      let d = @core.Dialect::subclass(@core.base_dialect(), "bigquery", configure)
+      let d = @core.Dialect::subclass(
+        @core.base_dialect(),
+        "bigquery",
+        configure,
+      )
       dialect_cell.val = Some(d)
       d
     }

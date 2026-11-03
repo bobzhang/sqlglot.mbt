@@ -3,7 +3,7 @@
 ///|
 /// A node of the lineage graph.
 pub struct Node {
-  id : Int
+  id : Int32
   name : String
   expression : @core.Expr
   source : @core.Expr
@@ -15,15 +15,15 @@ pub struct Node {
 }
 
 ///|
-let node_counter : Ref[Int] = Ref(0)
+let node_counter : Ref[Int32] = Ref(0)
 
 ///|
 fn Node::new(
   name : String,
   expression : @core.Expr,
   source : @core.Expr,
-  source_name? : String = "",
-  reference_node_name? : String = "",
+  source_name~ : String = "",
+  reference_node_name~ : String = "",
 ) -> Node {
   node_counter.val += 1
   {
@@ -41,7 +41,7 @@ fn Node::new(
 ///|
 /// Iterates the graph from this node (depth first, each node once).
 pub fn Node::walk(self : Node) -> Array[Node] {
-  let visited : @set.Set[Int] = @set.Set([])
+  let visited : @set.Set[Int32] = @set.Set([])
   let out = []
   let queue = [self]
   while queue.pop() is Some(node) {
@@ -60,7 +60,10 @@ pub fn Node::walk(self : Node) -> Array[Node] {
 }
 
 ///|
-fn sql_nc(e : @core.Expr, dialect : @core.Dialect?) -> String raise @core.SqlglotError {
+fn sql_nc(
+  e : @core.Expr,
+  dialect : @core.Dialect?,
+) -> String raise @core.SqlglotError {
   let d = match dialect {
     Some(d) => d
     None => @core.base_dialect()
@@ -72,7 +75,7 @@ fn sql_nc(e : @core.Expr, dialect : @core.Dialect?) -> String raise @core.Sqlglo
 /// A column of a query: by output name, or by position.
 priv enum ColumnRef {
   ByName(String)
-  ByIndex(Int)
+  ByIndex(Int32)
 }
 
 ///|
@@ -89,7 +92,7 @@ priv struct Ctx {
   trim_selects : Bool
   schema : @optimizer.MappingSchema?
   cache : Map[String, Node]
-  scope_meta : Map[Int, (Bool, Map[String, @core.Expr])]
+  scope_meta : Map[Int32, (Bool, Map[String, @core.Expr])]
   on_node : ((Node) -> Unit)?
 }
 
@@ -110,8 +113,8 @@ pub fn lineage(
   sources? : Map[String, @core.Expr],
   dialect? : @core.Dialect,
   scope? : @optimizer.Scope,
-  trim_selects? : Bool = true,
-  copy? : Bool = true,
+  trim_selects~ : Bool = true,
+  copy~ : Bool = true,
   on_node? : (Node) -> Unit,
   db? : String,
   catalog? : String,
@@ -121,9 +124,9 @@ pub fn lineage(
   isolate_tables? : Bool,
   qualify_columns? : Bool,
   allow_partial_qualification? : Bool,
-  validate_qualify_columns? : Bool = false,
+  validate_qualify_columns~ : Bool = false,
   quote_identifiers? : Bool,
-  identify? : Bool = false,
+  identify~ : Bool = false,
   canonicalize_table_aliases? : Bool,
 ) -> Node raise @core.SqlglotError {
   // Python's **kwargs: options of the qualify() call (when no scope is given)
@@ -175,8 +178,8 @@ pub fn lineage_all(
   sources? : Map[String, @core.Expr],
   dialect? : @core.Dialect,
   scope? : @optimizer.Scope,
-  trim_selects? : Bool = true,
-  copy? : Bool = true,
+  trim_selects~ : Bool = true,
+  copy~ : Bool = true,
   on_node? : (Node) -> Unit,
   db? : String,
   catalog? : String,
@@ -186,9 +189,9 @@ pub fn lineage_all(
   isolate_tables? : Bool,
   qualify_columns? : Bool,
   allow_partial_qualification? : Bool,
-  validate_qualify_columns? : Bool = false,
+  validate_qualify_columns~ : Bool = false,
   quote_identifiers? : Bool,
-  identify? : Bool = false,
+  identify~ : Bool = false,
   canonicalize_table_aliases? : Bool,
 ) -> Map[String, Node] raise @core.SqlglotError {
   // Python's **kwargs: options of the qualify() call (when no scope is given)
@@ -344,7 +347,13 @@ fn to_node(
   if scope.expression.kind.is_a(Subquery) {
     for inner_scope in scope.subquery_scopes {
       let result = to_node(
-        column, inner_scope, ctx, None, upstream, source_name, reference_node_name,
+        column,
+        inner_scope,
+        ctx,
+        None,
+        upstream,
+        source_name,
+        reference_node_name,
       )
       let is_upstream = match upstream {
         Some(u) => physical_equal(u, result)
@@ -418,11 +427,12 @@ fn to_node(
     Some(u) => u.downstream.push(node)
     None => ()
   }
-  let subquery_scopes : Map[Int, @optimizer.Scope] = Map([])
+  let subquery_scopes : Map[Int32, @optimizer.Scope] = Map([])
   for s in scope.subquery_scopes {
     subquery_scopes[s.expression.uid] = s
   }
-  for subquery in @optimizer.find_all_in_scope(select, [Select, SetOperation]).collect() {
+  for
+    subquery in @optimizer.find_all_in_scope(select, [Select, SetOperation]).collect() {
     let subquery_scope = match subquery_scopes.get(subquery.uid) {
       Some(s) => s
       None => continue
@@ -516,7 +526,15 @@ fn to_node(
           Some(s) if s != "" => Some(s)
           _ => source_name
         }
-        to_node(ByName(c.name()), cs, ctx, Some(table), Some(node), sn, ref_name)
+        to_node(
+          ByName(c.name()),
+          cs,
+          ctx,
+          Some(table),
+          Some(node),
+          sn,
+          ref_name,
+        )
         |> ignore
       }
       _ =>
@@ -769,7 +787,9 @@ fn pivot_chain_mapping(
 
 ///|
 /// Map each (UN)PIVOT output column name to the source columns it's derived from.
-fn pivot_column_mapping(pivot : @core.Expr) -> Array[(String, Array[@core.Expr])] {
+fn pivot_column_mapping(
+  pivot : @core.Expr,
+) -> Array[(String, Array[@core.Expr])] {
   let mapping : Array[(String, Array[@core.Expr])] = []
   if pivot.has("unpivot") {
     let value_columns = []
@@ -829,7 +849,7 @@ fn pivot_column_mapping(pivot : @core.Expr) -> Array[(String, Array[@core.Expr])
 pub fn Node::to_html(
   self : Node,
   dialect? : @core.Dialect,
-  imports? : Bool = true,
+  imports~ : Bool = true,
 ) -> String raise @core.SqlglotError {
   let nodes : Array[Json] = []
   let edges : Array[Json] = []
@@ -841,12 +861,18 @@ pub fn Node::to_html(
       let label = @optimizer.sql_of(node.expression, dialect?, pretty=true)
       let target = node.expression
       let source = node.source.transform(
-        n => if physical_equal(n, target) {
-          Some(
-            @core.mk(Tag, [("this", n), ("prefix", "<b>"), ("postfix", "</b>")]),
-          )
-        } else {
-          Some(n)
+        n => {
+          if physical_equal(n, target) {
+            Some(
+              @core.mk(Tag, [
+                ("this", n),
+                ("prefix", "<b>"),
+                ("postfix", "</b>"),
+              ]),
+            )
+          } else {
+            Some(n)
+          }
         },
         copy=false,
       )

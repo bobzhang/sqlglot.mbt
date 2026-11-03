@@ -6,7 +6,7 @@
 pub fn to_identifier_value(
   name : Value,
   quoted? : Bool,
-  copy? : Bool = true,
+  copy~ : Bool = true,
 ) -> Expr raise SqlglotError {
   match name {
     Node(e) if e.kind == Identifier => maybe_copy(e, copy)
@@ -73,13 +73,13 @@ pub fn exp_add(this : Expr, other : Expr) -> Expr {
 
 ///|
 /// Python `paren(expression, copy)`.
-pub fn exp_paren(expression : Expr, copy? : Bool = true) -> Expr {
+pub fn exp_paren(expression : Expr, copy~ : Bool = true) -> Expr {
   mk1(Paren, maybe_copy(expression, copy))
 }
 
 ///|
 /// Python `not_(expression, copy)`.
-pub fn exp_not(expression : Expr, copy? : Bool = true) -> Expr {
+pub fn exp_not(expression : Expr, copy~ : Bool = true) -> Expr {
   mk1(Not, exp_wrap(maybe_copy(expression, copy), Connector))
 }
 
@@ -107,8 +107,8 @@ fn exp_combine(
 /// Python `and_(*expressions)`.
 pub fn exp_and(
   expressions : Array[Expr],
-  copy? : Bool = true,
-  wrap? : Bool = true,
+  copy~ : Bool = true,
+  wrap~ : Bool = true,
 ) -> Expr {
   exp_combine(expressions, And, copy, wrap)
 }
@@ -117,8 +117,8 @@ pub fn exp_and(
 /// Python `or_(*expressions)`.
 pub fn exp_or(
   expressions : Array[Expr],
-  copy? : Bool = true,
-  wrap? : Bool = true,
+  copy~ : Bool = true,
+  wrap~ : Bool = true,
 ) -> Expr {
   exp_combine(expressions, Or, copy, wrap)
 }
@@ -129,7 +129,7 @@ pub fn exp_alias(
   expression : Expr,
   alias_ : Value,
   quoted? : Bool,
-  copy? : Bool = true,
+  copy~ : Bool = true,
 ) -> Expr raise SqlglotError {
   let e = maybe_copy(expression, copy)
   let alias_ = to_identifier_value(alias_, quoted?)
@@ -145,7 +145,7 @@ pub fn exp_alias(
 pub fn exp_cast_to(
   expression : Expr,
   to : Expr,
-  copy? : Bool = true,
+  copy~ : Bool = true,
   dialect? : Dialect,
 ) -> Expr {
   let expr = maybe_copy(expression, copy)
@@ -189,7 +189,7 @@ pub fn exp_cast_to(
 pub fn exp_cast(
   expression : Expr,
   to : DType,
-  copy? : Bool = true,
+  copy~ : Bool = true,
   dialect? : Dialect,
 ) -> Expr {
   exp_cast_to(expression, datatype_of(to), copy~, dialect?)
@@ -200,7 +200,7 @@ pub fn exp_cast(
 pub fn exp_subquery_of(
   query : Expr,
   alias_? : String,
-  copy? : Bool = true,
+  copy~ : Bool = true,
 ) -> Expr {
   let instance = maybe_copy(query, copy)
   match alias_ {
@@ -218,7 +218,7 @@ pub fn exp_subquery_of(
 pub fn exp_subquery_with_alias_expr(
   query : Expr,
   alias_ : Expr?,
-  copy? : Bool = true,
+  copy~ : Bool = true,
 ) -> Expr {
   let instance = maybe_copy(query, copy)
   mk(Subquery, [("this", instance), ("alias", alias_)])
@@ -237,7 +237,7 @@ pub fn exp_select_from(projections : Array[Expr], from_expr : Expr) -> Expr {
 
 ///|
 /// Python `exp.union(left, right, distinct=distinct, copy=False)`.
-pub fn exp_union(left : Expr, right : Expr, distinct? : Bool = true) -> Expr {
+pub fn exp_union(left : Expr, right : Expr, distinct~ : Bool = true) -> Expr {
   mk(Union, [("this", left), ("expression", right), ("distinct", distinct)])
 }
 
@@ -253,7 +253,7 @@ pub fn case_when(
   case_ : Expr,
   condition : Expr,
   then : Expr,
-  copy? : Bool = true,
+  copy~ : Bool = true,
 ) -> Expr {
   let instance = maybe_copy(case_, copy)
   instance.append(
@@ -268,7 +268,7 @@ pub fn case_when(
 
 ///|
 /// Python `Case.else_(value, copy)`.
-pub fn case_else(case_ : Expr, value : Expr, copy? : Bool = true) -> Expr {
+pub fn case_else(case_ : Expr, value : Expr, copy~ : Bool = true) -> Expr {
   let instance = maybe_copy(case_, copy)
   instance.set("default", maybe_copy(value, copy))
   instance

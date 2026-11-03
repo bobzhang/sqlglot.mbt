@@ -8,7 +8,7 @@ pub type Row = Array[Value]
 /// A simple columnar data structure: column names and rows of values.
 pub struct Table {
   mut columns : Array[String]
-  mut column_range : (Int, Int)?
+  mut column_range : (Int32, Int32)?
   mut reader : RowReader
   mut rows : Array[Row]
   range_reader : RangeReader
@@ -17,7 +17,7 @@ pub struct Table {
 ///|
 /// Reads the columns of the current row.
 pub struct RowReader {
-  columns : Map[String, Int]
+  columns : Map[String, Int32]
   mut row : Row
 }
 
@@ -25,12 +25,12 @@ pub struct RowReader {
 /// Reads the values of a column over a range of rows.
 pub struct RangeReader {
   mut table : Table?
-  mut start : Int
-  mut stop : Int
+  mut start : Int32
+  mut stop : Int32
 }
 
 ///|
-fn range_contains(r : (Int, Int)?, i : Int) -> Bool {
+fn range_contains(r : (Int32, Int32)?, i : Int32) -> Bool {
   match r {
     // an empty range is falsy in Python: all columns are visible
     None => true
@@ -41,9 +41,9 @@ fn range_contains(r : (Int, Int)?, i : Int) -> Bool {
 ///|
 pub fn RowReader::new(
   columns? : Array[String],
-  column_range? : (Int, Int),
+  column_range? : (Int32, Int32),
 ) -> RowReader {
-  let m : Map[String, Int] = Map([])
+  let m : Map[String, Int32] = Map([])
   match columns {
     Some(cols) =>
       for i, c in cols {
@@ -72,7 +72,7 @@ pub fn RowReader::get(
 }
 
 ///|
-pub fn RangeReader::length(self : RangeReader) -> Int {
+pub fn RangeReader::length(self : RangeReader) -> Int32 {
   if self.stop > self.start {
     self.stop - self.start
   } else {
@@ -107,9 +107,9 @@ pub fn Reader::get(self : Reader, column : String) -> Value raise PyException {
 ///|
 /// Creates a table. `rows` is shared (not copied), as in Python, unless empty.
 pub fn Table::new(
-  columns? : Array[String] = [],
-  rows? : Array[Row] = [],
-  column_range? : (Int, Int),
+  columns~ : Array[String] = [],
+  rows~ : Array[Row] = [],
+  column_range? : (Int32, Int32),
 ) -> Table {
   let columns = columns.copy()
   if !rows.is_empty() && rows[0].length() != columns.length() {
@@ -174,18 +174,21 @@ pub fn Table::to_pylist(self : Table) -> Array[Array[(String, Value)]] {
 }
 
 ///|
-pub fn Table::width(self : Table) -> Int {
+pub fn Table::width(self : Table) -> Int32 {
   self.columns.length()
 }
 
 ///|
-pub fn Table::length(self : Table) -> Int {
+pub fn Table::length(self : Table) -> Int32 {
   self.rows.length()
 }
 
 ///|
 /// Python `table[index]`: points the table's reader at a row and returns it.
-pub fn Table::get_row(self : Table, index : Int) -> RowReader raise PyException {
+pub fn Table::get_row(
+  self : Table,
+  index : Int32,
+) -> RowReader raise PyException {
   let n = self.rows.length()
   let i = if index < 0 { index + n } else { index }
   if i < 0 || i >= n {
@@ -251,7 +254,7 @@ pub struct Tables {
 }
 
 ///|
-fn data_depth(d : Map[String, TableData]) -> Int {
+fn data_depth(d : Map[String, TableData]) -> Int32 {
   match d.values().next() {
     None => 1
     Some(Nested(m)) => 1 + data_depth(m)
@@ -284,7 +287,11 @@ pub fn Tables::new(
 pub fn Tables::flatten(self : Tables) -> Array[Array[String]] {
   let out = []
   let depth = self.supported_table_args.length()
-  fn go(m : Map[String, TableData], depth : Int, keys : Array[String]) -> Unit {
+  fn go(
+    m : Map[String, TableData],
+    depth : Int32,
+    keys : Array[String],
+  ) -> Unit {
     for k, v in m {
       match v {
         Nested(sub) if depth > 1 => go(sub, depth - 1, keys + [k])
@@ -316,7 +323,7 @@ pub fn Tables::get(self : Tables, keys : Array[String]) -> Table? {
 pub fn Tables::find(
   self : Tables,
   table : @core.Expr,
-  raise_on_missing? : Bool = true,
+  raise_on_missing~ : Bool = true,
 ) -> Table? raise @core.SqlglotError {
   let all_parts = table.parts().map(p => p.name())
   all_parts.rev_in_place()

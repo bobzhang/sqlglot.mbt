@@ -56,13 +56,13 @@ pub fn lstrip_chars(s : String, chars : String) -> String {
 
 ///|
 /// Python `str[n:]` on code points.
-fn g_str_from(s : String, n : Int) -> String {
+fn g_str_from(s : String, n : Int32) -> String {
   substr(s, n, py_len(s))
 }
 
 ///|
 /// sqlglot `helper.csv`: joins the non-empty strings with `sep`.
-pub fn csv(args : Array[String], sep? : String = ", ") -> String {
+pub fn csv(args : Array[String], sep~ : String = ", ") -> String {
   let out = []
   for a in args {
     if a != "" {
@@ -77,7 +77,7 @@ pub fn csv(args : Array[String], sep? : String = ", ") -> String {
 /// `base` into its decimal representation.
 pub fn int_str_from_base(
   text : String,
-  base : Int,
+  base : Int32,
 ) -> String raise SqlglotError {
   let t = py_strip(text).replace_all(old="_", new="")
   let mut negative = false
@@ -100,12 +100,12 @@ pub fn int_str_from_base(
     )
   }
   // little-endian base-10^4 digits
-  let digits : Array[Int] = [0]
+  let digits : Array[Int32] = [0]
   for c in body {
     let d = match c {
-      '0'..='9' => c.to_int() - '0'.to_int()
-      'a'..='z' => c.to_int() - 'a'.to_int() + 10
-      'A'..='Z' => c.to_int() - 'A'.to_int() + 10
+      '0'..<='9' => c.to_int() - '0'.to_int()
+      'a'..<='z' => c.to_int() - 'a'.to_int() + 10
+      'A'..<='Z' => c.to_int() - 'A'.to_int() + 10
       _ => 99
     }
     if d >= base {

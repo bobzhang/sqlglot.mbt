@@ -167,7 +167,11 @@ fn boolean_literal(b : Bool) -> @core.Expr {
 
 ///|
 /// Python `eval_boolean` given a comparison result (`cmp`) and equality (`eq`).
-fn eval_boolean_cmp(expression : @core.Expr, cmp : () -> Int raise @core.SqlglotError, eq : () -> Bool) -> @core.Expr? raise @core.SqlglotError {
+fn eval_boolean_cmp(
+  expression : @core.Expr,
+  cmp : () -> Int32 raise @core.SqlglotError,
+  eq : () -> Bool,
+) -> @core.Expr? raise @core.SqlglotError {
   let k = expression.kind
   if k.is_any([EQ, Is]) {
     if k.is_a(Is) && expression.has("negate") {
@@ -276,22 +280,21 @@ fn extract_interval(expression : @core.Expr) -> RelDelta? {
       if this.is_number() {
         match expr_to_pynum(this) {
           Some(PInt(i)) => i
-          Some(PDec(d)) =>
-            // int(Decimal) truncates
-            {
-              let v = d.coeff
-              let truncated = if d.exp >= 0 {
-                v * pow10(d.exp)
-              } else {
-                v / pow10(-d.exp)
-              }
-              let t = truncated
-              if d.neg {
-                -t
-              } else {
-                t
-              }
+          // int(Decimal) truncates
+          Some(PDec(d)) => {
+            let v = d.coeff
+            let truncated = if d.exp >= 0 {
+              v * pow10(d.exp)
+            } else {
+              v / pow10(-d.exp)
             }
+            let t = truncated
+            if d.neg {
+              -t
+            } else {
+              t
+            }
+          }
           None => return None
         }
       } else {
@@ -393,7 +396,10 @@ fn floor_or_raise(
 }
 
 ///|
-fn trunc_unit(unit : @core.Expr, dialect : @core.Dialect) -> String raise UnsupportedUnit {
+fn trunc_unit(
+  unit : @core.Expr,
+  dialect : @core.Dialect,
+) -> String raise UnsupportedUnit {
   if unit.kind.is_a(WeekStart) {
     let dow = match @core.py_upper(unit.name()) {
       "MONDAY" => 1
@@ -495,7 +501,8 @@ fn parenthesize_nested_connector(
   if expression.kind.is_a(Connector) &&
     (match parent {
       Some(p) =>
-        p.kind.is_a(Not) || (p.kind.is_a(Connector) && p.kind != expression.kind)
+        p.kind.is_a(Not) ||
+        (p.kind.is_a(Connector) && p.kind != expression.kind)
       None => false
     }) {
     return @core.paren(expression)

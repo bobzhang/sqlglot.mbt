@@ -4,7 +4,7 @@
 ///|
 priv struct CanonParser {
   s : Array[Char]
-  mut pos : Int
+  mut pos : Int32
 }
 
 ///|
@@ -42,11 +42,11 @@ fn CanonParser::ident(self : CanonParser) -> String {
 }
 
 ///|
-fn hex_val(c : Char) -> Int {
+fn hex_val(c : Char) -> Int32 {
   match c {
-    '0'..='9' => c.to_int() - '0'.to_int()
-    'a'..='f' => c.to_int() - 'a'.to_int() + 10
-    'A'..='F' => c.to_int() - 'A'.to_int() + 10
+    '0'..<='9' => c.to_int() - '0'.to_int()
+    'a'..<='f' => c.to_int() - 'a'.to_int() + 10
+    'A'..<='F' => c.to_int() - 'A'.to_int() + 10
     _ => 0
   }
 }
@@ -83,7 +83,7 @@ fn CanonParser::json_string(self : CanonParser) -> String {
             }
             code = 0x10000 + ((code - 0xD800) << 10) + (low - 0xDC00)
           }
-          sb.write_char(Int::unsafe_to_char(code))
+          sb.write_char(Int32::unsafe_to_char(code))
         }
         other => sb.write_char(other)
       }

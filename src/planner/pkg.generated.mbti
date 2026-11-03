@@ -30,7 +30,7 @@ pub fn Plan::new(@core.Expr) -> Self raise @core.SqlglotError
 pub fn Plan::to_string(Self) -> String
 
 pub struct Step {
-  uid : Int
+  uid : Int32
   kind : StepKind
   mut name : String?
   dependencies : Array[Step]
@@ -54,16 +54,17 @@ pub struct Step {
 }
 pub fn Step::add_dependency(Self, Self) -> Unit
 pub fn Step::id(Self) -> String
-pub fn Step::to_s(Self, level? : Int) -> String
+pub fn Step::to_s(Self, level? : Int32) -> String
 pub fn Step::type_name(Self) -> String
 
+#derive(Eq, @debug.Debug)
 pub(all) enum StepKind {
   Scan
   Join
   Aggregate
   Sort
   SetOperation
-} derive(Eq, @debug.Debug)
+}
 #deprecated
 pub fn StepKind::equal(Self, Self) -> Bool
 #deprecated

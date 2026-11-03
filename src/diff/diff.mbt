@@ -21,10 +21,12 @@ pub impl Eq for Edit with fn equal(self, other) {
   match (self, other) {
     (Insert(a), Insert(b)) => a == b
     (Remove(a), Remove(b)) => a == b
-    (Move(source=s1, target=t1), Move(source=s2, target=t2)) => s1 == s2 && t1 == t2
+    (Move(source=s1, target=t1), Move(source=s2, target=t2)) =>
+      s1 == s2 && t1 == t2
     (Update(source=s1, target=t1), Update(source=s2, target=t2)) =>
       s1 == s2 && t1 == t2
-    (Keep(source=s1, target=t1), Keep(source=s2, target=t2)) => s1 == s2 && t1 == t2
+    (Keep(source=s1, target=t1), Keep(source=s2, target=t2)) =>
+      s1 == s2 && t1 == t2
     _ => false
   }
 }
@@ -60,19 +62,19 @@ pub fn Edit::to_string(self : Edit) -> String {
 pub fn diff(
   source : @core.Expr,
   target : @core.Expr,
-  matchings? : Array[(@core.Expr, @core.Expr)] = [],
-  delta_only? : Bool = false,
-  f? : Double = 0.6,
-  t? : Double = 0.6,
+  matchings~ : Array[(@core.Expr, @core.Expr)] = [],
+  delta_only~ : Bool = false,
+  f~ : Double = 0.6,
+  t~ : Double = 0.6,
   dialect? : @core.Dialect,
 ) -> Array[Edit] {
   let source_nodes = source.walk().collect()
   let target_nodes = target.walk().collect()
-  let source_ids : @set.Set[Int] = @set.Set([])
+  let source_ids : @set.Set[Int32] = @set.Set([])
   for n in source_nodes {
     source_ids.add(n.uid)
   }
-  let target_ids : @set.Set[Int] = @set.Set([])
+  let target_ids : @set.Set[Int32] = @set.Set([])
   for n in target_nodes {
     target_ids.add(n.uid)
   }
@@ -83,9 +85,17 @@ pub fn diff(
   let target_copy = if copy { target.copy() } else { target }
   let mut matchings = matchings
   if copy && !matchings.is_empty() {
-    let source_mapping = node_mappings(source_nodes, source_copy.walk().collect())
-    let target_mapping = node_mappings(target_nodes, target_copy.walk().collect())
-    matchings = matchings.map(m => (source_mapping[m.0.uid], target_mapping[m.1.uid]))
+    let source_mapping = node_mappings(
+      source_nodes,
+      source_copy.walk().collect(),
+    )
+    let target_mapping = node_mappings(
+      target_nodes,
+      target_copy.walk().collect(),
+    )
+    matchings = matchings.map(m => {
+      (source_mapping[m.0.uid], target_mapping[m.1.uid])
+    })
   }
   ChangeDistiller::new(f~, t~, dialect?).diff(
     source_copy,
@@ -99,11 +109,12 @@ pub fn diff(
 fn node_mappings(
   old_nodes : Array[@core.Expr],
   new_nodes : Array[@core.Expr],
-) -> Map[Int, @core.Expr] {
-  let m : Map[Int, @core.Expr] = Map([])
+) -> Map[Int32, @core.Expr] {
+  let m : Map[Int32, @core.Expr] = Map([])
   let n = @core.min_int(old_nodes.length(), new_nodes.length())
   for i in 0..<n {
-    m[old_nodes[old_nodes.length() - 1 - i].uid] = new_nodes[new_nodes.length() - 1 -
+    m[old_nodes[old_nodes.length() - 1 - i].uid] = new_nodes[new_nodes.length() -
+      1 -
       i]
   }
   m
@@ -111,7 +122,16 @@ fn node_mappings(
 
 ///|
 fn is_updatable(e : @core.Expr) -> Bool {
-  e.kind.is_any([Alias, Boolean, Column, DataType, Lambda, Literal, Table, Window])
+  e.kind.is_any([
+    Alias,
+    Boolean,
+    Column,
+    DataType,
+    Lambda,
+    Literal,
+    Table,
+    Window,
+  ])
 }
 
 ///|
@@ -125,18 +145,18 @@ pub struct ChangeDistiller {
   f : Double
   t : Double
   dialect : @core.Dialect
-  priv mut source_index : Map[Int, @core.Expr]
-  priv mut target_index : Map[Int, @core.Expr]
-  priv mut unmatched_source : @set.Set[Int]
-  priv mut unmatched_target : @set.Set[Int]
-  priv bigram_cache : Map[Int, Map[String, Int]]
+  priv mut source_index : Map[Int32, @core.Expr]
+  priv mut target_index : Map[Int32, @core.Expr]
+  priv mut unmatched_source : @set.Set[Int32]
+  priv mut unmatched_target : @set.Set[Int32]
+  priv bigram_cache : Map[Int32, Map[String, Int32]]
   priv mut roots : (@core.Expr, @core.Expr)?
 }
 
 ///|
 pub fn ChangeDistiller::new(
-  f? : Double = 0.6,
-  t? : Double = 0.6,
+  f~ : Double = 0.6,
+  t~ : Double = 0.6,
   dialect? : @core.Dialect,
 ) -> ChangeDistiller {
   {
@@ -160,14 +180,14 @@ pub fn ChangeDistiller::diff(
   self : ChangeDistiller,
   source : @core.Expr,
   target : @core.Expr,
-  matchings? : Array[(@core.Expr, @core.Expr)] = [],
-  delta_only? : Bool = false,
+  matchings~ : Array[(@core.Expr, @core.Expr)] = [],
+  delta_only~ : Bool = false,
 ) -> Array[Edit] {
-  let pre_matched : Map[Int, Int] = Map([])
+  let pre_matched : Map[Int32, Int32] = Map([])
   for m in matchings {
     pre_matched[m.0.uid] = m.1.uid
   }
-  let pre_matched_targets : @set.Set[Int] = @set.Set([])
+  let pre_matched_targets : @set.Set[Int32] = @set.Set([])
   for _, v in pre_matched {
     pre_matched_targets.add(v)
   }
@@ -204,7 +224,7 @@ pub fn ChangeDistiller::diff(
     }
   }
   // dict(matching_set), ordered by the source's BFS order
-  let matchings_map : Map[Int, Int] = Map([])
+  let matchings_map : Map[Int32, Int32] = Map([])
   for k, _ in self.source_index {
     for p in matching_set {
       if p.0 == k {
@@ -260,15 +280,13 @@ fn leaves_eq(
   b : Array[(String, @core.Value)],
 ) -> Bool {
   a.length() == b.length() &&
-  a
-  .iter()
-  .all(kv => b.iter().any(kw => kw.0 == kv.0 && value_eq(kv.1, kw.1)))
+  a.iter().all(kv => b.iter().any(kw => kw.0 == kv.0 && value_eq(kv.1, kw.1)))
 }
 
 ///|
 fn ChangeDistiller::generate_edit_script(
   self : ChangeDistiller,
-  matchings : Map[Int, Int],
+  matchings : Map[Int32, Int32],
   delta_only : Bool,
 ) -> Array[Edit] {
   let edit_script = []
@@ -321,7 +339,7 @@ fn ChangeDistiller::generate_move_edits(
   self : ChangeDistiller,
   source : @core.Expr,
   target : @core.Expr,
-  matchings : Map[Int, Int],
+  matchings : Map[Int32, Int32],
 ) -> Array[Edit] {
   let source_args = source
     .iter_expressions()
@@ -331,8 +349,9 @@ fn ChangeDistiller::generate_move_edits(
     .iter_expressions()
     .filter(a => !is_ignored_leaf(a))
     .map(a => a.uid)
-  let args_lcs = lcs(source_args, target_args, (l, r) => matchings.get(l) ==
-    Some(r))
+  let args_lcs = lcs(source_args, target_args, (l, r) => {
+    matchings.get(l) == Some(r)
+  })
   let move_edits = []
   for a in source_args {
     if !args_lcs.contains(a) && !self.unmatched_source.contains(a) {
@@ -350,7 +369,7 @@ fn ChangeDistiller::generate_move_edits(
 ///|
 fn ChangeDistiller::compute_matching_set(
   self : ChangeDistiller,
-) -> Array[(Int, Int)] {
+) -> Array[(Int32, Int32)] {
   let leaves_matching_set = self.compute_leaf_matching_set()
   let matching_set = leaves_matching_set.copy()
   let ordered_source = self.source_index
@@ -366,11 +385,11 @@ fn ChangeDistiller::compute_matching_set(
       let source_node = self.source_index[source_node_id]
       let target_node = self.target_index[target_node_id]
       if is_same_type(source_node, target_node) {
-        let source_leaf_ids : @set.Set[Int] = @set.Set([])
+        let source_leaf_ids : @set.Set[Int32] = @set.Set([])
         for l in expression_leaves(source_node) {
           source_leaf_ids.add(l.uid)
         }
-        let target_leaf_ids : @set.Set[Int] = @set.Set([])
+        let target_leaf_ids : @set.Set[Int32] = @set.Set([])
         for l in expression_leaves(target_node) {
           target_leaf_ids.add(l.uid)
         }
@@ -399,8 +418,10 @@ fn ChangeDistiller::compute_matching_set(
           0.4
         }
         if leaf_similarity_score >= 0.8 ||
-          (leaf_similarity_score >= adjusted_t &&
-          self.dice_coefficient(source_node, target_node) >= self.f) {
+          (
+            leaf_similarity_score >= adjusted_t &&
+            self.dice_coefficient(source_node, target_node) >= self.f
+          ) {
           matching_set.push((source_node_id, target_node_id))
           self.unmatched_source.remove(source_node_id)
           self.unmatched_target.remove(target_node_id)
@@ -416,8 +437,8 @@ fn ChangeDistiller::compute_matching_set(
 ///|
 fn ChangeDistiller::compute_leaf_matching_set(
   self : ChangeDistiller,
-) -> Array[(Int, Int)] {
-  let candidates : Array[(Double, Int, Int, @core.Expr, @core.Expr)] = []
+) -> Array[(Int32, Int32)] {
+  let candidates : Array[(Double, Int32, Int32, @core.Expr, @core.Expr)] = []
   let (source_root, target_root) = self.roots.unwrap()
   let source_leaves = expression_leaves(source_root)
   let target_leaves = expression_leaves(target_root)
@@ -426,13 +447,15 @@ fn ChangeDistiller::compute_leaf_matching_set(
       if is_same_type(source_leaf, target_leaf) {
         let similarity_score = self.dice_coefficient(source_leaf, target_leaf)
         if similarity_score >= self.f {
-          candidates.push((
-            similarity_score,
-            parent_similarity_score(Some(source_leaf), Some(target_leaf)),
-            candidates.length(),
-            source_leaf,
-            target_leaf,
-          ))
+          candidates.push(
+            (
+              similarity_score,
+              parent_similarity_score(Some(source_leaf), Some(target_leaf)),
+              candidates.length(),
+              source_leaf,
+              target_leaf,
+            ),
+          )
         }
       }
     }
@@ -494,16 +517,18 @@ fn ChangeDistiller::dice_coefficient(
 fn ChangeDistiller::bigram_histo(
   self : ChangeDistiller,
   expression : @core.Expr,
-) -> Map[String, Int] {
+) -> Map[String, Int32] {
   match self.bigram_cache.get(expression.uid) {
     Some(h) => return h
     None => ()
   }
-  let s = @core.Generator::new(self.dialect, comments=false).generate(expression) catch {
+  let s = @core.Generator::new(self.dialect, comments=false).generate(
+    expression,
+  ) catch {
     _ => ""
   }
   let chars = s.to_array()
-  let histo : Map[String, Int] = Map([])
+  let histo : Map[String, Int32] = Map([])
   for i in 0..<(chars.length() - 1) {
     let g = String::from_array([chars[i], chars[i + 1]])
     histo[g] = histo.get_or_default(g, 0) + 1
@@ -555,7 +580,7 @@ fn is_same_type(source : @core.Expr, target : @core.Expr) -> Bool {
 }
 
 ///|
-fn parent_similarity_score(source : @core.Expr?, target : @core.Expr?) -> Int {
+fn parent_similarity_score(source : @core.Expr?, target : @core.Expr?) -> Int32 {
   match (source, target) {
     (Some(s), Some(t)) if s.kind == t.kind =>
       1 + parent_similarity_score(s.parent, t.parent)
@@ -566,18 +591,17 @@ fn parent_similarity_score(source : @core.Expr?, target : @core.Expr?) -> Int {
 ///|
 /// Calculates the longest common subsequence.
 fn lcs(
-  seq_a : Array[Int],
-  seq_b : Array[Int],
-  equal : (Int, Int) -> Bool,
-) -> Array[Int] {
+  seq_a : Array[Int32],
+  seq_b : Array[Int32],
+  equal : (Int32, Int32) -> Bool,
+) -> Array[Int32] {
   let len_a = seq_a.length()
   let len_b = seq_b.length()
-  let table : Array[Array[Array[Int]]] = Array::makei(len_a + 1, _ => Array::makei(
-    len_b + 1,
-    _ => [],
-  ))
-  for i in 0..=len_a {
-    for j in 0..=len_b {
+  let table : Array[Array[Array[Int32]]] = Array::makei(len_a + 1, _ => {
+    Array::makei(len_b + 1, _ => [])
+  })
+  for i in 0..<=len_a {
+    for j in 0..<=len_b {
       if i == 0 || j == 0 {
         table[i][j] = []
       } else if equal(seq_a[i - 1], seq_b[j - 1]) {

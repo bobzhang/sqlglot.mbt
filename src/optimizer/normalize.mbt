@@ -4,8 +4,8 @@
 /// Rewrite the AST into conjunctive normal form (or disjunctive normal form if `dnf`).
 pub fn normalize(
   expression : @core.Expr,
-  dnf? : Bool = false,
-  max_distance? : Int = 128,
+  dnf~ : Bool = false,
+  max_distance~ : Int32 = 128,
 ) -> @core.Expr raise @core.SqlglotError {
   let simplifier = Simplifier::new(annotate_new_expressions=false)
   let mut expression = expression
@@ -28,9 +28,9 @@ pub fn normalize(
     if distance > max_distance {
       return expression
     }
-    let result = while_changing(node, e => distributive_law(
-      e, dnf, max_distance, simplifier,
-    )) catch {
+    let result = while_changing(node, e => {
+      distributive_law(e, dnf, max_distance, simplifier)
+    }) catch {
       @core.OptimizeError(_) => {
         node.replace(Some(original)) |> ignore
         if root {
@@ -67,7 +67,7 @@ fn while_changing(
 
 ///|
 /// Checks whether a given expression is in a normal form of interest.
-pub fn normalized(expression : @core.Expr, dnf? : Bool = false) -> Bool {
+pub fn normalized(expression : @core.Expr, dnf~ : Bool = false) -> Bool {
   let (ancestor, root) : (@core.Kind, @core.Kind) = if dnf {
     (And, Or)
   } else {
@@ -85,9 +85,9 @@ pub fn normalized(expression : @core.Expr, dnf? : Bool = false) -> Bool {
 /// normalized form.
 pub fn normalization_distance(
   expression : @core.Expr,
-  dnf? : Bool = false,
-  max? : Int = 2147483647,
-) -> Int {
+  dnf~ : Bool = false,
+  max~ : Int32 = 2147483647,
+) -> Int32 {
   let total = Ref(-(expression.find_all([Connector]).count() + 1))
   predicate_lengths(expression, dnf, max, 0, length => {
     total.val += length
@@ -103,9 +103,9 @@ pub fn normalization_distance(
 fn predicate_lengths(
   expression : @core.Expr,
   dnf : Bool,
-  max : Int,
-  depth : Int,
-  emit : (Int) -> Bool,
+  max : Int32,
+  depth : Int32,
+  emit : (Int32) -> Bool,
 ) -> Bool {
   if depth > max {
     return emit(depth)
@@ -123,13 +123,9 @@ fn predicate_lengths(
     expression.kind.is_a(Or)
   }
   if distributes {
-    predicate_lengths(left, dnf, max, depth, a => predicate_lengths(
-      right,
-      dnf,
-      max,
-      depth,
-      b => emit(a + b),
-    ))
+    predicate_lengths(left, dnf, max, depth, a => {
+      predicate_lengths(right, dnf, max, depth, b => emit(a + b))
+    })
   } else {
     predicate_lengths(left, dnf, max, depth, emit) &&
     predicate_lengths(right, dnf, max, depth, emit)
@@ -165,7 +161,7 @@ fn replace_children(
 fn distributive_law(
   expression : @core.Expr,
   dnf : Bool,
-  max_distance : Int,
+  max_distance : Int32,
   simplifier : Simplifier,
 ) -> @core.Expr raise @core.SqlglotError {
   if normalized(expression, dnf~) {
@@ -177,9 +173,9 @@ fn distributive_law(
       "Normalization distance \{distance} exceeds max \{max_distance}",
     )
   }
-  replace_children(expression, e => distributive_law(
-    e, dnf, max_distance, simplifier,
-  ))
+  replace_children(expression, e => {
+    distributive_law(e, dnf, max_distance, simplifier)
+  })
   let (to_exp, from_exp) : (@core.Kind, @core.Kind) = if dnf {
     (Or, And)
   } else {
@@ -206,7 +202,12 @@ fn distributive_law(
 }
 
 ///|
-fn combine2(kind : @core.Kind, a : @core.Expr, b : @core.Expr, copy : Bool) -> @core.Expr {
+fn combine2(
+  kind : @core.Kind,
+  a : @core.Expr,
+  b : @core.Expr,
+  copy : Bool,
+) -> @core.Expr {
   let a = if copy { a.copy() } else { a }
   let b = if copy { b.copy() } else { b }
   @core.combine_conditions([a, b], kind, copy=false)
@@ -221,18 +222,20 @@ fn distribute(
   simplifier : Simplifier,
 ) -> @core.Expr raise @core.SqlglotError {
   if a.kind.is_a(Connector) && a.kind.is_a(b.kind) {
-    replace_children(a, c => combine2(
-      to_kind,
-      simplifier.uniq_sort(
-        flatten_connector(combine2(from_kind, c, b.this_(), true)),
-        true,
-      ),
-      simplifier.uniq_sort(
-        flatten_connector(combine2(from_kind, c, b.expression_(), true)),
-        true,
-      ),
-      false,
-    ))
+    replace_children(a, c => {
+      combine2(
+        to_kind,
+        simplifier.uniq_sort(
+          flatten_connector(combine2(from_kind, c, b.this_(), true)),
+          true,
+        ),
+        simplifier.uniq_sort(
+          flatten_connector(combine2(from_kind, c, b.expression_(), true)),
+          true,
+        ),
+        false,
+      )
+    })
     return a
   }
   combine2(

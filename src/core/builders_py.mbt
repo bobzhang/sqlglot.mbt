@@ -35,7 +35,7 @@ fn apply_builder(
   prefix? : String,
   into? : Kind,
   dialect? : Dialect,
-  into_arg? : String = "this",
+  into_arg~ : String = "this",
 ) -> Expr raise SqlglotError {
   let expression = match (expression, into) {
     (PyExpr(e), Some(k)) if !e.kind.is_a(k) => PyExpr(mk(k, [(into_arg, e)]))
@@ -63,7 +63,7 @@ fn apply_child_list_builder(
   prefix? : String,
   into~ : Kind,
   dialect? : Dialect,
-  properties? : Map[String, Value] = Map([]),
+  properties~ : Map[String, Value] = Map([]),
 ) -> Expr raise SqlglotError {
   let inst = maybe_copy(instance, copy)
   let mut parsed : Array[Expr] = []
@@ -186,8 +186,8 @@ pub fn combine_py(
   expressions : Array[PyObj],
   operator : Kind,
   dialect? : Dialect,
-  copy? : Bool = true,
-  wrap? : Bool = true,
+  copy~ : Bool = true,
+  wrap~ : Bool = true,
 ) -> Expr raise SqlglotError {
   let conditions = []
   for e in expressions {
@@ -224,9 +224,9 @@ pub fn combine_py(
 pub fn apply_set_operation(
   expressions : Array[PyObj],
   kind : Kind,
-  distinct? : Bool = true,
+  distinct~ : Bool = true,
   dialect? : Dialect,
-  copy? : Bool = true,
+  copy~ : Bool = true,
 ) -> Expr raise SqlglotError {
   let mut result : Expr? = None
   for e in expressions {
@@ -250,7 +250,7 @@ pub fn apply_set_operation(
 pub fn[T : IntoPy] condition(
   expression : T,
   dialect? : Dialect,
-  copy? : Bool = true,
+  copy~ : Bool = true,
 ) -> Expr raise SqlglotError {
   maybe_parse(expression, into=[Condition], dialect?, copy~)
 }
@@ -261,7 +261,7 @@ pub fn[T : IntoPy] Expr::binop(
   self : Expr,
   kind : Kind,
   other : T,
-  reverse? : Bool = false,
+  reverse~ : Bool = false,
 ) -> Expr raise SqlglotError {
   let mut this = self.copy()
   let mut other = convert(other, copy=true)
@@ -285,8 +285,8 @@ pub fn[T : IntoPy] Expr::and_(
   self : Expr,
   expressions : Array[T],
   dialect? : Dialect,
-  copy? : Bool = true,
-  wrap? : Bool = true,
+  copy~ : Bool = true,
+  wrap~ : Bool = true,
 ) -> Expr raise SqlglotError {
   combine_py([PyExpr(self)] + py_list(expressions), And, dialect?, copy~, wrap~)
 }
@@ -297,15 +297,15 @@ pub fn[T : IntoPy] Expr::or_(
   self : Expr,
   expressions : Array[T],
   dialect? : Dialect,
-  copy? : Bool = true,
-  wrap? : Bool = true,
+  copy~ : Bool = true,
+  wrap~ : Bool = true,
 ) -> Expr raise SqlglotError {
   combine_py([PyExpr(self)] + py_list(expressions), Or, dialect?, copy~, wrap~)
 }
 
 ///|
 /// `Expr.not_()`
-pub fn Expr::not_(self : Expr, copy? : Bool = true) -> Expr raise SqlglotError {
+pub fn Expr::not_(self : Expr, copy~ : Bool = true) -> Expr raise SqlglotError {
   not_(condition(self, copy~), copy=false)
 }
 
@@ -313,11 +313,11 @@ pub fn Expr::not_(self : Expr, copy? : Bool = true) -> Expr raise SqlglotError {
 /// `Expr.isin(*expressions, query=..., unnest=...)`
 pub fn Expr::isin(
   self : Expr,
-  expressions? : Array[&IntoPy] = [],
+  expressions~ : Array[&IntoPy] = [],
   query? : &IntoPy,
-  unnest? : Array[&IntoPy] = [],
+  unnest~ : Array[&IntoPy] = [],
   dialect? : Dialect,
-  copy? : Bool = true,
+  copy~ : Bool = true,
 ) -> Expr raise SqlglotError {
   let subquery = match query {
     Some(q) if q.into_py().truthy() => {
@@ -353,7 +353,7 @@ pub fn[L : IntoPy, H : IntoPy] Expr::between(
   self : Expr,
   low : L,
   high : H,
-  copy? : Bool = true,
+  copy~ : Bool = true,
   symmetric? : Bool,
 ) -> Expr raise SqlglotError {
   let between = mk(Between, [
@@ -406,8 +406,8 @@ pub fn[T : IntoPy] Expr::neq(self : Expr, other : T) -> Expr raise SqlglotError 
 pub fn[T : IntoPy] Expr::div(
   self : Expr,
   other : T,
-  typed? : Bool = false,
-  safe? : Bool = false,
+  typed~ : Bool = false,
+  safe~ : Bool = false,
 ) -> Expr raise SqlglotError {
   let div = self.binop(Div, other)
   div.set("typed", typed)
@@ -417,13 +417,13 @@ pub fn[T : IntoPy] Expr::div(
 
 ///|
 /// `Expr.asc(nulls_first=True)`
-pub fn Expr::asc(self : Expr, nulls_first? : Bool = true) -> Expr {
+pub fn Expr::asc(self : Expr, nulls_first~ : Bool = true) -> Expr {
   mk(Ordered, [("this", self.copy()), ("nulls_first", nulls_first)])
 }
 
 ///|
 /// `Expr.desc(nulls_first=False)`
-pub fn Expr::desc(self : Expr, nulls_first? : Bool = false) -> Expr {
+pub fn Expr::desc(self : Expr, nulls_first~ : Bool = false) -> Expr {
   mk(Ordered, [
     ("this", self.copy()),
     ("desc", true),
@@ -571,9 +571,9 @@ pub fn Expr::apply(self : Expr, func : (Expr) -> Unit raise?) -> Expr raise? {
 pub fn[T : IntoPy] Expr::intersect_(
   self : Expr,
   other : T,
-  distinct? : Bool = true,
+  distinct~ : Bool = true,
   dialect? : Dialect,
-  copy? : Bool = true,
+  copy~ : Bool = true,
 ) -> Expr raise SqlglotError {
   apply_set_operation(
     [PyExpr(self), other.into_py()],
@@ -589,9 +589,9 @@ pub fn[T : IntoPy] Expr::intersect_(
 pub fn[T : IntoPy] Expr::except_(
   self : Expr,
   other : T,
-  distinct? : Bool = true,
+  distinct~ : Bool = true,
   dialect? : Dialect,
-  copy? : Bool = true,
+  copy~ : Bool = true,
 ) -> Expr raise SqlglotError {
   apply_set_operation(
     [PyExpr(self), other.into_py()],
@@ -607,9 +607,9 @@ pub fn[T : IntoPy] Expr::except_(
 pub fn[T : IntoPy] Expr::sort_by(
   self : Expr,
   expressions : Array[T],
-  append? : Bool = true,
+  append~ : Bool = true,
   dialect? : Dialect,
-  copy? : Bool = true,
+  copy~ : Bool = true,
 ) -> Expr raise SqlglotError {
   apply_child_list_builder(
     py_list(expressions),
@@ -628,9 +628,9 @@ pub fn[T : IntoPy] Expr::sort_by(
 pub fn[T : IntoPy] Expr::cluster_by(
   self : Expr,
   expressions : Array[T],
-  append? : Bool = true,
+  append~ : Bool = true,
   dialect? : Dialect,
-  copy? : Bool = true,
+  copy~ : Bool = true,
 ) -> Expr raise SqlglotError {
   apply_child_list_builder(
     py_list(expressions),
@@ -649,9 +649,9 @@ pub fn[T : IntoPy] Expr::cluster_by(
 pub fn[T : IntoPy] Expr::lateral(
   self : Expr,
   expressions : Array[T],
-  append? : Bool = true,
+  append~ : Bool = true,
   dialect? : Dialect,
-  copy? : Bool = true,
+  copy~ : Bool = true,
 ) -> Expr raise SqlglotError {
   apply_list_builder(
     py_list(expressions),
@@ -670,9 +670,9 @@ pub fn[T : IntoPy] Expr::lateral(
 pub fn[T : IntoPy] Expr::window(
   self : Expr,
   expressions : Array[T],
-  append? : Bool = true,
+  append~ : Bool = true,
   dialect? : Dialect,
-  copy? : Bool = true,
+  copy~ : Bool = true,
 ) -> Expr raise SqlglotError {
   apply_list_builder(
     py_list(expressions),
@@ -690,9 +690,9 @@ pub fn[T : IntoPy] Expr::window(
 pub fn[T : IntoPy] Expr::qualify(
   self : Expr,
   expressions : Array[T],
-  append? : Bool = true,
+  append~ : Bool = true,
   dialect? : Dialect,
-  copy? : Bool = true,
+  copy~ : Bool = true,
 ) -> Expr raise SqlglotError {
   apply_conjunction_builder(
     py_list(expressions),
@@ -712,7 +712,7 @@ pub fn[T : IntoPy] Expr::ctas(
   table : T,
   properties? : Map[String, PyObj],
   dialect? : Dialect,
-  copy? : Bool = true,
+  copy~ : Bool = true,
 ) -> Expr raise SqlglotError {
   let instance = maybe_copy(self, copy)
   let table_expression = maybe_parse(table, into=[Table], dialect?)
@@ -732,8 +732,8 @@ pub fn[T : IntoPy] Expr::ctas(
 /// `Select.lock(update=True)`
 pub fn Expr::lock(
   self : Expr,
-  update? : Bool = true,
-  copy? : Bool = true,
+  update~ : Bool = true,
+  copy~ : Bool = true,
 ) -> Expr {
   let inst = maybe_copy(self, copy)
   inst.set("locks", [mk(Lock, [("update", update)])])
@@ -746,7 +746,7 @@ pub fn[T : IntoPy] Expr::hint(
   self : Expr,
   hints : Array[T],
   dialect? : Dialect,
-  copy? : Bool = true,
+  copy~ : Bool = true,
 ) -> Expr raise SqlglotError {
   let inst = maybe_copy(self, copy)
   let exprs = []
@@ -762,9 +762,9 @@ pub fn[T : IntoPy] Expr::hint(
 pub fn[T : IntoPy] Expr::on(
   self : Expr,
   expressions : Array[T],
-  append? : Bool = true,
+  append~ : Bool = true,
   dialect? : Dialect,
-  copy? : Bool = true,
+  copy~ : Bool = true,
 ) -> Expr raise SqlglotError {
   let join = apply_conjunction_builder(
     py_list(expressions),
@@ -785,9 +785,9 @@ pub fn[T : IntoPy] Expr::on(
 pub fn[T : IntoPy] Expr::using_(
   self : Expr,
   expressions : Array[T],
-  append? : Bool = true,
+  append~ : Bool = true,
   dialect? : Dialect,
-  copy? : Bool = true,
+  copy~ : Bool = true,
 ) -> Expr raise SqlglotError {
   let join = apply_list_builder(
     py_list(expressions),
@@ -809,7 +809,7 @@ pub fn[T : IntoPy] Expr::returning(
   self : Expr,
   expression : T,
   dialect? : Dialect,
-  copy? : Bool = true,
+  copy~ : Bool = true,
 ) -> Expr raise SqlglotError {
   apply_builder(
     expression.into_py(),
@@ -828,7 +828,7 @@ pub fn[T : IntoPy] Expr::delete(
   self : Expr,
   table : T,
   dialect? : Dialect,
-  copy? : Bool = true,
+  copy~ : Bool = true,
 ) -> Expr raise SqlglotError {
   apply_builder(table.into_py(), self, "this", copy~, into=Table, dialect?)
 }
@@ -839,7 +839,7 @@ pub fn[T : IntoPy] Expr::table(
   self : Expr,
   expression : T,
   dialect? : Dialect,
-  copy? : Bool = true,
+  copy~ : Bool = true,
 ) -> Expr raise SqlglotError {
   apply_builder(expression.into_py(), self, "this", copy~, into=Table, dialect?)
 }
@@ -849,9 +849,9 @@ pub fn[T : IntoPy] Expr::table(
 pub fn[T : IntoPy] Expr::set_(
   self : Expr,
   expressions : Array[T],
-  append? : Bool = true,
+  append~ : Bool = true,
   dialect? : Dialect,
-  copy? : Bool = true,
+  copy~ : Bool = true,
 ) -> Expr raise SqlglotError {
   apply_list_builder(
     py_list(expressions),
@@ -895,7 +895,7 @@ pub fn properties_from_dict(
 pub fn Expr::transform_values(
   self : Expr,
   fun : (Expr) -> Value? raise?,
-  copy? : Bool = true,
+  copy~ : Bool = true,
 ) -> Value raise? {
   let mut root : Value? = None
   let mut new_node : Value? = None

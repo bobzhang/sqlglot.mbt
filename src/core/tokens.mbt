@@ -5,10 +5,10 @@
 pub struct Token {
   token_type : TokenType
   text : String
-  line : Int
-  col : Int
-  start : Int
-  end : Int
+  line : Int32
+  col : Int32
+  start : Int32
+  end : Int32
   mut comments : Array[String]
 }
 
@@ -20,23 +20,25 @@ let no_comments : Array[String] = []
 ///|
 /// One-character ASCII strings, so single-character token texts aren't allocated
 /// once per token.
-let ascii_strings : FixedArray[String] = FixedArray::makei(128, i => Int::unsafe_to_char(i).to_string())
+let ascii_strings : FixedArray[String] = FixedArray::makei(128, i => {
+  Int32::unsafe_to_char(i).to_string()
+})
 
 ///|
 pub fn Token::new(
   token_type : TokenType,
   text : String,
-  line? : Int = 1,
-  col? : Int = 1,
-  start? : Int = 0,
-  end? : Int = 0,
-  comments? : Array[String] = [],
+  line~ : Int32 = 1,
+  col~ : Int32 = 1,
+  start~ : Int32 = 0,
+  end~ : Int32 = 0,
+  comments~ : Array[String] = [],
 ) -> Token {
   { token_type, text, line, col, start, end, comments, }
 }
 
 ///|
-pub fn Token::number(n : Int) -> Token {
+pub fn Token::number(n : Int32) -> Token {
   Token::new(NUMBER, n.to_string())
 }
 
@@ -96,10 +98,10 @@ fn QuoteSpec::end(self : QuoteSpec) -> String {
 ///|
 /// Numeric escape specification: (base, min digits, max digits, max value).
 pub(all) struct NumericEscape {
-  base : Int
-  min_digits : Int
-  max_digits : Int
-  max_value : Int
+  base : Int32
+  min_digits : Int32
+  max_digits : Int32
+  max_value : Int32
 }
 
 ///|
@@ -327,17 +329,17 @@ pub struct Tokenizer {
   unescaped_sequences : Map[String, String]
   mut sql : Array[Char]
   mut sql_str : String
-  mut size : Int
+  mut size : Int32
   mut tokens : Array[Token]
-  mut start : Int
-  mut current : Int
-  mut line : Int
-  mut col : Int
+  mut start : Int32
+  mut current : Int32
+  mut line : Int32
+  mut col : Int32
   mut comments : Array[String]
   mut char : Char
   mut end : Bool
   mut peek : Char
-  mut prev_token_line : Int
+  mut prev_token_line : Int32
 }
 
 ///|
@@ -348,9 +350,9 @@ let nul : Char = '\u{10FFFF}'
 ///|
 pub fn Tokenizer::new(
   settings : TokenizerSettings,
-  numbers_can_be_underscore_separated? : Bool = false,
-  identifiers_can_start_with_digit? : Bool = false,
-  unescaped_sequences? : Map[String, String] = Map([]),
+  numbers_can_be_underscore_separated~ : Bool = false,
+  identifiers_can_start_with_digit~ : Bool = false,
+  unescaped_sequences~ : Map[String, String] = Map([]),
 ) -> Tokenizer {
   {
     settings,
@@ -406,10 +408,10 @@ pub fn Tokenizer::tokenize(
       let end = @cmp.minimum(self.current + 50, self.size - 1)
       let context = self.slice(start, end)
       raise TokenError(
-        "Error tokenizing '\{context}'",
-        start=Some(start),
-        end=Some(end),
-      ) // original: \{e}
+          "Error tokenizing '\{context}'",
+          start=Some(start),
+          end=Some(end),
+        ) // original: \{e}
         |> ignore_err(e)
     }
   }
@@ -429,7 +431,7 @@ fn Tokenizer::append_comments(self : Tokenizer, token : Token) -> Unit {
 }
 
 ///|
-fn Tokenizer::slice(self : Tokenizer, start : Int, end : Int) -> String {
+fn Tokenizer::slice(self : Tokenizer, start : Int32, end : Int32) -> String {
   let n = self.size
   let a = if start < 0 { 0 } else if start > n { n } else { start }
   let b = if end < 0 { 0 } else if end > n { n } else { end }
@@ -443,7 +445,7 @@ fn Tokenizer::slice(self : Tokenizer, start : Int, end : Int) -> String {
 }
 
 ///|
-fn Tokenizer::at(self : Tokenizer, i : Int) -> Char {
+fn Tokenizer::at(self : Tokenizer, i : Int32) -> Char {
   if i >= 0 && i < self.size {
     self.sql[i]
   } else {
@@ -454,7 +456,7 @@ fn Tokenizer::at(self : Tokenizer, i : Int) -> Char {
 ///|
 fn Tokenizer::scan(
   self : Tokenizer,
-  check_semicolon? : Bool = false,
+  check_semicolon~ : Bool = false,
 ) -> Unit raise SqlglotError {
   while self.size > 0 && !self.end {
     let mut current = self.current
@@ -488,7 +490,7 @@ fn Tokenizer::scan(
 }
 
 ///|
-fn Tokenizer::chars(self : Tokenizer, size : Int) -> String {
+fn Tokenizer::chars(self : Tokenizer, size : Int32) -> String {
   if size == 1 {
     return if self.char == nul { "" } else { self.char.to_string() }
   }
@@ -504,8 +506,8 @@ fn Tokenizer::chars(self : Tokenizer, size : Int) -> String {
 ///|
 fn Tokenizer::advance(
   self : Tokenizer,
-  i? : Int = 1,
-  alnum? : Bool = false,
+  i~ : Int32 = 1,
+  alnum~ : Bool = false,
 ) -> Unit raise SqlglotError {
   let char = self.char
   if char == '\n' || char == '\r' {
@@ -572,7 +574,11 @@ fn Tokenizer::add(
     col: self.col,
     start: self.start,
     end: self.current - 1,
-    comments: if self.comments.is_empty() { no_comments } else { self.comments },
+    comments: if self.comments.is_empty() {
+      no_comments
+    } else {
+      self.comments
+    },
   })
   if !self.comments.is_empty() {
     self.comments = []
@@ -666,8 +672,7 @@ fn Tokenizer::scan_keywords(self : Tokenizer) -> Unit raise SqlglotError {
             self.add(tt, text=w)
             return
           }
-          None =>
-            raise TokenError("Unknown keyword \{w}", start=None, end=None)
+          None => raise TokenError("Unknown keyword \{w}", start=None, end=None)
         }
       }
     }
@@ -845,7 +850,7 @@ fn Tokenizer::scan_number(self : Tokenizer) -> Unit raise SqlglotError {
 }
 
 ///|
-fn is_valid_int(value : String, base : Int) -> Bool {
+fn is_valid_int(value : String, base : Int32) -> Bool {
   // Python int(value, base) accepts an optional 0b/0x prefix and underscores
   let mut v = py_strip(value)
   if v.is_empty() {
@@ -1037,7 +1042,7 @@ fn Tokenizer::scan_var(self : Tokenizer) -> Unit raise SqlglotError {
 }
 
 ///|
-fn digit_value(c : Char) -> Int {
+fn digit_value(c : Char) -> Int32 {
   if c >= '0' && c <= '9' {
     c.to_int() - '0'.to_int()
   } else if c >= 'a' && c <= 'f' {
@@ -1052,9 +1057,9 @@ fn digit_value(c : Char) -> Int {
 ///|
 fn Tokenizer::read_numeric_escape(
   self : Tokenizer,
-  start : Int,
+  start : Int32,
   spec : NumericEscape,
-) -> (Int, Int) {
+) -> (Int32, Int32) {
   let mut value = 0
   let mut end = start
   let limit = @cmp.minimum(start + spec.max_digits, self.size)
@@ -1074,7 +1079,9 @@ fn Tokenizer::read_numeric_escape(
 }
 
 ///|
-fn Tokenizer::scan_numeric_escape(self : Tokenizer) -> String raise SqlglotError {
+fn Tokenizer::scan_numeric_escape(
+  self : Tokenizer,
+) -> String raise SqlglotError {
   let start = self.current
   let peek = self.peek
   let is_octal = peek >= '0' && peek <= '7'
@@ -1109,7 +1116,7 @@ fn Tokenizer::scan_numeric_escape(self : Tokenizer) -> String raise SqlglotError
       }
       if value >= 0 && end < self.size {
         self.advance(i=end - start + 1)
-        return Int::unsafe_to_char(value).to_string()
+        return Int32::unsafe_to_char(value).to_string()
       }
       ""
     }
@@ -1122,8 +1129,8 @@ fn Tokenizer::extract_string(
   self : Tokenizer,
   delimiter : String,
   escapes? : Map[String, Bool],
-  raw_string? : Bool = false,
-  raise_unmatched? : Bool = true,
+  raw_string~ : Bool = false,
+  raise_unmatched~ : Bool = true,
 ) -> String raise SqlglotError {
   let text = StringBuilder()
   let delim_size = py_len(delimiter)
