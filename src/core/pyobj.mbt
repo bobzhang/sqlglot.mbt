@@ -196,10 +196,10 @@ pub fn py_float_repr(d : Double) -> String {
   let s = d.abs().to_string()
   let (mantissa, exp) = match s.find("e") {
     Some(i) => {
-      let m = s.view(end_offset=i).to_owned()
-      let e = s.view(start_offset=i + 1).to_owned()
+      let m = s.exact_view(end=i).to_owned()
+      let e = s.exact_view(start=i + 1).to_owned()
       let e = if e.has_prefix("+") {
-        e.view(start_offset=1).to_owned()
+        e.exact_view(start=1).to_owned()
       } else {
         e
       }
@@ -210,8 +210,8 @@ pub fn py_float_repr(d : Double) -> String {
   let (int_part, frac_part) = match mantissa.find(".") {
     Some(i) =>
       (
-        mantissa.view(end_offset=i).to_owned(),
-        mantissa.view(start_offset=i + 1).to_owned(),
+        mantissa.exact_view(end=i).to_owned(),
+        mantissa.exact_view(start=i + 1).to_owned(),
       )
     None => (mantissa, "")
   }
@@ -223,14 +223,14 @@ pub fn py_float_repr(d : Double) -> String {
   while lead < digits.length() - 1 && digits[lead] == '0' {
     lead += 1
   }
-  digits = digits.view(start_offset=lead).to_owned()
+  digits = digits.exact_view(start=lead).to_owned()
   decpt -= lead
   // strip trailing zeros
   let mut end = digits.length()
   while end > 1 && digits[end - 1] == '0' {
     end -= 1
   }
-  digits = digits.view(end_offset=end).to_owned()
+  digits = digits.exact_view(end~).to_owned()
   let sign = if d < 0.0 { "-" } else { "" }
   let n = digits.length()
   if decpt <= -4 || decpt > 16 {
@@ -238,9 +238,9 @@ pub fn py_float_repr(d : Double) -> String {
     let mant = if n == 1 {
       digits
     } else {
-      digits.view(end_offset=1).to_owned() +
+      digits.exact_view(end=1).to_owned() +
       "." +
-      digits.view(start_offset=1).to_owned()
+      digits.exact_view(start=1).to_owned()
     }
     let es = e.abs().to_string()
     let es = if es.length() < 2 { "0" + es } else { es }
@@ -251,9 +251,9 @@ pub fn py_float_repr(d : Double) -> String {
     sign + digits + "0".repeat(decpt - n) + ".0"
   } else {
     sign +
-    digits.view(end_offset=decpt).to_owned() +
+    digits.exact_view(end=decpt).to_owned() +
     "." +
-    digits.view(start_offset=decpt).to_owned()
+    digits.exact_view(start=decpt).to_owned()
   }
 }
 
@@ -472,7 +472,7 @@ pub fn Expr::to_py(self : Expr) -> PyObj raise SqlglotError {
         PyDecimal(s) =>
           PyDecimal(
             if s.has_prefix("-") {
-              s.view(start_offset=1).to_owned()
+              s.exact_view(start=1).to_owned()
             } else {
               "-" + s
             },
@@ -542,7 +542,7 @@ fn to_s_dedent(s : String) -> Array[String] {
     if py_strip(line).is_empty() {
       ""
     } else {
-      line.view(start_offset=m).to_owned()
+      line.exact_view(start=m).to_owned()
     }
   })
 }

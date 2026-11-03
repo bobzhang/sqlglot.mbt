@@ -399,8 +399,8 @@ fn number_alias(counter : Int32, text : String) -> String {
   }
   let (sign, exponent) = if exponent.has_prefix("-") || exponent.has_prefix("+") {
     (
-      exponent.view(end_offset=1).to_owned(),
-      exponent.view(start_offset=1).to_owned(),
+      exponent.exact_view(end=1).to_owned(),
+      exponent.exact_view(start=1).to_owned(),
     )
   } else {
     ("", exponent)
@@ -409,9 +409,9 @@ fn number_alias(counter : Int32, text : String) -> String {
   let (integer, has_dot, fraction) = match mantissa.find(".") {
     Some(p) =>
       (
-        mantissa.view(end_offset=p).to_owned(),
+        mantissa.exact_view(end=p).to_owned(),
         true,
-        mantissa.view(start_offset=p + 1).to_owned(),
+        mantissa.exact_view(start=p + 1).to_owned(),
       )
     None => (mantissa, false, "")
   }

@@ -173,8 +173,8 @@ fn parse_args(argv : Array[String]) -> Args raise ArgError {
     let (name, inline_value) = match arg.find("=") {
       Some(p) =>
         (
-          arg.view(end_offset=p).to_owned(),
-          Some(arg.view(start_offset=p + 1).to_owned()),
+          arg.exact_view(end=p).to_owned(),
+          Some(arg.exact_view(start=p + 1).to_owned()),
         )
       None => (arg, None)
     }

@@ -741,9 +741,9 @@ pub fn strftime(dt : PyDateTime, fmt : String) -> String {
       'f' => sb.write_string(pad(t.microsecond, 6))
       'j' => sb.write_string(pad(yday, 3))
       'b' | 'h' =>
-        sb.write_string(month_names[d.month - 1].view(end_offset=3).to_owned())
+        sb.write_string(month_names[d.month - 1].exact_view(end=3).to_owned())
       'B' => sb.write_string(month_names[d.month - 1])
-      'a' => sb.write_string(day_names[wday].view(end_offset=3).to_owned())
+      'a' => sb.write_string(day_names[wday].exact_view(end=3).to_owned())
       'A' => sb.write_string(day_names[wday])
       'w' => sb.write_string(((wday + 1) % 7).to_string())
       'u' => sb.write_string((wday + 1).to_string())
@@ -817,7 +817,7 @@ pub fn strptime(s : String, fmt : String) -> PyDateTime raise PyException {
 
   fn name(names : Array[String], abbrev : Bool) -> Int32 raise PyException {
     for i, n in names {
-      let cand = if abbrev { n.view(end_offset=3).to_owned() } else { n }
+      let cand = if abbrev { n.exact_view(end=3).to_owned() } else { n }
       let cl = cand.length()
       if pos + cl <= text.length() &&
         @core.py_lower(String::from_array(text[pos:pos + cl].to_owned())) ==

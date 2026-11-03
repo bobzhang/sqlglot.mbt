@@ -171,11 +171,11 @@ fn error_name(e : Error) -> String {
     // starts with the Python type (e.g. "OverflowError: ...", "decimal.DivisionByZero").
     @core.SqlglotError::ValueError(m) =>
       if m.has_prefix("decimal.") {
-        "error:" + m.view(start_offset=8).to_owned()
+        "error:" + m.exact_view(start=8).to_owned()
       } else {
         match m.find(":") {
-          Some(k) if k > 0 && m.view(end_offset=k).has_suffix("Error") =>
-            "error:" + m.view(end_offset=k).to_owned()
+          Some(k) if k > 0 && m.exact_view(end=k).has_suffix("Error") =>
+            "error:" + m.exact_view(end=k).to_owned()
           _ => "error:ValueError"
         }
       }

@@ -304,7 +304,7 @@ pub fn subsecond_precision(timestamp_literal : String) -> Int32 {
     }
   }
   let digits = if fraction.length() > 6 {
-    fraction.view(end_offset=6).to_owned()
+    fraction.exact_view(end=6).to_owned()
   } else {
     fraction + "0".repeat(6 - fraction.length())
   }

@@ -880,13 +880,13 @@ pub fn Node::to_html(
       (label, "<pre>\{src}</pre>", 0)
     }
     nodes.push({
-      "id": node.id.to_json(),
-      "label": label.to_json(),
-      "title": title.to_json(),
-      "group": group.to_json(),
+      "id": Json(node.id),
+      "label": Json(label),
+      "title": Json(title),
+      "group": Json(group),
     })
     for d in node.downstream {
-      edges.push({ "from": node.id.to_json(), "to": d.id.to_json() })
+      edges.push({ "from": Json(node.id), "to": Json(d.id) })
     }
   }
   let options : Json = {
