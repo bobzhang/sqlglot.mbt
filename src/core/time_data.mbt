@@ -303,10 +303,10 @@ pub fn subsecond_precision(timestamp_literal : String) -> Int32 {
       return 0
     }
   }
-  let digits = if fraction.length() > 6 {
-    fraction.exact_view(end=6).to_owned()
+  let digits = if fraction =~ (re"^.{6}" as digits, after=_) {
+    digits
   } else {
-    fraction + "0".repeat(6 - fraction.length())
+    (fraction + "0".repeat(6 - fraction.length()))[:]
   }
   let mut count = 6
   while count > 0 && digits.get_char(count - 1) == Some('0') {

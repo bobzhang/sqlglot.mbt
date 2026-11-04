@@ -134,3 +134,14 @@ test "help and version" {
   assert_eq(r.exit_code, 0)
   assert_true(r.stdout.has_prefix("usage: sqlglot [-h]"))
 }
+
+///|
+test "inline option values preserve empty values and extra equals" {
+  for value in ["", "mysql", "mysql=extra"] {
+    let inline = run(["SELECT 1", "--read=" + value])
+    let separate = run(["SELECT 1", "--read", value])
+    assert_eq(inline.stdout, separate.stdout)
+    assert_eq(inline.stderr, separate.stderr)
+    assert_eq(inline.exit_code, separate.exit_code)
+  }
+}

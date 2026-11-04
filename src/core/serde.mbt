@@ -264,11 +264,12 @@ fn serde_load_node(payload : Map[String, Json]) -> Value raise SqlglotError {
   }
   // Python resolves dotted names through their module; only the expression
   // classes of sqlglot exist here, so the last component is looked up.
-  let name = match class_name.rev_find(".") {
-    Some(pos) => class_name.exact_view(start=pos + 1).to_owned()
-    None => class_name
+  let name = if class_name =~ (re"\." + (re"[^.]*$" as name)) {
+    name
+  } else {
+    class_name[:]
   }
-  let kind = match kind_from_name(name) {
+  let kind = match kind_from_name(name.to_owned()) {
     Some(k) => k
     None => raise ValueError("Unknown expression class \{class_name}")
   }

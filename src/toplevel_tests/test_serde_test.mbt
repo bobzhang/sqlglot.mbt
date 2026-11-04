@@ -60,10 +60,19 @@ test "serde custom expression (skipped)" {
   // test_custom_expression subclasses `exp.Expression`; expression kinds are a
   // closed enum in the MoonBit port, so there is nothing to port. A dotted
   // class name resolves to its last component.
-  let e = @core.Expr::load(
-    @json.parse("[{\"c\":\"sqlglot.expressions.Column\"}]"),
-  ).unwrap()
-  inspect(e.kind.name(), content="Column")
+  for
+    name in [
+      "Column", "sqlglot.expressions.Column", "😀.nested.Column", "a..Column",
+      ".Column",
+    ] {
+    let e = @core.Expr::load([{ "c": Json(name) }]).unwrap()
+    inspect(e.kind.name(), content="Column")
+  }
+  let invalid = @core.Expr::load([{ "c": "sqlglot.Column." }]) catch {
+    @core.SqlglotError::ValueError(_) => None
+    other => raise other
+  }
+  assert_true(invalid is None)
 }
 
 ///|

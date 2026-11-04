@@ -397,23 +397,24 @@ fn number_alias(counter : Int32, text : String) -> String {
     let parts = @core.py_split(text, sep)
     (parts[0], parts[1:].join(sep))
   }
-  let (sign, exponent) = if exponent =~ (re"^[\-\+]" as sign, after=exponent) {
-    (sign.to_string(), exponent.to_owned())
+  let (sign, exponent_length) = if exponent =~ (
+      re"^[\-\+]" as sign,
+      after=exponent,
+    ) {
+    (Some(sign), exponent.length())
   } else {
-    ("", exponent)
+    (None, exponent.length())
   }
-  let exponent_length = exponent.length()
-  let (integer, has_dot, fraction) = match mantissa.find(".") {
-    Some(p) =>
-      (
-        mantissa.exact_view(end=p).to_owned(),
-        true,
-        mantissa.exact_view(start=p + 1).to_owned(),
-      )
-    None => (mantissa, false, "")
+  let (integer_length, has_dot, fraction_length) = if mantissa =~ (
+      re"\.",
+      before=integer,
+      after=fraction,
+    ) {
+    (integer.length(), true, fraction.length())
+  } else {
+    (mantissa.length(), false, 0)
   }
-  let integer_length = integer.length()
-  let digits = integer_length + fraction.length()
+  let digits = integer_length + fraction_length
   let counter_b = @bigint.BigInt::from_int(counter)
   let nine = @bigint.BigInt::from_int(9)
   let modulus = nine * pow10(digits - 1)
@@ -427,7 +428,10 @@ fn number_alias(counter : Int32, text : String) -> String {
   }
   if !sep.is_empty() {
     // The exponent marker is kept even when there are no digits after it, e.g. 1e
-    result = result + sep + sign
+    result = result + sep
+    if sign is Some(sign) {
+      result = "\{result}\{sign}"
+    }
     if exponent_length > 0 {
       let exponent_value = pow10(exponent_length - 1) +
         counter_b / modulus % (nine * pow10(exponent_length - 1))

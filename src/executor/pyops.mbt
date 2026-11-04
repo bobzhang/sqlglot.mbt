@@ -512,12 +512,10 @@ pub fn py_float(v : Value) -> Value raise PyException {
 fn parse_py_float_literal(s : String) -> Double? {
   let t = py_strip_ws(s)
   let lower = @core.py_lower(t)
-  let (sign, body) = if lower.has_prefix("-") {
-    (-1.0, lower.exact_view(start=1).to_owned())
-  } else if lower.has_prefix("+") {
-    (1.0, lower.exact_view(start=1).to_owned())
-  } else {
-    (1.0, lower)
+  let (sign, body) = lexmatch lower {
+    (re"^-", after=body) => (-1.0, body)
+    (re"^\+", after=body) => (1.0, body)
+    _ => (1.0, lower[:])
   }
   if body == "inf" || body == "infinity" {
     return Some(sign * @double.infinity)

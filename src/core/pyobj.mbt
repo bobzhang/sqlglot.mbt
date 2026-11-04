@@ -194,28 +194,29 @@ pub fn py_float_repr(d : Double) -> String {
   }
   // decompose MoonBit's shortest representation into digits and a decimal exponent
   let s = d.abs().to_string()
-  let (mantissa, exp) = match s.find("e") {
-    Some(i) => {
-      let m = s.exact_view(end=i).to_owned()
-      let e = s.exact_view(start=i + 1).to_owned()
-      let e = if e.has_prefix("+") {
-        e.exact_view(start=1).to_owned()
-      } else {
-        e
-      }
-      (m, parse_int_str(e).map(x => x.to_int()).unwrap_or(0))
+  let (mantissa, exp) = if s =~ (re"e", before=mantissa, after=exponent) {
+    let exponent = if exponent =~ (re"^\+", after=unsigned) {
+      unsigned
+    } else {
+      exponent
     }
-    None => (s, 0)
+    (
+      mantissa,
+      parse_int_str(exponent.to_owned()).map(x => x.to_int()).unwrap_or(0),
+    )
+  } else {
+    (s[:], 0)
   }
-  let (int_part, frac_part) = match mantissa.find(".") {
-    Some(i) =>
-      (
-        mantissa.exact_view(end=i).to_owned(),
-        mantissa.exact_view(start=i + 1).to_owned(),
-      )
-    None => (mantissa, "")
+  let (int_part, frac_part) = if mantissa =~ (
+      re"\.",
+      before=integer,
+      after=fraction,
+    ) {
+    (integer, fraction)
+  } else {
+    (mantissa, ""[:])
   }
-  let mut digits = int_part + frac_part
+  let mut digits = "\{int_part}\{frac_part}"
   // value = 0.<digits> * 10^decpt
   let mut decpt = int_part.length() + exp
   // strip leading zeros
@@ -238,9 +239,10 @@ pub fn py_float_repr(d : Double) -> String {
     let mant = if n == 1 {
       digits
     } else {
-      digits.exact_view(end=1).to_owned() +
-      "." +
-      digits.exact_view(start=1).to_owned()
+      guard digits =~ (re"^." as first, after=rest) else {
+        abort("Expected nonempty float digits")
+      }
+      "\{first}.\{rest}"
     }
     let es = e.abs().to_string()
     let es = if es.length() < 2 { "0" + es } else { es }
@@ -471,8 +473,8 @@ pub fn Expr::to_py(self : Expr) -> PyObj raise SqlglotError {
         PyInt(i) => PyInt(-i)
         PyDecimal(s) =>
           PyDecimal(
-            if s.has_prefix("-") {
-              s.exact_view(start=1).to_owned()
+            if s =~ (re"^-", after=unsigned) {
+              unsigned.to_owned()
             } else {
               "-" + s
             },
