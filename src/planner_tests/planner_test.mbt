@@ -31,7 +31,7 @@ fn canonical(step : @planner.Step, level : Int32) -> String {
   let suffix = " (\{step.uid})"
   if head[0].has_suffix(suffix) {
     head[0] = head[0]
-      .view(end_offset=head[0].length() - suffix.length())
+      .exact_view(end=head[0].length() - suffix.length())
       .to_owned()
   }
   let deps = step.dependencies.map(d => canonical(d, level + 1))

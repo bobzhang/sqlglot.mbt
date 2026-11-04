@@ -692,6 +692,15 @@ pub fn time_fromisoformat(v : Value) -> PyTime raise PyException {
 // ---- strftime / strptime ----
 
 ///|
+// C-locale month and weekday names are ASCII and at least three characters.
+fn abbreviated_name(name : String) -> String {
+  guard name =~ (re"^.{3}" as prefix, after=_) else {
+    abort("Expected a C-locale month or weekday name")
+  }
+  prefix.to_owned()
+}
+
+///|
 let month_names : Array[String] = [
   "January", "February", "March", "April", "May", "June", "July", "August", "September",
   "October", "November", "December",
@@ -740,10 +749,9 @@ pub fn strftime(dt : PyDateTime, fmt : String) -> String {
       'S' => sb.write_string(pad(t.second, 2))
       'f' => sb.write_string(pad(t.microsecond, 6))
       'j' => sb.write_string(pad(yday, 3))
-      'b' | 'h' =>
-        sb.write_string(month_names[d.month - 1].view(end_offset=3).to_owned())
+      'b' | 'h' => sb.write_string(abbreviated_name(month_names[d.month - 1]))
       'B' => sb.write_string(month_names[d.month - 1])
-      'a' => sb.write_string(day_names[wday].view(end_offset=3).to_owned())
+      'a' => sb.write_string(abbreviated_name(day_names[wday]))
       'A' => sb.write_string(day_names[wday])
       'w' => sb.write_string(((wday + 1) % 7).to_string())
       'u' => sb.write_string((wday + 1).to_string())
@@ -817,7 +825,7 @@ pub fn strptime(s : String, fmt : String) -> PyDateTime raise PyException {
 
   fn name(names : Array[String], abbrev : Bool) -> Int32 raise PyException {
     for i, n in names {
-      let cand = if abbrev { n.view(end_offset=3).to_owned() } else { n }
+      let cand = if abbrev { abbreviated_name(n) } else { n }
       let cl = cand.length()
       if pos + cl <= text.length() &&
         @core.py_lower(String::from_array(text[pos:pos + cl].to_owned())) ==

@@ -47,6 +47,13 @@ test "TestLineage.test_lineage (sources and node sources)" {
   assert_eq(downstream.source_name, "y")
   let html = node.to_html()
   assert_true(html.length() > 1000)
+  // Numeric node/edge identifiers must remain JSON numbers for vis-network;
+  // labels and titles remain escaped JSON strings after explicit conversion.
+  assert_true(html.contains("\"id\":\{node.id}"))
+  assert_true(html.contains("\"from\":\{node.id}"))
+  assert_true(html.contains("\"group\":0"))
+  assert_true(html.contains("\"label\":\""))
+  assert_true(html.contains("\"title\":\"<pre>"))
 
   // the sql is not modified
   let sql = "SELECT a FROM x"

@@ -170,18 +170,31 @@ fn error_name(e : Error) -> String {
     // Python exceptions without a SqlglotError variant are ValueErrors whose message
     // starts with the Python type (e.g. "OverflowError: ...", "decimal.DivisionByZero").
     @core.SqlglotError::ValueError(m) =>
-      if m.has_prefix("decimal.") {
-        "error:" + m.view(start_offset=8).to_owned()
-      } else {
-        match m.find(":") {
-          Some(k) if k > 0 && m.view(end_offset=k).has_suffix("Error") =>
-            "error:" + m.view(end_offset=k).to_owned()
-          _ => "error:ValueError"
-        }
+      lexmatch m {
+        (re"^decimal\.", after=name) => "error:\{name}"
+        ((re"^[^:]*Error" as name) + re":", after=_) => "error:\{name}"
+        _ => "error:ValueError"
       }
     @core.SqlglotError::OptimizeError(_) => "error:OptimizeError"
     @core.SqlglotError::SchemaError(_) => "error:SchemaError"
     _ => "error:\{e}"
+  }
+}
+
+///|
+test "Python error names preserve prefix and first-colon boundaries" {
+  for
+    (message, expected) in [
+      ("decimal.DivisionByZero", "error:DivisionByZero"),
+      ("decimal.FooError: detail", "error:FooError: detail"),
+      ("decimal.", "error:"),
+      ("Error:", "error:Error"),
+      ("😀Error: detail: more", "error:😀Error"),
+      ("prefix: OtherError: detail", "error:ValueError"),
+      ("OtherError", "error:ValueError"),
+      (":Error", "error:ValueError"),
+    ] {
+    assert_eq(error_name(@core.SqlglotError::ValueError(message)), expected)
   }
 }
 

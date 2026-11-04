@@ -170,13 +170,10 @@ fn parse_args(argv : Array[String]) -> Args raise ArgError {
       extras.push(arg)
       continue
     }
-    let (name, inline_value) = match arg.find("=") {
-      Some(p) =>
-        (
-          arg.view(end_offset=p).to_owned(),
-          Some(arg.view(start_offset=p + 1).to_owned()),
-        )
-      None => (arg, None)
+    let (name, inline_value) = if arg =~ (re"=", before=name, after=value) {
+      (name.to_owned(), Some(value.to_owned()))
+    } else {
+      (arg, None)
     }
     let (opt, takes_value) = resolve_option(name) catch {
       Usage(_) if inline_value is None => {
