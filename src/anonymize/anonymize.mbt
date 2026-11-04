@@ -397,11 +397,8 @@ fn number_alias(counter : Int32, text : String) -> String {
     let parts = @core.py_split(text, sep)
     (parts[0], parts[1:].join(sep))
   }
-  let (sign, exponent) = if exponent.has_prefix("-") || exponent.has_prefix("+") {
-    (
-      exponent.exact_view(end=1).to_owned(),
-      exponent.exact_view(start=1).to_owned(),
-    )
+  let (sign, exponent) = if exponent =~ (re"^[\-\+]" as sign, after=exponent) {
+    (sign.to_string(), exponent.to_owned())
   } else {
     ("", exponent)
   }
