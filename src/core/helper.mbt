@@ -259,7 +259,7 @@ pub fn py_int_text_add(text : String, delta : Int32) -> String? {
   } else {
     (false, t)
   }
-  let v = @bigint.BigInt::from_string(digits)
+  let v = try! @string.parse_bigint(digits)
   let v = if neg { -v } else { v }
   Some((v + @bigint.BigInt::from_int(delta)).to_string())
 }

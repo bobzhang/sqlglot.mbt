@@ -1,4 +1,5 @@
 import {
+  "moonbitlang/core/string",
   "bobzhang/sqlglot/core",
   "moonbitlang/core/set",
   "moonbitlang/core/deque",
