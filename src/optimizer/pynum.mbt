@@ -65,7 +65,7 @@ fn parse_py_int(text : String) -> @bigint.BigInt? {
       return None
     }
   }
-  let v = @bigint.BigInt::from_string(s)
+  let v = try! @string.parse_bigint(s)
   Some(if neg { -v } else { v })
 }
 
@@ -124,7 +124,7 @@ fn parse_decimal(text : String) -> Dec? {
   }
   Some({
     neg,
-    coeff: @bigint.BigInt::from_string(digits.to_string()),
+    coeff: try! @string.parse_bigint(digits.to_string()),
     exp: exp - frac,
   })
 }
