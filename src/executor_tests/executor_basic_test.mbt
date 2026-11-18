@@ -135,7 +135,7 @@ test "set_operations" {
     guard e
       is @executor.ExecuteError(
         _,
-        cause=Some(@executor.PyException("ZeroDivisionError", _))
+        cause=Some(@executor.PyException("ZeroDivisionError", _)),
       ) else {
       fail("unexpected error \{@executor.error_message(e)}")
     }
