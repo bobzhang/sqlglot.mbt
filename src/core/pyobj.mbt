@@ -35,7 +35,7 @@ pub(all) enum PyObj {
     minute~ : Int32,
     second~ : Int32,
     microsecond~ : Int32,
-    tz~ : (String, Int32)?
+    tz~ : (String, Int32)?,
   )
 }
 
