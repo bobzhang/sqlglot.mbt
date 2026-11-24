@@ -6,7 +6,7 @@
 
 ///|
 /// The version printed by `--version`.
-pub let version : String = "0.1.0"
+pub let version : String = "0.2.1"
 
 ///|
 /// The result of a command line invocation.
