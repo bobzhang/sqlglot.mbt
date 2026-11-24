@@ -115,7 +115,7 @@ fn build_default_coerces_to() -> Map[@core.DType, @set.Set[@core.DType]] {
     let coerces_to : @set.Set[@core.DType] = @set.Set([])
     for data_type in type_precedence {
       result[data_type] = coerces_to.copy()
-      coerces_to.add(data_type)
+      coerces_to.insert(data_type)
     }
   }
   result
@@ -321,7 +321,7 @@ pub fn TypeAnnotator::set_type(
     None => @core.datatype_of(UNKNOWN)
   }
   expression.set_type(Some(dtype))
-  self.visited.add(expression.uid)
+  self.visited.insert(expression.uid)
   let this = match expression.get_type() {
     Some(t) => t.datatype_this()
     None => None

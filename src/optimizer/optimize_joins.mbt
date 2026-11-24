@@ -267,7 +267,7 @@ fn join_is_used(scope : Scope, join : @core.Expr, alias_ : String) -> Bool {
   match join.arg("on") {
     Some(on) =>
       for c in on.find_all([Column]) {
-        on_ids.add(c.uid)
+        on_ids.insert(c.uid)
       }
     None => ()
   }

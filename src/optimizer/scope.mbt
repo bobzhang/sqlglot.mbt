@@ -298,7 +298,7 @@ fn Scope::collect(self : Scope) -> Unit {
     if k.is_a(Dot) && node.is_star() {
       self.stars_.push(node)
     } else if k == Column {
-      self.column_index_.add(node.uid)
+      self.column_index_.insert(node.uid)
       if node.this() is Some(t) && t.kind.is_a(Star) {
         self.stars_.push(node)
       } else {
@@ -307,7 +307,7 @@ fn Scope::collect(self : Scope) -> Unit {
     } else if k.is_a(Table) && !parent_is(node, [JoinHint]) {
       match node.parent {
         Some(p) if p.kind.is_a(Join) && is_semi_or_anti_join(p) =>
-          self.semi_anti_join_tables_.add(node.alias_or_name())
+          self.semi_anti_join_tables_.insert(node.alias_or_name())
         _ => ()
       }
       self.tables_.push(node)
@@ -596,7 +596,7 @@ pub fn Scope::external_columns(self : Scope) -> Array[@core.Expr] {
   } else {
     let local_source_names : @set.Set[String] = @set.Set([])
     for r in self.references() {
-      local_source_names.add(r.0)
+      local_source_names.insert(r.0)
     }
     let semi = self.semi_or_anti_join_tables()
     self
@@ -619,7 +619,7 @@ pub fn Scope::local_columns(self : Scope) -> Array[@core.Expr] {
   }
   let ids : @set.Set[Int32] = @set.Set([])
   for c in self.external_columns() {
-    ids.add(c.uid)
+    ids.insert(c.uid)
   }
   let result = self.columns().filter(c => !ids.contains(c.uid))
   self.local_columns_ = Some(result)
@@ -1194,7 +1194,7 @@ pub fn walk_in_scope(
     (expression, [expression]),
   ]
   let mut pending : (@core.Expr, @core.Expr, Bool)? = None
-  Iter::new(fn() {
+  Iter::Iter(fn() {
     match pending {
       Some((node, root, is_top)) => {
         pending = None

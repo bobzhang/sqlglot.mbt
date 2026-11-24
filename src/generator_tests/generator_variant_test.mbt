@@ -158,7 +158,7 @@ fn make_flagsb() -> @core.Dialect {
     g.token_mapping[@core.TokenType::AUTO_INCREMENT] = "AUTOINCREMENT"
     g.reserved_keywords = g.reserved_keywords.copy()
     for k in ["x", "y", "a", "b", "c", "t"] {
-      g.reserved_keywords.add(k)
+      g.reserved_keywords.insert(k)
     }
     g.window_funcs_with_null_ordering = [
       @core.FirstValue,
@@ -169,7 +169,7 @@ fn make_flagsb() -> @core.Dialect {
     g.time_part_singulars = Map::from_array([("DAYS", "DAY"), ("HOURS", "HOUR")])
     g.interval_allows_plural_form = false
     g.expression_precedes_properties_creatables = g.expression_precedes_properties_creatables.copy()
-    g.expression_precedes_properties_creatables.add("TABLE")
+    g.expression_precedes_properties_creatables.insert("TABLE")
     g.match_against_table_prefix = Some("TABLE")
     let c = d.cfg
     c.null_ordering = "nulls_are_last"

@@ -72,11 +72,11 @@ pub fn diff(
   let target_nodes = target.walk().collect()
   let source_ids : @set.Set[Int32] = @set.Set([])
   for n in source_nodes {
-    source_ids.add(n.uid)
+    source_ids.insert(n.uid)
   }
   let target_ids : @set.Set[Int32] = @set.Set([])
   for n in target_nodes {
-    target_ids.add(n.uid)
+    target_ids.insert(n.uid)
   }
   let copy = source_nodes.length() != source_ids.length() ||
     target_nodes.length() != target_ids.length() ||
@@ -189,7 +189,7 @@ pub fn ChangeDistiller::diff(
   }
   let pre_matched_targets : @set.Set[Int32] = @set.Set([])
   for _, v in pre_matched {
-    pre_matched_targets.add(v)
+    pre_matched_targets.insert(v)
   }
   self.source_index = {}
   for n in source.bfs() {
@@ -206,13 +206,13 @@ pub fn ChangeDistiller::diff(
   self.unmatched_source = @set.Set([])
   for k, _ in self.source_index {
     if !pre_matched.contains(k) {
-      self.unmatched_source.add(k)
+      self.unmatched_source.insert(k)
     }
   }
   self.unmatched_target = @set.Set([])
   for k, _ in self.target_index {
     if !pre_matched_targets.contains(k) {
-      self.unmatched_target.add(k)
+      self.unmatched_target.insert(k)
     }
   }
   self.bigram_cache.clear()
@@ -387,11 +387,11 @@ fn ChangeDistiller::compute_matching_set(
       if is_same_type(source_node, target_node) {
         let source_leaf_ids : @set.Set[Int32] = @set.Set([])
         for l in expression_leaves(source_node) {
-          source_leaf_ids.add(l.uid)
+          source_leaf_ids.insert(l.uid)
         }
         let target_leaf_ids : @set.Set[Int32] = @set.Set([])
         for l in expression_leaves(target_node) {
-          target_leaf_ids.add(l.uid)
+          target_leaf_ids.insert(l.uid)
         }
         let max_leaves_num = @core.max_int(
           source_leaf_ids.length(),

@@ -66,15 +66,15 @@ pub fn explode_projection_to_unnest(
     if expression.kind == Select {
       let taken_select_names : @set.Set[String] = @set.Set([])
       for name in expression.named_selects() {
-        taken_select_names.add(name)
+        taken_select_names.insert(name)
       }
       let taken_source_names : @set.Set[String] = @set.Set([])
       for reference in Scope::new(expression).references() {
-        taken_source_names.add(reference.0)
+        taken_source_names.insert(reference.0)
       }
       fn new_name(names : @set.Set[String], name : String) -> String {
         let name = @core.find_new_name(n => names.contains(n), name)
-        names.add(name)
+        names.insert(name)
         name
       }
 
@@ -196,7 +196,7 @@ pub fn explode_projection_to_unnest(
 
         // This ensures that we won't use [POS]EXPLODE's argument as a new selection
         if explode_arg.kind.is_a(Column) {
-          taken_select_names.add(explode_arg.output_name())
+          taken_select_names.insert(explode_arg.output_name())
         }
         let unnest_source_alias = new_name(taken_source_names, "_u")
         if !explode_alias.truthy() {

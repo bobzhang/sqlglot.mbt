@@ -76,7 +76,7 @@ fn hive_coerces_to() -> Map[@core.DType, @set.Set[@core.DType]] {
       }
     }
     for text in @core.dtype_text_types {
-      s.add(text)
+      s.insert(text)
     }
   }
   m

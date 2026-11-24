@@ -283,7 +283,7 @@ pub fn projection_reachability(
       group_by_ordinals[scope.id] = group_by_ordinal_refs(query)
       let ordinals : @set.Set[Int32] = @set.Set([])
       for r in group_by_ordinals[scope.id] {
-        ordinals.add(r.1.uid)
+        ordinals.insert(r.1.uid)
       }
       let mut first_aggregate : DepNode? = None
       let non_aggregates = []
@@ -412,10 +412,10 @@ pub fn projection_reachability(
       output_node.required_by = if whole_query { all_roots } else { 1L << i }
     }
     pending.push_back(scope_nodes[root.id])
-    queued.add(scope_nodes[root.id].id)
+    queued.insert(scope_nodes[root.id].id)
     for o in root_outputs {
       pending.push_back(o)
-      queued.add(o.id)
+      queued.insert(o.id)
     }
   }
   while pending.pop_front() is Some(node) {
@@ -425,7 +425,7 @@ pub fn projection_reachability(
       if required_by != dependency.required_by {
         dependency.required_by = required_by
         if !queued.contains(dependency.id) {
-          queued.add(dependency.id)
+          queued.insert(dependency.id)
           pending.push_back(dependency)
         }
       }
@@ -726,7 +726,7 @@ pub fn projection_has_aggregate(
         target = t.this()
       }
       match target {
-        Some(t) if t.kind.is_a(AggFunc) => windowed_aggregates.add(t.uid)
+        Some(t) if t.kind.is_a(AggFunc) => windowed_aggregates.insert(t.uid)
         _ => ()
       }
       let mut name = node.alias_()

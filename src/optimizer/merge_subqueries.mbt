@@ -329,7 +329,7 @@ fn mergeable(
       let grouped = []
       let top_level_ids : @set.Set[Int32] = @set.Set([])
       for e in group.expressions() {
-        top_level_ids.add(e.unnest().uid)
+        top_level_ids.insert(e.unnest().uid)
       }
       let mut blocked = false
       for col in group.find_all([Column]).collect() {

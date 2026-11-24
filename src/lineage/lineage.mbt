@@ -48,7 +48,7 @@ pub fn Node::walk(self : Node) -> Array[Node] {
     if visited.contains(node.id) {
       continue
     }
-    visited.add(node.id)
+    visited.insert(node.id)
     out.push(node)
     let ds = node.downstream.copy()
     ds.rev_in_place()
@@ -753,7 +753,7 @@ fn pivot_chain_mapping(
     let consumed : @set.Set[String] = @set.Set([])
     for kv in step_mapping {
       for col in kv.1 {
-        consumed.add(col.name())
+        consumed.insert(col.name())
       }
     }
     let pre_to_post : Map[String, String] = Map([])

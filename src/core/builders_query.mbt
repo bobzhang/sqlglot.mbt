@@ -638,7 +638,7 @@ pub fn column_table_names(
   for c in expression.find_all([Column]) {
     let t = c.table_name()
     if !t.is_empty() && t != exclude {
-      out.add(t)
+      out.insert(t)
     }
   }
   out.iter().collect()
