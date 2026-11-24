@@ -373,7 +373,7 @@ fn decorrelate(
       left
     }
     keys.push((key, column, predicate))
-    external_ids.add(column.uid)
+    external_ids.insert(column.uid)
     if predicate.kind.is_a(EQ) {
       eq_count += 1
     }

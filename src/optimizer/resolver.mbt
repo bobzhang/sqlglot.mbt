@@ -152,7 +152,7 @@ pub fn Resolver::all_columns(
       let s : @set.Set[String] = @set.Set([])
       for _, columns in self.get_all_source_columns() {
         for c in columns {
-          s.add(c)
+          s.insert(c)
         }
       }
       self.all_columns_ = Some(s)
@@ -167,7 +167,7 @@ fn dedup_strings(xs : Array[String]) -> Array[String] {
   let out = []
   for x in xs {
     if !seen.contains(x) {
-      seen.add(x)
+      seen.insert(x)
       out.push(x)
     }
   }
@@ -457,7 +457,7 @@ fn Resolver::get_unambiguous_columns(
   }
   let all_columns : @set.Set[String] = @set.Set([])
   for c in unambiguous_columns.keys() {
-    all_columns.add(c)
+    all_columns.insert(c)
   }
   for i in 1..<pairs.length() {
     let (table, columns) = pairs[i]
@@ -465,7 +465,7 @@ fn Resolver::get_unambiguous_columns(
     let ambiguous = unique.filter(c => all_columns.contains(c))
     let ambiguous_set : @set.Set[String] = @set.from_array(ambiguous)
     for c in columns {
-      all_columns.add(c)
+      all_columns.insert(c)
     }
     for column in ambiguous {
       match unnest_original_aliases.get(column) {

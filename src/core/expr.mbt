@@ -1184,7 +1184,7 @@ pub fn Expr::iter_expressions(
 pub fn Expr::dfs(self : Expr, prune? : (Expr) -> Bool) -> Iter[Expr] {
   let stack = [self]
   let mut pending : Expr? = None
-  Iter::new(fn() {
+  Iter::Iter(fn() {
     match pending {
       Some(node) => {
         pending = None
@@ -1216,7 +1216,7 @@ pub fn Expr::bfs(self : Expr, prune? : (Expr) -> Bool) -> Iter[Expr] {
   let queue = @deque.Deque([])
   queue.push_back(self)
   let mut pending : Expr? = None
-  Iter::new(fn() {
+  Iter::Iter(fn() {
     match pending {
       Some(node) => {
         pending = None

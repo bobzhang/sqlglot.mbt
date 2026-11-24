@@ -46,7 +46,7 @@ fn expand_struct_stars_no_parens(expression : @core.Expr) -> Array[@core.Expr] {
     if taken_names.contains(name) || !ok {
       return []
     }
-    taken_names.add(name)
+    taken_names.insert(name)
     let this = field.this_().copy()
     let parts = (dot_parts + [this]).map(p => p.copy())
     let root = parts[0]
@@ -326,7 +326,7 @@ fn expand_stars_impl(
           let star = expression.expression_()
           let excluded : @set.Set[String] = @set.Set([])
           for e in star.list("except_") {
-            excluded.add(e.name())
+            excluded.insert(e.name())
           }
           let replaced : Map[String, @core.Expr] = Map([])
           for e in star.list("replace") {
@@ -430,7 +430,7 @@ fn expand_stars_impl(
         ScopeSource(s) if s.expression.kind.is_a(Query) =>
           for sel in selects_of(s.expression) {
             if is_output_identifier_quoted(sel) {
-              quoted_columns.add(sel.output_name())
+              quoted_columns.insert(sel.output_name())
             }
           }
         _ => ()
@@ -490,7 +490,7 @@ fn expand_stars_impl(
           _ => ()
         }
         if using_column_tables.has(name, table) {
-          coalesced_columns.add(name)
+          coalesced_columns.insert(name)
           let using_tables = using_column_tables.map[name]
           let coalesce_args = using_tables.map(t => {
             column_with_table(name, table=t)

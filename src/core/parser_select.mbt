@@ -413,7 +413,7 @@ pub fn Parser::implicit_unnests_to_explicit(self : Parser, this : Expr) -> Expr 
     Some(f) =>
       match f.this() {
         Some(t) =>
-          refs.add(
+          refs.insert(
             normalize_identifiers(t.copy(), self.dialect).alias_or_name(),
           )
         None => ()
@@ -451,7 +451,7 @@ pub fn Parser::implicit_unnests_to_explicit(self : Parser, this : Expr) -> Expr 
         table.replace(Some(unnest)) |> ignore
       }
     }
-    refs.add(normalized_table.alias_or_name())
+    refs.insert(normalized_table.alias_or_name())
   }
   this
 }

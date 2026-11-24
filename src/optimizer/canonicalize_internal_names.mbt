@@ -29,7 +29,7 @@ pub fn canonicalize_internal_names(
         stack.push(node.expression_().unnest())
       }
     } else {
-      output_scope_exprs.add(node.uid)
+      output_scope_exprs.insert(node.uid)
     }
   }
   let next_table = @core.name_sequence("_t")
@@ -126,7 +126,7 @@ pub fn canonicalize_internal_names(
       let ref_alias = if ref_canon_taken.contains(canon_t) {
         next_table()
       } else {
-        ref_canon_taken.add(canon_t)
+        ref_canon_taken.insert(canon_t)
         canon_t
       }
       table_map[source_name] = (canon_t, ref_alias)

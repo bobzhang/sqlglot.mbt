@@ -1037,7 +1037,7 @@ pub fn Generator::connector_sql(
         }
         stack.push(BStr(node_op))
         stack.push(BNode(node.arg("this")))
-        ops.add(node_op)
+        ops.insert(node_op)
       }
       other => {
         let sql = match other {

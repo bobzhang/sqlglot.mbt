@@ -43,14 +43,14 @@ fn databricks_coerces_to() -> Map[@core.DType, @set.Set[@core.DType]] {
       }
     }
     for t in @core.dtype_numeric_types {
-      s.add(t)
+      s.insert(t)
     }
     for t in @core.dtype_temporal_types {
-      s.add(t)
+      s.insert(t)
     }
-    s.add(BINARY)
-    s.add(BOOLEAN)
-    s.add(INTERVAL)
+    s.insert(BINARY)
+    s.insert(BOOLEAN)
+    s.insert(INTERVAL)
   }
   m
 }

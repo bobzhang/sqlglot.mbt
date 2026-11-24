@@ -210,7 +210,7 @@ fn expand_using(
   }
   let names : @set.Set[String] = @set.Set([])
   for join in joins {
-    names.add(join.alias_or_name())
+    names.insert(join.alias_or_name())
   }
   let ordered = []
   for key, _ in scope.selected_sources() {
@@ -427,7 +427,7 @@ fn expand_alias_refs_impl(
   let alias_to_expression : Map[String, (@core.Expr, Int32)] = Map([])
   let projections : @set.Set[String] = @set.Set([])
   for s in expression.selects() {
-    projections.add(s.alias_or_name())
+    projections.insert(s.alias_or_name())
   }
   let mut replaced = false
   fn replace_columns(
@@ -631,7 +631,7 @@ fn expand_order_by_and_distinct_on(
         let a : @set.Set[String] = @set.Set([])
         for n, c in counts {
           if c == 1 {
-            a.add(n)
+            a.insert(n)
           }
         }
         alias_names_ = Some(a)
@@ -739,7 +739,7 @@ fn expand_positional_references(
                 let selected = scope.selected_sources()
                 for s in expression.selects() {
                   if selected.contains(s.alias_or_name()) {
-                    a.add(s.alias_or_name())
+                    a.insert(s.alias_or_name())
                   }
                 }
                 ambiguous_projections = Some(a)
@@ -1141,7 +1141,7 @@ fn qualify_columns_impl(
     if single_chain {
       available = pivot_output_columns(pivot, available).map(kv => kv.0)
       for c in available {
-        produced.add(c)
+        produced.insert(c)
       }
     }
   }
@@ -1166,7 +1166,7 @@ pub fn pivot_output_columns(
       }
       for e in field.expressions() {
         for c in e.find_all([Column]) {
-          excluded.add(c.output_name())
+          excluded.insert(c.output_name())
         }
       }
     }
@@ -1187,7 +1187,7 @@ pub fn pivot_output_columns(
     ordered.map(i => i.name())
   } else {
     for c in pivot.find_all([Column]) {
-      excluded.add(c.output_name())
+      excluded.insert(c.output_name())
     }
     let outs = pivot.list("columns").map(c => c.output_name())
     if outs.is_empty() {

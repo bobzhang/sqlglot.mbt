@@ -341,7 +341,7 @@ fn bigquery_coerces_to() -> Map[@core.DType, @set.Set[@core.DType]] {
       }
     }
     for t in types {
-      set.add(t)
+      set.insert(t)
     }
   }
 

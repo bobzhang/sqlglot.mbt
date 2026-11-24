@@ -77,7 +77,7 @@ pub fn qualify_tables(
     match expression.arg("with_") {
       Some(w) =>
         for cte in w.expressions() {
-          cte_names.add(cte.alias_or_name())
+          cte_names.insert(cte.alias_or_name())
         }
       None => ()
     }
